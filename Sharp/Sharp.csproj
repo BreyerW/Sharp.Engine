@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{14F5AB2B-6F1D-46AF-83CB-366DB9B240B4}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Sharp</RootNamespace>
+    <AssemblyName>Sharp</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="gtk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="glade-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="pango-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="atk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
+    <Reference Include="FreeImageNET">
+      <HintPath>..\packages\FreeImageNET.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK">
+      <HintPath>..\packages\OpenTK.1.1.1589.5942\lib\NET40\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="AssimpNet">
+      <HintPath>..\packages\AssimpNet.3.3.1\lib\net45\AssimpNet.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="BEPUik">
+      <HintPath>..\packages\BEPUphysics.1.4.0\lib\net40\BEPUik.dll</HintPath>
+    </Reference>
+    <Reference Include="BEPUphysics">
+      <HintPath>..\packages\BEPUphysics.1.4.0\lib\net40\BEPUphysics.dll</HintPath>
+    </Reference>
+    <Reference Include="BEPUutilities">
+      <HintPath>..\packages\BEPUphysics.1.4.0\lib\net40\BEPUutilities.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IO.RecyclableMemoryStream">
+      <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.1.0.0\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
+    </Reference>
+    <Reference Include="EditableStream">
+      <HintPath>..\packages\EditableStream.0.3\lib\net45\EditableStream.dll</HintPath>
+    </Reference>
+    <Reference Include="SmallBlockMemoryStream">
+      <HintPath>..\packages\SmallBlockMemoryStream.1.0.0.0\lib\net20\SmallBlockMemoryStream.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics.Vectors">
+      <HintPath>..\packages\System.Numerics.Vectors.4.0.0\lib\portable-net45+win8+wpa81\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="gtk-gui\gui.stetic">
+      <LogicalName>gui.stetic</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="gtk-gui\generated.cs" />
+    <Compile Include="MainWindow.cs" />
+    <Compile Include="gtk-gui\MainWindow.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BasicVertexFormat.cs" />
+    <Compile Include="Behaviour.cs" />
+    <Compile Include="BoundingBox.cs" />
+    <Compile Include="Camera.cs" />
+    <Compile Include="Component.cs" />
+    <Compile Include="Entity.cs" />
+    <Compile Include="Frustum.cs" />
+    <Compile Include="GenericColor.cs" />
+    <Compile Include="IAsset.cs" />
+    <Compile Include="InputHandler.cs" />
+    <Compile Include="IVertex.cs" />
+    <Compile Include="Material.cs" />
+    <Compile Include="MeshRenderer.cs" />
+    <Compile Include="ObjectPlacement.cs" />
+    <Compile Include="Player.cs" />
+    <Compile Include="Renderer.cs" />
+    <Compile Include="Selection.cs" />
+    <Compile Include="SizeInBytes.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="Sharp.Assets\Mesh.cs" />
+    <Compile Include="Sharp.Assets\Shader.cs" />
+    <Compile Include="Sharp.Assets\Texture.cs" />
+    <Compile Include="Sharp.AssetPipeline\MeshPipeline.cs" />
+    <Compile Include="Sharp.AssetPipeline\ShaderPipeline.cs" />
+    <Compile Include="Sharp.AssetPipeline\TexturePipeline.cs" />
+    <Compile Include="Sharp.Editor\Manipulators.cs" />
+    <Compile Include="Sharp.Editor\DrawHelper.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\SupportedFileFormatsAttribute.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Views\AssetsView.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Views\MainEditorView.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Views\SceneStructureView.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Views\SceneView.cs" />
+    <Compile Include="Sharp.Physic\ErrorOutput.cs" />
+    <Compile Include="Collider.cs" />
+    <Compile Include="Sharp.AssetPipeline\AssetPipeline.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Views\View.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\GLWidget\GLWidget.csproj">
+      <Project>{34627299-AB51-4C99-B5DA-C03EB751B387}</Project>
+      <Name>GLWidget</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gwen.Renderer.OpenTK\Gwen.Renderer.OpenTK.csproj">
+      <Project>{41650C82-D630-4E5C-845A-F1513C8FDC99}</Project>
+      <Name>Gwen.Renderer.OpenTK</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gwen\Gwen.csproj">
+      <Project>{ADDA2F43-96C0-497F-8216-29C67ABC9806}</Project>
+      <Name>Gwen</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="InternalShaders\" />
+    <Folder Include="Sharp.AssetPipeline\" />
+    <Folder Include="Sharp.Editor\" />
+    <Folder Include="Sharp.Physic\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="InternalShaders\BasicShader.shader" />
+    <None Include="InternalShaders\FogShader.shader" />
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>
