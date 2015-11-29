@@ -1,8 +1,8 @@
 # Sharp.Engine
 
-Barebone and open source (mostly MIT-like licensed) 3d editor based on gtk-sharp (as window/file manager) and custom GWENdotnet for editor UI that can be extended to anything else (game engine, modelling tool etc.). Very early - NOT even alpha - stage.
+Barebone and open source (mostly MIT-like licensed) 3d editor based on gtk-sharp (as window/file manager) and custom GWENdotnet for editor UI that can be extended to anything else (game engine, modelling tool etc.). Very early - <b>NOT</b> even alpha - stage.
 
-#List of used 3rd party libraries (all open source and MIT-like licensed)
+#List of used 3rd party libraries (all open source and MIT-like licensed):
 
 * AssimpNet (mesh importing/exporting)
 * OpenTK (graphic backend, DirectX planned)
