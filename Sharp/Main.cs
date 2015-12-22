@@ -1,5 +1,6 @@
 using Gtk;
-//basic acess token b2ea85e767b9919cba11ff859a099a1abb24fa72
+using System;
+
 namespace Sharp
 {
 	class MainClass
@@ -8,7 +9,8 @@ namespace Sharp
 		{
 			OpenTK.Toolkit.Init ();
 			OpenTK.Graphics.GraphicsContext.ShareContexts = false;
-
+			dynamic hack="";
+			hack.ToString (); //TODO: convert dirty hack to proper preload of System.Dynamic.dll
 			Application.Init ();
 			MainWindow win = new MainWindow ();
 			win.ShowAll ();

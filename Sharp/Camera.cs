@@ -116,14 +116,29 @@ public void SetModelviewMatrix()
 			float num = a - b;
 			return ((-1.401298E-45f <= num) && (num <= float.Epsilon));
 		}
-		public Vector3 ScreenToWorld(int x, int y, int width, int height) {
-			
-			float X = 2.0f * ((float)x / (float)width) - 1f;
-			float Y = 2.0f * ((float)y / (float)height)-1f;//float Y = -(2.0f * ((float)x/ (float)width) )-1f;
-			Matrix4 viewInverse=modelViewMatrix;
-			viewInverse.Invert();
-			Vector3 point = new Vector3 (X,Y,1);
-			return Vector3.Transform(point, viewInverse);
+		public Vector3 ScreenToWorld(int x, int y, int width, int height,float time=-1f)
+		{
+			Vector4 vec;
+
+			vec.X = 2.0f * x / (float)width - 1;
+			vec.Y = -(2.0f * y / (float)height - 1);
+			vec.Z = time;
+			vec.W = 1.0f;
+
+			Matrix4 viewInv = modelViewMatrix.Inverted ();
+			Matrix4 projInv = Camera.main.projectionMatrix.Inverted();
+
+			Vector4.Transform(ref vec, ref projInv, out vec);
+			Vector4.Transform(ref vec, ref viewInv, out vec);
+
+			if (vec.W > 0.000001f || vec.W < -0.000001f)
+			{
+				vec.X /= vec.W;
+				vec.Y /= vec.W;
+				vec.Z /= vec.W;
+			}
+
+			return vec.Xyz;
 		}
 		public Vector3 WorldToScreen( Vector3 pos, int width, int height) {
 			
@@ -145,9 +160,8 @@ public void SetCameraMode(CamMode mode)
 		public Quaternion ToQuaterion(Vector3 angles) {
 			// Assuming the angles are in radians.
 			angles *= MathHelper.Pi / 180f;
-			return Quaternion.FromAxisAngle(Vector3.UnitX,angles.Y)
-				*Quaternion.FromAxisAngle(Vector3.UnitY,angles.X)
-				*Quaternion.FromAxisAngle(Vector3.UnitZ,angles.Z);
+
+			return Quaternion.FromMatrix (Matrix3.CreateRotationX (angles.Y) * Matrix3.CreateRotationY (angles.X) * Matrix3.CreateRotationZ (angles.Z));
 		}
 		public Vector3 ToEuler(Quaternion q) 
 		{ 
@@ -204,8 +218,8 @@ protected void ClampMouseValues()
 /// </param>
 public void Rotate(float x, float y, float time=1)
 {
-			entityObject.rotation.X +=-(float)(x * MouseXSensitivity * time);
-			entityObject.rotation.Y +=-(float)(y * MouseYSensitivity * time);
+			entityObject.rotation.X +=(x * MouseXSensitivity * time);
+			entityObject.rotation.Y +=(y * MouseYSensitivity * time);
 	//Console.WriteLine("Rotation={0}", MouseRotation);
 	//ClampMouseValues();
 
@@ -244,10 +258,12 @@ public void Move(float x, float y,float z, float time=1f)
 				TargetPosition += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.rotation)));
 	if (CameraMode != CamMode.FlightCamera)
 		entityObject.position = TargetPosition;
+	
 	SetModelviewMatrix ();
-			SetProjectionMatrix ();
+	SetProjectionMatrix ();
+	
 	frustum.Update (Camera.main.modelViewMatrix*Camera.main.projectionMatrix);
-			moved = true;
+	moved = true;
 }
 
 #endregion

@@ -1,12 +1,14 @@
 ﻿using System;
 using Sharp;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Sharp
 {
 	public static class Selection
 	{
-		public static HashSet<object> assets=new HashSet<object>();
+		private static MemoryStream inspectedObj;
+		public static List<object> assets=new List<object>();
 		public static bool isDragging=false;
 	}
 }

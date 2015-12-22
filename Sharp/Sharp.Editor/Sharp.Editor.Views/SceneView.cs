@@ -10,6 +10,7 @@ using OpenTK.Input;
 using Sharp.Editor;
 //using PhysX;
 using Sharp.Physic;
+using System.Linq;
 
 namespace Sharp.Editor.Views
 {
@@ -29,6 +30,7 @@ namespace Sharp.Editor.Views
 		public static Action OnSetupMatrices;
 
 		public static bool mouseLocked=false;
+		private Vector3 normalizedMoveDir=Vector3.Zero;
 		/*DebugProc DebugCallbackInstance = DebugCallback;
 
 		static void DebugCallback(DebugSource source, DebugType type, int id,
@@ -85,12 +87,28 @@ namespace Sharp.Editor.Views
 			Camera.main.Update();
 			//GL.MatrixMode(MatrixMode.Projection);
 			var projMat=Camera.main.modelViewMatrix*Camera.main.projectionMatrix;
-			GL.PushMatrix ();
 			GL.LoadMatrix(ref projMat);
+			GL.PushMatrix ();
 			DrawHelper.DrawGrid(System.Drawing.Color.GhostWhite,Camera.main.entityObject.position, cell_size, grid_size);
 			GL.PopMatrix ();
 			if (OnRenderFrame != null) {
 				OnRenderFrame ();
+			}
+				
+			if (SceneStructureView.tree.SelectedChildren.Any()) {
+				foreach (var selected in SceneStructureView.tree.SelectedChildren) {
+					var entity = selected.Content as Entity;
+					GL.LoadMatrix (ref entity.MVPMatrix);
+					GL.PushMatrix ();
+					//var tmpMat =mesh.ModelMatrix* Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
+					dynamic renderer = entity.GetComponent (typeof(MeshRenderer<,>));
+					DrawHelper.DrawBox (renderer.mesh.bounds.Min, renderer.mesh.bounds.Max);
+					//float cameraObjectDistance =(Camera.main.entityObject.position-entityObject.position).Length;
+					//float worldSize = (float)(2 * Math.Tan((double)(Camera.main.FieldOfView / 2.0)) * cameraObjectDistance);
+					//Manipulators.gizmoScale =0.25f* worldSize;
+					DrawHelper.DrawSphere (30, 25, 25, System.Drawing.Color.Aqua);
+					GL.PopMatrix ();
+				}
 			}
 
 			GL.DisableVertexAttribArray(0);
@@ -117,7 +135,11 @@ namespace Sharp.Editor.Views
 		}
 		public override void OnKeyPressEvent (ref KeyboardState evnt)
 		{
-
+			if (Camera.main.moved) {
+				canvas.NeedsRedraw = true;
+				Camera.main.moved = false;
+				Camera.main.SetModelviewMatrix ();
+			}
 			if (evnt[OpenTK.Input.Key.Q]) 
 				Camera.main.Move (0f, 1f, 0f,0.1f);
 			if (evnt[OpenTK.Input.Key.E])
@@ -132,74 +154,111 @@ namespace Sharp.Editor.Views
 				Camera.main.Move(0f, 0f, 1f,0.1f);
 			if(SceneView.OnSetupMatrices!=null)
 				SceneView.OnSetupMatrices ();
-			if (Camera.main.moved) {
-				canvas.NeedsRedraw = true;
-				Camera.main.moved = false;
+			
+		}
+		public static double AngleBetween(Vector3 vector1, Vector3 vector2)
+		{
+			var angle= Math.Atan2(vector1.Y, vector1.X) - Math.Atan2(vector2.Y, vector2.X) * (180 / Math.PI);
+			if (angle < 0){
+				angle = angle + 360;
 			}
+			return angle;
 		}
 		public override void OnMouseMove (MouseMoveEventArgs evnt)
 		{
 			//scene.SetupMatrices ();
 			if (mouseLocked) {
+				if(normalizedMoveDir==Vector3.Zero)
 				Camera.main.Rotate ((float)evnt.XDelta, (float)evnt.YDelta, 0.3f);//maybe divide delta by fov?
+				else{
+					var deltaDir = new Vector2 ((float)evnt.XDelta, (float)evnt.YDelta).Normalized();
+					var screenDir = Camera.main.WorldToScreen (normalizedMoveDir,canvas.Width,canvas.Height);
+					var angle=Vector2.Dot(deltaDir,screenDir.Xy.Normalized());
+					if(evnt.XDelta!=0 && evnt.YDelta!=0)
+					foreach (var selected in SceneStructureView.tree.SelectedChildren)
+					{
+						var entity = selected.Content as Entity;
+
+						Console.WriteLine (evnt.XDelta);
+						if((angle>=-1 && angle<=0))
+							entity.position +=normalizedMoveDir*deltaDir.LengthFast;
+						else
+							entity.position -=normalizedMoveDir*deltaDir.LengthFast;
+						entity.SetModelMatrix();
+					}
+				}
 				MainWindow.focusedView=this;
 				canvas.NeedsRedraw = true;
 			}
-			//QueueDraw ();
-			Console.WriteLine ("moveScene");
 		}
 		public override void OnMouseDown(MouseButtonEventArgs evnt){
-			if (canvas.IsHovered && evnt.Button == MouseButton.Right) {
+			if (evnt.Button == MouseButton.Right) {//canvas.IsHovered
 				mouseLocked = true;
-				//canvas.NeedsRedraw = true;
+			} else if (evnt.Button == MouseButton.Left) {
+				mouseLocked = true;
+				var locPos = canvas.CanvasPosToLocal (evnt.Position);
+				var orig = Camera.main.entityObject.position;
+				var end = Camera.main.ScreenToWorld (locPos.X, locPos.Y, canvas.Width, canvas.Height);
+				var ray = new Ray (orig, (end - orig).Normalized ());
+				var intersectPoint = Vector3.Zero;
+				var zero = Vector3.Zero;
+				if (SceneStructureView.tree.SelectedChildren.Any ())
+					foreach (var selected in SceneStructureView.tree.SelectedChildren) {
+						var entity = selected.Content as Entity;
+						dynamic render = entity.GetComponent (typeof(MeshRenderer<,>));
+
+						if (render != null && BoundingBox.Intersect (ref ray, ref zero, 30, ref entity.ModelMatrix, out intersectPoint)) {
+							normalizedMoveDir = (intersectPoint - Vector3.TransformPosition(zero,entity.ModelMatrix)).Normalized();
+							break;
+						}
+					}
 			}
 		//	Console.WriteLine ("down");
 		}
 		public override void OnMouseUp(MouseButtonEventArgs args){
-				
-			 if ( AssetsView.isDragging ) {
+			if (AssetsView.isDragging) {
 				//makeContextCurrent ();
 				foreach (var asset in AssetsView.tree.SelectedChildren) {
 					var eObject = new Entity ();
-					eObject.position = Camera.main.ScreenToWorld (args.X,/*Allocation.Height-*/args.Y, canvas.Width, canvas.Height);
-					if (asset.Content is Mesh<ushort>) {
-						var renderer = eObject.AddComponent (new MeshRenderer<ushort,BasicVertexFormat> ((Mesh<ushort>)asset.Content)) as MeshRenderer<ushort,BasicVertexFormat>;
-						renderer.SetModelMatrix (); //FromMatrix (scene.RootNode.Transform);
+					var locPos = canvas.CanvasPosToLocal (args.Position);
+					Camera.main.SetModelviewMatrix ();
+					var orig =Camera.main.entityObject.position;
+					var dir = (Camera.main.ScreenToWorld (locPos.X, locPos.Y, canvas.Width, canvas.Height)-orig).Normalized ();
+					eObject.position =orig+dir*Camera.main.ZFar*0.333f;
+					eObject.SetModelMatrix ();
+					if (asset.Content.GetType().GetGenericTypeDefinition() == typeof(Mesh<>)) {
+						var mesh=(IAsset)asset.Content;
+						var renderer = eObject.AddComponent (new MeshRenderer<ushort,BasicVertexFormat> (mesh)) as MeshRenderer<ushort,BasicVertexFormat>;
+						 //FromMatrix (scene.RootNode.Transform);
 						renderer.material.shaderId = Shader.shaders ["BasicShader"].Program;
-						var tex =Texture.textures["duckCM"];
-						renderer.material.SetTexture ("MyTexture",tex);
-						eObject.Instatiate ();
+						var tex = Texture.textures ["duckCM"];
+						renderer.material.SetTexture ("MyTexture", tex);
 					}
+					eObject.Instatiate ();
 				}
 				AssetsView.isDragging = false;
-			}
-			else if(args.Button== MouseButton.Left)
-				foreach (var ent in entities){
-
-					var render=ent.GetComponent<MeshRenderer<ushort,BasicVertexFormat>> ();
-
-					if (render != null)
-					if (Camera.main.frustum.Intersect (render.mesh.bounds, render.mesh.ModelMatrix) != 0) {
-						var minScreen =Camera.main.WorldToScreen (Vector3.TransformPosition(render.mesh.bounds.Min,render.mesh.ModelMatrix), canvas.Width, canvas.Height);
-						var maxScreen =Camera.main.WorldToScreen (Vector3.TransformPosition(render.mesh.bounds.Max,render.mesh.ModelMatrix), canvas.Width, canvas.Height);
-
-						var hAlign=canvas.Width / 2;
-						var vAlign=canvas.Height/2;
-						var localPoint=canvas.CanvasPosToLocal(args.Position);
-
-						if ((minScreen.X+hAlign < localPoint.X && maxScreen.X+hAlign > localPoint.X) || (minScreen.X+hAlign > localPoint.X && maxScreen.X+hAlign < localPoint.X) )
-						if ((vAlign- minScreen.Y > localPoint.Y && vAlign- maxScreen.Y < localPoint.Y) || (vAlign- minScreen.Y < localPoint.Y && vAlign- maxScreen.Y > localPoint.Y)) {
+			} else if (args.Button == MouseButton.Left) {
+				var locPos = canvas.CanvasPosToLocal (args.Position);
+				var orig =Camera.main.entityObject.position;
+				var end = Camera.main.ScreenToWorld (locPos.X,locPos.Y, canvas.Width, canvas.Height);
+				var ray = new Ray (orig, (end-orig).Normalized());
+				foreach (var ent in entities) {
+					dynamic render = ent.GetComponent(typeof(MeshRenderer<,>));
+						if (render != null && render.mesh.bounds.Intersect(ref ray, ref ent.ModelMatrix)) {
 							Console.WriteLine ("bum");
-							Selection.assets.Clear();
+							Selection.assets.Clear ();
 							Selection.assets.Add (ent);
+						SceneStructureView.tree.UnselectAll ();
+						SceneStructureView.tree.FindNodeByContent (ent).IsSelected=true;
 							canvas.NeedsRedraw = true;
 							mouseLocked = false;
 							break;
 						}
-					}
 				}
+			}
 			mouseLocked = false;
 			MainWindow.focusedView = null;
+			normalizedMoveDir = Vector3.Zero;
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace Sharp.AssetPipeline
 
 		private static BoundingBox bounds;
 
-		public static List<IVertex> FillVertexData(Assimp.Mesh mesh, BasicVertexFormat baseVertData){
+		public static IVertex[] FillVertexData(Assimp.Mesh mesh, BasicVertexFormat baseVertData){
 			var vertDatas = new List<IVertex> (mesh.VertexCount);
 
 			var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
@@ -45,9 +45,9 @@ namespace Sharp.AssetPipeline
 			}
 			bounds = new BoundingBox (min,max);
 
-			return vertDatas;
+			return vertDatas.ToArray();
 		}
-		public static Func<Assimp.Mesh,BasicVertexFormat,List<IVertex>> onFillVertexData=FillVertexData;
+		public static Func<Assimp.Mesh,BasicVertexFormat,IVertex[]> onFillVertexData=FillVertexData;
 
 		public override IAsset Import (string pathToFile)
 		{
@@ -65,8 +65,7 @@ namespace Sharp.AssetPipeline
 				//mesh.MaterialIndex
 				internalMesh.Indices=new ushort[mesh.VertexCount*3];
 				internalMesh.Indices=(ushort[])(object)mesh.GetShortIndices();
-				internalMesh.Vertices = new List<IVertex> ();
-				internalMesh.Vertices.AddRange(onFillVertexData (mesh, new BasicVertexFormat ()));
+				internalMesh.Vertices=onFillVertexData (mesh, new BasicVertexFormat ());
 
 				internalMesh.UsageHint = OpenTK.Graphics.OpenGL.BufferUsageHint.DynamicDraw;
 			}

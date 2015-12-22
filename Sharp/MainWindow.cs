@@ -6,6 +6,7 @@ using Sharp;
 using Sharp.Editor.Views;
 using System.Collections.Generic;
 //gwen to sharp.ui
+
 public partial class MainWindow: Gtk.Window
 {
 	public static Vector2 lastPos;
@@ -28,8 +29,7 @@ public partial class MainWindow: Gtk.Window
 		foreach(var view in View.views)
 			if (view.canvas.IsVisible)
 			view.OnKeyPressEvent (ref state);
-		if(GdkWindow!=null)
-			GdkWindow.GetOrigin (out oriX,out oriY);
+			GdkWindow?.GetOrigin (out oriX,out oriY);
 
 		Sharp.InputHandler.ProcessMouse (oriX, oriY);
 			
@@ -87,7 +87,8 @@ public partial class MainWindow: Gtk.Window
 		QueueDraw ();
 	}
 	protected void OnGlwidget1Initialized (object sender, EventArgs e)
-	{Console.WriteLine ("init");
+	{
+		Console.WriteLine ("init");
 		//if (GLinit)
 		//return;
 		GLinit = true;
@@ -103,8 +104,7 @@ public partial class MainWindow: Gtk.Window
 		Sharp.InputHandler.OnMouseDown += (args) => {
 			if(focusedView==null)
 			foreach(var view in View.views){
-				var canv=Gwen.Input.InputHandler.HoveredControl!=null ?Gwen.Input.InputHandler.HoveredControl.GetCanvas() : null ;
-				if(canv!=null && view.canvas==canv){
+					if(view.canvas==Gwen.Input.InputHandler.HoveredControl?.GetCanvas()){
 					view.OnMouseDown(args);
 				break;
 			}
@@ -115,8 +115,7 @@ public partial class MainWindow: Gtk.Window
 		Sharp.InputHandler.OnMouseUp += (args) => {
 			if(focusedView==null)
 			foreach(var view in View.views){
-				var canv=Gwen.Input.InputHandler.HoveredControl!=null ?Gwen.Input.InputHandler.HoveredControl.GetCanvas() : null ;
-				if(canv!=null && view.canvas==canv){
+					if(view.canvas==Gwen.Input.InputHandler.HoveredControl?.GetCanvas()){
 					view.OnMouseUp(args);
 					break;
 				}
@@ -127,8 +126,7 @@ public partial class MainWindow: Gtk.Window
 		Sharp.InputHandler.OnMouseMove += (args) => {
 			if(focusedView==null)
 			foreach(var view in View.views){
-				var canv=Gwen.Input.InputHandler.HoveredControl!=null ?Gwen.Input.InputHandler.HoveredControl.GetCanvas() : null ;
-				if(canv!=null && view.canvas==canv){
+					if(view.canvas==Gwen.Input.InputHandler.HoveredControl?.GetCanvas()){
 					view.OnMouseMove(args);
 				break;
 			}
@@ -144,6 +142,11 @@ public partial class MainWindow: Gtk.Window
 		var structure = new SceneStructureView ();
 		structure.Initialize ();
 		structure.OnResize (glwidget1.Allocation.Width,glwidget1.Allocation.Height);
+
+		var inspector = new InspectorView ();
+		inspector.Initialize ();
+		inspector.OnResize (glwidget1.Allocation.Width,glwidget1.Allocation.Height);
+
 
 		var tab=new Gwen.Control.TabControl(mainEditorView.splitter);
 		mainEditorView.splitter.OnSplitMoved+=(o,args)=>{
@@ -167,9 +170,16 @@ public partial class MainWindow: Gtk.Window
 		page.Margin = new Gwen.Margin (3,3,3,3);
 		structure.canvas.Parent = page;
 
+		var tab3=new Gwen.Control.TabControl(mainEditorView.splitter);
+		btn=tab3.AddPage ("Inspector");
+		page = btn.Page;
+		page.Margin = new Gwen.Margin (3,3,3,3);
+		inspector.canvas.Parent = page;
+
 		mainEditorView.splitter.SetPanel(1,tab);
 		mainEditorView.splitter.SetPanel(0,tab1);
 		mainEditorView.splitter.SetPanel(2,tab2);
+		mainEditorView.splitter.SetPanel(3,tab3);
 
 		foreach(var view in View.views)
 			view.OnContextCreated (glwidget1.Allocation.Width,glwidget1.Allocation.Height);

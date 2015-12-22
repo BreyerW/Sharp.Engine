@@ -349,7 +349,6 @@ namespace Gwen.Control
 
 			base.OnChildAdded(child);
 		}
-
 		public override event GwenEventHandler<ClickedEventArgs> Clicked
         { 
             add {

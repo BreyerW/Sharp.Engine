@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using OpenTK;
 using Sharp.Editor.Views;
+using System.Linq;
 
 namespace Sharp
 {
@@ -20,10 +21,26 @@ namespace Sharp
 		public Vector3 rotation=Vector3.Zero;
 		public Vector3 scale=Vector3.One;
 
-		private Dictionary<Type, Component> components=new Dictionary<Type, Component>();
+		public Matrix4 ModelMatrix;
+		public Matrix4 MVPMatrix;
+
+		private List<Component> components=new List<Component>();
+
+		public void SetModelMatrix(){
+			ModelMatrix=Matrix4.CreateScale(scale)*Matrix4.CreateRotationX(rotation.X) * Matrix4.CreateRotationY(rotation.Y) * Matrix4.CreateRotationZ(rotation.Z) *Matrix4.CreateTranslation(position);
+		}
 
 		public T GetComponent<T>() where T : Component{
-			return components [typeof(T)] as T;
+			return components.OfType<T>().First();
+		}
+		public Component GetComponent(Type type){
+			foreach(var component in components)
+				if(component.GetType().GetGenericTypeDefinition()==type)
+					return component;
+			return null;
+		}
+		public List<Component> GetAllComponents(){
+			return components;
 		}
 		public T AddComponent<T> () where T : Component, new()
 		{
@@ -32,9 +49,10 @@ namespace Sharp
 		public Component AddComponent (Component comp)
 		{
 			comp.entityObject = this;
-			components.Add (comp.GetType(), comp);
-			return components [comp.GetType()];
+			components.Add (comp);
+			return comp;
 		}
+
 		/*private Behaviour AddComponent (Behaviour comp)
 		{
 		//assign behaviour specific events to scene view
@@ -48,14 +66,14 @@ namespace Sharp
 			return components [comp.GetType()] as Renderer;
 		}*/
 		public void Instatiate(){
-			Instatiate (Vector3.Zero, Vector3.Zero, Vector3.One);
+			SceneView.entities.Add (this);
+			SceneStructureView.RegisterEntity (this);
 		}
 		public void Instatiate(Vector3 pos, Vector3 rot, Vector3 s){
 			scale=s;
 			position=pos;
 			rotation=rot;
-			SceneView.entities.Add (this);
-			SceneStructureView.RegisterEntity (this);
+			Instatiate();
 		}
 		public override string ToString ()
 		{

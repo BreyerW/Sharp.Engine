@@ -19,6 +19,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <PlatformTarget>x86</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -28,6 +29,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <PlatformTarget>x86</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -81,6 +83,10 @@
     <Reference Include="System.Numerics.Vectors">
       <HintPath>..\packages\System.Numerics.Vectors.4.0.0\lib\portable-net45+win8+wpa81\System.Numerics.Vectors.dll</HintPath>
     </Reference>
+    <Reference Include="Migrant">
+      <HintPath>..\packages\Migrant.0.12\lib\net40\Migrant.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -128,6 +134,12 @@
     <Compile Include="Collider.cs" />
     <Compile Include="Sharp.AssetPipeline\AssetPipeline.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Views\View.cs" />
+    <Compile Include="Ray.cs" />
+    <Compile Include="Sharp.CustomVertex\RegisterAsAttribute.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Views\InspectorView.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CustomInspectorAttribute.cs" />
+    <Compile Include="Sharp.Editor\Inpector.cs" />
+    <Compile Include="Sharp.Editor\DefaultInspector.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -149,6 +161,7 @@
     <Folder Include="Sharp.AssetPipeline\" />
     <Folder Include="Sharp.Editor\" />
     <Folder Include="Sharp.Physic\" />
+    <Folder Include="Sharp.CustomVertex\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="InternalShaders\BasicShader.shader" />

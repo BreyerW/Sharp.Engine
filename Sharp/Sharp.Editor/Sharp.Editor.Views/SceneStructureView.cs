@@ -21,7 +21,6 @@ namespace Sharp.Editor.Views
 		public override void OnMouseMove (OpenTK.Input.MouseMoveEventArgs evnt)
 		{
 			base.OnMouseMove (evnt);
-			Console.WriteLine ("moveStructure");
 		}
 	}
 }

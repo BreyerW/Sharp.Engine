@@ -1,12 +1,14 @@
 ﻿using System;
 using OpenTK.Graphics;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace  Sharp
 {
 	public interface IVertex
 	{
-		void RegisterAttributes<T>() where T:struct, IConvertible;
-		//IntPtr CalculateIntPtr ();
+		int Stride{ get;}
 	}
+		
 }
 

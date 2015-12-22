@@ -5,7 +5,7 @@ using Assimp;
 namespace Sharp
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Color<T> where T : IConvertible
+	public struct Color<T> where T : struct, IConvertible
 	{
 		public T r;
 		public T g;

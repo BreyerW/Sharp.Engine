@@ -737,7 +737,6 @@ namespace Gwen.Control
             }
             return null;
         }
-
         /// <summary>
         /// Attaches specified control as a child of this one.
         /// </summary>

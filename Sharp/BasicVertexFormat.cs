@@ -2,27 +2,44 @@
 using System;
 using OpenTK.Graphics.OpenGL;
 using OpenTK;
+using System.Collections.Generic;
 
 namespace Sharp
 {
-	[StructLayout(LayoutKind.Sequential)]
+	[Serializable, StructLayout(LayoutKind.Sequential,Pack=0)]
 	public struct BasicVertexFormat:IVertex
 	{
-		//public static VertexFormat format=VertexFormat.X|VertexFormat.Y|VertexFormat.Z|VertexFormat.COLOR;
+		private readonly static int stride=Marshal.SizeOf(default(BasicVertexFormat));
+		public int Stride{
+			get{ 
+				return stride;
+			}
+		}
 
+		[RegisterAs(VertexAttribute.POSITION,VertexAttribPointerType.Float)]
 		public float X;
+
+		[RegisterAs(VertexAttribute.POSITION,VertexAttribPointerType.Float)]
 		public float Y;
+
+		[RegisterAs(VertexAttribute.POSITION,VertexAttribPointerType.Float)]
 		public float Z;
 
-		//public Color<float> Color;
-
+		[RegisterAs(VertexAttribute.UV,VertexAttribPointerType.Float)]
 		public Vector2 texcoords;
-
-		public void RegisterAttributes<IndexType>() where IndexType :struct, IConvertible {
-			MeshRenderer<IndexType,BasicVertexFormat>.RegisterAttribute (SupportedVertexAttributes.X|SupportedVertexAttributes.Y|SupportedVertexAttributes.Z,VertexAttribPointerType.Float);
-			//MeshRenderer<IndexType,BasicVertexFormat>.RegisterAttribute (SupportedVertexAttributes.COLOR,VertexAttribPointerType.Float);
-			MeshRenderer<IndexType,BasicVertexFormat>.RegisterAttribute (SupportedVertexAttributes.UV,VertexAttribPointerType.Float);
-		}
+		//public Color<float> Color;
 	}
 }
 
+/*public IntPtr ConvertToBytes()
+		{
+			/*unsafe{
+				var target = new byte[stride];
+				fixed(BasicVertexFormat* p=&this) {
+					return (IntPtr)p;
+					/*for (int i = 0; i < stride; i++) {
+						target [i] = *((byte*)p + i);
+					}*
+				}*
+//return target;   
+}*/

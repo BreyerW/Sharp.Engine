@@ -64,7 +64,6 @@ namespace Sharp.Editor.Views
 			//		Selection.assets.Add (asset.Content);
 			
 			//canvas.NeedsRedraw = true;
-			Console.WriteLine ("moveAsstes");
 		}
 		void RecursiveBuildTree(DirectoryInfo dirRoot, Gwen.Control.TreeNode treeIter){
 			foreach (DirectoryInfo di in dirRoot.EnumerateDirectories()) {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Gwen.Control
 {
@@ -93,5 +94,22 @@ namespace Gwen.Control
             if (!m_MultiSelect /*|| InputHandler.InputHandler.IsKeyDown(Key.Control)*/)
                 UnselectAll();
         }
+		public TreeNode FindNodeByContent(object content, bool recursive = false){
+			var b =Children.OfType<TreeNode> ().First(node => node.Content == content);
+			if (b != null)
+				return b;
+			
+			if (recursive)
+			{
+				foreach (TreeNode child in Children)
+				{
+					b = child.TreeControl.FindNodeByContent(content, true);
+					if (b != null)
+						return b;
+				}
+			}
+			return null;
+		
+		}
     }
 }
