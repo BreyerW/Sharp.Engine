@@ -31,7 +31,6 @@ namespace Sharp.Editor.Views
 				var comps= (Selection.assets [0] as Entity).GetAllComponents ();
 					ptree.RemoveAll ();
 				foreach(var component in comps){
-						Console.WriteLine (component.ToString());
 						var prop=ptree.Add (component.GetType().ToString());
 					/*props=component.GetType ().GetProperties ().Where (p => p.CanRead && p.CanWrite);
 					foreach(var prop in props){
