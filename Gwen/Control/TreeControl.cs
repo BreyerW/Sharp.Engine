@@ -95,7 +95,7 @@ namespace Gwen.Control
                 UnselectAll();
         }
 		public TreeNode FindNodeByContent(object content, bool recursive = false){
-			var b =Children.OfType<TreeNode> ().First(node => node.Content == content);
+			var b =Children.OfType<TreeNode> ().First(node => node.Content?.Invoke() == content);
 			if (b != null)
 				return b;
 			

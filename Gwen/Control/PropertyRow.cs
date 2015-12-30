@@ -6,10 +6,10 @@ namespace Gwen.Control
     /// <summary>
     /// Single property row.
     /// </summary>
-    public class PropertyRow : Base
+    public class PropertyRow<T> : Base
     {
         private readonly Label m_Label;
-        private readonly Property.Base m_Property;
+        private readonly Property.Base<T> m_Property;
         private bool m_LastEditing;
         private bool m_LastHover;
 
@@ -26,7 +26,7 @@ namespace Gwen.Control
         /// <summary>
         /// Property value.
         /// </summary>
-        public string Value { get { return m_Property.Value; } set { m_Property.Value = value; } }
+        public T Value { get { return m_Property.Value; } set { m_Property.Value = value; } }
 
         /// <summary>
         /// Indicates whether the control is hovered by mouse pointer.
@@ -49,10 +49,10 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="parent">Parent control.</param>
         /// <param name="prop">Property control associated with this row.</param>
-        public PropertyRow(Base parent, Property.Base prop)
+        public PropertyRow(Base parent, Property.Base<T> prop)
             : base(parent)
         {
-            PropertyRowLabel label = new PropertyRowLabel(this);
+            PropertyRowLabel<T> label = new PropertyRowLabel<T>(this);
             label.Dock = Pos.Left;
             label.Alignment = Pos.Left | Pos.Top;
             label.Margin = new Margin(2, 2, 0, 0);
@@ -96,7 +96,7 @@ namespace Gwen.Control
             Properties parent = Parent as Properties;
             if (null == parent) return;
 
-            m_Label.Width = parent.SplitWidth;
+            m_Label.Width = 70;
 
             if (m_Property != null)
             {

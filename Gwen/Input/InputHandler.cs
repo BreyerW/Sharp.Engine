@@ -324,7 +324,6 @@ namespace Gwen.Input
             if (null == KeyboardFocus) return false;
             if (KeyboardFocus.GetCanvas() != canvas) return false;
             if (!KeyboardFocus.IsVisible) return false;
-
             int iKey = (int)key;
             if (down)
             {
@@ -339,6 +338,7 @@ namespace Gwen.Input
             }
             else
             {
+				
                 if (m_KeyData.KeyState[iKey])
                 {
                     m_KeyData.KeyState[iKey] = false;

@@ -82,7 +82,7 @@ namespace Gwen.Control
         /// Node's label.
         /// </summary>
         public string Text { get { return m_Title.Text; } set { m_Title.Text = value; } }
-		public object Content;
+		public Func<object> Content;
         /// <summary>
         /// Invoked when the node label has been pressed.
         /// </summary>
@@ -220,10 +220,10 @@ namespace Gwen.Control
 
             return node;
         }
-		public TreeNode AddNode(object content)
+		public TreeNode AddNode(Func<object> content)
 		{
 			TreeNode node = new TreeNode(this);
-			node.Text = content.ToString ();
+			node.Text = content().ToString ();
 			node.Content = content;
 			return node;
 		}

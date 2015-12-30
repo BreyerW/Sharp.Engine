@@ -9,6 +9,12 @@ namespace Sharp
 {
 	public static class InputHandler
 	{
+		internal static KeyboardState prevKeyState;
+		internal static KeyboardState curKeyState;
+
+		public static Action<KeyboardKeyEventArgs> OnKeyDown; 
+		public static Action<KeyboardKeyEventArgs> OnKeyUp; 
+
 		internal static MouseState prevMouseState;
 		internal static MouseState curMouseState;
 
@@ -20,30 +26,23 @@ namespace Sharp
 		public static Gwen.Input.OpenTK input=new Gwen.Input.OpenTK();
 
 		static readonly IEnumerable<MouseButton> mouseCodes=typeof(MouseButton).GetEnumValues().Cast<MouseButton>();
+		static readonly IEnumerable<Key> keyboardCodes=typeof(Key).GetEnumValues().Cast<Key>();
 
 		public static void ProcessMouse(int oriX,int oriY){
 			
-			//if (!focused)
-				//return;
 			EventArgs evnt=null;
 			var pressed = false;
-			//if(curMouseState.X > oriX + 1 && curMouseState.X < oriX + canv.Width - 1 && curMouseState.Y > oriY + 1 && curMouseState.Y < oriY + canv.Height - 1)
-			//input.Initialize(canv);
-			//if (!canv.Equals (input.m_Canvas))
-			//	return;
-
-			//Console.WriteLine ("buuu");
 			prevMouseState =curMouseState;
-			curMouseState = Mouse.GetCursorState ();//wrong
+			curMouseState = Mouse.GetCursorState ();
 			foreach(var mouseCode in mouseCodes)
 				if (curMouseState[mouseCode]!=prevMouseState[mouseCode]){
 					evnt = new MouseButtonEventArgs (curMouseState.X - oriX, curMouseState.Y - oriY, mouseCode,true);//last param bugged
 					if (curMouseState [mouseCode]) {
 						pressed = true;
 
-						OnMouseDown ((MouseButtonEventArgs)evnt);
+						OnMouseDown?.Invoke ((MouseButtonEventArgs)evnt);
 					} else {
-						OnMouseUp ((MouseButtonEventArgs)evnt);
+						OnMouseUp?.Invoke ((MouseButtonEventArgs)evnt);
 
 					}
 				}
@@ -51,12 +50,29 @@ namespace Sharp
 			if (Math.Abs (delta.X) > 0 || Math.Abs (delta.Y) > 0) {
 				
 				evnt = new MouseMoveEventArgs (curMouseState.X-oriX, curMouseState.Y-oriY,(int)delta.X,(int)delta.Y);
-				OnMouseMove (evnt as MouseMoveEventArgs);
+				OnMouseMove?.Invoke (evnt as MouseMoveEventArgs);
 			}
 			input.ProcessMouseMessage (evnt,pressed);
 			MainWindow.lastPos = new Vector2 (curMouseState.X, curMouseState.Y);
 		}
-	}
+		public static void ProcessKeyboard(){
+			
+			KeyboardKeyEventArgs evnt=null;
+			prevKeyState = curKeyState;
+			curKeyState = Keyboard.GetState();
 
+			foreach(var keyboardCode in keyboardCodes)
+				if (curKeyState[keyboardCode]!=prevKeyState[keyboardCode]){
+					if (curKeyState[keyboardCode]) {
+						OnKeyDown?.Invoke (evnt);
+
+						input.ProcessKeyDown (keyboardCode);
+					} else {
+						OnKeyUp?.Invoke(evnt);
+						input.ProcessKeyUp (keyboardCode);
+					}
+				}
+		}
+	}
 }
 

@@ -15,11 +15,43 @@ namespace Sharp
 			scale=Vector3.One/20;
 		}*/
 		public Entity parent;
-		public HashSet<Entity> childs;
+		public List<Entity> childs;
 		public string name="Entity Object";
-		public Vector3 position=Vector3.Zero;
-		public Vector3 rotation=Vector3.Zero;
-		public Vector3 scale=Vector3.One;
+		private Vector3 position=Vector3.Zero;
+
+		public Vector3 Position {
+			get {
+				return position;
+			}
+			set {
+				position = value;
+				SetModelMatrix ();
+			}
+		}
+
+		private Vector3 rotation=Vector3.Zero;
+
+		public Vector3 Rotation {
+			get {
+				return rotation;
+			}
+			set {
+				rotation = value;
+				SetModelMatrix ();
+			}
+		}
+
+		private Vector3 scale=Vector3.One;
+
+		public Vector3 Scale {
+			get {
+				return scale;
+			}
+			set {
+				scale = value;
+				SetModelMatrix ();
+			}
+		}
 
 		public Matrix4 ModelMatrix;
 		public Matrix4 MVPMatrix;

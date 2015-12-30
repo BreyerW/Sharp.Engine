@@ -31,10 +31,11 @@ namespace Sharp.Editor.Views
 				foreach (var subclass in subclasses) {
 					subclass.GetCustomAttributes (false);
 				}
+
 				RecursiveBuildTree (root, tree);
 				foreach (FileInfo file in FilterFiles(root,SupportedFileFormatsAttribute.importers.Keys)) {
 					if (!file.Name.StartsWith ("."))
-						tree.AddNode (SupportedFileFormatsAttribute.importers [file.Extension].Import (file.FullName));
+					tree.AddNode (()=>SupportedFileFormatsAttribute.importers [file.Extension].Import (file.FullName));
 				}
 			//tree.Show ();
 		}
@@ -72,7 +73,7 @@ namespace Sharp.Editor.Views
 					foreach (FileInfo file in FilterFiles(di,Sharp.Editor.Attribs.SupportedFileFormatsAttribute.importers.Keys))
 					{
 						if (!file.Name.StartsWith("."))
-							iter.AddNode(SupportedFileFormatsAttribute.importers[file.Extension].Import(file.FullName));
+							iter.AddNode(()=>SupportedFileFormatsAttribute.importers[file.Extension].Import(file.FullName));
 					}
 					RecursiveBuildTree (di, iter);
 				}

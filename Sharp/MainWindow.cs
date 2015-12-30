@@ -32,7 +32,8 @@ public partial class MainWindow: Gtk.Window
 			GdkWindow?.GetOrigin (out oriX,out oriY);
 
 		Sharp.InputHandler.ProcessMouse (oriX, oriY);
-			
+		Sharp.InputHandler.ProcessKeyboard();	
+
 		foreach (var view in View.views)
 			if (view.canvas.IsVisible)
 		if (view.canvas.NeedsRedraw) {
@@ -189,5 +190,10 @@ public partial class MainWindow: Gtk.Window
 	protected void OnGlwidget1ShuttingDown (object sender, EventArgs e)
 	{
 		throw new NotImplementedException ();
+	}
+	[GLib.ConnectBefore]
+	protected void OnGlwidget1KeyPressEvent (object o, Gtk.KeyPressEventArgs args)
+	{
+		//Console.WriteLine(args.Event.Key.ToString ());
 	}
 }

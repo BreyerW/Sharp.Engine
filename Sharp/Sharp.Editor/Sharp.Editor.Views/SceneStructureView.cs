@@ -16,7 +16,8 @@ namespace Sharp.Editor.Views
 			tree.ShouldDrawBackground = false;
 		}
 		public static void RegisterEntity(Entity ent){
-			tree.AddNode (ent);
+			var id=SceneView.entities.IndexOf (ent);
+			tree.AddNode (()=>SceneView.entities[id]);
 		}
 		public override void OnMouseMove (OpenTK.Input.MouseMoveEventArgs evnt)
 		{

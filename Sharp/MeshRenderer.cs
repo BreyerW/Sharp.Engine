@@ -8,6 +8,7 @@ using System.Linq;
 using System.Numerics;
 using Sharp.Editor.Views;
 using System.Reflection;
+using System.Linq.Expressions;
 
 namespace Sharp
 {
@@ -71,37 +72,26 @@ namespace Sharp
 			mesh = (Mesh<IndexType>)meshToRender;
 			var type=typeof(VertexFormat);
 
-			if(!RegisterAsAttribute.registeredVertexFormats.ContainsKey(type)){
-				var fields=type.GetFields ().Where (
-					p => p.GetCustomAttribute<RegisterAsAttribute>()!=null);
-				int? lastFormat=null;
-				var vertFormat = new Dictionary<VertexAttribute,RegisterAsAttribute> ();
-
-				foreach(var field in fields){
-					var attrib=field.GetCustomAttribute<RegisterAsAttribute>();
-					if (lastFormat != (int)attrib.format) {
-
-						lastFormat = (int)attrib.format;
-						attrib.offset = Marshal.OffsetOf<VertexFormat> (field.Name);
-						vertFormat.Add (attrib.format,attrib);
-						if (attrib.format.HasFlag (VertexAttribute.POSITION))
-							renderAction += BindPos;
-						if (attrib.format.HasFlag (VertexAttribute.COLOR))
-							renderAction += BindColor;
-						if (attrib.format.HasFlag (VertexAttribute.UV)) {
-							renderAction += BindUV;
-						}
-						if (attrib.format.HasFlag (VertexAttribute.NORMAL))
-							renderAction += BindNormal;
-					} else if (attrib.format == VertexAttribute.POSITION)
-						dim++; //error prone
-					else if (attrib.format == VertexAttribute.UV)
-						numOfUV++;
-				}
-				RegisterAsAttribute.registeredVertexFormats.Add (type,vertFormat);
+			if(!RegisterAsAttribute.registeredVertexFormats.ContainsKey(type))
+				RegisterAsAttribute.ParseVertexFormat (type);
+			
+			if (RegisterAsAttribute.registeredVertexFormats [type].ContainsKey (VertexAttribute.POSITION)) {
+				renderAction += BindPos;
+				dim=RegisterAsAttribute.registeredVertexFormats [type] [VertexAttribute.POSITION].generatedFillers.Count;
+				Console.WriteLine ("numofverts"+mesh.Vertices.Cast<BasicVertexFormat>().ToArray()[1].X+" "+mesh.Vertices.Cast<BasicVertexFormat>().ToArray()[10].X);
 			}
+			if (RegisterAsAttribute.registeredVertexFormats[type].ContainsKey (VertexAttribute.COLOR))
+				renderAction += BindColor;
+			if (RegisterAsAttribute.registeredVertexFormats[type].ContainsKey (VertexAttribute.UV)) {
+				renderAction += BindUV;
+				numOfUV = RegisterAsAttribute.registeredVertexFormats [type] [VertexAttribute.UV].generatedFillers.Count;
+			}
+			if (RegisterAsAttribute.registeredVertexFormats[type].ContainsKey (VertexAttribute.NORMAL))
+				renderAction += BindNormal;
+			
 				Allocate ();
 		}
+
 		private void Allocate(){
 			//if (IsLoaded) return;
 			//VBO

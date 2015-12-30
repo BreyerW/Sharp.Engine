@@ -5,7 +5,7 @@ namespace Gwen.Control.Property
     /// <summary>
     /// Checkable property.
     /// </summary>
-    public class Check : Base
+    public class Check : Base<bool>
     {
         protected readonly Control.CheckBox m_CheckBox;
 
@@ -29,9 +29,9 @@ namespace Gwen.Control.Property
         /// <summary>
         /// Property value.
         /// </summary>
-        public override string Value
+        public override bool Value
         {
-            get { return m_CheckBox.IsChecked ? "1" : "0"; }
+			get { return m_CheckBox.IsChecked;}
             set { base.Value = value; }
         }
 
@@ -40,17 +40,10 @@ namespace Gwen.Control.Property
         /// </summary>
         /// <param name="value">Value to set.</param>
         /// <param name="fireEvents">Determines whether to fire "value changed" event.</param>
-        public override void SetValue(string value, bool fireEvents = false)
-        {
-            if (value == "1" || value.ToLower() == "true" || value.ToLower() == "yes")
-            {
-                m_CheckBox.IsChecked = true;
-            }
-            else
-            {
-                m_CheckBox.IsChecked = false;
-            }
-        }
+		public override void SetValue (bool value, bool fireEvents = false)
+		{
+			m_CheckBox.IsChecked = value;
+		}
 
         /// <summary>
         /// Indicates whether the property value is being edited.

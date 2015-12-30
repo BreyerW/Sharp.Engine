@@ -6,8 +6,8 @@ using OpenTK;
 
 namespace Sharp.Editor
 {
-	[CustomInspector(typeof(object))]
-	public class DefaultInspector:Inpector
+	//[CustomInspector(typeof(object))]
+	public class DefaultInspector:Inpector<object>
 	{
 		public DefaultInspector ()
 		{

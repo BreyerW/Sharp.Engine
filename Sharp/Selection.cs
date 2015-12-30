@@ -7,8 +7,7 @@ namespace Sharp
 {
 	public static class Selection
 	{
-		private static MemoryStream inspectedObj;
-		public static List<object> assets=new List<object>();
+		public static Stack<Func<object>> assets=new Stack<Func<object>>();
 		public static bool isDragging=false;
 	}
 }

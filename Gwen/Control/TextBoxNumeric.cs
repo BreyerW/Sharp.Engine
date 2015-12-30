@@ -19,7 +19,7 @@ namespace Gwen.Control
         public TextBoxNumeric(Base parent) : base(parent)
         {
 			AutoSizeToContents = false;
-            SetText("0", false);
+            SetText(0, false);
         }
 
         protected virtual bool IsTextAllowed(string str)
@@ -67,7 +67,7 @@ namespace Gwen.Control
                 //SetText("0");
             }
             else
-                m_Value = float.Parse(Text);
+				m_Value = float.Parse(Text,System.Globalization.NumberStyles.Any);
             base.OnTextChanged();
         }
 
@@ -81,5 +81,14 @@ namespace Gwen.Control
             if (IsTextAllowed(str))
                 base.SetText(str, doEvents);
         }
+		/// <summary>
+		/// Sets the control text.
+		/// </summary>
+		/// <param name="number">Number to set as text.</param>
+		/// <param name="doEvents">Determines whether to invoke "text changed" event.</param>
+		public void SetText(float number, bool doEvents = true)
+		{
+			base.SetText(number.ToString(), doEvents);
+		}
     }
 }

@@ -21,7 +21,7 @@ namespace Sharp.Editor.Views
 		private int cell_size = 32;
 		private int grid_size = 4096;
 
-		public static HashSet<Entity> entities=new HashSet<Entity>();
+		public static List<Entity> entities=new List<Entity>();
 		//public static Scene physScene;
 		//public static Physics physEngine;
 
@@ -49,7 +49,7 @@ namespace Sharp.Editor.Views
 			//physScene = physEngine.CreateScene ();
 
 			var e = new Entity ();
-			e.rotation = new Vector3 ((float)Math.PI, 0f, 0f);
+			e.Rotation = new Vector3 ((float)Math.PI, 0f, 0f);
 			var cam=e.AddComponent<Camera> ();
 			cam.SetModelviewMatrix ();
 			cam.SetProjectionMatrix ();
@@ -89,15 +89,15 @@ namespace Sharp.Editor.Views
 			var projMat=Camera.main.modelViewMatrix*Camera.main.projectionMatrix;
 			GL.LoadMatrix(ref projMat);
 			GL.PushMatrix ();
-			DrawHelper.DrawGrid(System.Drawing.Color.GhostWhite,Camera.main.entityObject.position, cell_size, grid_size);
+			DrawHelper.DrawGrid(System.Drawing.Color.GhostWhite,Camera.main.entityObject.Position, cell_size, grid_size);
 			GL.PopMatrix ();
-			if (OnRenderFrame != null) {
-				OnRenderFrame ();
-			}
+
+			OnRenderFrame?.Invoke ();
 				
 			if (SceneStructureView.tree.SelectedChildren.Any()) {
 				foreach (var selected in SceneStructureView.tree.SelectedChildren) {
-					var entity = selected.Content as Entity;
+					var entity = selected.Content() as Entity;
+
 					GL.LoadMatrix (ref entity.MVPMatrix);
 					GL.PushMatrix ();
 					//var tmpMat =mesh.ModelMatrix* Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
@@ -124,9 +124,7 @@ namespace Sharp.Editor.Views
 		}
 		public override void OnResize(int width, int height){
 			
-			if (OnSetupMatrices != null) {
-				OnSetupMatrices ();
-			}
+			OnSetupMatrices?.Invoke ();
 			base.OnResize(width,height);
 			if (Camera.main != null && height != 0) {
 				Camera.main.AspectRatio = (float)(canvas.Width / (float)canvas.Height);
@@ -139,7 +137,10 @@ namespace Sharp.Editor.Views
 				canvas.NeedsRedraw = true;
 				Camera.main.moved = false;
 				Camera.main.SetModelviewMatrix ();
+
 			}
+			//if (!canvas.IsHovered)
+				//return;
 			if (evnt[OpenTK.Input.Key.Q]) 
 				Camera.main.Move (0f, 1f, 0f,0.1f);
 			if (evnt[OpenTK.Input.Key.E])
@@ -152,9 +153,7 @@ namespace Sharp.Editor.Views
 				Camera.main.Move(0f, 0f, -1f,0.1f);
 			if (evnt[OpenTK.Input.Key.S])
 				Camera.main.Move(0f, 0f, 1f,0.1f);
-			if(SceneView.OnSetupMatrices!=null)
-				SceneView.OnSetupMatrices ();
-			
+			SceneView.OnSetupMatrices?.Invoke ();
 		}
 		public static double AngleBetween(Vector3 vector1, Vector3 vector2)
 		{
@@ -168,23 +167,23 @@ namespace Sharp.Editor.Views
 		{
 			//scene.SetupMatrices ();
 			if (mouseLocked) {
-				if(normalizedMoveDir==Vector3.Zero)
-				Camera.main.Rotate ((float)evnt.XDelta, (float)evnt.YDelta, 0.3f);//maybe divide delta by fov?
-				else{
+				if (normalizedMoveDir == Vector3.Zero) {
+					Camera.main.Rotate ((float)evnt.XDelta, (float)evnt.YDelta, 0.3f);//maybe divide delta by fov?
+					SceneView.OnSetupMatrices?.Invoke ();
+				}else{
 					var deltaDir = new Vector2 ((float)evnt.XDelta, (float)evnt.YDelta).Normalized();
 					var screenDir = Camera.main.WorldToScreen (normalizedMoveDir,canvas.Width,canvas.Height);
 					var angle=Vector2.Dot(deltaDir,screenDir.Xy.Normalized());
 					if(evnt.XDelta!=0 && evnt.YDelta!=0)
 					foreach (var selected in SceneStructureView.tree.SelectedChildren)
 					{
-						var entity = selected.Content as Entity;
+						var entity = selected.Content() as Entity;
 
 						Console.WriteLine (evnt.XDelta);
 						if((angle>=-1 && angle<=0))
-							entity.position +=normalizedMoveDir*deltaDir.LengthFast;
+							entity.Position +=normalizedMoveDir*deltaDir.LengthFast;
 						else
-							entity.position -=normalizedMoveDir*deltaDir.LengthFast;
-						entity.SetModelMatrix();
+							entity.Position -=normalizedMoveDir*deltaDir.LengthFast;
 					}
 				}
 				MainWindow.focusedView=this;
@@ -197,14 +196,14 @@ namespace Sharp.Editor.Views
 			} else if (evnt.Button == MouseButton.Left) {
 				mouseLocked = true;
 				var locPos = canvas.CanvasPosToLocal (evnt.Position);
-				var orig = Camera.main.entityObject.position;
+				var orig = Camera.main.entityObject.Position;
 				var end = Camera.main.ScreenToWorld (locPos.X, locPos.Y, canvas.Width, canvas.Height);
 				var ray = new Ray (orig, (end - orig).Normalized ());
 				var intersectPoint = Vector3.Zero;
 				var zero = Vector3.Zero;
 				if (SceneStructureView.tree.SelectedChildren.Any ())
 					foreach (var selected in SceneStructureView.tree.SelectedChildren) {
-						var entity = selected.Content as Entity;
+						var entity = selected.Content() as Entity;
 						dynamic render = entity.GetComponent (typeof(MeshRenderer<,>));
 
 						if (render != null && BoundingBox.Intersect (ref ray, ref zero, 30, ref entity.ModelMatrix, out intersectPoint)) {
@@ -222,12 +221,11 @@ namespace Sharp.Editor.Views
 					var eObject = new Entity ();
 					var locPos = canvas.CanvasPosToLocal (args.Position);
 					Camera.main.SetModelviewMatrix ();
-					var orig =Camera.main.entityObject.position;
+					var orig =Camera.main.entityObject.Position;
 					var dir = (Camera.main.ScreenToWorld (locPos.X, locPos.Y, canvas.Width, canvas.Height)-orig).Normalized ();
-					eObject.position =orig+dir*Camera.main.ZFar*0.333f;
-					eObject.SetModelMatrix ();
-					if (asset.Content.GetType().GetGenericTypeDefinition() == typeof(Mesh<>)) {
-						var mesh=(IAsset)asset.Content;
+					eObject.Position =orig+dir*Camera.main.ZFar*0.333f;
+					if (asset.Content().GetType().GetGenericTypeDefinition() == typeof(Mesh<>)) {
+						var mesh=asset.Content() as IAsset;
 						var renderer = eObject.AddComponent (new MeshRenderer<ushort,BasicVertexFormat> (mesh)) as MeshRenderer<ushort,BasicVertexFormat>;
 						 //FromMatrix (scene.RootNode.Transform);
 						renderer.material.shaderId = Shader.shaders ["BasicShader"].Program;
@@ -239,15 +237,15 @@ namespace Sharp.Editor.Views
 				AssetsView.isDragging = false;
 			} else if (args.Button == MouseButton.Left) {
 				var locPos = canvas.CanvasPosToLocal (args.Position);
-				var orig =Camera.main.entityObject.position;
+				var orig =Camera.main.entityObject.Position;
 				var end = Camera.main.ScreenToWorld (locPos.X,locPos.Y, canvas.Width, canvas.Height);
 				var ray = new Ray (orig, (end-orig).Normalized());
 				foreach (var ent in entities) {
 					dynamic render = ent.GetComponent(typeof(MeshRenderer<,>));
 						if (render != null && render.mesh.bounds.Intersect(ref ray, ref ent.ModelMatrix)) {
-							Console.WriteLine ("bum");
-							Selection.assets.Clear ();
-							Selection.assets.Add (ent);
+						var id = entities.IndexOf (ent);
+						Selection.assets.Push(()=>entities[id]);
+							//Selection.assets.Add (ent);
 						SceneStructureView.tree.UnselectAll ();
 						SceneStructureView.tree.FindNodeByContent (ent).IsSelected=true;
 							canvas.NeedsRedraw = true;

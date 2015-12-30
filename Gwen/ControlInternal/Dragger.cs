@@ -73,7 +73,6 @@ namespace Gwen.ControlInternal
             if (!m_Held) return;
 
             Point p = new Point(x - m_HoldPos.X, y - m_HoldPos.Y);
-
             // Translate to parent
             if (m_Target.Parent != null)
                 p = m_Target.Parent.CanvasPosToLocal(p);

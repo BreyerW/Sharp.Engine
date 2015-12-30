@@ -15,7 +15,6 @@ namespace Sharp
 				return stride;
 			}
 		}
-
 		[RegisterAs(VertexAttribute.POSITION,VertexAttribPointerType.Float)]
 		public float X;
 

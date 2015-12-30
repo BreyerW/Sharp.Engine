@@ -5,7 +5,7 @@ namespace Gwen.Control.Property
     /// <summary>
     /// Text property.
     /// </summary>
-    public class Text : Base
+	public class Text : Base<string>
     {
         protected readonly TextBox m_TextBox;
 

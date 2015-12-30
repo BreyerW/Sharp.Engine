@@ -15,58 +15,57 @@ namespace Sharp.AssetPipeline
 		public static readonly MeshPipeline singleton=new MeshPipeline();
 
 		private static BoundingBox bounds;
-
-		public static IVertex[] FillVertexData(Assimp.Mesh mesh, BasicVertexFormat baseVertData){
-			var vertDatas = new List<IVertex> (mesh.VertexCount);
-
-			var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-			var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-
-			for (int i = 0; i < mesh.VertexCount; i++) {
-				baseVertData.X = mesh.Vertices [i].X;
-				baseVertData.Y = mesh.Vertices [i].Y;
-				baseVertData.Z = mesh.Vertices [i].Z;
-				var tmpVec = new Vector3 (mesh.Vertices [i].X, mesh.Vertices [i].Y, mesh.Vertices [i].Z);
-				//Console.WriteLine ((maxtmpVec));
-				min = Vector3.ComponentMin(min, tmpVec);
-				max = Vector3.ComponentMax(max, tmpVec);
-				if (mesh.HasVertexColors (0)) {
-					//baseVertData.Color.r = mesh.VertexColorChannels [0] [i].R;
-					//baseVertData.Color.g = mesh.VertexColorChannels [0] [i].G;
-					//baseVertData.Color.b = mesh.VertexColorChannels [0] [i].B;
-					//baseVertData.Color.a = mesh.VertexColorChannels [0] [i].A;
-				} else
-					//baseVertData.Color = new Color<float> (1, 1, 1, 1);
-				if (mesh.HasTextureCoords (0)) {
-					baseVertData.texcoords.X = mesh.TextureCoordinateChannels [0] [i].X;
-					baseVertData.texcoords.Y =1- mesh.TextureCoordinateChannels [0] [i].Y;
-				}
-				vertDatas.Add (baseVertData);
-			}
-			bounds = new BoundingBox (min,max);
-
-			return vertDatas.ToArray();
-		}
-		public static Func<Assimp.Mesh,BasicVertexFormat,IVertex[]> onFillVertexData=FillVertexData;
+		public static Func<IVertex> vertex=()=>new BasicVertexFormat();
 
 		public override IAsset Import (string pathToFile)
 		{
 			var format = Path.GetExtension (pathToFile);
 			//if (!SupportedFileFormatsAttribute.supportedFileFormats.Contains (format))
 				//throw new NotSupportedException (format+" format is not supported");
-			
+			var vertexType=vertex().GetType();
 			var asset = new AssimpContext ();
 			var scene=asset.ImportFile (pathToFile,PostProcessPreset.TargetRealTimeMaximumQuality);
 			var internalMesh = new Sharp.Mesh<ushort> ();
 			internalMesh.FullPath = pathToFile;
-
+			if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey (vertexType))
+				RegisterAsAttribute.ParseVertexFormat (vertexType);
+			
 			foreach (var mesh in scene.Meshes) {
 				//Console.WriteLine ("indices : "+ mesh.GetUnsignedIndices());
 				//mesh.MaterialIndex
 				internalMesh.Indices=new ushort[mesh.VertexCount*3];
 				internalMesh.Indices=(ushort[])(object)mesh.GetShortIndices();
-				internalMesh.Vertices=onFillVertexData (mesh, new BasicVertexFormat ());
 
+				var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+				var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+				internalMesh.Vertices=new IVertex[mesh.VertexCount];
+
+				for (int i = 0; i < mesh.VertexCount; i++) {
+					internalMesh.Vertices [i] = vertex();
+					var tmpVec = new Vector3 (mesh.Vertices [i].X, mesh.Vertices [i].Y, mesh.Vertices [i].Z);
+					//Console.WriteLine ((maxtmpVec));
+					min = Vector3.ComponentMin(min, tmpVec);
+					max = Vector3.ComponentMax(max, tmpVec);
+					if (mesh.HasVertices && RegisterAsAttribute.registeredVertexFormats [vertexType].ContainsKey (VertexAttribute.POSITION)) {
+						if (RegisterAsAttribute.registeredVertexFormats [vertexType] [VertexAttribute.POSITION].generatedFillers.Count > 1) {
+							RegisterAsAttribute.registeredVertexFormats [vertexType] [VertexAttribute.POSITION].generatedFillers[0] (internalMesh.Vertices [i],mesh.Vertices [i].X);
+							RegisterAsAttribute.registeredVertexFormats [vertexType] [VertexAttribute.POSITION].generatedFillers[1] (internalMesh.Vertices [i],mesh.Vertices [i].Y);
+							RegisterAsAttribute.registeredVertexFormats [vertexType] [VertexAttribute.POSITION].generatedFillers[2] (internalMesh.Vertices [i],mesh.Vertices [i].Z);
+						}
+					}
+					if (mesh.HasVertexColors (0) && RegisterAsAttribute.registeredVertexFormats[vertexType].ContainsKey(VertexAttribute.COLOR)) {
+						//baseVertData.Color.r = mesh.VertexColorChannels [0] [i].R;
+						//baseVertData.Color.g = mesh.VertexColorChannels [0] [i].G;
+						//baseVertData.Color.b = mesh.VertexColorChannels [0] [i].B;
+						//baseVertData.Color.a = mesh.VertexColorChannels [0] [i].A;
+					}
+					if (mesh.HasTextureCoords (0) && RegisterAsAttribute.registeredVertexFormats[vertexType].ContainsKey(VertexAttribute.UV)) {
+						if (RegisterAsAttribute.registeredVertexFormats [vertexType] [VertexAttribute.UV].generatedFillers.Count > 1){}
+						else
+							RegisterAsAttribute.registeredVertexFormats [vertexType] [VertexAttribute.UV].generatedFillers[0] (internalMesh.Vertices [i],new Vector2(mesh.TextureCoordinateChannels [0] [i].X,1- mesh.TextureCoordinateChannels [0] [i].Y));
+					}
+				}
+				bounds = new BoundingBox (min,max);
 				internalMesh.UsageHint = OpenTK.Graphics.OpenGL.BufferUsageHint.DynamicDraw;
 			}
 			internalMesh.bounds = bounds;

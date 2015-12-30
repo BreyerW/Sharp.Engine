@@ -48,6 +48,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="OpenTK">
+      <HintPath>..\packages\OpenTK.1.1.1589.5942\lib\NET40\OpenTK.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Align.cs" />
@@ -171,6 +174,7 @@
     <Compile Include="Skin\Base.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Control\MultiVerticalSplitter.cs" />
+    <Compile Include="Control\Property\Vector3.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
@@ -187,4 +191,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>

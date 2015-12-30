@@ -78,10 +78,19 @@ namespace Gwen.Input
         /// <param name="key">OpenTK key code.</param>
         /// <returns>Translated character.</returns>
         private static char TranslateChar(global::OpenTK.Input.Key key)
-        {
-            if (key >= global::OpenTK.Input.Key.A && key <= global::OpenTK.Input.Key.Z)
-                return (char)('a' + ((int)key - (int) global::OpenTK.Input.Key.A));
-            return ' ';
+		{
+			if (key >= global::OpenTK.Input.Key.A && key <= global::OpenTK.Input.Key.Z)
+				return (char)('a' + ((int)key - (int)global::OpenTK.Input.Key.A));
+			else if (key >= global::OpenTK.Input.Key.Number0 && key <= global::OpenTK.Input.Key.Number9)
+				return (char)('0' + ((int)key - (int)global::OpenTK.Input.Key.Number0));
+			else if (key == global::OpenTK.Input.Key.BackSpace)
+				return (char)8;
+			else
+				switch (key) {
+					case global::OpenTK.Input.Key.Period: return '.';
+					case global::OpenTK.Input.Key.Comma: return ',';	
+			}
+			return char.MinValue;
         }
 
 		public bool ProcessMouseMessage(EventArgs args,bool pressed=false)
@@ -125,36 +134,31 @@ namespace Gwen.Input
         }
 
 
-        public bool ProcessKeyDown(EventArgs args)
+		public bool ProcessKeyDown(global::OpenTK.Input.Key args)
         {
-            KeyboardKeyEventArgs ev = args as KeyboardKeyEventArgs;
-            char ch = TranslateChar(ev.Key);
-
-            if (InputHandler.DoSpecialKeys(m_Canvas, ch))
+           // KeyboardKeyEventArgs ev = args as KeyboardKeyEventArgs;
+            char ch = TranslateChar(args);
+			(InputHandler.KeyboardFocus ?? InputHandler.MouseFocus).GetCanvas().Input_Character(ch);
+			Console.WriteLine (ch);
+			if (InputHandler.DoSpecialKeys((InputHandler.KeyboardFocus ?? InputHandler.MouseFocus).GetCanvas(), ch))
                 return false;
-            /*
-            if (ch != ' ')
-            {
-                m_Canvas.Input_Character(ch);
-            }
-            */
-            Key iKey = TranslateKeyCode(ev.Key);
+			
+            Key iKey = TranslateKeyCode(args);
 
-            return m_Canvas.Input_Key(iKey, true);
+			return (InputHandler.KeyboardFocus ?? InputHandler.MouseFocus).GetCanvas().Input_Key(iKey, true);
         }
 
-        public bool ProcessKeyUp(EventArgs args)
+		public bool ProcessKeyUp(global::OpenTK.Input.Key args)
         {
-            KeyboardKeyEventArgs ev = args as KeyboardKeyEventArgs;
 
-            char ch = TranslateChar(ev.Key);
+           // char ch = TranslateChar(args);
+			//m_Canvas.Input_Character(ch);
+			Key iKey = TranslateKeyCode(args);
 
-            Key iKey = TranslateKeyCode(ev.Key);
-
-            return m_Canvas.Input_Key(iKey, false);
+			return (InputHandler.KeyboardFocus ?? InputHandler.MouseFocus).GetCanvas().Input_Key(iKey, false);
         }
 
-        public void KeyPress(object sender, KeyPressEventArgs e)
+        public void KeyPress(KeyPressEventArgs e)
         {
             m_Canvas.Input_Character(e.KeyChar);   
         }

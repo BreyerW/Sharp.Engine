@@ -10,11 +10,13 @@ public partial class MainWindow
 		global::Stetic.Gui.Initialize (this);
 		// Widget MainWindow
 		this.HeightRequest = 100;
+		this.CanFocus = true;
 		this.Name = "MainWindow";
 		this.Title = global::Mono.Unix.Catalog.GetString ("MainWindow");
 		this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 		// Container child MainWindow.Gtk.Container+ContainerChild
 		this.glwidget1 = new global::Gtk.GLWidget ();
+		this.glwidget1.CanFocus = true;
 		this.glwidget1.Name = "glwidget1";
 		this.glwidget1.SingleBuffer = false;
 		this.glwidget1.ColorBPP = 0;
@@ -35,5 +37,6 @@ public partial class MainWindow
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler (this.OnDeleteEvent);
 		this.glwidget1.RenderFrame += new global::System.EventHandler (this.OnGlwidget1RenderFrame);
 		this.glwidget1.Initialized += new global::System.EventHandler (this.OnGlwidget1Initialized);
+		this.glwidget1.KeyPressEvent += new global::Gtk.KeyPressEventHandler (this.OnGlwidget1KeyPressEvent);
 	}
 }

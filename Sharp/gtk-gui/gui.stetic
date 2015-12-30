@@ -11,12 +11,14 @@
   <widget class="Gtk.Window" id="MainWindow" design-size="400 300">
     <property name="MemberName" />
     <property name="HeightRequest">100</property>
+    <property name="CanFocus">True</property>
     <property name="Title" translatable="yes">MainWindow</property>
     <property name="WindowPosition">CenterOnParent</property>
     <signal name="DeleteEvent" handler="OnDeleteEvent" />
     <child>
       <widget class="Gtk.GLWidget" id="glwidget1">
         <property name="MemberName" />
+        <property name="CanFocus">True</property>
         <property name="SingleBuffer">False</property>
         <property name="ColorBPP">0</property>
         <property name="AccumulatorBPP">0</property>
@@ -28,6 +30,7 @@
         <property name="GlVersionMinor">0</property>
         <signal name="RenderFrame" handler="OnGlwidget1RenderFrame" />
         <signal name="Initialized" handler="OnGlwidget1Initialized" />
+        <signal name="KeyPressEvent" handler="OnGlwidget1KeyPressEvent" />
       </widget>
     </child>
   </widget>

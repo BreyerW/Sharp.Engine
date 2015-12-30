@@ -64,9 +64,9 @@ public CamMode CameraMode=CamMode.FlightCamera;
 public void Update()
 {
 
-	if (TargetPosition !=entityObject.position)
+	if (TargetPosition !=entityObject.Position)
 	{
-		entityObject.position = Vector3.Lerp(entityObject.position, TargetPosition, 1);
+		entityObject.Position = Vector3.Lerp(entityObject.Position, TargetPosition, 1);
 	}
 }
 
@@ -77,8 +77,8 @@ public void SetProjectionMatrix()
 
 public void SetModelviewMatrix()
 {
-	var translationMatrix = Matrix4.CreateTranslation(-entityObject.position);
-			var rotationMatrix = Matrix4.CreateFromQuaternion(ToQuaterion(entityObject.rotation));
+	var translationMatrix = Matrix4.CreateTranslation(-entityObject.Position);
+			var rotationMatrix = Matrix4.CreateFromQuaternion(ToQuaterion(entityObject.Rotation));
 			//modelViewMatrix = rotationMatrix*translationMatrix; orbit 
 			modelViewMatrix = translationMatrix*rotationMatrix; //pan
 }
@@ -191,15 +191,17 @@ public void SetCameraMode(CamMode mode)
 /// </summary>
 protected void ClampMouseValues()
 {
-			if (entityObject.rotation.Y >=360) //360 degrees in radians (or something in radians)
-				entityObject.rotation.Y-= 360;
-			if (entityObject.rotation.Y <= -360)
-				entityObject.rotation.Y += 360;
+			var newRot = new Vector3 (entityObject.Rotation);
+			if (newRot.Y >=360) //360 degrees in radians (or something in radians)
+				newRot.Y-= 360;
+			if (newRot.Y <= -360)
+				newRot.Y += 360;
 			
-			if (entityObject.rotation.X >=360) //360 degrees in radians (or something in radians)
-				entityObject.rotation.X-= 360;
-			if (entityObject.rotation.X <= -360)
-				entityObject.rotation.X += 360;
+			if (newRot.X >=360) //360 degrees in radians (or something in radians)
+				newRot.X-= 360;
+			if (newRot.X <= -360)
+				newRot.X+= 360;
+			entityObject.Rotation = newRot;
 	/*if (MouseRotation.Y >= 6.28) //360 degrees in radians (or something in radians)
 		MouseRotation.Y-= 6.28f;
 	if (MouseRotation.Y <= -6.28)
@@ -218,12 +220,13 @@ protected void ClampMouseValues()
 /// </param>
 public void Rotate(float x, float y, float time=1)
 {
-			entityObject.rotation.X +=(x * MouseXSensitivity * time);
-			entityObject.rotation.Y +=(y * MouseYSensitivity * time);
+			var newRot = new Vector3 (entityObject.Rotation);
+			newRot.X +=(x * MouseXSensitivity * time);
+			newRot.Y +=(y * MouseYSensitivity * time);
+			entityObject.Rotation = newRot;
+			SetModelviewMatrix ();
 	//Console.WriteLine("Rotation={0}", MouseRotation);
 	//ClampMouseValues();
-
-	SetModelviewMatrix ();
 			if(frustum!=null)
 	frustum.Update (Camera.main.modelViewMatrix*Camera.main.projectionMatrix);
 	//ResetMouse();
@@ -251,13 +254,13 @@ public void Move(float x, float y,float z, float time=1f)
 	}
 	if (CameraMode == CamMode.FirstPerson)
 	{
-				TargetPosition += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.rotation)));
+				TargetPosition += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.Rotation)));
 		TargetPosition = new Vector3(TargetPosition.X, 5, TargetPosition.Z);
 	}
 	else
-				TargetPosition += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.rotation)));
+				TargetPosition += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.Rotation)));
 	if (CameraMode != CamMode.FlightCamera)
-		entityObject.position = TargetPosition;
+		entityObject.Position = TargetPosition;
 	
 	SetModelviewMatrix ();
 	SetProjectionMatrix ();

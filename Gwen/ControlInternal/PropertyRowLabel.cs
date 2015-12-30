@@ -6,15 +6,15 @@ namespace Gwen.ControlInternal
     /// <summary>
     /// Label for PropertyRow.
     /// </summary>
-    public class PropertyRowLabel : Label
+    public class PropertyRowLabel<T> : Label
     {
-        private readonly PropertyRow m_PropertyRow;
+        private readonly PropertyRow<T> m_PropertyRow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyRowLabel"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public PropertyRowLabel(PropertyRow parent) : base(parent)
+        public PropertyRowLabel(PropertyRow<T> parent) : base(parent)
         {
 			AutoSizeToContents = false;
             Alignment = Pos.Left | Pos.CenterV;

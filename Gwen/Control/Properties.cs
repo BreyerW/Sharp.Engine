@@ -9,12 +9,12 @@ namespace Gwen.Control
     /// </summary>
     public class Properties : Base
     {
-        private readonly SplitterBar m_SplitterBar;
+        //private readonly SplitterBar m_SplitterBar;
 
         /// <summary>
         /// Returns the width of the first column (property names).
         /// </summary>
-        public int SplitWidth { get { return m_SplitterBar.X; } } // todo: rename?
+        //public int SplitWidth { get { return m_SplitterBar.X; } } // todo: rename?
 
         /// <summary>
         /// Invoked when a property value has been changed.
@@ -28,11 +28,11 @@ namespace Gwen.Control
         public Properties(Base parent)
             : base(parent)
         {
-            m_SplitterBar = new SplitterBar(this);
-            m_SplitterBar.SetPosition(80, 0);
-            m_SplitterBar.Cursor = Cursors.SizeWE;
-            m_SplitterBar.Dragged += OnSplitterMoved;
-            m_SplitterBar.ShouldDrawBackground = false;
+            //m_SplitterBar = new SplitterBar(this);
+           // m_SplitterBar.SetPosition(80, 0);
+           // m_SplitterBar.Cursor = Cursors.SizeWE;
+            //m_SplitterBar.Dragged += OnSplitterMoved;
+           // m_SplitterBar.ShouldDrawBackground = false;
         }
 
         /// <summary>
@@ -41,14 +41,14 @@ namespace Gwen.Control
         /// <param name="skin">Skin to use.</param>
         protected override void PostLayout(Skin.Base skin)
         {
-            m_SplitterBar.Height = 0;
+           // m_SplitterBar.Height = 0;
 
             if (SizeToChildren(false, true))
             {
                 InvalidateParent();
             }
 
-            m_SplitterBar.SetSize(3, Height);
+           // m_SplitterBar.SetSize(3, Height);
         }
 
         /// <summary>
@@ -66,9 +66,9 @@ namespace Gwen.Control
         /// <param name="label">Property name.</param>
         /// <param name="value">Initial value.</param>
         /// <returns>Newly created row.</returns>
-        public PropertyRow Add(string label, string value="")
+		public PropertyRow<string> Add(string label, string value="")
         {
-            return Add(label, new Property.Text(this), value);
+			return Add<string>(label, new Property.Text(this), value);
         }
 
         /// <summary>
@@ -78,16 +78,16 @@ namespace Gwen.Control
         /// <param name="prop">Property control.</param>
         /// <param name="value">Initial value.</param>
         /// <returns>Newly created row.</returns>
-        public PropertyRow Add(string label, Property.Base prop, string value="")
+		public PropertyRow<T> Add<T>(string label, Property.Base<T> prop, T value=default(T))
         {
-            PropertyRow row = new PropertyRow(this, prop);
+            PropertyRow<T> row = new PropertyRow<T>(this, prop);
             row.Dock = Pos.Top;
             row.Label = label;
             row.ValueChanged += OnRowValueChanged;
 
             prop.SetValue(value, true);
 
-            m_SplitterBar.BringToFront();
+           // m_SplitterBar.BringToFront();
             return row;
         }
 

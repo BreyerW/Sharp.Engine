@@ -4,12 +4,14 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Gwen.Control;
+using OpenTK;
+using OpenTK.Input;
 
 namespace Sharp.Editor.Views
 {
 	public class InspectorView:View
 	{
-		private object lastInspectedObj=null;
+		private Func<object> lastInspectedObj=null;
 		private PropertyTree ptree;
 		public InspectorView ()
 		{
@@ -20,18 +22,25 @@ namespace Sharp.Editor.Views
 			base.Initialize ();
 			ptree=new PropertyTree (canvas);
 			ptree.SetBounds(0, 0, 200, 200);
+			ptree.ShouldDrawBackground = false;
 		}
 		public override void Render ()
 		{
 			base.Render ();
-			if (Selection.assets.Count>0 && Selection.assets[0] != lastInspectedObj) {
-				lastInspectedObj = Selection.assets [0];
+			if (Selection.assets.Count>0 && Selection.assets.Peek() != lastInspectedObj) {
+				lastInspectedObj = Selection.assets.Peek();
 			IEnumerable<PropertyInfo> props;
-			if (Selection.assets [0] is Entity) {
-				var comps= (Selection.assets [0] as Entity).GetAllComponents ();
+				if (Selection.assets.Peek()() is Entity) {
+					var entity = Selection.assets.Peek()() as Entity;
+					var comps= entity.GetAllComponents ();
 					ptree.RemoveAll ();
+					var prop=ptree.Add ("Transform");
+					prop.Add ("Position:",new Gwen.Control.Property.Vector3(prop),entity.Position).ValueChanged+=(o,arg)=>{var tmpObj=o as PropertyRow<Vector3>; entity.Position=tmpObj.Value;};
+					prop.Add ("Rotation:",new Gwen.Control.Property.Vector3(prop),entity.Rotation).ValueChanged+=(o,arg)=>{var tmpObj=o as PropertyRow<Vector3>; entity.Rotation=tmpObj.Value;};
+					prop.Add ("Scale:",new Gwen.Control.Property.Vector3(prop),entity.Scale).ValueChanged+=(o,arg)=>{var tmpObj=o as PropertyRow<Vector3>; entity.Scale=tmpObj.Value;};
 				foreach(var component in comps){
-						var prop=ptree.Add (component.GetType().ToString());
+						prop=ptree.Add (component.GetType().Name);
+
 					/*props=component.GetType ().GetProperties ().Where (p => p.CanRead && p.CanWrite);
 					foreach(var prop in props){
 						prop.GetMethod.CreateDelegate(typeof(Func<object>),Selection.assets [0]);
@@ -41,15 +50,15 @@ namespace Sharp.Editor.Views
 					ptree.Show();
 					ptree.ExpandAll ();
 			}
-				else
-					props=Selection.assets [0].GetType ().GetProperties ().Where (p=>p.CanRead && p.CanWrite);
+				//else
+					//props=Selection.assets [0].GetType ().GetProperties ().Where (p=>p.CanRead && p.CanWrite);
 			}
 
 		}
 		public override void OnResize (int width, int height)
 		{
 			base.OnResize (width, height);
-			ptree.SetBounds(0, 0, width, height);
+			ptree.SetBounds(0, 0, canvas.Width, canvas.Height);
 		}
 		Action<object> CreateSetter(object instance, MethodInfo propMethod){
 
@@ -82,6 +91,9 @@ namespace Sharp.Editor.Views
 			// Create a Lambda expression whose body is the MethodCallExpression that takes a single parameter.
 			// The parameter will be passed at run time.
 			return Expression.Lambda<Func<object>>(call, param).Compile();
+		}
+		public override void OnKeyPressEvent (ref KeyboardState evnt)
+		{
 		}
 	}
 }
