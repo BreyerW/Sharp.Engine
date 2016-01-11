@@ -57,7 +57,6 @@ namespace Gwen.Control.Property
 		/// <param name="fireEvents">Determines whether to fire "value changed" event.</param>
 		public override void SetValue(OpenTK.Vector3 value, bool fireEvents = false)
 		{
-			Console.WriteLine ("woo "+value);
 			posX.SetText(value.X, fireEvents);
 			posY.SetText(value.Y, fireEvents);
 			posZ.SetText(value.Z, fireEvents);

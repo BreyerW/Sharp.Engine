@@ -1,7 +1,7 @@
 ﻿using System;
 using Sharp;
 
-namespace Sharp.AssetPipeline
+namespace SharpAsset.Pipeline
 {
 	public abstract class Pipeline //change T to IAsset
 	{

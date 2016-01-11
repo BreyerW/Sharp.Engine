@@ -93,6 +93,7 @@ public partial class MainWindow: Gtk.Window
 		//if (GLinit)
 		//return;
 		GLinit = true;
+		MainEditorView.editorBackendRenderer = new SharpSL.BackendRenderers.OpenGL.EditorOpenGLRenderer ();
 		mainEditorView.Initialize ();
 		mainEditorView.OnResize (glwidget1.Allocation.Width,glwidget1.Allocation.Height);
 
@@ -137,6 +138,7 @@ public partial class MainWindow: Gtk.Window
 		};
 
 		var scene = new SceneView ();
+		SceneView.backendRenderer=new SharpSL.BackendRenderers.OpenGL.OpenGLRenderer ();
 		scene.Initialize ();
 		scene.OnResize (glwidget1.Allocation.Width,glwidget1.Allocation.Height);
 

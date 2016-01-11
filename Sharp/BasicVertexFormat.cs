@@ -3,18 +3,13 @@ using System;
 using OpenTK.Graphics.OpenGL;
 using OpenTK;
 using System.Collections.Generic;
+using SharpAsset;
 
 namespace Sharp
 {
 	[Serializable, StructLayout(LayoutKind.Sequential,Pack=0)]
 	public struct BasicVertexFormat:IVertex
 	{
-		private readonly static int stride=Marshal.SizeOf(default(BasicVertexFormat));
-		public int Stride{
-			get{ 
-				return stride;
-			}
-		}
 		[RegisterAs(VertexAttribute.POSITION,VertexAttribPointerType.Float)]
 		public float X;
 
@@ -27,18 +22,19 @@ namespace Sharp
 		[RegisterAs(VertexAttribute.UV,VertexAttribPointerType.Float)]
 		public Vector2 texcoords;
 		//public Color<float> Color;
+
+	/*	public byte[] ConvertToBytes()
+		{
+			unsafe{
+				var target = new byte[Stride];
+				fixed(BasicVertexFormat* p=&this) {
+					var bytePtr = (byte*)p;
+					for (int i = 0; i < Stride; i++) {
+						target [i] = *(bytePtr + i);
+					}
+				}
+return target;   
+	}
+	}*/
 	}
 }
-
-/*public IntPtr ConvertToBytes()
-		{
-			/*unsafe{
-				var target = new byte[stride];
-				fixed(BasicVertexFormat* p=&this) {
-					return (IntPtr)p;
-					/*for (int i = 0; i < stride; i++) {
-						target [i] = *((byte*)p + i);
-					}*
-				}*
-//return target;   
-}*/

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sharp.SL
+namespace SharpInput
 {
 	public class MyClass
 	{

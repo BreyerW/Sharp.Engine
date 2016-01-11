@@ -40,12 +40,10 @@ namespace Sharp.Editor.Views
 					prop.Add ("Scale:",new Gwen.Control.Property.Vector3(prop),entity.Scale).ValueChanged+=(o,arg)=>{var tmpObj=o as PropertyRow<Vector3>; entity.Scale=tmpObj.Value;};
 				foreach(var component in comps){
 						prop=ptree.Add (component.GetType().Name);
-
-					/*props=component.GetType ().GetProperties ().Where (p => p.CanRead && p.CanWrite);
-					foreach(var prop in props){
-						prop.GetMethod.CreateDelegate(typeof(Func<object>),Selection.assets [0]);
-						prop.SetMethod.CreateDelegate(typeof(Action<object>),Selection.assets [0]);
-					}*/
+						var inspector=new DefaultInspector ();
+						inspector.properties = prop;
+						inspector.getTarget = () => component;
+						inspector.OnInitializeGUI ();
 				}
 					ptree.Show();
 					ptree.ExpandAll ();

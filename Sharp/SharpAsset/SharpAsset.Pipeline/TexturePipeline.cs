@@ -1,10 +1,8 @@
 ﻿using System;
-using Sharp.AssetPipeline;
-using Sharp.Editor.Attribs;
 using FreeImageAPI;
 using System.IO;
 
-namespace Sharp.AssetPipeline
+namespace SharpAsset.Pipeline
 {
 	[SupportedFileFormats(".bmp",".jpg",".png")]
 	public class TexturePipeline:Pipeline

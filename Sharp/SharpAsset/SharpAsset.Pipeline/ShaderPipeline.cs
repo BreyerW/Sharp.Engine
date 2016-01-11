@@ -1,10 +1,8 @@
 ﻿using System;
-using Sharp.AssetPipeline;
 using System.Collections.Generic;
 using System.IO;
-using Sharp.Editor.Attribs;
 
-namespace Sharp.AssetPipeline
+namespace SharpAsset.Pipeline
 {
 	[SupportedFileFormats(".shader", ".glsl")]
 	public class ShaderPipeline:Pipeline
@@ -75,8 +73,8 @@ namespace Sharp.AssetPipeline
 			{
 				if (line.Contains("#pragma include")){
 					var splitLine = line.Split(' ');
-					string includeFilename = string.Format("{0}",splitLine[2]);
-					finalShader += string.Format("// included from source file {0}\n\r", includeFilename);
+					string includeFilename = $"{splitLine[2]}";
+					finalShader += $"// included from source file {includeFilename}\n\r";
 					using (StreamReader includeFileReader = new StreamReader(includeFilename)){
 						finalShader += includeFileReader.ReadToEnd();    
 					}

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using Assimp;
 using Assimp.Configs;
-using Sharp.AssetPipeline;
-using Sharp.Editor.Attribs;
 using OpenTK;
 using System.IO;
+using System.Linq;
+using Sharp;
 
-namespace Sharp.AssetPipeline
+namespace SharpAsset.Pipeline
 {
 	[SupportedFileFormats(".fbx",".dae",".obj")]
 	public class MeshPipeline:Pipeline
@@ -15,7 +15,19 @@ namespace Sharp.AssetPipeline
 		public static readonly MeshPipeline singleton=new MeshPipeline();
 
 		private static BoundingBox bounds;
-		public static Func<IVertex> vertex=()=>new BasicVertexFormat();
+		private static Func<IVertex> vertex;
+		private static Func<Mesh<int>,IAsset> convert;
+
+		public static void SetMeshContext<IndexType,T>() where IndexType : struct,IConvertible where T: struct, IVertex {
+			SetIndiceContext<IndexType> ();
+			SetVertexContext<T> ();
+		}
+		public static void SetIndiceContext<IndexType>() where IndexType : struct,IConvertible {
+			convert =(mesh)=>(Mesh<IndexType>)mesh;
+		}
+		public static void SetVertexContext<T>() where T: struct, IVertex {
+			vertex = ()=>default(T);
+		}
 
 		public override IAsset Import (string pathToFile)
 		{
@@ -25,7 +37,8 @@ namespace Sharp.AssetPipeline
 			var vertexType=vertex().GetType();
 			var asset = new AssimpContext ();
 			var scene=asset.ImportFile (pathToFile,PostProcessPreset.TargetRealTimeMaximumQuality);
-			var internalMesh = new Sharp.Mesh<ushort> ();
+
+			var internalMesh =new Mesh<int>();
 			internalMesh.FullPath = pathToFile;
 			if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey (vertexType))
 				RegisterAsAttribute.ParseVertexFormat (vertexType);
@@ -33,8 +46,8 @@ namespace Sharp.AssetPipeline
 			foreach (var mesh in scene.Meshes) {
 				//Console.WriteLine ("indices : "+ mesh.GetUnsignedIndices());
 				//mesh.MaterialIndex
-				internalMesh.Indices=new ushort[mesh.VertexCount*3];
-				internalMesh.Indices=(ushort[])(object)mesh.GetShortIndices();
+				//internalMesh.Indices=indexType==typeof(int) ? new int[mesh.VertexCount*3] : new short[mesh.VertexCount*3];
+				internalMesh.Indices=mesh.GetIndices();//(ushort[])(object)
 
 				var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
 				var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
@@ -66,10 +79,11 @@ namespace Sharp.AssetPipeline
 					}
 				}
 				bounds = new BoundingBox (min,max);
-				internalMesh.UsageHint = OpenTK.Graphics.OpenGL.BufferUsageHint.DynamicDraw;
+				internalMesh.UsageHint = UsageHint.DynamicDraw;
 			}
 			internalMesh.bounds = bounds;
-			return internalMesh;
+
+			return convert?.Invoke(internalMesh) ?? internalMesh;
 		}
 	//	public Matrix4 CalculateModelMatrix(){
 

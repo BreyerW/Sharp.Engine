@@ -7,13 +7,19 @@ namespace Sharp.Editor
 	public abstract class Inpector<T>
 	{
 		//private static Dictionary<Type, Base> predefinedInspectors;
-		internal static readonly T defaultObj=default(T);
-		protected Func<T> target;
+		internal Func<T> getTarget;
+		//internal Func<T> setTarget;
+		public Properties properties;
+
+		public T Target {
+			get{return getTarget ();}
+			//set{setTarget (value);}
+		}
 
 		public Inpector ()
 		{
 		}
-		public abstract Base OnInitializeGUI();
+		public abstract void OnInitializeGUI();
 	}
 }
 

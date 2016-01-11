@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Gwen.Control;
 using Gwen;
-using OpenTK.Graphics.OpenGL;
+using SharpSL;
 
 namespace Sharp.Editor.Views
 {
@@ -11,6 +11,8 @@ namespace Sharp.Editor.Views
 		public static Gwen.Skin.Base skin;
 		public MultiVerticalSplitter splitter;
 		public bool needRedraw=false;
+
+		public static IEditorBackendRenderer editorBackendRenderer;
 
 		public MainEditorView ()
 		{
@@ -30,12 +32,9 @@ namespace Sharp.Editor.Views
 		}
 		public override void Render ()
 		{
-			GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-			GL.Hint(HintTarget.LineSmoothHint, HintMode.Nicest);
-			GL.Hint(HintTarget.PointSmoothHint, HintMode.Nicest);
-			GL.Hint(HintTarget.PolygonSmoothHint, HintMode.Nicest);
+			SceneView.backendRenderer.SetupGraphic ();
 			base.Render ();
-			GL.Clear(ClearBufferMask.DepthBufferBit|ClearBufferMask.ColorBufferBit);
+			SceneView.backendRenderer.ClearBuffer ();
 			canvas.RenderCanvas ();
 		}
 	}

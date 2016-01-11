@@ -1,14 +1,17 @@
 ﻿using System.Drawing.Imaging;
 using OpenTK.Graphics.OpenGL;
 using System;
+using SharpAsset;
+
 namespace Sharp
 {
 	public class Material
 	{
 		public int shaderId;
 
-		public Material ()
+		static Material ()
 		{
+			
 		}
 
 		public void SetTexture (string propName, Texture tex){

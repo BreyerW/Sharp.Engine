@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sharp.AssetPipeline;
 
-namespace Sharp.Editor.Attribs
+namespace SharpAsset.Pipeline
 {
 	[AttributeUsage(AttributeTargets.Class)]
 	public class SupportedFileFormatsAttribute: Attribute
@@ -17,7 +16,7 @@ namespace Sharp.Editor.Attribs
 
 			foreach (var subclass in subclasses) {
 				var attr=subclass.GetCustomAttributes (typeof(SupportedFileFormatsAttribute), false)[0] as SupportedFileFormatsAttribute;
-				var importer = Activator.CreateInstance (subclass) as AssetPipeline.Pipeline;
+				var importer = Activator.CreateInstance (subclass) as Pipeline;
 				foreach(var format in attr.supportedFileFormats)
 					importers.Add(format, importer);
 			}

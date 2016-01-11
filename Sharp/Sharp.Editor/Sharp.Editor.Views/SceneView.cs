@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using Sharp.AssetPipeline;
+using SharpAsset;
 using System;
 using System.Runtime.InteropServices;
 using Gwen.Control;
@@ -11,6 +11,7 @@ using Sharp.Editor;
 //using PhysX;
 using Sharp.Physic;
 using System.Linq;
+using SharpSL.BackendRenderers;
 
 namespace Sharp.Editor.Views
 {
@@ -31,6 +32,8 @@ namespace Sharp.Editor.Views
 
 		public static bool mouseLocked=false;
 		private Vector3 normalizedMoveDir=Vector3.Zero;
+
+		public static IBackendRenderer backendRenderer;
 		/*DebugProc DebugCallbackInstance = DebugCallback;
 
 		static void DebugCallback(DebugSource source, DebugType type, int id,
@@ -228,7 +231,9 @@ namespace Sharp.Editor.Views
 						var mesh=asset.Content() as IAsset;
 						var renderer = eObject.AddComponent (new MeshRenderer<ushort,BasicVertexFormat> (mesh)) as MeshRenderer<ushort,BasicVertexFormat>;
 						 //FromMatrix (scene.RootNode.Transform);
-						renderer.material.shaderId = Shader.shaders ["BasicShader"].Program;
+						var shader=Shader.shaders ["BasicShader"];
+						SceneView.backendRenderer.Allocate (ref shader);
+						renderer.material.shaderId =shader.Program;
 						var tex = Texture.textures ["duckCM"];
 						renderer.material.SetTexture ("MyTexture", tex);
 					}

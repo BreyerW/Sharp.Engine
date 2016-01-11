@@ -3,18 +3,20 @@ using System.Collections.Generic;
 using Gwen.Control;
 using Sharp.Editor.Attribs;
 using OpenTK;
+using System.Linq;
 
 namespace Sharp.Editor
 {
 	//[CustomInspector(typeof(object))]
 	public class DefaultInspector:Inpector<object>
 	{
-		public DefaultInspector ()
+		public override void OnInitializeGUI ()
 		{
-		}
-		public override Base OnInitializeGUI ()
-		{
-			throw new NotImplementedException ();
+			var props=Target.GetType ().GetProperties ().Where (p=>p.CanRead && p.CanWrite);
+			foreach (var prop in props) {
+				properties.Add (prop.Name+":",new Gwen.Control.Property.Text(properties),prop.GetValue(Target).ToString()).ValueChanged+=(o,arg)=>{var tmpObj=o as PropertyRow<string>; prop.SetValue(Target,tmpObj.Value);};
+
+			}
 		}
 	}
 }

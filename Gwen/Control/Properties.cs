@@ -70,6 +70,21 @@ namespace Gwen.Control
         {
 			return Add<string>(label, new Property.Text(this), value);
         }
+		/*public Base Add(string label, object value)
+		{
+			switch (value.GetType()) {
+			//case typeof()
+			}
+			PropertyRow<T> row = new PropertyRow<T>(this, prop);
+			row.Dock = Pos.Top;
+			row.Label = label;
+			row.ValueChanged += OnRowValueChanged;
+
+			prop.SetValue(value, true);
+
+			// m_SplitterBar.BringToFront();
+			return row;
+		}*/
 
         /// <summary>
         /// Adds a new property row.

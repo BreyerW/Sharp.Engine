@@ -1,14 +1,8 @@
 ﻿using System;
-using OpenTK.Graphics.OpenGL;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using OpenTK;
-using Sharp.Editor;
-using System.Linq;
-using System.Numerics;
 using Sharp.Editor.Views;
-using System.Reflection;
-using System.Linq.Expressions;
+using SharpAsset;
 
 namespace Sharp
 {
@@ -46,96 +40,32 @@ namespace Sharp
 	public class MeshRenderer<IndexType,VertexFormat>: Renderer where IndexType : struct,IConvertible where VertexFormat : struct, IVertex
 	{
 		internal Mesh<IndexType> mesh;
-		protected static readonly IndexType defaultId=default(IndexType);	
-		protected static int dim=1;
+		protected static readonly int sizeOfId=Marshal.SizeOf<IndexType>();	
 
 		public Material material=new Material();
 
-		private static readonly VertexFormat defaultVert=default(VertexFormat);
+		private static int stride;
 
-		private static DrawElementsType drawElesType = DrawElementsType.UnsignedByte;
+		//public static VertexAttribute[] vertAttribs; //convert to cache type
 
-		public static event Action renderAction;
 
-		private static int numOfUV=0;
-
-		static MeshRenderer(){
-			
-			drawElesType = DrawElementsType.UnsignedByte;
-			if (defaultId is ushort)
-				drawElesType = DrawElementsType.UnsignedShort;
-			else if (defaultId is uint) 
-				drawElesType = DrawElementsType.UnsignedInt;
-		}
 		public MeshRenderer (IAsset meshToRender)
 		{
 			mesh = (Mesh<IndexType>)meshToRender;
-			var type=typeof(VertexFormat);
+			var type=mesh.Vertices[0].GetType();
+			stride = Marshal.SizeOf (type);
 
 			if(!RegisterAsAttribute.registeredVertexFormats.ContainsKey(type))
 				RegisterAsAttribute.ParseVertexFormat (type);
-			
-			if (RegisterAsAttribute.registeredVertexFormats [type].ContainsKey (VertexAttribute.POSITION)) {
-				renderAction += BindPos;
-				dim=RegisterAsAttribute.registeredVertexFormats [type] [VertexAttribute.POSITION].generatedFillers.Count;
-				Console.WriteLine ("numofverts"+mesh.Vertices.Cast<BasicVertexFormat>().ToArray()[1].X+" "+mesh.Vertices.Cast<BasicVertexFormat>().ToArray()[10].X);
-			}
-			if (RegisterAsAttribute.registeredVertexFormats[type].ContainsKey (VertexAttribute.COLOR))
-				renderAction += BindColor;
-			if (RegisterAsAttribute.registeredVertexFormats[type].ContainsKey (VertexAttribute.UV)) {
-				renderAction += BindUV;
-				numOfUV = RegisterAsAttribute.registeredVertexFormats [type] [VertexAttribute.UV].generatedFillers.Count;
-			}
-			if (RegisterAsAttribute.registeredVertexFormats[type].ContainsKey (VertexAttribute.NORMAL))
-				renderAction += BindNormal;
-			
-				Allocate ();
+
+			Allocate ();
 		}
 
 		private void Allocate(){
-			//if (IsLoaded) return;
-			//VBO
-			//int tmpVBO;
-			//GL.GenBuffers(1, out tmpVBO);
-			//Console.WriteLine ("error check"+GL.DebugMessageCallback);
-			mesh.VBO = GL.GenBuffer();
+			SceneView.backendRenderer.GenerateBuffers (out mesh.EBO, out mesh.VBO);
 
-			var watch =System.Diagnostics.Stopwatch.StartNew();
-			var verts = mesh.Vertices.Cast<VertexFormat>().ToArray();
-			GL.BindBuffer (BufferTarget.ArrayBuffer, mesh.VBO);
-			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mesh.Vertices.Length * defaultVert.Stride),ref verts[0], mesh.UsageHint);
-
-			watch.Stop();
-			Console.WriteLine("cast: "+ watch.ElapsedTicks);
-			//int tmpEBO;
-			//GL.GenBuffers(1, out tmpEBO);
-			mesh.EBO =GL.GenBuffer();
-			GL.BindBuffer(BufferTarget.ElementArrayBuffer, mesh.EBO);
-			GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mesh.Indices.Length * Marshal.SizeOf(defaultId)), mesh.Indices, mesh.UsageHint);
-
-		//GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-			//GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-			/*// Generate Array Buffer Id
-			mesh.TBO=GL.GenBuffer();
-
-			// Bind current context to Array Buffer ID
-			GL.BindBuffer(BufferTarget.ArrayBuffer, mesh.TBO);
-
-			// Send data to buffer
-			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mesh.Vertices.Count * 8), shape.Texcoords, BufferUsageHint.StaticDraw);
-*/
-			// Validate that the buffer is the correct size
-			//GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out bufferSize);
-			//if (shape.Texcoords.Length * 8 != bufferSize)
-			//	throw new ApplicationException("TexCoord array not uploaded correctly");
-
-			// Clear the buffer Binding
-			//GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-
-
-			//IsLoaded = true;
+			SceneView.backendRenderer.Allocate (ref mesh);
 		}
-
 	
 		public override void Render ()
 		{
@@ -146,63 +76,32 @@ namespace Sharp
 			}
 			//Console.WriteLine ("no-cull ");
 
-				int current = GL.GetInteger (GetPName.CurrentProgram);
+				//int current = GL.GetInteger (GetPName.CurrentProgram);
 				//GL.ValidateProgram (material.shaderId);
 				//if (current != material.shaderId) {
 
-				GL.UseProgram (material.shaderId);
+				
 				//}
 				//if (!IsLoaded) return;
-				GL.BindBuffer (BufferTarget.ArrayBuffer, mesh.VBO);
-			renderAction?.Invoke ();
+				SceneView.backendRenderer.ChangeShader(material.shaderId, ref entityObject.MVPMatrix);
+				SceneView.backendRenderer.BindBuffers(mesh.EBO, mesh.VBO);
 
-				int mvp_matrix_location = GL.GetUniformLocation (material.shaderId, "mvp_matrix");
-			GL.UniformMatrix4 (mvp_matrix_location, false, ref entityObject.MVPMatrix);
-				GL.BindBuffer (BufferTarget.ElementArrayBuffer, mesh.EBO);
-				//GL.InvalidateBufferData (mesh.EBO);
-				GL.DrawElements (PrimitiveType.Triangles, mesh.Indices.Length, drawElesType, IntPtr.Zero);
+			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats [mesh.Vertices[0].GetType()].Values)
+				SceneView.backendRenderer.BindVertexAttrib (material.shaderId,stride,vertAttrib);
 
-				GL.UseProgram (0);
+			SceneView.backendRenderer.Use (ref mesh);
+			SceneView.backendRenderer.ChangeShader();
 		}
 		public override void SetupMatrices ()
 		{
 			entityObject.MVPMatrix =entityObject.ModelMatrix*Camera.main.modelViewMatrix*Camera.main.projectionMatrix;
-			int current = GL.GetInteger(GetPName.CurrentProgram);
+			//int current = GL.GetInteger(GetPName.CurrentProgram);
 			//GL.ValidateProgram (material.shaderId);
 			//will return -1 without useprogram
 			//if (current != material.shaderId) 
 			//	GL.UseProgram(material.shaderId);
 		}
 
-		private void BindPos(){
-			var posLoc = GL.GetAttribLocation (material.shaderId, "vertex_position");
-			//Console.WriteLine (material.shaderId);
-			GL.EnableVertexAttribArray(posLoc);
-			var attrib=RegisterAsAttribute.registeredVertexFormats[defaultVert.GetType()][VertexAttribute.POSITION];
-			GL.VertexAttribPointer(posLoc,dim, attrib.type, false,defaultVert.Stride, attrib.offset);
-			}
-
-		private void BindColor(){
-			var colorLoc = GL.GetAttribLocation (material.shaderId, "vertex_color");
-			if (colorLoc != -1)
-			GL.EnableVertexAttribArray(colorLoc);
-			var attrib=RegisterAsAttribute.registeredVertexFormats[defaultVert.GetType()][VertexAttribute.COLOR];
-			//if (colorLoc != -1)
-			GL.VertexAttribPointer(colorLoc, 4,attrib.type, false, defaultVert.Stride,attrib.offset);
-			}
-
-		private void BindUV(){
-			var uvLoc = GL.GetAttribLocation (material.shaderId, "vertex_texcoord");
-			GL.EnableVertexAttribArray(uvLoc);
-			var attrib=RegisterAsAttribute.registeredVertexFormats[defaultVert.GetType()][VertexAttribute.UV];
-			GL.VertexAttribPointer(uvLoc, 2,attrib.type, false, defaultVert.Stride,attrib.offset);
-			}
-
-		private void BindNormal(){
-			GL.EnableClientState(ArrayCap.NormalArray);
-			var attrib=RegisterAsAttribute.registeredVertexFormats[defaultVert.GetType()][VertexAttribute.NORMAL];
-			//GL.NormalPointer(attrib.type, defaultVert.Stride, attrib.offset);
-			}
 		public static void RegisterCustomAttribute(){
 		
 		}

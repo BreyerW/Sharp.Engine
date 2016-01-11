@@ -1,6 +1,5 @@
 ﻿using System;
 using Gwen.Control;
-using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System.Collections.Generic;
 
@@ -28,12 +27,10 @@ namespace Sharp.Editor.Views
 		public virtual void Render (){
 			if (canvas.Parent != null) {
 				var absPos = canvas.CanvasPosToLocal (new System.Drawing.Point (canvas.X, canvas.Y));
-				GL.Scissor (-absPos.X, canvas.Parent.Margin.Bottom, canvas.Parent.Width,canvas.Height);
-				GL.Viewport (-absPos.X, canvas.Parent.Margin.Bottom, canvas.Parent.Width,canvas.Height);
-			} else {
-				GL.Scissor (0, 0, canvas.Width, canvas.Height);
-				GL.Viewport (0, 0, canvas.Width, canvas.Height);
-			}
+				SceneView.backendRenderer.Scissor (-absPos.X, canvas.Parent.Margin.Bottom, canvas.Parent.Width,canvas.Height);
+			} 
+			else
+				SceneView.backendRenderer.Scissor (0, 0, canvas.Width, canvas.Height);
 		}
 		public virtual void OnResize (int width, int height){
 

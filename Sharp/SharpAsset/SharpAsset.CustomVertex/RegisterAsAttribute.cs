@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Linq.Expressions;
 
-namespace Sharp
+namespace SharpAsset
 {
 	[AttributeUsage(AttributeTargets.Field)]
 	public class RegisterAsAttribute:Attribute
@@ -14,7 +14,22 @@ namespace Sharp
 		public static Dictionary<Type,Dictionary<VertexAttribute,RegisterAsAttribute>> registeredVertexFormats=new Dictionary<Type, Dictionary<VertexAttribute, RegisterAsAttribute>>();
 
 		public IntPtr offset;
-		public int stride;
+		public int Dimension{
+			get{ 
+				switch (format) {
+				case VertexAttribute.POSITION:
+					 return generatedFillers.Count;
+				case VertexAttribute.COLOR:
+					return 4;
+				case VertexAttribute.UV:
+					return 2;
+				case VertexAttribute.NORMAL:
+					return 3;
+				}
+				throw new InvalidOperationException (nameof(format)+" have wrong value");
+			}
+		}
+		public string shaderLocationName;
 		public VertexAttribute format;
 		public VertexAttribPointerType type;
 		public List<Action<IVertex,object>> generatedFillers=new List<Action<IVertex,object>>(); 
@@ -22,6 +37,19 @@ namespace Sharp
 		public RegisterAsAttribute (VertexAttribute Format, VertexAttribPointerType Type)
 		{
 			format = Format;
+
+			switch (format) {
+			case VertexAttribute.POSITION:
+				shaderLocationName="vertex_position";
+				break;
+			case VertexAttribute.COLOR:
+				shaderLocationName="vertex_color";break;
+			case VertexAttribute.UV:
+				shaderLocationName="vertex_texcoord";break;
+			case VertexAttribute.NORMAL:
+				shaderLocationName="vertex_normal";break;
+			}
+
 			type = Type;
 		}
 		public static void ParseVertexFormat(Type type){
@@ -33,10 +61,9 @@ namespace Sharp
 				foreach(var field in fields){
 					var attrib=field.GetCustomAttribute<RegisterAsAttribute>();
 					if (lastFormat != (int)attrib.format) {
-					
 						lastFormat = (int)attrib.format;
 						attrib.offset = Marshal.OffsetOf(type,field.Name);
-					attrib.generatedFillers=new List<Action<IVertex, object>>(){GenerateOpenSetter(field)};
+						attrib.generatedFillers=new List<Action<IVertex, object>>(){GenerateOpenSetter(field)};
 						vertFormat.Add (attrib.format,attrib);
 
 					} else if (attrib.format == VertexAttribute.POSITION){
@@ -47,6 +74,7 @@ namespace Sharp
 					//	numOfUV++;
 				}
 				RegisterAsAttribute.registeredVertexFormats.Add (type,vertFormat);
+
 		}
 		private static Action<IVertex, object> GenerateOpenSetter(FieldInfo fieldInfo)
 		{            

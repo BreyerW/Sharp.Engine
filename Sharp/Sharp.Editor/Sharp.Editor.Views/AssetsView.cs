@@ -2,9 +2,8 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Sharp.AssetPipeline;
+using SharpAsset.Pipeline;
 using Gwen.Control;
-using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using Sharp.Editor.Attribs;
 
@@ -31,7 +30,7 @@ namespace Sharp.Editor.Views
 				foreach (var subclass in subclasses) {
 					subclass.GetCustomAttributes (false);
 				}
-
+				MeshPipeline.SetMeshContext<ushort,BasicVertexFormat> ();
 				RecursiveBuildTree (root, tree);
 				foreach (FileInfo file in FilterFiles(root,SupportedFileFormatsAttribute.importers.Keys)) {
 					if (!file.Name.StartsWith ("."))
@@ -70,7 +69,7 @@ namespace Sharp.Editor.Views
 			foreach (DirectoryInfo di in dirRoot.EnumerateDirectories()) {
 				if (!di.Name.StartsWith (".")) {
 					var iter=treeIter.AddNode (di.Name);
-					foreach (FileInfo file in FilterFiles(di,Sharp.Editor.Attribs.SupportedFileFormatsAttribute.importers.Keys))
+					foreach (FileInfo file in FilterFiles(di,SharpAsset.Pipeline.SupportedFileFormatsAttribute.importers.Keys))
 					{
 						if (!file.Name.StartsWith("."))
 							iter.AddNode(()=>SupportedFileFormatsAttribute.importers[file.Extension].Import(file.FullName));

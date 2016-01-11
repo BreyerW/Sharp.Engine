@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharp", "Sharp\Sharp.csproj", "{14F5AB2B-6F1D-46AF-83CB-366DB9B240B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharp.SL", "Sharp.SL\Sharp.SL.csproj", "{D1B6E68B-FE6D-4E77-A3DC-C0A9ECCE91D6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLWidget", "GLWidget\GLWidget.csproj", "{34627299-AB51-4C99-B5DA-C03EB751B387}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gwen", "Gwen\Gwen.csproj", "{ADDA2F43-96C0-497F-8216-29C67ABC9806}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gwen.Renderer.OpenTK", "Gwen.Renderer.OpenTK\Gwen.Renderer.OpenTK.csproj", "{41650C82-D630-4E5C-845A-F1513C8FDC99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpInput", "SharpInput\SharpInput.csproj", "{0434920A-0B3C-47A2-AFC2-60341CEA5428}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,6 +17,10 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Debug|x86.Build.0 = Debug|Any CPU
+		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Release|x86.ActiveCfg = Release|Any CPU
+		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Release|x86.Build.0 = Release|Any CPU
 		{14F5AB2B-6F1D-46AF-83CB-366DB9B240B4}.Debug|x86.ActiveCfg = Debug|x86
 		{14F5AB2B-6F1D-46AF-83CB-366DB9B240B4}.Debug|x86.Build.0 = Debug|x86
 		{14F5AB2B-6F1D-46AF-83CB-366DB9B240B4}.Release|x86.ActiveCfg = Release|x86
@@ -33,9 +37,5 @@ Global
 		{ADDA2F43-96C0-497F-8216-29C67ABC9806}.Debug|x86.Build.0 = Debug|Any CPU
 		{ADDA2F43-96C0-497F-8216-29C67ABC9806}.Release|x86.ActiveCfg = Release|Any CPU
 		{ADDA2F43-96C0-497F-8216-29C67ABC9806}.Release|x86.Build.0 = Release|Any CPU
-		{D1B6E68B-FE6D-4E77-A3DC-C0A9ECCE91D6}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D1B6E68B-FE6D-4E77-A3DC-C0A9ECCE91D6}.Debug|x86.Build.0 = Debug|Any CPU
-		{D1B6E68B-FE6D-4E77-A3DC-C0A9ECCE91D6}.Release|x86.ActiveCfg = Release|Any CPU
-		{D1B6E68B-FE6D-4E77-A3DC-C0A9ECCE91D6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

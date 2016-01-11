@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sharp
+namespace SharpAsset
 {
 	public interface IAsset
 	{
