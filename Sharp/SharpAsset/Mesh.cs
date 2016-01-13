@@ -45,12 +45,31 @@ namespace SharpAsset
 			shortMesh.FullPath = mesh.FullPath;
 			shortMesh.Vertices = mesh.Vertices;
 			shortMesh.Indices=new IndexType[mesh.Indices.Length];
-			unchecked{
-				for(var indice=0; indice<mesh.Indices.Length; indice++ )
-					shortMesh.Indices[indice] =(IndexType)Convert.ChangeType(mesh.Indices[indice],typeof(IndexType));
-			}
+
+			//Marshal.copy
+			for(var indice=0; indice<mesh.Indices.Length; indice++ )
+				shortMesh.Indices[indice] =(IndexType)Convert.ChangeType(mesh.Indices[indice],typeof(IndexType));
+			
 			return shortMesh;
 		}
+	}
+	public enum UsageHint
+	{
+		StreamDraw = 35040,
+		StreamRead,
+		StreamCopy,
+		StaticDraw = 35044,
+		StaticRead,
+		StaticCopy,
+		DynamicDraw = 35048,
+		DynamicRead,
+		DynamicCopy
+	}
+	public enum IndiceType
+	{
+		UnsignedByte = 5121,
+		UnsignedShort = 5123,
+		UnsignedInt = 5125
 	}
 }
 

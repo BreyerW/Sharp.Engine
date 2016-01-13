@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Gwen.Control;
 using Sharp.Editor.Attribs;
-using OpenTK;
 using System.Linq;
 
 namespace Sharp.Editor

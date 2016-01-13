@@ -18,6 +18,7 @@ namespace Sharp.Editor.Views
 
 		public override void Initialize ()
 		{
+			Console.WriteLine (Environment.CurrentDirectory);
 			base.Initialize ();
 				tree = new  Gwen.Control.TreeControl (canvas);
 

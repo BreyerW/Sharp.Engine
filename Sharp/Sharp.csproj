@@ -74,9 +74,6 @@
     <Reference Include="SmallBlockMemoryStream">
       <HintPath>..\packages\SmallBlockMemoryStream.1.0.0.0\lib\net20\SmallBlockMemoryStream.dll</HintPath>
     </Reference>
-    <Reference Include="System.Numerics.Vectors">
-      <HintPath>..\packages\System.Numerics.Vectors.4.0.0\lib\portable-net45+win8+wpa81\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
     <Reference Include="Migrant">
       <HintPath>..\packages\Migrant.0.12\lib\net40\Migrant.dll</HintPath>
     </Reference>
@@ -86,6 +83,17 @@
     </Reference>
     <Reference Include="FreeImageNET">
       <HintPath>..\packages\FreeImageNET.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics.Vectors">
+      <HintPath>..\packages\System.Numerics.Vectors.4.1.1-beta-23516\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="SharpAvi">
+      <HintPath>..\packages\SharpAvi.2.1.0\lib\net45\SharpAvi.dll</HintPath>
+    </Reference>
+    <Reference Include="ColorSharp">
+      <HintPath>..\packages\ColorSharp.0.11.0.32448\lib\net40\ColorSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -128,11 +136,9 @@
     <Compile Include="Sharp.Editor\Inpector.cs" />
     <Compile Include="Sharp.Editor\DefaultInspector.cs" />
     <Compile Include="SharpAsset\IAsset.cs" />
-    <Compile Include="SharpAsset\IndiceType.cs" />
     <Compile Include="SharpAsset\Mesh.cs" />
     <Compile Include="SharpAsset\Shader.cs" />
     <Compile Include="SharpAsset\Texture.cs" />
-    <Compile Include="SharpAsset\UsageHint.cs" />
     <Compile Include="SharpAsset\SharpAsset.CustomVertex\IVertex.cs" />
     <Compile Include="SharpAsset\SharpAsset.CustomVertex\RegisterAsAttribute.cs" />
     <Compile Include="SharpAsset\SharpAsset.CustomVertex\VertexAttribute.cs" />
@@ -148,7 +154,8 @@
     <Compile Include="SharpSL\SharpSL.BackendRenderers\IEditorBackendRenderer.cs" />
     <Compile Include="SharpSL\SharpSL.BackendRenderers\SharpSL.BackendRenderers.OpenGL\EditorOpenGLRenderer.cs" />
     <Compile Include="SharpSL\SharpSL.BackendRenderers\SharpSL.BackendRenderers.OpenGL\OpenGLRenderer.cs" />
-    <Compile Include="SharpAsset\CustomConverter.cs" />
+    <Compile Include="SharpAsset\SharpAsset.CustomVertex\CustomConverter.cs" />
+    <Compile Include="SharpAsset\SharpAsset.CustomVertex\VertexType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\AssimpNet.3.3.1\build\AssimpNet.targets" Condition="Exists('..\packages\AssimpNet.3.3.1\build\AssimpNet.targets')" />
@@ -167,13 +174,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="InternalShaders\" />
     <Folder Include="Sharp.Editor\" />
     <Folder Include="Sharp.Physic\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="InternalShaders\BasicShader.shader" />
-    <None Include="InternalShaders\FogShader.shader" />
     <None Include="packages.config" />
+    <None Include="bin\Debug\Content\BasicShader.shader">
+      <Link>Content\BasicShader.shader</Link>
+    </None>
+    <None Include="bin\Debug\Content\FogShader.shader">
+      <Link>Content\FogShader.shader</Link>
+    </None>
   </ItemGroup>
 </Project>

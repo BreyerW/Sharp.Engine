@@ -48,7 +48,7 @@ namespace SharpAsset.Pipeline
 				//mesh.MaterialIndex
 				//internalMesh.Indices=indexType==typeof(int) ? new int[mesh.VertexCount*3] : new short[mesh.VertexCount*3];
 				internalMesh.Indices=mesh.GetIndices();//(ushort[])(object)
-
+				Console.WriteLine(mesh);
 				var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
 				var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
 				internalMesh.Vertices=new IVertex[mesh.VertexCount];

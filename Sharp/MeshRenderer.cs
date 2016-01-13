@@ -62,7 +62,7 @@ namespace Sharp
 		}
 
 		private void Allocate(){
-			SceneView.backendRenderer.GenerateBuffers (out mesh.EBO, out mesh.VBO);
+			SceneView.backendRenderer.GenerateBuffers (ref mesh);
 
 			SceneView.backendRenderer.Allocate (ref mesh);
 		}
@@ -83,18 +83,25 @@ namespace Sharp
 				
 				//}
 				//if (!IsLoaded) return;
-				SceneView.backendRenderer.ChangeShader(material.shaderId, ref entityObject.MVPMatrix);
-				SceneView.backendRenderer.BindBuffers(mesh.EBO, mesh.VBO);
+			var shader = material.Shader;
+
+			material.SetShaderProperty ("mvp_matrix", ref entityObject.MVPMatrix);
+
+			SceneView.backendRenderer.Use(ref shader);
+			SceneView.backendRenderer.BindBuffers(ref material);
+
+			SceneView.backendRenderer.BindBuffers(ref mesh);
 
 			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats [mesh.Vertices[0].GetType()].Values)
-				SceneView.backendRenderer.BindVertexAttrib (material.shaderId,stride,vertAttrib);
-
+				SceneView.backendRenderer.BindVertexAttrib (stride,vertAttrib);
+			
 			SceneView.backendRenderer.Use (ref mesh);
 			SceneView.backendRenderer.ChangeShader();
 		}
 		public override void SetupMatrices ()
 		{
 			entityObject.MVPMatrix =entityObject.ModelMatrix*Camera.main.modelViewMatrix*Camera.main.projectionMatrix;
+
 			//int current = GL.GetInteger(GetPName.CurrentProgram);
 			//GL.ValidateProgram (material.shaderId);
 			//will return -1 without useprogram

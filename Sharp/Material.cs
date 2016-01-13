@@ -1,35 +1,47 @@
-﻿using System.Drawing.Imaging;
-using OpenTK.Graphics.OpenGL;
-using System;
+﻿using System;
 using SharpAsset;
+using Sharp.Editor.Views;
+using System.Collections.Generic;
+using OpenTK;
 
-namespace Sharp
+namespace SharpAsset
 {
-	public class Material
+	public struct Material
 	{
-		public int shaderId;
+		internal Dictionary<int, int> texArray;
+		internal Dictionary<int, Matrix4> matrix4Array;
 
-		static Material ()
-		{
-			
+		internal int shaderId;
+
+		public Shader Shader{
+			get{
+				foreach (var shader in Shader.shaders.Values) {
+					if (shader.Program == shaderId)
+						return shader;
+				}
+				throw new IndexOutOfRangeException("Material dont point to any shader");
+			}
 		}
+		public Material(int program){
+			shaderId = program;
+			texArray = new Dictionary<int, int> ();
+			matrix4Array = new Dictionary<int, Matrix4> ();
+		}
+		public void SetShaderProperty (string propName,ref Texture tex){
+			if (!Shader.uniformArray.ContainsKey (UniformType.Sampler2D) || !Shader.uniformArray [UniformType.Sampler2D].ContainsKey (propName))
+				return;
 
-		public void SetTexture (string propName, Texture tex){
-			if(tex.texId==-1)
-				tex.texId=GL.GenTexture ();
-			//Console.WriteLine ("texId "+tex.texId);
-			GL.BindTexture(TextureTarget.Texture2D,0);
-			BitmapData data = tex.bitmap.LockBits(new System.Drawing.Rectangle(0, 0, tex.bitmap.Width, tex.bitmap.Height),
-				ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0,
-				OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-
-			tex.bitmap.UnlockBits(data);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-			GL.ActiveTexture(TextureUnit.Texture0);
-			//GL.Uniform1(GL.GetUniformLocation(shaderId, "MyTexture"), TextureUnit.Texture0 - TextureUnit.Texture0);
-
+			SceneView.backendRenderer.GenerateBuffers(ref tex);
+			SceneView.backendRenderer.BindBuffers (ref tex);
+			SceneView.backendRenderer.Allocate(ref tex);
+			texArray.Add (Shader.uniformArray [UniformType.Sampler2D][propName], tex.TBO);
+		}
+		public void SetShaderProperty(string propName,ref Matrix4 mat){
+			var shaderLoc = Shader.uniformArray [UniformType.FloatMat4] [propName];
+			if (!matrix4Array.ContainsKey (shaderLoc))
+				matrix4Array.Add (shaderLoc, mat);
+			else
+				matrix4Array [shaderLoc] = mat;
 		}
 	}
 }

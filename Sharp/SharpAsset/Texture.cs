@@ -10,7 +10,8 @@ namespace SharpAsset
 		public string Extension{ get{return Path.GetExtension (FullPath);  } set{ }}
 		public string FullPath{ get; set;}
 
-		public int texId;
+		internal int TBO;
+
 		public Bitmap bitmap;
 
 		public static Dictionary<string,Texture> textures=new Dictionary<string, Texture>();

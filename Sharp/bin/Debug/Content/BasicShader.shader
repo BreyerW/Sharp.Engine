@@ -7,7 +7,7 @@
 
             uniform mat4 mvp_matrix;
             varying vec2 out_uv;
-            attribute vec4 color;
+            varying vec4 color;
 
             void main(void)
             {
@@ -27,5 +27,5 @@
             void main(void)
             {
 	         frag_color = texture2D(MyTexture,out_uv.xy);
-	         frag_color =float4(0,0,0,0);
+	         //frag_color =color;
             }

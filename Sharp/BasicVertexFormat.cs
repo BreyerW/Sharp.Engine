@@ -1,25 +1,25 @@
-﻿using System.Runtime.InteropServices;
-using System;
-using OpenTK.Graphics.OpenGL;
-using OpenTK;
+﻿using System;
 using System.Collections.Generic;
+//using System.Numerics;
+using System.Runtime.InteropServices;
+using OpenTK;
 using SharpAsset;
 
 namespace Sharp
 {
-	[Serializable, StructLayout(LayoutKind.Sequential,Pack=0)]
+	[Serializable, StructLayout(LayoutKind.Sequential,Pack=1)]
 	public struct BasicVertexFormat:IVertex
 	{
-		[RegisterAs(VertexAttribute.POSITION,VertexAttribPointerType.Float)]
+		[RegisterAs(VertexAttribute.POSITION,VertexType.Float)]
 		public float X;
 
-		[RegisterAs(VertexAttribute.POSITION,VertexAttribPointerType.Float)]
+		[RegisterAs(VertexAttribute.POSITION,VertexType.Float)]
 		public float Y;
 
-		[RegisterAs(VertexAttribute.POSITION,VertexAttribPointerType.Float)]
+		[RegisterAs(VertexAttribute.POSITION,VertexType.Float)]
 		public float Z;
 
-		[RegisterAs(VertexAttribute.UV,VertexAttribPointerType.Float)]
+		[RegisterAs(VertexAttribute.UV,VertexType.Float)]
 		public Vector2 texcoords;
 		//public Color<float> Color;
 

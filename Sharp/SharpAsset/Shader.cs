@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using Sharp.Editor.Views;
 
 namespace SharpAsset
 {
@@ -17,37 +18,138 @@ namespace SharpAsset
 		public string VertexSource { get; private set; }
 		public string FragmentSource { get; private set; }
 
-		public int VertexID;
-		public int FragmentID;
+		internal int VertexID;
+		internal int FragmentID;
 
-		public int Program;
+		internal int Program;
 
 		public static Dictionary<string,Shader> shaders=new Dictionary<string, Shader>();
+		internal Dictionary<UniformType,Dictionary<string, int>> uniformArray;
 
 		public Shader(ref string vs, ref string fs, ref string pathToFile)
 		{
+			uniformArray = new Dictionary<UniformType, Dictionary<string, int>> ();
 			VertexSource = vs;
 			FragmentSource = fs;
 			FullPath=pathToFile;
 			FragmentID = 0;
 			VertexID = 0;
 			Program = 0;
-			shaders.Add (Name,this);
 		}
 		public override string ToString ()
 		{
 			return Name;
 		}
-		internal void Compile()
-		{
-			//SceneView.backendRenderer.CompileShader (out Program, out FragmentID, out VertexID, FragmentSource, VertexSource);
-		}
 
 		public void Dispose()
 		{
-			//SceneView.backendRenderer.DeleteShader (Program,FragmentID,VertexID);
+			SceneView.backendRenderer.Delete(ref this);
 		}
 	}
-
+	public enum UniformType{
+		Int = 5124,
+		UnsignedInt,
+		Float,
+		Double = 5130,
+		FloatVec2 = 35664,
+		FloatVec3,
+		FloatVec4,
+		IntVec2,
+		IntVec3,
+		IntVec4,
+		Bool,
+		BoolVec2,
+		BoolVec3,
+		BoolVec4,
+		FloatMat2,
+		FloatMat3,
+		FloatMat4,
+		Sampler1D,
+		Sampler2D,
+		Sampler3D,
+		SamplerCube,
+		Sampler1DShadow,
+		Sampler2DShadow,
+		Sampler2DRect,
+		Sampler2DRectShadow,
+		FloatMat2x3,
+		FloatMat2x4,
+		FloatMat3x2,
+		FloatMat3x4,
+		FloatMat4x2,
+		FloatMat4x3,
+		Sampler1DArray = 36288,
+		Sampler2DArray,
+		SamplerBuffer,
+		Sampler1DArrayShadow,
+		Sampler2DArrayShadow,
+		SamplerCubeShadow,
+		UnsignedIntVec2,
+		UnsignedIntVec3,
+		UnsignedIntVec4,
+		IntSampler1D,
+		IntSampler2D,
+		IntSampler3D,
+		IntSamplerCube,
+		IntSampler2DRect,
+		IntSampler1DArray,
+		IntSampler2DArray,
+		IntSamplerBuffer,
+		UnsignedIntSampler1D,
+		UnsignedIntSampler2D,
+		UnsignedIntSampler3D,
+		UnsignedIntSamplerCube,
+		UnsignedIntSampler2DRect,
+		UnsignedIntSampler1DArray,
+		UnsignedIntSampler2DArray,
+		UnsignedIntSamplerBuffer,
+		DoubleVec2 = 36860,
+		DoubleVec3,
+		DoubleVec4,
+		SamplerCubeMapArray = 36876,
+		SamplerCubeMapArrayShadow,
+		IntSamplerCubeMapArray,
+		UnsignedIntSamplerCubeMapArray,
+		Image1D = 36940,
+		Image2D,
+		Image3D,
+		Image2DRect,
+		ImageCube,
+		ImageBuffer,
+		Image1DArray,
+		Image2DArray,
+		ImageCubeMapArray,
+		Image2DMultisample,
+		Image2DMultisampleArray,
+		IntImage1D,
+		IntImage2D,
+		IntImage3D,
+		IntImage2DRect,
+		IntImageCube,
+		IntImageBuffer,
+		IntImage1DArray,
+		IntImage2DArray,
+		IntImageCubeMapArray,
+		IntImage2DMultisample,
+		IntImage2DMultisampleArray,
+		UnsignedIntImage1D,
+		UnsignedIntImage2D,
+		UnsignedIntImage3D,
+		UnsignedIntImage2DRect,
+		UnsignedIntImageCube,
+		UnsignedIntImageBuffer,
+		UnsignedIntImage1DArray,
+		UnsignedIntImage2DArray,
+		UnsignedIntImageCubeMapArray,
+		UnsignedIntImage2DMultisample,
+		UnsignedIntImage2DMultisampleArray,
+		Sampler2DMultisample = 37128,
+		IntSampler2DMultisample,
+		UnsignedIntSampler2DMultisample,
+		Sampler2DMultisampleArray,
+		IntSampler2DMultisampleArray,
+		UnsignedIntSampler2DMultisampleArray,
+		UnsignedIntAtomicCounter = 37595
+	}
 }
 

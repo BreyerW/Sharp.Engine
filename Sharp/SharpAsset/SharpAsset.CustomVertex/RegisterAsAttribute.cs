@@ -1,5 +1,4 @@
 ﻿using System;
-using OpenTK.Graphics.OpenGL;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -29,27 +28,29 @@ namespace SharpAsset
 				throw new InvalidOperationException (nameof(format)+" have wrong value");
 			}
 		}
-		public string shaderLocationName;
+		public int shaderLocation;
 		public VertexAttribute format;
-		public VertexAttribPointerType type;
+		public VertexType type;
 		public List<Action<IVertex,object>> generatedFillers=new List<Action<IVertex,object>>(); 
 
-		public RegisterAsAttribute (VertexAttribute Format, VertexAttribPointerType Type)
+		public RegisterAsAttribute (VertexAttribute Format, VertexType Type)
 		{
 			format = Format;
 
 			switch (format) {
 			case VertexAttribute.POSITION:
-				shaderLocationName="vertex_position";
+				shaderLocation=0;
 				break;
 			case VertexAttribute.COLOR:
-				shaderLocationName="vertex_color";break;
+				shaderLocation=1;
+				break;
 			case VertexAttribute.UV:
-				shaderLocationName="vertex_texcoord";break;
+				shaderLocation=2;
+				break;
 			case VertexAttribute.NORMAL:
-				shaderLocationName="vertex_normal";break;
+				shaderLocation=3;
+				break;
 			}
-
 			type = Type;
 		}
 		public static void ParseVertexFormat(Type type){

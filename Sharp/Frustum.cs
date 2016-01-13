@@ -91,7 +91,6 @@ namespace Sharp
 		public static Matrix4 TileFrustum(float tileX,float tileY,float placeInXRow, float placeInYRow){
 			var tx = -(-1 + 2f / (2f * tileX) + (2f / tileX) * placeInXRow);
 			var	ty= - (-1 + 2f/(2f*tileY) + (2f/tileY) * placeInYRow);
-			Console.WriteLine (tx+" : "+ty);
 			return Matrix4.CreateScale (tileX,tileY,1f)*Matrix4.CreateTranslation(tx,ty,0)*Camera.main.projectionMatrix;
 		}
 		public static void Perspective(float fovy,float aspect, float zNear, float zFar)
@@ -103,8 +102,7 @@ namespace Sharp
 
 			xmin = ymin * aspect;
 			xmax = ymax * aspect;
-			Console.WriteLine (xmax+" : "+ymax);
-			//glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
+		//glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 		}
 	}
 }

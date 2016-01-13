@@ -182,7 +182,6 @@ namespace Sharp.Editor.Views
 					{
 						var entity = selected.Content() as Entity;
 
-						Console.WriteLine (evnt.XDelta);
 						if((angle>=-1 && angle<=0))
 							entity.Position +=normalizedMoveDir*deltaDir.LengthFast;
 						else
@@ -233,9 +232,9 @@ namespace Sharp.Editor.Views
 						 //FromMatrix (scene.RootNode.Transform);
 						var shader=Shader.shaders ["BasicShader"];
 						SceneView.backendRenderer.Allocate (ref shader);
-						renderer.material.shaderId =shader.Program;
+						renderer.material = new Material (shader.Program);
 						var tex = Texture.textures ["duckCM"];
-						renderer.material.SetTexture ("MyTexture", tex);
+						renderer.material.SetShaderProperty ("MyTexture",ref tex);
 					}
 					eObject.Instatiate ();
 				}

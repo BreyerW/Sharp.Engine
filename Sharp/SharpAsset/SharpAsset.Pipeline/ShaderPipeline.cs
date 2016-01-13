@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Sharp.Editor.Views;
 
 namespace SharpAsset.Pipeline
 {
@@ -24,7 +25,10 @@ namespace SharpAsset.Pipeline
 				{
 					shaderStringBuffer.Add(shaderFile.ReadLine());
 				}
-				return SplitShaders(shaderStringBuffer, ref pathToFile);
+				var shader=SplitShaders(shaderStringBuffer, ref pathToFile);
+				SceneView.backendRenderer.GenerateBuffers (ref shader);
+				Shader.shaders.Add (shader.Name,shader);
+				return shader;
 		}
 		}
 		#region SplitShaders
@@ -46,8 +50,9 @@ namespace SharpAsset.Pipeline
 				}
 				lineCount++;
 			}
+
 			List<string> vertexShaderBuffer = 
-				shaderBuffer.GetRange(vertexShaderOffset, fragmentShaderOffset-vertexShaderOffset-1);
+				shaderBuffer.GetRange(vertexShaderOffset, fragmentShaderOffset-vertexShaderOffset);
 			vertexShaderBuffer.Insert (0, version);
 			List<string> fragmentShaderBuffer = 
 				shaderBuffer.GetRange(fragmentShaderOffset, lineCount-fragmentShaderOffset);

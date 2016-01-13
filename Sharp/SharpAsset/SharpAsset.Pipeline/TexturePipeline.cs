@@ -19,7 +19,7 @@ namespace SharpAsset.Pipeline
 				return Texture.textures[name];
 			var texture = new Texture ();
 			var dib=FreeImage.LoadEx (pathToFile);
-			texture.texId = -1;
+			texture.TBO = -1;
 			texture.FullPath = pathToFile;
 			texture.bitmap=FreeImage.GetBitmap (dib);
 			//Console.WriteLine (IsPowerOfTwo(texture.bitmap.Width) +" : "+IsPowerOfTwo(texture.bitmap.Height));
