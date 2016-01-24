@@ -13,6 +13,7 @@ namespace Sharp.Editor
 		{
 			var props=Target.GetType ().GetProperties ().Where (p=>p.CanRead && p.CanWrite);
 			foreach (var prop in props) {
+				//if(prop.Name!="active")
 				properties.Add (prop.Name+":",new Gwen.Control.Property.Text(properties),prop.GetValue(Target).ToString()).ValueChanged+=(o,arg)=>{var tmpObj=o as PropertyRow<string>; prop.SetValue(Target,tmpObj.Value);};
 
 			}

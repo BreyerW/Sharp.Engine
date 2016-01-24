@@ -98,13 +98,11 @@ namespace SharpSL.BackendRenderers.OpenGL
 			}
 		}*/
 		public void Allocate<IndexType> (ref Mesh<IndexType> mesh) where IndexType: struct, IConvertible{
-			Console.WriteLine ("huuu");
 			//if (IsLoaded) return;
 			//VBO
 			//int tmpVBO;
 			//GL.GenBuffers(1, out tmpVBO);
 			//Console.WriteLine ("error check"+GL.DebugMessageCallback);
-			BindBuffers(ref mesh);
 			var watch =System.Diagnostics.Stopwatch.StartNew();
 			var stride = Marshal.SizeOf (mesh.Vertices [0]);
 			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mesh.Vertices.Length * stride),CustomConverter.ToByteArray(mesh.Vertices,stride),(BufferUsageHint)mesh.UsageHint);

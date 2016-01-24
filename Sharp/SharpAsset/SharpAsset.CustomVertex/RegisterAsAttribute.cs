@@ -17,7 +17,7 @@ namespace SharpAsset
 			get{ 
 				switch (format) {
 				case VertexAttribute.POSITION:
-					 return generatedFillers.Count;
+					return 3;//generatedFillers.Count;
 				case VertexAttribute.COLOR:
 					return 4;
 				case VertexAttribute.UV:
@@ -89,7 +89,7 @@ namespace SharpAsset
 			Expression castTartgetExp = Expression.Unbox(targetExp,fieldInfo.DeclaringType);
 
 			//cast the value to its correct type
-			Expression castValueExp = Expression.Convert(valueExp, fieldInfo.FieldType);
+			Expression castValueExp = Expression.Unbox(valueExp, fieldInfo.FieldType);
 
 			//the field `field` on "target"
 			MemberExpression fieldExp = Expression.Field(castTartgetExp , fieldInfo);

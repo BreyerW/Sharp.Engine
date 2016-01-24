@@ -23,34 +23,47 @@ namespace Sharp.Editor.Views
 			ptree=new PropertyTree (canvas);
 			ptree.SetBounds(0, 0, 200, 200);
 			ptree.ShouldDrawBackground = false;
+			Selection.OnSelectionChange += (sender, args) => {
+				var entity = (sender as Func<object>)() as Entity;
+				if (entity!=null) {
+					var comps = entity.GetAllComponents ();
+					ptree.RemoveAll ();
+					var prop = ptree.Add ("Transform");
+					prop.Add ("Position:", new Gwen.Control.Property.Vector3 (prop), entity.Position).ValueChanged += (o, arg) => {
+						var tmpObj = o as PropertyRow<Vector3>;
+						entity.Position = tmpObj.Value;
+					};
+					prop.Add ("Rotation:", new Gwen.Control.Property.Vector3 (prop), entity.Rotation).ValueChanged += (o, arg) => {
+						var tmpObj = o as PropertyRow<Vector3>;
+						entity.Rotation = tmpObj.Value;
+					};
+					prop.Add ("Scale:", new Gwen.Control.Property.Vector3 (prop), entity.Scale).ValueChanged += (o, arg) => {
+						var tmpObj = o as PropertyRow<Vector3>;
+						entity.Scale = tmpObj.Value;
+					};
+					foreach (var component in comps) {
+						prop = ptree.Add (component.GetType ().Name);
+						var inspector = new DefaultInspector ();
+						inspector.properties = prop;
+						inspector.getTarget = () => component;
+						inspector.OnInitializeGUI ();
+					}
+					ptree.Show ();
+					ptree.ExpandAll ();
+				}
+				//else
+				//props=Selection.assets [0].GetType ().GetProperties ().Where (p=>p.CanRead && p.CanWrite);
+
+			};
 		}
 		public override void Render ()
 		{
 			base.Render ();
-			if (Selection.assets.Count>0 && Selection.assets.Peek() != lastInspectedObj) {
+			/*if (Selection.assets.Count>0 && Selection.assets.Peek() != lastInspectedObj) {
 				lastInspectedObj = Selection.assets.Peek();
 			IEnumerable<PropertyInfo> props;
-				if (Selection.assets.Peek()() is Entity) {
-					var entity = Selection.assets.Peek()() as Entity;
-					var comps= entity.GetAllComponents ();
-					ptree.RemoveAll ();
-					var prop=ptree.Add ("Transform");
-					prop.Add ("Position:",new Gwen.Control.Property.Vector3(prop),entity.Position).ValueChanged+=(o,arg)=>{var tmpObj=o as PropertyRow<Vector3>; entity.Position=tmpObj.Value;};
-					prop.Add ("Rotation:",new Gwen.Control.Property.Vector3(prop),entity.Rotation).ValueChanged+=(o,arg)=>{var tmpObj=o as PropertyRow<Vector3>; entity.Rotation=tmpObj.Value;};
-					prop.Add ("Scale:",new Gwen.Control.Property.Vector3(prop),entity.Scale).ValueChanged+=(o,arg)=>{var tmpObj=o as PropertyRow<Vector3>; entity.Scale=tmpObj.Value;};
-				foreach(var component in comps){
-						prop=ptree.Add (component.GetType().Name);
-						var inspector=new DefaultInspector ();
-						inspector.properties = prop;
-						inspector.getTarget = () => component;
-						inspector.OnInitializeGUI ();
-				}
-					ptree.Show();
-					ptree.ExpandAll ();
-			}
-				//else
-					//props=Selection.assets [0].GetType ().GetProperties ().Where (p=>p.CanRead && p.CanWrite);
-			}
+
+			}*/
 
 		}
 		public override void OnResize (int width, int height)

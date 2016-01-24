@@ -56,7 +56,10 @@ namespace Sharp.Editor.Views
 			var cam=e.AddComponent<Camera> ();
 			cam.SetModelviewMatrix ();
 			cam.SetProjectionMatrix ();
+			e.name="Main Camera";
+			e.OnTransformChanged +=((sender, evnt) =>cam.SetModelviewMatrix());
 			Camera.main = cam;
+
 			if(OnSetupMatrices!=null)
 			OnSetupMatrices ();
 			base.Initialize ();
@@ -105,6 +108,8 @@ namespace Sharp.Editor.Views
 					GL.PushMatrix ();
 					//var tmpMat =mesh.ModelMatrix* Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
 					dynamic renderer = entity.GetComponent (typeof(MeshRenderer<,>));
+					if (renderer == null)
+						return;
 					DrawHelper.DrawBox (renderer.mesh.bounds.Min, renderer.mesh.bounds.Max);
 					//float cameraObjectDistance =(Camera.main.entityObject.position-entityObject.position).Length;
 					//float worldSize = (float)(2 * Math.Tan((double)(Camera.main.FieldOfView / 2.0)) * cameraObjectDistance);
@@ -114,14 +119,14 @@ namespace Sharp.Editor.Views
 				}
 			}
 
-			GL.DisableVertexAttribArray(0);
+		/*	GL.DisableVertexAttribArray(0);
 			GL.DisableVertexAttribArray(1);
 			GL.DisableVertexAttribArray(2);
 			GL.DisableVertexAttribArray(3);
 
 			//GL.DebugMessageCallback(DebugCallbackInstance, IntPtr.Zero);
 			GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);*/
 
 			//canvas.RenderCanvas ();
 		}
@@ -145,17 +150,17 @@ namespace Sharp.Editor.Views
 			//if (!canvas.IsHovered)
 				//return;
 			if (evnt[OpenTK.Input.Key.Q]) 
-				Camera.main.Move (0f, 1f, 0f,0.1f);
+				Camera.main.Move (0f, 1f, 0f,0.03f);
 			if (evnt[OpenTK.Input.Key.E])
-				Camera.main.Move(0f, -1f, 0f,0.1f);
+				Camera.main.Move(0f, -1f, 0f,0.03f);
 			if (evnt[OpenTK.Input.Key.A])
-				Camera.main.Move(-1f, 0f, 0f,0.1f);
+				Camera.main.Move(-1f, 0f, 0f,0.03f);
 			if (evnt[OpenTK.Input.Key.D])
-				Camera.main.Move(1f, 0f, 0f,0.1f);
+				Camera.main.Move(1f, 0f, 0f,0.03f);
 			if (evnt[OpenTK.Input.Key.W])
-				Camera.main.Move(0f, 0f, -1f,0.1f);
+				Camera.main.Move(0f, 0f, -1f,0.03f);
 			if (evnt[OpenTK.Input.Key.S])
-				Camera.main.Move(0f, 0f, 1f,0.1f);
+				Camera.main.Move(0f, 0f, 1f,0.03f);
 			SceneView.OnSetupMatrices?.Invoke ();
 		}
 		public static double AngleBetween(Vector3 vector1, Vector3 vector2)
@@ -225,8 +230,14 @@ namespace Sharp.Editor.Views
 					Camera.main.SetModelviewMatrix ();
 					var orig =Camera.main.entityObject.Position;
 					var dir = (Camera.main.ScreenToWorld (locPos.X, locPos.Y, canvas.Width, canvas.Height)-orig).Normalized ();
-					eObject.Position =orig+dir*Camera.main.ZFar*0.333f;
-					if (asset.Content().GetType().GetGenericTypeDefinition() == typeof(Mesh<>)) {
+					eObject.Position =orig+dir*Camera.main.ZFar*0.1f;
+					if (asset.Content ().GetType () == typeof(Skeleton)) {
+						var skele=(Skeleton)asset.Content();
+						var renderer = eObject.AddComponent( new SkeletonRenderer (ref skele));
+						var shader=Shader.shaders ["SkeletonShader"];
+						SceneView.backendRenderer.Allocate (ref shader);
+					}
+					else if (asset.Content().GetType().GetGenericTypeDefinition() == typeof(Mesh<>)) {
 						var mesh=asset.Content() as IAsset;
 						var renderer = eObject.AddComponent (new MeshRenderer<ushort,BasicVertexFormat> (mesh)) as MeshRenderer<ushort,BasicVertexFormat>;
 						 //FromMatrix (scene.RootNode.Transform);
@@ -248,7 +259,7 @@ namespace Sharp.Editor.Views
 					dynamic render = ent.GetComponent(typeof(MeshRenderer<,>));
 						if (render != null && render.mesh.bounds.Intersect(ref ray, ref ent.ModelMatrix)) {
 						var id = entities.IndexOf (ent);
-						Selection.assets.Push(()=>entities[id]);
+						Selection.Asset=()=>entities[id];
 							//Selection.assets.Add (ent);
 						SceneStructureView.tree.UnselectAll ();
 						SceneStructureView.tree.FindNodeByContent (ent).IsSelected=true;

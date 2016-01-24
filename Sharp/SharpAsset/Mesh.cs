@@ -10,7 +10,7 @@ namespace SharpAsset
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Mesh<IndexType>:IAsset where IndexType :struct, IConvertible
 	{
-		public IVertex[] Vertices;
+		public IVertex[] Vertices;  //convert to byte[] and calc offset raczej nie, param musza byc widoczne
 		public string Name{ get{return Path.GetFileNameWithoutExtension (FullPath);  } set{ }}
 		public string Extension{ get{return Path.GetExtension (FullPath);  } set{ }}
 		public string FullPath{ get; set;}
@@ -44,12 +44,13 @@ namespace SharpAsset
 			shortMesh.bounds=mesh.bounds;
 			shortMesh.FullPath = mesh.FullPath;
 			shortMesh.Vertices = mesh.Vertices;
-			shortMesh.Indices=new IndexType[mesh.Indices.Length];
+			if (mesh.Indices != null) {
+				shortMesh.Indices = new IndexType[mesh.Indices.Length];
 
-			//Marshal.copy
-			for(var indice=0; indice<mesh.Indices.Length; indice++ )
-				shortMesh.Indices[indice] =(IndexType)Convert.ChangeType(mesh.Indices[indice],typeof(IndexType));
-			
+				//Marshal.copy
+				for (var indice = 0; indice < mesh.Indices.Length; indice++)
+					shortMesh.Indices [indice] = (IndexType)Convert.ChangeType (mesh.Indices [indice], typeof(IndexType));
+			}
 			return shortMesh;
 		}
 	}

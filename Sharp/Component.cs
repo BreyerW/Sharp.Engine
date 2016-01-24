@@ -5,6 +5,8 @@ namespace Sharp
 	public abstract class Component
 	{
 		public bool active{get{return enabled; } set{
+				if (enabled == value)
+					return;
 				enabled = value; 
 				if (enabled)
 					OnEnableInternal ();

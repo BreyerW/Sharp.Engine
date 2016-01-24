@@ -7,7 +7,17 @@ namespace Sharp
 {
 	public static class Selection
 	{
-		public static Stack<Func<object>> assets=new Stack<Func<object>>();
+		private static Stack<Func<object>> assets=new Stack<Func<object>>();
+		public static Func<object> Asset{
+			set{ 
+				assets.Push (value);
+				OnSelectionChange?.Invoke (value, EventArgs.Empty);
+			}
+			get{ 
+				return assets.Peek ();
+			}
+		}
+		public static EventHandler OnSelectionChange;
 		public static bool isDragging=false;
 	}
 }

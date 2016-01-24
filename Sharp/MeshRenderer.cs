@@ -40,7 +40,7 @@ namespace Sharp
 	public class MeshRenderer<IndexType,VertexFormat>: Renderer where IndexType : struct,IConvertible where VertexFormat : struct, IVertex
 	{
 		internal Mesh<IndexType> mesh;
-		protected static readonly int sizeOfId=Marshal.SizeOf<IndexType>();	
+		protected static readonly int sizeOfId=Marshal.SizeOf(typeof(IndexType));	
 
 		public Material material=new Material();
 
@@ -63,7 +63,7 @@ namespace Sharp
 
 		private void Allocate(){
 			SceneView.backendRenderer.GenerateBuffers (ref mesh);
-
+			SceneView.backendRenderer.BindBuffers (ref mesh);
 			SceneView.backendRenderer.Allocate (ref mesh);
 		}
 	

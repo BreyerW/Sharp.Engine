@@ -15,7 +15,9 @@ namespace SharpAsset.Pipeline
 			var subclasses=type.Assembly.GetTypes ().Where (t => t.IsSubclassOf (type));
 
 			foreach (var subclass in subclasses) {
-				var attr=subclass.GetCustomAttributes (typeof(SupportedFileFormatsAttribute), false)[0] as SupportedFileFormatsAttribute;
+				var attr=subclass.GetCustomAttributes (typeof(SupportedFileFormatsAttribute), false).FirstOrDefault() as SupportedFileFormatsAttribute;
+				if (attr == null)
+					continue;
 				var importer = Activator.CreateInstance (subclass) as Pipeline;
 				foreach(var format in attr.supportedFileFormats)
 					importers.Add(format, importer);

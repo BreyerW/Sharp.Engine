@@ -27,6 +27,7 @@ namespace Sharp
 			ZFar = 1000f;
 			//Orientation = TargetOrientation;
 			SetProjectionMatrix ();
+
 		}
 
 		#endregion
@@ -62,11 +63,10 @@ public CamMode CameraMode=CamMode.FlightCamera;
 #region Public Methods
 public void Update()
 {
-
-	if (TargetPosition !=entityObject.Position)
+	/*if (TargetPosition !=entityObject.Position)
 	{
 		entityObject.Position = Vector3.Lerp(entityObject.Position, TargetPosition, 1);
-	}
+	}*/
 }
 
 public void SetProjectionMatrix()
@@ -258,7 +258,7 @@ public void Move(float x, float y,float z, float time=1f)
 	}
 	else
 				TargetPosition += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.Rotation)));
-	if (CameraMode != CamMode.FlightCamera)
+	if (CameraMode == CamMode.FlightCamera)
 		entityObject.Position = TargetPosition;
 	
 	SetModelviewMatrix ();

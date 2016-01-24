@@ -1,11 +1,16 @@
 ﻿using System;
 using OpenTK;
 using System.Drawing;
+using SharpAsset;
 
 namespace SharpSL
 {
 	public interface IEditorBackendRenderer
 	{
+		void update (ref Skeleton skele);
+		void newinit (ref Skeleton skele);
+		void display (ref Skeleton skele);
+
 		void DrawGrid(Color color,Vector3 pos, float X, float Y, int cell_size = 16, int grid_size = 2560);//IBackendRendererHelper/IEditorBackend?
 		void DrawBox(Vector3 pos1, Vector3 pos2);
 		void DrawRectangle(Vector3 pos1, Vector3 pos2);

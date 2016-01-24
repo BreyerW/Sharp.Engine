@@ -14,10 +14,12 @@ namespace Sharp.Editor.Views
 			tree = new  Gwen.Control.TreeControl (canvas);
 			tree.SetSize (canvas.Width, canvas.Height);
 			tree.ShouldDrawBackground = false;
+			tree.SelectionChanged += (sender, args) => Selection.Asset = (sender as TreeNode).Content;
+			RegisterEntity(Camera.main.entityObject);
 		}
 		public static void RegisterEntity(Entity ent){
-			var id=SceneView.entities.IndexOf (ent);
-			tree.AddNode (()=>SceneView.entities[id]);
+			//var id=SceneView.entities.IndexOf (ent);
+			tree.AddNode (()=>ent);
 		}
 		public override void OnMouseMove (OpenTK.Input.MouseMoveEventArgs evnt)
 		{

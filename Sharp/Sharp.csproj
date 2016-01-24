@@ -156,6 +156,14 @@
     <Compile Include="SharpSL\SharpSL.BackendRenderers\SharpSL.BackendRenderers.OpenGL\OpenGLRenderer.cs" />
     <Compile Include="SharpAsset\SharpAsset.CustomVertex\CustomConverter.cs" />
     <Compile Include="SharpAsset\SharpAsset.CustomVertex\VertexType.cs" />
+    <Compile Include="SharpAsset\Script.cs" />
+    <Compile Include="SharpAsset\SharpAsset.Pipeline\SkeletonPipeline.cs" />
+    <Compile Include="SharpAsset\Skeleton.cs" />
+    <Compile Include="SharpAsset\SharpAsset.Pipeline\AnimationPipeline.cs" />
+    <Compile Include="SharpAsset\Animation.cs" />
+    <Compile Include="SkeletonRenderer.cs" />
+    <Compile Include="SkinnedMeshRenderer.cs" />
+    <Compile Include="TagsContainer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\AssimpNet.3.3.1\build\AssimpNet.targets" Condition="Exists('..\packages\AssimpNet.3.3.1\build\AssimpNet.targets')" />
@@ -179,11 +187,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="bin\Debug\Content\FogShader.shader">
+      <Link>Content\FogShader.shader</Link>
+    </None>
     <None Include="bin\Debug\Content\BasicShader.shader">
       <Link>Content\BasicShader.shader</Link>
     </None>
-    <None Include="bin\Debug\Content\FogShader.shader">
-      <Link>Content\FogShader.shader</Link>
+    <None Include="bin\Debug\Content\SkeletonShader.shader">
+      <Link>Content\SkeletonShader.shader</Link>
     </None>
   </ItemGroup>
 </Project>

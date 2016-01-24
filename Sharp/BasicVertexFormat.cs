@@ -11,13 +11,13 @@ namespace Sharp
 	public struct BasicVertexFormat:IVertex
 	{
 		[RegisterAs(VertexAttribute.POSITION,VertexType.Float)]
-		public float X;
+		public Vector3 X;
 
-		[RegisterAs(VertexAttribute.POSITION,VertexType.Float)]
+		/*[RegisterAs(VertexAttribute.POSITION,VertexType.Float)]
 		public float Y;
 
 		[RegisterAs(VertexAttribute.POSITION,VertexType.Float)]
-		public float Z;
+		public float Z;*/
 
 		[RegisterAs(VertexAttribute.UV,VertexType.Float)]
 		public Vector2 texcoords;

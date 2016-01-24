@@ -25,7 +25,7 @@ namespace Sharp
 			}
 			set {
 				position = value;
-				SetModelMatrix ();
+				OnTransformChanged?.Invoke (this,EventArgs.Empty);
 			}
 		}
 
@@ -37,7 +37,7 @@ namespace Sharp
 			}
 			set {
 				rotation = value;
-				SetModelMatrix ();
+				OnTransformChanged?.Invoke(this,EventArgs.Empty);
 			}
 		}
 
@@ -49,15 +49,72 @@ namespace Sharp
 			}
 			set {
 				scale = value;
-				SetModelMatrix ();
+				OnTransformChanged?.Invoke (this,EventArgs.Empty);
 			}
 		}
-
+		public bool active{
+			get{return enabled; }
+			set{
+				if (enabled == value)
+					return;
+				enabled = value; 
+				//if (enabled)
+					//OnEnableInternal ();
+				//else
+					//OnDisableInternal ();
+			}
+		}
+		private bool enabled;
+		private HashSet<int> tags=new HashSet<int>();
+		//public 
 		public Matrix4 ModelMatrix;
 		public Matrix4 MVPMatrix;
 
+		public EventHandler OnTransformChanged;
+
 		private List<Component> components=new List<Component>();
 
+		public Entity(){
+			OnTransformChanged += ((sender, e) => SetModelMatrix ());
+		}
+		public static Entity[] FindAllWithTags(bool activeOnly=true, params string[] lookupTags){
+			//find all entities with tags in scene
+			HashSet<Entity> intersectedArr;
+			var id = TagsContainer.allTags.IndexOf (lookupTags[0]);
+			intersectedArr = TagsContainer.entitiesToTag [id];
+			foreach(var tag in lookupTags){
+				id = TagsContainer.allTags.IndexOf (tag);
+				intersectedArr.IntersectWith (TagsContainer.entitiesToTag [id]);
+			}
+			if (activeOnly)
+				foreach (var entity in intersectedArr)
+					if (!entity.active)
+						intersectedArr.Remove (entity);
+			return intersectedArr.ToArray ();
+		}
+		//public Entity[] FindWithTags(bool activeOnly=true, params string[] lookupTags){
+			//find children entities with tags in scene
+		//}
+		public void AddTags (params string[] tagsToAdd){
+			foreach (var tag in tagsToAdd) {
+				if (TagsContainer.allTags.Contains (tag)) {
+					var id = TagsContainer.allTags.IndexOf (tag);
+					TagsContainer.entitiesToTag [id].Add (this);
+					tags.Add (id);
+				} else {
+					throw new ArgumentException ("Tag "+tag+" doesn't exist!");
+					//TagsContainer.allTags.Add (tag);
+					//TagsContainer.entitiesToTag.Add(new HashSet<Entity>(){this});
+				}
+			}	
+		}
+		public void RemoveTags(params string[] tagsToRemove){
+			foreach(var tag in tagsToRemove){
+				var id=TagsContainer.allTags.IndexOf (tag);
+				TagsContainer.entitiesToTag [id].Remove (this);
+				tags.Remove (id);
+			}
+		}
 		public void SetModelMatrix(){
 			ModelMatrix=Matrix4.CreateScale(scale)*Matrix4.CreateRotationX(rotation.X) * Matrix4.CreateRotationY(rotation.Y) * Matrix4.CreateRotationZ(rotation.Z) *Matrix4.CreateTranslation(position);
 		}
@@ -67,7 +124,7 @@ namespace Sharp
 		}
 		public Component GetComponent(Type type){
 			foreach(var component in components)
-				if(component.GetType().GetGenericTypeDefinition()==type)
+				if(component.GetType().IsGenericType && component.GetType().GetGenericTypeDefinition()==type || component.GetType()==type)
 					return component;
 			return null;
 		}

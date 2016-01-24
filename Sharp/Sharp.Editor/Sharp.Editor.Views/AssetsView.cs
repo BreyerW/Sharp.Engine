@@ -67,12 +67,13 @@ namespace Sharp.Editor.Views
 			//canvas.NeedsRedraw = true;
 		}
 		void RecursiveBuildTree(DirectoryInfo dirRoot, Gwen.Control.TreeNode treeIter){
+			MeshPipeline.SetMeshContext<ushort,BasicVertexFormat> ();
 			foreach (DirectoryInfo di in dirRoot.EnumerateDirectories()) {
 				if (!di.Name.StartsWith (".")) {
 					var iter=treeIter.AddNode (di.Name);
 					foreach (FileInfo file in FilterFiles(di,SharpAsset.Pipeline.SupportedFileFormatsAttribute.importers.Keys))
 					{
-						if (!file.Name.StartsWith("."))
+						if (SupportedFileFormatsAttribute.importers.ContainsKey(file.Extension) && !file.Name.StartsWith("."))
 							iter.AddNode(()=>SupportedFileFormatsAttribute.importers[file.Extension].Import(file.FullName));
 					}
 					RecursiveBuildTree (di, iter);
