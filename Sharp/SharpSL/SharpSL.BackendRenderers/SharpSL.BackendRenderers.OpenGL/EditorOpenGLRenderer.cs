@@ -464,9 +464,6 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 			GL.BindVertexArray(0);
 
-			Console.WriteLine (mats.Length);
-
-			//shader1.unuse();
 		}
 		void DisplayOcta(Bone bone){
 			var mat =bone.Offset.Inverted();

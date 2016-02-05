@@ -164,6 +164,7 @@
     <Compile Include="SkeletonRenderer.cs" />
     <Compile Include="SkinnedMeshRenderer.cs" />
     <Compile Include="TagsContainer.cs" />
+    <Compile Include="Light.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\AssimpNet.3.3.1\build\AssimpNet.targets" Condition="Exists('..\packages\AssimpNet.3.3.1\build\AssimpNet.targets')" />
@@ -187,14 +188,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="bin\Debug\Content\FogShader.shader">
-      <Link>Content\FogShader.shader</Link>
-    </None>
-    <None Include="bin\Debug\Content\BasicShader.shader">
-      <Link>Content\BasicShader.shader</Link>
-    </None>
-    <None Include="bin\Debug\Content\SkeletonShader.shader">
-      <Link>Content\SkeletonShader.shader</Link>
-    </None>
+    <None Include="Content\BasicShader.shader" />
+    <None Include="Content\FogShader.shader" />
+    <None Include="Content\SkeletonShader.shader" />
+    <None Include="Content\LightProcess.inc" />
   </ItemGroup>
 </Project>

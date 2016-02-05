@@ -7,21 +7,22 @@ using SharpAsset;
 
 namespace Sharp
 {
-	[Serializable, StructLayout(LayoutKind.Sequential,Pack=1)]
+	[Serializable, StructLayout(LayoutKind.Sequential,Pack=1)]//try explicit z byte field 0 offset
 	public struct BasicVertexFormat:IVertex
 	{
 		[RegisterAs(VertexAttribute.POSITION,VertexType.Float)]
 		public Vector3 X;
-
+		[RegisterAs(VertexAttribute.NORMAL,VertexType.Float)]
+		public Vector3 normal;
 		/*[RegisterAs(VertexAttribute.POSITION,VertexType.Float)]
 		public float Y;
 
 		[RegisterAs(VertexAttribute.POSITION,VertexType.Float)]
 		public float Z;*/
-
 		[RegisterAs(VertexAttribute.UV,VertexType.Float)]
 		public Vector2 texcoords;
 		//public Color<float> Color;
+
 
 	/*	public byte[] ConvertToBytes()
 		{

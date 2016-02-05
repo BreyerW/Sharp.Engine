@@ -35,15 +35,9 @@ namespace SharpAsset.Pipeline
 			skele.Name = "_Skeleton";
 			skele[rootBone.Name]=CreateBoneTree (ref skele, rootBone,null);
 			//bvh_to_vertices (skele[rootBone.Name],);
-			Console.WriteLine ("/n Start bone list: /n"+rootBone.Name);
+			//Console.WriteLine ("/n Start bone list: /n"+rootBone.Name);
 		
 			return skele;
-		}
-	
-		void PrintBones(Bone n){
-			Console.WriteLine (n.Name);
-			foreach(var node in n.Children)
-				PrintBones (node);
 		}
 		private int _i;
 		private Bone CreateBoneTree(ref Skeleton skele, Node node, Bone parent) {

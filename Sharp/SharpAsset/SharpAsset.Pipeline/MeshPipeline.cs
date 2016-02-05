@@ -10,7 +10,7 @@ using Sharp.Editor.Views;
 
 namespace SharpAsset.Pipeline
 {
-	[SupportedFileFormats(".fbx",".dae",".obj",".X")]
+	[SupportedFileFormats(".fbx",".dae",".obj")]
 	public class MeshPipeline:Pipeline
 	{
 		public static readonly MeshPipeline singleton=new MeshPipeline();
@@ -37,7 +37,8 @@ namespace SharpAsset.Pipeline
 				//throw new NotSupportedException (format+" format is not supported");
 			var vertexType=vertex().GetType();
 			var asset = new AssimpContext ();
-			var scene=asset.ImportFile (pathToFile,PostProcessPreset.TargetRealTimeMaximumQuality|PostProcessSteps.FlipUVs|PostProcessSteps.Triangulate|PostProcessSteps.FindInvalidData|PostProcessSteps.MakeLeftHanded);
+
+			var scene=asset.ImportFile (pathToFile,PostProcessPreset.TargetRealTimeMaximumQuality|PostProcessSteps.FlipUVs|PostProcessSteps.Triangulate|PostProcessSteps.MakeLeftHanded|PostProcessSteps.GenerateSmoothNormals|PostProcessSteps.FixInFacingNormals);
 
 			var internalMesh =new Mesh<int>();
 			internalMesh.FullPath = pathToFile;
@@ -47,7 +48,6 @@ namespace SharpAsset.Pipeline
 				//Console.WriteLine ("indices : "+ mesh.GetUnsignedIndices());
 				//mesh.MaterialIndex
 				//internalMesh.Indices=indexType==typeof(int) ? new int[mesh.VertexCount*3] : new short[mesh.VertexCount*3];
-				Console.WriteLine (mesh.HasBones);
 				if (mesh.HasBones) {
 					
 					SkeletonPipeline.singleton.scene = scene;
@@ -76,6 +76,9 @@ namespace SharpAsset.Pipeline
 					}
 					if (mesh.HasTextureCoords (0)) {
 						FillVertexAttrib (vertexType,VertexAttribute.UV,ref internalMesh.Vertices[i],new Vector2(mesh.TextureCoordinateChannels [0] [i].X, mesh.TextureCoordinateChannels [0] [i].Y));//was 1-texcoord.y
+					}
+					if (mesh.HasNormals) {
+						FillVertexAttrib (vertexType, VertexAttribute.NORMAL, ref internalMesh.Vertices [i], new Vector3 (mesh.Normals [i].X, mesh.Normals [i].Y, mesh.Normals [i].Z));
 					}
 				}
 				bounds = new BoundingBox (min,max);

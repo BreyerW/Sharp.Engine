@@ -13,7 +13,7 @@ namespace Sharp.Editor.Views
 	{
 		public static bool isDragging = false;
 
-		private static readonly DirectoryInfo root = new DirectoryInfo(Environment.CurrentDirectory);
+		private static readonly DirectoryInfo root = new DirectoryInfo(@"B:\Sharp_kopia\Sharp\Content");
 		public static TreeControl tree;
 
 		public override void Initialize ()
@@ -34,7 +34,7 @@ namespace Sharp.Editor.Views
 				MeshPipeline.SetMeshContext<ushort,BasicVertexFormat> ();
 				RecursiveBuildTree (root, tree);
 				foreach (FileInfo file in FilterFiles(root,SupportedFileFormatsAttribute.importers.Keys)) {
-					if (!file.Name.StartsWith ("."))
+				if (!file.Name.StartsWith (".") && SupportedFileFormatsAttribute.importers.ContainsKey(file.Extension))
 					tree.AddNode (()=>SupportedFileFormatsAttribute.importers [file.Extension].Import (file.FullName));
 				}
 			//tree.Show ();

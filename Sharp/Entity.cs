@@ -14,8 +14,9 @@ namespace Sharp
 			rotation=Vector3.Zero;
 			scale=Vector3.One/20;
 		}*/
+
 		public Entity parent;
-		public List<Entity> childs;
+		public List<Entity> childs=new List<Entity>();
 		public string name="Entity Object";
 		private Vector3 position=Vector3.Zero;
 
@@ -68,7 +69,6 @@ namespace Sharp
 		private HashSet<int> tags=new HashSet<int>();
 		//public 
 		public Matrix4 ModelMatrix;
-		public Matrix4 MVPMatrix;
 
 		public EventHandler OnTransformChanged;
 
@@ -156,13 +156,17 @@ namespace Sharp
 		}*/
 		public void Instatiate(){
 			SceneView.entities.Add (this);
-			SceneStructureView.RegisterEntity (this);
+			SceneView.OnAddedEntity?.Invoke ();
 		}
 		public void Instatiate(Vector3 pos, Vector3 rot, Vector3 s){
 			scale=s;
 			position=pos;
 			rotation=rot;
 			Instatiate();
+		}
+		public void Destroy(){
+			SceneView.entities.Remove (this);
+			SceneView.OnRemovedEntity?.Invoke ();
 		}
 		public override string ToString ()
 		{

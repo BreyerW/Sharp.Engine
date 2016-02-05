@@ -8,8 +8,11 @@ namespace SharpAsset
 {
 	public struct Material
 	{
+		internal static Dictionary<int, int> globalTexArray;
+		internal static Dictionary<int, Matrix4> globalMat4Array;
+
 		internal Dictionary<int, int> texArray;
-		internal Dictionary<int, Matrix4> matrix4Array;
+		internal Dictionary<int, Matrix4> mat4Array;
 
 		internal int shaderId;
 
@@ -25,9 +28,11 @@ namespace SharpAsset
 		public Material(int program){
 			shaderId = program;
 			texArray = new Dictionary<int, int> ();
-			matrix4Array = new Dictionary<int, Matrix4> ();
+			mat4Array = new Dictionary<int, Matrix4> ();
+			globalTexArray = new Dictionary<int, int> ();
+			globalMat4Array = new Dictionary<int, Matrix4> ();
 		}
-		public void SetShaderProperty (string propName,ref Texture tex){
+		public void SetProperty (string propName,ref Texture tex){
 			if (!Shader.uniformArray.ContainsKey (UniformType.Sampler2D) || !Shader.uniformArray [UniformType.Sampler2D].ContainsKey (propName))
 				return;
 
@@ -36,12 +41,31 @@ namespace SharpAsset
 			SceneView.backendRenderer.Allocate(ref tex);
 			texArray.Add (Shader.uniformArray [UniformType.Sampler2D][propName], tex.TBO);
 		}
-		public void SetShaderProperty(string propName,ref Matrix4 mat){
+		public void SetProperty(string propName,ref Matrix4 mat){
 			var shaderLoc = Shader.uniformArray [UniformType.FloatMat4] [propName];
-			if (!matrix4Array.ContainsKey (shaderLoc))
-				matrix4Array.Add (shaderLoc, mat);
+			if (!mat4Array.ContainsKey (shaderLoc))
+				mat4Array.Add (shaderLoc, mat);
 			else
-				matrix4Array [shaderLoc] = mat;
+				mat4Array [shaderLoc] = mat;
+		}
+
+		public void SetGlobalProperty (string propName,ref Texture tex){
+			if (!Shader.uniformArray.ContainsKey (UniformType.Sampler2D) || !Shader.uniformArray [UniformType.Sampler2D].ContainsKey (propName))
+				return;
+
+			SceneView.backendRenderer.GenerateBuffers(ref tex);
+			SceneView.backendRenderer.BindBuffers (ref tex);
+			SceneView.backendRenderer.Allocate(ref tex);
+			globalTexArray.Add (Shader.uniformArray [UniformType.Sampler2D][propName], tex.TBO);
+		}
+		public void SetGlobalProperty(string propName,ref Matrix4 mat){
+			//Console.WriteLine (propName);
+			var shaderLoc = Shader.uniformArray [UniformType.FloatMat4] [propName];
+
+			if (!globalMat4Array.ContainsKey (shaderLoc))
+				globalMat4Array.Add (shaderLoc, mat);
+			else
+				globalMat4Array [shaderLoc] = mat;
 		}
 	}
 }

@@ -11,8 +11,9 @@ namespace Sharp.Editor.Views
 {
 	public class InspectorView:View
 	{
-		private Func<object> lastInspectedObj=null;
 		private PropertyTree ptree;
+		private MenuStrip tagStrip;
+
 		public InspectorView ()
 		{
 			
@@ -21,7 +22,17 @@ namespace Sharp.Editor.Views
 		{
 			base.Initialize ();
 			ptree=new PropertyTree (canvas);
-			ptree.SetBounds(0, 0, 200, 200);
+			tagStrip = new MenuStrip (canvas);
+			var root=tagStrip.AddItem("Add tag");
+			root.Position(Gwen.Pos.Top,0,100);
+			root.Menu.Position(Gwen.Pos.Top,0,20);
+			root.Clicked+=(sender, arguments) => {var menu=sender as MenuItem;  menu.Menu.Show();};
+			foreach(var tag in TagsContainer.allTags)
+				root.Menu.AddItem(tag);
+			root.Menu.AddDivider();
+			root.Menu.AddItem("Create new tag").SetAction((Base sender, EventArgs arguments) =>Console.WriteLine());
+			//root.Menu.;
+			tagStrip.Hide();
 			ptree.ShouldDrawBackground = false;
 			Selection.OnSelectionChange += (sender, args) => {
 				var entity = (sender as Func<object>)() as Entity;
@@ -49,12 +60,15 @@ namespace Sharp.Editor.Views
 						inspector.OnInitializeGUI ();
 					}
 					ptree.Show ();
+					ptree.SetBounds(0, 25, 200, 200);
 					ptree.ExpandAll ();
+					tagStrip.Show();
 				}
 				//else
 				//props=Selection.assets [0].GetType ().GetProperties ().Where (p=>p.CanRead && p.CanWrite);
 
 			};
+
 		}
 		public override void Render ()
 		{
@@ -69,7 +83,7 @@ namespace Sharp.Editor.Views
 		public override void OnResize (int width, int height)
 		{
 			base.OnResize (width, height);
-			ptree.SetBounds(0, 0, canvas.Width, canvas.Height);
+			ptree.SetBounds(0, 25, canvas.Width, canvas.Height);
 		}
 		Action<object> CreateSetter(object instance, MethodInfo propMethod){
 

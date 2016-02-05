@@ -85,8 +85,6 @@ namespace Sharp
 				//if (!IsLoaded) return;
 			var shader = material.Shader;
 
-			material.SetShaderProperty ("mvp_matrix", ref entityObject.MVPMatrix);
-
 			SceneView.backendRenderer.Use(ref shader);
 			SceneView.backendRenderer.BindBuffers(ref material);
 
@@ -100,7 +98,10 @@ namespace Sharp
 		}
 		public override void SetupMatrices ()
 		{
-			entityObject.MVPMatrix =entityObject.ModelMatrix*Camera.main.modelViewMatrix*Camera.main.projectionMatrix;
+			var camMat =Camera.main.modelViewMatrix*Camera.main.projectionMatrix;
+
+			material.SetGlobalProperty ("camera", ref camMat);
+			material.SetGlobalProperty ("model", ref entityObject.ModelMatrix);
 
 			//int current = GL.GetInteger(GetPName.CurrentProgram);
 			//GL.ValidateProgram (material.shaderId);

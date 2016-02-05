@@ -21,15 +21,32 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public void BindBuffers (ref Material mat)
 		{
-			
+			var idLight = 0;
+			foreach(var light in Sharp.Light.lights){
+				Console.WriteLine (idLight);
+				GL.Uniform3 (mat.Shader.uniformArray[UniformType.FloatVec3]["lights["+idLight+"].position"],light.entityObject.Position);
+				GL.Uniform4 (mat.Shader.uniformArray[UniformType.FloatVec4]["lights["+idLight+"].color"],light.color);
+				idLight++;
+			}
+			foreach (var matrixUniform in Material.globalMat4Array) {
+				var mat4=matrixUniform.Value;
+				GL.UniformMatrix4 (matrixUniform.Key, false, ref mat4);
+			}
+
 			int texSlot = 0;
+			foreach (var texUniform in Material.globalTexArray) {
+				GL.ActiveTexture (TextureUnit.Texture0+texSlot);
+				GL.BindTexture (TextureTarget.Texture2D, texUniform.Value);
+				GL.Uniform1 (texUniform.Key, (int)TextureUnit.Texture0+texSlot);
+				texSlot++;
+			}
 			foreach (var texUniform in mat.texArray) {
 				GL.ActiveTexture (TextureUnit.Texture0+texSlot);
 				GL.BindTexture (TextureTarget.Texture2D, texUniform.Value);
 				GL.Uniform1 (texUniform.Key, (int)TextureUnit.Texture0+texSlot);
 				texSlot++;
 			}
-			foreach (var matrixUniform in mat.matrix4Array) {
+			foreach (var matrixUniform in mat.mat4Array) {
 				var mat4=matrixUniform.Value;
 				GL.UniformMatrix4 (matrixUniform.Key, false, ref mat4);
 			}
@@ -142,7 +159,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 			string info;
 
 			// Compile vertex shader
-			GL.ShaderSource(shader.VertexID,shader.VertexSource);
+			GL.ShaderSource(shader.VertexID,shader.VertexSource); //make global frag and vert source, compile once and then mix them to shader
 			GL.CompileShader(shader.VertexID);
 			GL.GetShaderInfoLog(shader.VertexID, out info);
 			GL.GetShader(shader.VertexID, ShaderParameter.CompileStatus, out status_code);
@@ -160,7 +177,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 				throw new ApplicationException(info);
 
 
-			GL.AttachShader(shader.Program,shader.FragmentID);
+			GL.AttachShader(shader.Program,shader.FragmentID); //support multiple vert/frag shaders via foreach vert/frag source
 			GL.AttachShader(shader.Program, shader.VertexID);
 			GL.BindAttribLocation(shader.Program, 0, "vertex_position");
 			GL.BindAttribLocation(shader.Program, 1, "vertex_color");
@@ -177,9 +194,12 @@ namespace SharpSL.BackendRenderers.OpenGL
 			StringBuilder stringBuilder = new StringBuilder ((num == 0) ? 1 : num);
 			int size=0;
 			ActiveUniformType uniType;
+			Console.WriteLine ("start uni query");
+
 			for (int i = 0; i < numOfUniforms; i++) {
 				
 				GL.GetActiveUniform (shader.Program, i, stringBuilder.Capacity, out num, out size, out uniType, stringBuilder);
+				Console.WriteLine (stringBuilder.ToString()+" "+uniType+" : "+size);
 				if (!shader.uniformArray.ContainsKey ((UniformType)uniType))
 					shader.uniformArray.Add ((UniformType)uniType, new System.Collections.Generic.Dictionary<string, int> (){ [stringBuilder.ToString() ] =i });
 				else

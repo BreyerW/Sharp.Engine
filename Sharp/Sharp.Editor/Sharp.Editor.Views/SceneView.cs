@@ -23,6 +23,8 @@ namespace Sharp.Editor.Views
 		private int grid_size = 4096;
 
 		public static List<Entity> entities=new List<Entity>();
+		public static Action OnAddedEntity;
+		public static Action OnRemovedEntity;
 		//public static Scene physScene;
 		//public static Physics physEngine;
 
@@ -60,6 +62,11 @@ namespace Sharp.Editor.Views
 			e.OnTransformChanged +=((sender, evnt) =>cam.SetModelviewMatrix());
 			Camera.main = cam;
 
+			var eLight = new Entity ();
+			eLight.name="Directional Light";
+			eLight.Position = cam.entityObject.Position;
+			var light = eLight.AddComponent<Light> ();
+			eLight.Instatiate ();
 			if(OnSetupMatrices!=null)
 			OnSetupMatrices ();
 			base.Initialize ();
@@ -103,18 +110,19 @@ namespace Sharp.Editor.Views
 			if (SceneStructureView.tree.SelectedChildren.Any()) {
 				foreach (var selected in SceneStructureView.tree.SelectedChildren) {
 					var entity = selected.Content() as Entity;
-
-					GL.LoadMatrix (ref entity.MVPMatrix);
+					var mvpMat = entity.ModelMatrix * Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
+					GL.LoadMatrix (ref mvpMat);
 					GL.PushMatrix ();
 					//var tmpMat =mesh.ModelMatrix* Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
+					DrawHelper.DrawSphere (30, 25, 25, System.Drawing.Color.Aqua);
 					dynamic renderer = entity.GetComponent (typeof(MeshRenderer<,>));
+
 					if (renderer == null)
 						return;
 					DrawHelper.DrawBox (renderer.mesh.bounds.Min, renderer.mesh.bounds.Max);
 					//float cameraObjectDistance =(Camera.main.entityObject.position-entityObject.position).Length;
 					//float worldSize = (float)(2 * Math.Tan((double)(Camera.main.FieldOfView / 2.0)) * cameraObjectDistance);
 					//Manipulators.gizmoScale =0.25f* worldSize;
-					DrawHelper.DrawSphere (30, 25, 25, System.Drawing.Color.Aqua);
 					GL.PopMatrix ();
 				}
 			}
@@ -245,7 +253,7 @@ namespace Sharp.Editor.Views
 						SceneView.backendRenderer.Allocate (ref shader);
 						renderer.material = new Material (shader.Program);
 						var tex = Texture.textures ["duckCM"];
-						renderer.material.SetShaderProperty ("MyTexture",ref tex);
+						renderer.material.SetProperty ("MyTexture",ref tex);
 					}
 					eObject.Instatiate ();
 				}
