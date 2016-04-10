@@ -59,8 +59,10 @@ namespace SharpAsset
 			globalTexArray.Add (Shader.uniformArray [UniformType.Sampler2D][propName], tex.TBO);
 		}
 		public void SetGlobalProperty(string propName,ref Matrix4 mat){
-			//Console.WriteLine (propName);
-			var shaderLoc = Shader.uniformArray [UniformType.FloatMat4] [propName];
+           // Console.WriteLine (propName);
+            if (!Shader.uniformArray.ContainsKey(UniformType.FloatMat4) || !Shader.uniformArray[UniformType.FloatMat4].ContainsKey(propName))
+                return;
+            var shaderLoc = Shader.uniformArray [UniformType.FloatMat4] [propName];
 
 			if (!globalMat4Array.ContainsKey (shaderLoc))
 				globalMat4Array.Add (shaderLoc, mat);

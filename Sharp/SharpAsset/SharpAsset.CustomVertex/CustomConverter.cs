@@ -16,6 +16,17 @@ namespace SharpAsset
 			Marshal.FreeHGlobal(ptr);
 			return arr;
 		}
-	}
+        public static IntPtr ToPtr(object[] verts, int stride)
+        {
+            //byte[] arr = new byte[stride * verts.Length];
+            IntPtr ptr = Marshal.AllocHGlobal(stride * verts.Length);
+            for (int i = 0; i < verts.Length; i++)
+            {
+                Marshal.StructureToPtr(verts[i],IntPtr.Add(ptr, i*stride), false);
+            }
+            //Marshal.FreeHGlobal(ptr);
+            return ptr;
+        }
+    }
 }
 

@@ -1,0 +1,16 @@
+B:\Sharp.Engine\GLWidget\bin\Debug\GLWidget.dll
+B:\Sharp.Engine\GLWidget\bin\Debug\GLWidget.pdb
+B:\Sharp.Engine\GLWidget\bin\Debug\atk-sharp.dll
+B:\Sharp.Engine\GLWidget\bin\Debug\gdk-sharp.dll
+B:\Sharp.Engine\GLWidget\bin\Debug\glib-sharp.dll
+B:\Sharp.Engine\GLWidget\bin\Debug\gtk-sharp.dll
+B:\Sharp.Engine\GLWidget\bin\Debug\OpenTK.dll
+B:\Sharp.Engine\GLWidget\bin\Debug\pango-sharp.dll
+B:\Sharp.Engine\GLWidget\bin\Debug\atk-sharp.pdb
+B:\Sharp.Engine\GLWidget\bin\Debug\gdk-sharp.pdb
+B:\Sharp.Engine\GLWidget\bin\Debug\glib-sharp.pdb
+B:\Sharp.Engine\GLWidget\bin\Debug\OpenTK.xml
+B:\Sharp.Engine\GLWidget\bin\Debug\pango-sharp.pdb
+B:\Sharp.Engine\GLWidget\obj\Debug\GLWidget.csprojResolveAssemblyReference.cache
+B:\Sharp.Engine\GLWidget\obj\Debug\GLWidget.dll
+B:\Sharp.Engine\GLWidget\obj\Debug\GLWidget.pdb

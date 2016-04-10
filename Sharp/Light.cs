@@ -9,6 +9,8 @@ namespace Sharp
 		//public float radius{ get; set;}=1;
 		public LightType type{get; set;}=LightType.Directional;
 		public OpenTK.Graphics.Color4 color { get; set;}=OpenTK.Graphics.Color4.White;
+		public float intensity{ get; set;}=1f;
+		public static float ambientCoefficient=0.005f;
 
 		protected internal override void OnEnableInternal ()
 		{

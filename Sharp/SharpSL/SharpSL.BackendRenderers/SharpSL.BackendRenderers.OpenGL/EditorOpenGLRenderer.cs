@@ -10,6 +10,17 @@ namespace SharpSL.BackendRenderers.OpenGL
 {
 	public class EditorOpenGLRenderer:IEditorBackendRenderer
 	{
+		public void UnloadMatrix ()
+		{
+			GL.PopMatrix ();
+		}
+
+		public void LoadMatrix (ref Matrix4 mat)
+		{
+			GL.LoadMatrix (ref mat);
+			GL.PushMatrix ();
+		}
+
 		public void DrawRotateGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor)
 		{
 			//this.SetupGraphic();
@@ -26,9 +37,6 @@ namespace SharpSL.BackendRenderers.OpenGL
 		public void DrawTranslateGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor)
 		{
 			GL.LineWidth(thickness);
-			GL.Enable(EnableCap.Blend);
-			GL.Disable(EnableCap.DepthTest);
-			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 			this.DrawLine(0f, 0f, 0f, 0f, 3f * scale, 0f, yColor);
 			this.DrawConeY(0.2f * scale, 0.5f * scale, 3f * scale);
 			this.DrawPlaneXZ(1f * scale, 0.3f * scale, yColor);
@@ -40,17 +48,16 @@ namespace SharpSL.BackendRenderers.OpenGL
 			this.DrawPlaneYX(1f * scale, 0.3f * scale, zColor);
 			GL.Color4(Color.White);
 			GL.LineWidth(1f);
-			GL.Enable(EnableCap.DepthTest);
 		}
 		public void DrawLine(float v1x, float v1y, float v1z, float v2x, float v2y, float v2z, Color unColor)
 		{
 			GL.Color4(unColor);
-			GL.Enable(EnableCap.Blend);
-			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+			//GL.Enable(EnableCap.Blend);
+			//GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 			GL.Begin(PrimitiveType.Lines);
 			GL.Vertex3(v1x, v1y, v1z);
 			GL.Vertex3(v2x, v2y, v2z);
-			GL.Disable(EnableCap.Blend);
+			//GL.Disable(EnableCap.Blend);
 			GL.End();
 		}
 		public void DrawSelectionSquare(float x1, float y1, float x2, float y2, Color unColor)
@@ -330,12 +337,14 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.Vertex3(pos1.X, pos2.Y, pos2.Z);
 			GL.End();
 		}
-		public void DrawGrid(Color color, Vector3 pos, float X, float Y, int cell_size = 16, int grid_size = 2560)
+		public void DrawGrid(Color color, Vector3 pos, float X, float Y,ref Matrix4 projMat, int cell_size = 16, int grid_size = 2560)
 		{
+			
 			GL.UseProgram(0);
 			int num = (int)Math.Round((double)(pos.X / (float)cell_size)) * cell_size;
 			int num2 = (int)Math.Round((double)(pos.Y / (float)cell_size)) * cell_size;
 			int num3 = grid_size / cell_size;
+			GL.LoadMatrix(ref projMat);
 			GL.PushMatrix();
 			GL.Translate((float)num - (float)grid_size / 2f, 0f, (float)num2 - (float)grid_size / 2f);
 			GL.Color3(color);

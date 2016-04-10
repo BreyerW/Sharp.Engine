@@ -9,6 +9,7 @@ namespace Sharp.Editor.Views
 	{
 		public static Gwen.Renderer.OpenTK renderer;
 		public static Gwen.Skin.Base skin;
+		public static Canvas canvas;
 		public MultiVerticalSplitter splitter;
 		public bool needRedraw=false;
 
@@ -21,7 +22,7 @@ namespace Sharp.Editor.Views
 		{
 			renderer = new Gwen.Renderer.OpenTK();
 			skin = new Gwen.Skin.TexturedBase(renderer,@"C:\\Users\\Damian\\Downloads\\GLWidget_ 1\\GLWidget\\GLWidgetTest\\bin\\Debug\\DefaultSkin.png");
-
+			canvas = new Canvas(skin);
 			base.Initialize ();
 
 			splitter = new Gwen.Control.MultiVerticalSplitter(canvas);

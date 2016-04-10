@@ -21,8 +21,8 @@ namespace Sharp.Editor.Views
 		public override void Initialize ()
 		{
 			base.Initialize ();
-			ptree=new PropertyTree (canvas);
-			tagStrip = new MenuStrip (canvas);
+			ptree=new PropertyTree (panel);
+			tagStrip = new MenuStrip (panel);
 			var root=tagStrip.AddItem("Add tag");
 			root.Position(Gwen.Pos.Top,0,100);
 			root.Menu.Position(Gwen.Pos.Top,0,20);
@@ -72,7 +72,7 @@ namespace Sharp.Editor.Views
 		}
 		public override void Render ()
 		{
-			base.Render ();
+			//base.Render ();
 			/*if (Selection.assets.Count>0 && Selection.assets.Peek() != lastInspectedObj) {
 				lastInspectedObj = Selection.assets.Peek();
 			IEnumerable<PropertyInfo> props;
@@ -82,8 +82,8 @@ namespace Sharp.Editor.Views
 		}
 		public override void OnResize (int width, int height)
 		{
-			base.OnResize (width, height);
-			ptree.SetBounds(0, 25, canvas.Width, canvas.Height);
+			base.OnResize (width,height);
+			ptree.SetBounds(0, 25, width, height);
 		}
 		Action<object> CreateSetter(object instance, MethodInfo propMethod){
 

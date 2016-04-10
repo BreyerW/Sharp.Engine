@@ -27,7 +27,12 @@ namespace SharpSL.BackendRenderers
 		void SetupGraphic();
 		void ClearBuffer();
 		void Scissor(int x, int y, int width, int height);
-
+		void SetStandardState ();
+		void SetFlatColorState ();
+		void SaveState();
+		void RestoreState();
+		void FinishCommands();
+		byte[] ReadPixels (int x,int y, int width, int height);
 	}
 }
 

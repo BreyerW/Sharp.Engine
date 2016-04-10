@@ -33,6 +33,8 @@ namespace Sharp.Editor.Views
 		public static Action OnSetupMatrices;
 
 		public static bool mouseLocked=false;
+		private static System.Drawing.Point? locPos=null;
+		private static int selectedAxisId = 0;
 		private Vector3 normalizedMoveDir=Vector3.Zero;
 
 		public static IBackendRenderer backendRenderer;
@@ -70,13 +72,14 @@ namespace Sharp.Editor.Views
 			if(OnSetupMatrices!=null)
 			OnSetupMatrices ();
 			base.Initialize ();
-		}
+            
+        }
 		public override void OnContextCreated(int width, int height){
 			//GL.ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			//if(OnRenderFrame!=null)
 			//	renderer.mesh.MVPMatrix = renderer.mesh.ModelMatrix *Camera.main.GetViewMatrix()* Camera.main.projectionMatrix;
 
-			Camera.main.AspectRatio = (float)(canvas.Width / (float)canvas.Height);
+			Camera.main.AspectRatio = (float)(panel.Width / (float)panel.Height);
 			Camera.main.SetProjectionMatrix ();
 			Camera.main.frustum = new Frustum (Camera.main.modelViewMatrix*Camera.main.projectionMatrix);
 			//GL.Viewport(0, 0, width,height);
@@ -88,45 +91,109 @@ namespace Sharp.Editor.Views
 		}
 		public override void Render(){
 			base.Render();
-			GL.ClearColor (new OpenTK.Graphics.Color4(37,37,37,255));
-			GL.Clear(ClearBufferMask.DepthBufferBit|ClearBufferMask.ColorBufferBit);
 
-			GL.CullFace (CullFaceMode.Back);
-			//GL.Disable (EnableCap.Blend);
-			GL.Enable (EnableCap.DepthTest);
-			GL.DepthFunc (DepthFunction.Less);
-			//GL.Enable(EnableCap.DebugOutput);
-			//GL.Enable(EnableCap.DebugOutputSynchronous);
 			Camera.main.Update();
-			//GL.MatrixMode(MatrixMode.Projection);
-			var projMat=Camera.main.modelViewMatrix*Camera.main.projectionMatrix;
-			GL.LoadMatrix(ref projMat);
-			GL.PushMatrix ();
-			DrawHelper.DrawGrid(System.Drawing.Color.GhostWhite,Camera.main.entityObject.Position, cell_size, grid_size);
-			GL.PopMatrix ();
 
-			OnRenderFrame?.Invoke ();
-				
+			if (locPos.HasValue) {
+			backendRenderer.ClearBuffer ();
+			backendRenderer.SetFlatColorState ();
+			backendRenderer.ChangeShader ();
+				if (SceneStructureView.tree.SelectedChildren.Any()) {
+					
+					System.Drawing.Color xColor=System.Drawing.Color.Red, yColor=System.Drawing.Color.LimeGreen, zColor=System.Drawing.Color.Blue;
+					for (int id = 1; id < 4; id++) {
+					var color = System.Drawing.Color.FromArgb ((id & 0x000000FF)>>00,(id & 0x0000FF00) >> 08,(id & 0x00FF0000) >> 16);
+						
+						switch (id) {
+							case 1:
+								xColor=color;
+								break;
+							case 2:
+								yColor = color;
+								break;
+
+							case 3:
+								zColor = color;
+								break;
+							}
+						}
+
+					foreach (var selected in SceneStructureView.tree.SelectedChildren) {
+						var entity = selected.Content() as Entity;
+						var mvpMat = entity.ModelMatrix * Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
+
+						MainEditorView.editorBackendRenderer.LoadMatrix (ref mvpMat);
+
+						float cameraObjectDistance =(Camera.main.entityObject.Position-entity.Position).Length;
+						DrawHelper.DrawTranslationGizmo (3, cameraObjectDistance,xColor ,yColor,zColor);
+
+						MainEditorView.editorBackendRenderer.UnloadMatrix();
+					}
+					backendRenderer.FinishCommands ();
+				if (locPos.HasValue) {
+					var pixel = backendRenderer.ReadPixels (locPos.Value.X,locPos.Value.Y, 1, 1);
+					int index = (((int)pixel[0])<<00) + (((int)pixel[1]) << 08) + ((((int)pixel[2]) << 16));
+						if (index>0 && index < 4) {
+							selectedAxisId = index;
+							mouseLocked = true;
+						}
+						else
+							selectedAxisId = 0;
+				}
+				}
+				if(locPos.HasValue && selectedAxisId<1) {
+					var orig =Camera.main.entityObject.Position;
+					var end = Camera.main.ScreenToWorld (locPos.Value.X,locPos.Value.Y, panel.Width, panel.Height);
+					var ray = new Ray (orig, (end-orig).Normalized());
+					foreach (var ent in entities) {
+						dynamic render = ent.GetComponent(typeof(MeshRenderer<,>));
+						if (render != null && render.mesh.bounds.Intersect(ref ray, ref ent.ModelMatrix)) {
+							var id = entities.IndexOf (ent);
+							Selection.Asset=()=>entities[id];
+							//Selection.assets.Add (ent);
+							SceneStructureView.tree.UnselectAll ();
+							SceneStructureView.tree.FindNodeByContent (ent).IsSelected=true;
+							break;
+						}
+					}
+				}
+				locPos = null;
+			}
+			backendRenderer.ClearBuffer ();
+			backendRenderer.SetStandardState ();
+			var projMat = Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
+
+			DrawHelper.DrawGrid (System.Drawing.Color.GhostWhite, Camera.main.entityObject.Position, cell_size, grid_size, ref projMat);
+
+            OnRenderFrame?.Invoke ();
+
+
 			if (SceneStructureView.tree.SelectedChildren.Any()) {
+
+				System.Drawing.Color xColor=System.Drawing.Color.Red, yColor=System.Drawing.Color.LimeGreen, zColor=System.Drawing.Color.Blue;
+
 				foreach (var selected in SceneStructureView.tree.SelectedChildren) {
 					var entity = selected.Content() as Entity;
 					var mvpMat = entity.ModelMatrix * Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
-					GL.LoadMatrix (ref mvpMat);
-					GL.PushMatrix ();
+					MainEditorView.editorBackendRenderer.LoadMatrix (ref mvpMat);
 					//var tmpMat =mesh.ModelMatrix* Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
-					DrawHelper.DrawSphere (30, 25, 25, System.Drawing.Color.Aqua);
-					dynamic renderer = entity.GetComponent (typeof(MeshRenderer<,>));
+					GL.Enable(EnableCap.Blend);
+					GL.Disable(EnableCap.DepthTest);
+					GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-					if (renderer == null)
-						return;
-					DrawHelper.DrawBox (renderer.mesh.bounds.Min, renderer.mesh.bounds.Max);
-					//float cameraObjectDistance =(Camera.main.entityObject.position-entityObject.position).Length;
-					//float worldSize = (float)(2 * Math.Tan((double)(Camera.main.FieldOfView / 2.0)) * cameraObjectDistance);
-					//Manipulators.gizmoScale =0.25f* worldSize;
-					GL.PopMatrix ();
+					float cameraObjectDistance =(Camera.main.entityObject.Position-entity.Position).Length;
+
+					DrawHelper.DrawTranslationGizmo (3,cameraObjectDistance/11,xColor ,yColor,zColor);
+					GL.Enable(EnableCap.DepthTest);
+					//dynamic renderer = entity.GetComponent (typeof(MeshRenderer<,>));
+
+					//if (renderer == null)
+					//	return;
+					//DrawHelper.DrawBox (renderer.mesh.bounds.Min, renderer.mesh.bounds.Max);
+
+					MainEditorView.editorBackendRenderer.UnloadMatrix ();
 				}
 			}
-
 		/*	GL.DisableVertexAttribArray(0);
 			GL.DisableVertexAttribArray(1);
 			GL.DisableVertexAttribArray(2);
@@ -143,14 +210,14 @@ namespace Sharp.Editor.Views
 			OnSetupMatrices?.Invoke ();
 			base.OnResize(width,height);
 			if (Camera.main != null && height != 0) {
-				Camera.main.AspectRatio = (float)(canvas.Width / (float)canvas.Height);
+				Camera.main.AspectRatio = (float)(panel.Width / (float)panel.Height);
 				Camera.main.SetProjectionMatrix ();
 			}
 		}
 		public override void OnKeyPressEvent (ref KeyboardState evnt)
 		{
 			if (Camera.main.moved) {
-				canvas.NeedsRedraw = true;
+				MainEditorView.canvas.NeedsRedraw = true;
 				Camera.main.moved = false;
 				Camera.main.SetModelviewMatrix ();
 
@@ -179,65 +246,68 @@ namespace Sharp.Editor.Views
 			}
 			return angle;
 		}
+		int oldX;
+		int oldY;
 		public override void OnMouseMove (MouseMoveEventArgs evnt)
 		{
-			//scene.SetupMatrices ();
+			//Console.WriteLine ("locked? "+mouseLocked);
 			if (mouseLocked) {
-				if (normalizedMoveDir == Vector3.Zero) {
+				if (selectedAxisId==0) {
 					Camera.main.Rotate ((float)evnt.XDelta, (float)evnt.YDelta, 0.3f);//maybe divide delta by fov?
 					SceneView.OnSetupMatrices?.Invoke ();
 				}else{
-					var deltaDir = new Vector2 ((float)evnt.XDelta, (float)evnt.YDelta).Normalized();
-					var screenDir = Camera.main.WorldToScreen (normalizedMoveDir,canvas.Width,canvas.Height);
-					var angle=Vector2.Dot(deltaDir,screenDir.Xy.Normalized());
+					
+					var constTValue = 1f;
+					var constRValue = 1f;
+					var constSValue = 1f;
+
+					var deltaX = oldX - evnt.X;
+					var deltaY = oldY - evnt.Y;
 					if(evnt.XDelta!=0 && evnt.YDelta!=0)
 					foreach (var selected in SceneStructureView.tree.SelectedChildren)
 					{
 						var entity = selected.Content() as Entity;
-
-						if((angle>=-1 && angle<=0))
-							entity.Position +=normalizedMoveDir*deltaDir.LengthFast;
-						else
-							entity.Position -=normalizedMoveDir*deltaDir.LengthFast;
+							switch (selectedAxisId) {
+							case 1:
+								entity.Position += new Vector3 (-deltaX * constTValue,0,0);
+								break;
+							case 2:
+								entity.Position += new Vector3 (0, deltaY * constTValue, 0);
+								break;
+							case 3:
+								entity.Position += new Vector3 (0, 0, deltaX* constTValue);
+								break;
+							}
 					}
 				}
 				MainWindow.focusedView=this;
-				canvas.NeedsRedraw = true;
+				MainEditorView.canvas.NeedsRedraw = true;
 			}
+			oldX = evnt.X;
+			oldY = evnt.Y;
 		}
 		public override void OnMouseDown(MouseButtonEventArgs evnt){
 			if (evnt.Button == MouseButton.Right) {//canvas.IsHovered
 				mouseLocked = true;
+				selectedAxisId = 0;
 			} else if (evnt.Button == MouseButton.Left) {
-				mouseLocked = true;
-				var locPos = canvas.CanvasPosToLocal (evnt.Position);
-				var orig = Camera.main.entityObject.Position;
-				var end = Camera.main.ScreenToWorld (locPos.X, locPos.Y, canvas.Width, canvas.Height);
-				var ray = new Ray (orig, (end - orig).Normalized ());
-				var intersectPoint = Vector3.Zero;
-				var zero = Vector3.Zero;
-				if (SceneStructureView.tree.SelectedChildren.Any ())
-					foreach (var selected in SceneStructureView.tree.SelectedChildren) {
-						var entity = selected.Content() as Entity;
-						dynamic render = entity.GetComponent (typeof(MeshRenderer<,>));
-
-						if (render != null && BoundingBox.Intersect (ref ray, ref zero, 30, ref entity.ModelMatrix, out intersectPoint)) {
-							normalizedMoveDir = (intersectPoint - Vector3.TransformPosition(zero,entity.ModelMatrix)).Normalized();
-							break;
-						}
-					}
+				mouseLocked = false;
+				locPos =panel.CanvasPosToLocal(evnt.Position);
+                locPos = new System.Drawing.Point(locPos.Value.X,locPos.Value.Y-29);
+                MainEditorView.canvas.NeedsRedraw = true;
 			}
 		//	Console.WriteLine ("down");
 		}
 		public override void OnMouseUp(MouseButtonEventArgs args){
-			if (AssetsView.isDragging) {
+            Console.WriteLine("up? " + AssetsView.isDragging);
+            if (AssetsView.isDragging) {
 				//makeContextCurrent ();
 				foreach (var asset in AssetsView.tree.SelectedChildren) {
 					var eObject = new Entity ();
-					var locPos = canvas.CanvasPosToLocal (args.Position);
+					var locPos =MainEditorView.canvas.CanvasPosToLocal (args.Position);
 					Camera.main.SetModelviewMatrix ();
 					var orig =Camera.main.entityObject.Position;
-					var dir = (Camera.main.ScreenToWorld (locPos.X, locPos.Y, canvas.Width, canvas.Height)-orig).Normalized ();
+					var dir = (Camera.main.ScreenToWorld (locPos.X, locPos.Y, panel.Width, panel.Height)-orig).Normalized ();
 					eObject.Position =orig+dir*Camera.main.ZFar*0.1f;
 					if (asset.Content ().GetType () == typeof(Skeleton)) {
 						var skele=(Skeleton)asset.Content();
@@ -258,28 +328,9 @@ namespace Sharp.Editor.Views
 					eObject.Instatiate ();
 				}
 				AssetsView.isDragging = false;
-			} else if (args.Button == MouseButton.Left) {
-				var locPos = canvas.CanvasPosToLocal (args.Position);
-				var orig =Camera.main.entityObject.Position;
-				var end = Camera.main.ScreenToWorld (locPos.X,locPos.Y, canvas.Width, canvas.Height);
-				var ray = new Ray (orig, (end-orig).Normalized());
-				foreach (var ent in entities) {
-					dynamic render = ent.GetComponent(typeof(MeshRenderer<,>));
-						if (render != null && render.mesh.bounds.Intersect(ref ray, ref ent.ModelMatrix)) {
-						var id = entities.IndexOf (ent);
-						Selection.Asset=()=>entities[id];
-							//Selection.assets.Add (ent);
-						SceneStructureView.tree.UnselectAll ();
-						SceneStructureView.tree.FindNodeByContent (ent).IsSelected=true;
-							canvas.NeedsRedraw = true;
-							mouseLocked = false;
-							break;
-						}
-				}
 			}
 			mouseLocked = false;
 			MainWindow.focusedView = null;
-			normalizedMoveDir = Vector3.Zero;
 		}
 	}
 }

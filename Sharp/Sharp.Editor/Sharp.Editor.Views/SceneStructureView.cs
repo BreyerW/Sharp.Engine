@@ -12,8 +12,8 @@ namespace Sharp.Editor.Views
 			base.Initialize ();
 
 			if(tree==null)
-			tree = new  Gwen.Control.TreeControl (canvas);
-			tree.SetSize (canvas.Width, canvas.Height);
+				tree = new  Gwen.Control.TreeControl (panel);
+			tree.SetSize (panel.Width, panel.Height);
 			tree.ShouldDrawBackground = false;
 			tree.SelectionChanged += (sender, args) => Selection.Asset = (sender as TreeNode).Content;
 
@@ -35,6 +35,10 @@ namespace Sharp.Editor.Views
 		{
 			base.OnMouseMove (evnt);
 		}
-	}
+        public override void OnResize(int width, int height)
+        {
+            tree.SetSize(panel.Width, panel.Height);
+        }
+    }
 }
 

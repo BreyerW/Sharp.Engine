@@ -20,9 +20,9 @@ namespace Sharp.Editor.Views
 		{
 			Console.WriteLine (Environment.CurrentDirectory);
 			base.Initialize ();
-				tree = new  Gwen.Control.TreeControl (canvas);
-
-				tree.SetSize (canvas.Width, canvas.Height);
+            tree = new  Gwen.Control.TreeControl (panel);
+            
+            tree.SetSize (panel.Width, panel.Height);
 				tree.ShouldDrawBackground = false;
 
 				var type = typeof(Pipeline);
@@ -37,20 +37,22 @@ namespace Sharp.Editor.Views
 				if (!file.Name.StartsWith (".") && SupportedFileFormatsAttribute.importers.ContainsKey(file.Extension))
 					tree.AddNode (()=>SupportedFileFormatsAttribute.importers [file.Extension].Import (file.FullName));
 				}
-			//tree.Show ();
-		}
-		public override void Render ()
-		{
-			//base.Render ();
-			//GL.Clear(ClearBufferMask.DepthBufferBit|ClearBufferMask.ColorBufferBit);
-			/*GL.ClearColor (new OpenTK.Graphics.Color4(255,255,255,255));
-			GL.Clear(ClearBufferMask.DepthBufferBit|ClearBufferMask.ColorBufferBit);
+            
+            tree.Show ();
+            tree.Selected += OnSelected;
+        }
 
-			canvas.RenderCanvas();*/
+        private void OnSelected(Base sender, EventArgs arguments)
+        {
+           // Console.WriteLine("clicked");
+        }
+
+        public override void Render ()
+		{
 		}
 		public override void OnMouseDown(MouseButtonEventArgs evnt){
-
-			isDragging = true;
+            Console.WriteLine("clicked");
+            isDragging = true;
 			//canvas.NeedsRedraw = true;
 		}
 		public override void OnMouseUp(MouseButtonEventArgs evnt){
@@ -65,6 +67,10 @@ namespace Sharp.Editor.Views
 			//		Selection.assets.Add (asset.Content);
 			
 			//canvas.NeedsRedraw = true;
+		}
+		public override void OnResize(int width, int height)
+		{
+			tree.SetSize(panel.Width,panel.Height);
 		}
 		void RecursiveBuildTree(DirectoryInfo dirRoot, Gwen.Control.TreeNode treeIter){
 			MeshPipeline.SetMeshContext<ushort,BasicVertexFormat> ();

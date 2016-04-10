@@ -1,0 +1,705 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ColorSharp</name>
+    </assembly>
+    <members>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction">
+            <summary>
+            Implementation of AMatching function based on equally spaced data points.
+            </summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.AMatchingFunction">
+            <summary>
+            Abstract class to handle 'matching functions'. The matching functions are used to transform spectrums into
+            simpler parametric spaces (with information loss), like CIE's 1931 XYZ color space.
+            </summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.InternalUtils.IRealFunctionWithFiniteSupport.EvaluateAt(System.Double)">
+            This gives us the wave amplitude at a given wave length, if it's necessary the method will do interpolation.
+        </member>
+        <member name="M:Litipk.ColorSharp.InternalUtils.IRealFunctionWithFiniteSupport.GetSupportMinValue">
+            Analytic aproximations also have their confidence intervals, so there aren't exceptional cases here.
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.AMatchingFunction.EvaluateAt(System.Double)">
+            <summary>Returns the value of the matching function for a given wave length.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.AMatchingFunction.GetSupportMinValue">
+            <summary>The matching function has a support interval. This method gives us its lower bound.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.AMatchingFunction.GetSupportMaxValue">
+            <summary>The matching function has a support interval. This method gives us its upper bound.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.AMatchingFunction.GetNumberOfDataPoints">
+            <summary>
+            Returns us the number of data points used to construct the matching function. It returns -1 if the inner
+            implementation is analytical and there aren't data points.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction.NmPerStep">
+            <value>Number of nanometers between each data point.</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction.MinWaveLength">
+            <value>Minimum wave length with an associated data point.</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction.MaxWaveLength">
+            <value>Maximum wave length with an associated data point.</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction.Amplitudes">
+            <value>Data points</value>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction.#ctor(System.Double,System.Double,System.Collections.Generic.IList{System.Double})">
+            <summary>Creates a new regular matching function.</summary>
+            <param name="minWaveLength">Lower boundary of the matching function's support.</param>
+            <param name="maxWaveLength">Upper boundary of the matching function's support.</param>
+            <param name="amplitudes">Data points.</param>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction.#ctor(System.Double,System.Collections.Generic.IList{System.Double},System.Double)">
+            <summary>Creates a new regular matching function.</summary>
+            <param name="minWaveLength">Lower boundary of the matching function's support.</param>
+            <param name="amplitudes">Data points.</param>
+            <param name="nmPerStep">Number of nanometers between data points.</param>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction.EvaluateAt(System.Double)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction.GetSupportMinValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction.GetSupportMaxValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.RegularMatchingFunction.GetNumberOfDataPoints">
+            <inheritdoc />
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.TabularMatchingFunction">
+            <summary>Useful to define matching functions with irregular spaced data points.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.TabularMatchingFunction.#ctor(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.Double,System.Double}})">
+            <summary>Useful to define matching functions with irregular spaced data points.</summary>
+            <param name="tabularData">irregular spaced data points</param>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.TabularMatchingFunction.EvaluateAt(System.Double)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.TabularMatchingFunction.GetSupportMinValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.TabularMatchingFunction.GetSupportMaxValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.TabularMatchingFunction.GetNumberOfDataPoints">
+            <inheritdoc />
+        </member>
+        <member name="T:Litipk.ColorSharp.LightSpectrums.ALightSpectrum">
+            <summary>Abstract class that provides basic methods to manipulate light spectrums.</summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.ColorSpaces.AConvertibleColor">
+            
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.DataSource">
+            <value>Original color sample</value>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.#ctor(Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            Boilerplate constructor
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.ConvertTo``1(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <see cref="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.ConvertTo(System.Type,Litipk.ColorSharp.ColorSpaces.ColorStrategy)"/>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.ConvertTo(System.Type,Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <summary>Method that allows conversions passing the type as a parameter.</summary>
+            <remarks>DON'T USE it to implement conversion methods, use the non type-parametric variants.</remarks>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.InnerConvertTo(System.Type,Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            Helper method used by ConvertTo.
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.IsInsideColorSpace(System.Boolean)">
+            <summary>Tells us if the object represents a valid color sample in current color space.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.GetCCT">
+            <summary>Gives us the Correlater Color Temperature associated to the spectrum or color.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.ToCIEXYZ(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <summary>Converts the color sample to a CIE's 1931 XYZ color sample.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.ToCIExyY(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <summary>Converts the color sample to a CIE's 1931 xyY color sample.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.ToCIEUCS(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <summary>Converts the color sample to a CIE's 1960 UCS color sample.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.AConvertibleColor.ToSRGB(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <summary>Converts the color sample to an HP's and Microsoft's 1996 sRGB sample.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.ALightSpectrum.#ctor(Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            Boilerplate constructor
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.ALightSpectrum.EvaluateAt(System.Double)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.ALightSpectrum.GetSupportMinValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.ALightSpectrum.GetSupportMaxValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.ALightSpectrum.GetMaxValueOnSupport">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.ALightSpectrum.ToCIEXYZ(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.ALightSpectrum.ToCIEXYZ(Litipk.ColorSharp.LightSpectrums.SpectrumStrategy)">
+            <see cref="M:Litipk.ColorSharp.LightSpectrums.ALightSpectrum.ToCIEXYZ(Litipk.ColorSharp.ColorSpaces.ColorStrategy)"/>
+            <param name="strategy">Strategy used to obtain the tristimulous values</param>
+        </member>
+        <member name="T:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum">
+            Class to handle light spectrum samples with equidistant data points
+        </member>
+        <member name="T:Litipk.ColorSharp.LightSpectrums.AInterpolatedLightSpectrum">
+            <summary>Abstract class that provides basic methods to manipulate light spectrums.</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.InternalUtils.IRealInterpolatedFunctionWithFiniteSupport.GetNumberOfDataPoints">
+            We need to know how many data points we have to make computations using all the information we have.
+            If the concrete implementation is "analytical", then must return -1.
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.AInterpolatedLightSpectrum.#ctor(Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.AInterpolatedLightSpectrum.GetNumberOfDataPoints">
+            <summary>Gives us the number of data points used to construct the spectrum object.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.NmPerStep">
+            <value>Nanometers between each data point.</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.MinWaveLength">
+            <value>Minimum wavelength for which we have information on this spectrum.</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.MaxWaveLength">
+            <value>Maximum wavelength for which we have information on this spectrum.</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.Amplitudes">
+            <value>Equidistant data points (usually relative values)</value>
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.#ctor(System.Double,System.Double,System.Collections.Generic.IList{System.Double},Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            <param name="minWaveLength">Associated wavelength to the first value of 'amplitudes'.</param>
+            <param name="maxWaveLength">Associated wavelength to the last value of 'amplitudes'.</param>
+            <param name="amplitudes">Equidistant data points.</param>
+            <param name="dataSource">
+                Reference to a AConvertibleColor instance from which this object has been generated.
+            </param>
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.#ctor(System.Double,System.Collections.Generic.IList{System.Double},System.Double,Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            <param name="minWaveLength">Associated wavelength to the first value of 'amplitudes'.</param>
+            <param name="amplitudes">Equidistant data points.</param>
+            <param name="nmPerStep">Nanometers between each data point in 'amplitudes'.</param>
+            <param name="dataSource">
+                Reference to a AConvertibleColor instance from which this object has been generated.
+            </param>
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.#ctor(System.Collections.Generic.IList{System.Double},System.Double,System.Double,Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            <param name="amplitudes">Equidistant data points.</param>
+            <param name="nmPerStep">Nanometers between each data point in 'amplitudes'.</param>
+            <param name="maxWaveLength">Associated wavelength to the last value of 'amplitudes'.</param>
+            <param name="dataSource">
+                Reference to a AConvertibleColor instance from which this object has been generated.
+            </param>
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.EvaluateAt(System.Double)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.GetSupportMinValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.GetSupportMaxValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.GetMaxValueOnSupport">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.GetNumberOfDataPoints">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.IsInsideColorSpace(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.RegularLightSpectrum.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="T:Litipk.ColorSharp.LightSpectrums.TabularLightSpectrum">
+            Class to handle light spectrum samples with not equidistant data points
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.TabularLightSpectrum.#ctor(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.Double,System.Double}},Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            Preconditions : amplitudes MUST be sorted (crescent order)
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.TabularLightSpectrum.GetSupportMinValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.TabularLightSpectrum.GetSupportMaxValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.TabularLightSpectrum.GetMaxValueOnSupport">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.TabularLightSpectrum.GetNumberOfDataPoints">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.TabularLightSpectrum.EvaluateAt(System.Double)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.TabularLightSpectrum.IsInsideColorSpace(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.TabularLightSpectrum.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.TabularLightSpectrum.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="T:Litipk.ColorSharp.ColorSpaces.CIEXYZ">
+            <summary>CIE's 1931 (2º) XYZ Color Space.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIEXYZ.X">
+            <value>X component of the CIE's 1931 XYZ color space.</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIEXYZ.Y">
+            <value>Y component of the CIE's 1931 XYZ color space.</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIEXYZ.Z">
+            <value>Z component of the CIE's 1931 XYZ color space.</value>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEXYZ.#ctor(System.Double,System.Double,System.Double,Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            <summary>Creates a new color sample in the CIE's 1931 xyY color space</summary>
+            <param name="X">CIE's 1931 XYZ X coordinate</param>
+            <param name="Y">CIE's 1931 XYZ Y coordinate</param>
+            <param name="Z">CIE's 1931 XYZ Z coordinate</param>
+            <param name="dataSource">If you aren't working with ColorSharp internals, don't use this parameter</param>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEXYZ.IsInsideColorSpace(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEXYZ.ToCIEXYZ(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEXYZ.ToCIExyY(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEXYZ.ToCIEUCS(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEXYZ.ToSRGB(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEXYZ.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEXYZ.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="T:Litipk.ColorSharp.ColorSpaces.SRGB">
+            <summary>HP's and Microsoft's 1996 sRGB Color Space.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.SRGB.R">
+            <value>Red component</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.SRGB.G">
+            <value>Green component</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.SRGB.B">
+            <value>Blue component</value>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.SRGB.#ctor(System.Double,System.Double,System.Double,Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            <summary>Creates a new color sample in the sRGB color space</summary>
+            <param name="R">Red component (between 0 and 1)</param>
+            <param name="G">Green component (between 0 and 1)</param>
+            <param name="B">Blue component (between 0 and 1)</param>
+            <param name="dataSource">If you aren't working with ColorSharp internals, don't use this parameter</param>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.SRGB.IsInsideColorSpace(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.SRGB.ToCIEXYZ(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.SRGB.ToSRGB(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.SRGB.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.SRGB.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="T:Litipk.ColorSharp.ColorSpaces.CIExyY">
+            <summary>CIE's 1931 (2º) xyY Color Space.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIExyY.x">
+            <value>x component of the CIE's 1931 xyY color space : X/(X+Y+Z) .</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIExyY.y">
+            <value>y component of the CIE's 1931 xyY color space : Y/(X+Y+Z) .</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIExyY.Y">
+            <value>Y component of the CIE's 1931 xyY color space. The same Y from CIE's 1931 XYZ color space.</value>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.#cctor">
+            Static members initialization
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.computeSharkfin(System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double},Litipk.ColorSharp.InternalUtils.xyYPoint[]@,Litipk.ColorSharp.InternalUtils.xyYPoint[]@)">
+            Computes the 'sharkin' points. 
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.#ctor(System.Double,System.Double,System.Double,Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            <summary>Creates a new color sample in the CIE's 1931 xyY color space</summary>
+            <param name="x">CIE's 1931 xyY x coordinate</param>
+            <param name="y">CIE's 1931 xyY y coordinate</param>
+            <param name="Y">Lightness parameter</param>
+            <param name="dataSource">If you aren't working with ColorSharp internals, don't use this parameter</param>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.IsInsideColorSpace(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.ToCIEXYZ(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.ToCIExyY(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.ToCIEUCS(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.findConvexHull(Litipk.ColorSharp.InternalUtils.xyYPoint[])">
+            Monotone Chain algorithm. See
+            http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIExyY.cross(Litipk.ColorSharp.InternalUtils.xyYPoint,Litipk.ColorSharp.InternalUtils.xyYPoint,Litipk.ColorSharp.InternalUtils.xyYPoint)">
+            Used inside findConvexHull method.
+        </member>
+        <member name="T:Litipk.ColorSharp.ColorSpaces.CIEUCS">
+            <summary>CIE's 1960 UCS Color Space. Also named CIE's 1960 Yuv Color Space.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIEUCS.u">
+            <value>U / (U + V + W)</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIEUCS.v">
+            <value>V / (U + V + W)</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIEUCS.U">
+            <value>U component of the CIE's 1960 UCS color space.</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIEUCS.V">
+            <value>V component of the CIE's 1960 UCS color space (also Y in Yuv).</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.CIEUCS.W">
+            <value>W component of the CIE's 1960 UCS color space.</value>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEUCS.#ctor(System.Double,System.Double,System.Double,Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            <summary>Creates a new color sample in the CIE's 1960 UCS color space</summary>
+            <param name="U">CIE's 1960 UCS U coordinate</param>
+            <param name="V">CIE's 1960 UCS V coordinate</param>
+            <param name="W">CIE's 1960 UCS W coordinate</param>
+            <param name="dataSource">If you aren't working with ColorSharp internals, don't use this parameter</param>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEUCS.#ctor(Litipk.ColorSharp.ColorSpaces.AConvertibleColor,System.Double,System.Double,System.Double)">
+            <summary>Creates a new color sample in the CIE's 1960 UCS color space</summary>
+            <param name="u">CIE's 1960 UCS u coordinate</param>
+            <param name="v">CIE's 1960 UCS v coordinate</param>
+            <param name="W">CIE's 1960 UCS W coordinate</param>
+            <param name="dataSource">If you aren't working with ColorSharp internals, don't use this parameter</param>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEUCS.#ctor(System.Double,System.Double,System.Double,System.Double,System.Double,Litipk.ColorSharp.ColorSpaces.AConvertibleColor)">
+            <summary>
+              Creates a new color sample in the CIE's 1960 UCS color space. This is a convenience constructor to
+              allow minimum information loss in color space conversions, but not recommeneded to construct colors
+              "by hand".
+            </summary>
+            <param name="U">CIE's 1960 UCS U coordinate</param>
+            <param name="V">CIE's 1960 UCS V coordinate</param>
+            <param name="u">CIE's 1960 UCS u coordinate</param>
+            <param name="v">CIE's 1960 UCS v coordinate</param>
+            <param name="W">CIE's 1960 UCS W coordinate</param>
+            <param name="dataSource">If you aren't working with ColorSharp internals, don't use this parameter</param>
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEUCS.IsInsideColorSpace(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEUCS.ToCIEXYZ(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEUCS.ToCIEUCS(Litipk.ColorSharp.ColorSpaces.ColorStrategy)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEUCS.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.ColorSpaces.CIEUCS.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="P:Litipk.ColorSharp.ColorSpaces.CIEUCS.Y">
+            <value>Y component of the CIE's 1960 Yuv color space (also V in UCS).</value>
+        </member>
+        <member name="T:Litipk.ColorSharp.Illuminants.CIE_D65">
+            <summary>
+            CIE Standard Illuminant D65. D65 corresponds roughly to a midday sun in Western Europe / Northern Europe,
+            hence it is also called a daylight illuminant.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.Illuminants.CIE_D65.XYZ_Sample">
+            <value>D65 expressed as a CIE's 1931 XYZ sample (White Point).</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.Illuminants.CIE_D65.xyY_Sample">
+            <value>D65 expressed as a CIE's 1931 xyY sample (White Point).</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.Illuminants.CIE_D65.spectrum_Sample">
+            <value>D65 expressed in its 'original form', a light spectrum.</value>
+        </member>
+        <member name="T:Litipk.ColorSharp.Illuminants.CIE_A">
+            <summary>
+            CIE standard illuminant A is intended to represent typical, domestic, tungsten-filament lighting.
+            Its relative spectral power distribution is that of a Planckian radiator at a temperature of approximately 2856 K.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.Illuminants.CIE_A.XYZ_Sample">
+            <value>'A' expressed as a CIE's 1931 XYZ sample (White Point).</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.Illuminants.CIE_A.xyY_Sample">
+            <value>'A' expressed as a CIE's 1931 xyY sample (White Point).</value>
+        </member>
+        <member name="F:Litipk.ColorSharp.Illuminants.CIE_A.spectrum_Sample">
+            <value>'A' expressed in its 'original form', a light spectrum.</value>
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ1Nm2DegZ">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ1Nm2DegZ.Instance">
+            <summary>Component Z of CIE's 1931 2º matching functions (1nm of precision)</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ1Nm2DegZ.#ctor(System.Double,System.Double[],System.Double)">
+            We must seal this 
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ1Nm2DegY">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ1Nm2DegY.Instance">
+            <summary>Component Y of CIE's 1931 2º matching functions (1nm of precision)</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ1Nm2DegY.#ctor(System.Double,System.Double[],System.Double)">
+            We must seal this 
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ1Nm2DegX">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ1Nm2DegX.Instance">
+            <summary>Component X of CIE's 1931 2º matching functions (1nm of precision)</summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ5Nm2DegX">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ5Nm2DegX.Instance">
+            <summary>Component X of CIE's 1931 2º matching functions (5nm of precision)</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ5Nm2DegX.#ctor(System.Double,System.Double[],System.Double)">
+            We must seal this 
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ5Nm2DegY">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ5Nm2DegY.Instance">
+            <summary>Component Y of CIE's 1931 2º matching functions (5nm of precision)</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ5Nm2DegY.#ctor(System.Double,System.Double[],System.Double)">
+            We must seal this 
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ5Nm2DegZ">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ5Nm2DegZ.Instance">
+            <summary>Component Z of CIE's 1931 2º matching functions (5nm of precision)</summary>
+        </member>
+        <member name="M:Litipk.ColorSharp.MatchingFunctions.CIE1931XYZ5Nm2DegZ.#ctor(System.Double,System.Double[],System.Double)">
+            We must seal this 
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ1Nm10DegX">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ1Nm10DegX.Instance">
+            <summary>Component X of CIE's 1964 10º matching functions (1nm of precision)</summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ1Nm10DegY">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ1Nm10DegY.Instance">
+            <summary>Component Y of CIE's 1964 10º matching functions (1nm of precision)</summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ1Nm10DegZ">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ1Nm10DegZ.Instance">
+            <summary>Component Z of CIE's 1964 10º matching functions (1nm of precision)</summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ5Nm10DegX">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ5Nm10DegX.Instance">
+            <summary>Component X of CIE's 1964 10º matching functions (5nm of precision)</summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ5Nm10DegY">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ5Nm10DegY.Instance">
+            <summary>Component Y of CIE's 1964 10º matching functions (5nm of precision)</summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ5Nm10DegZ">
+            This class will be a singleton
+        </member>
+        <member name="F:Litipk.ColorSharp.MatchingFunctions.CIE1964XYZ5Nm10DegZ.Instance">
+            <summary>Component Z of CIE's 1964 10º matching functions (5nm of precision)</summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.ColorSpaces.ColorStrategy">
+            <summary>Enum type used to specify alternative strategies in color conversion.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.NoForce">
+            <summary>If the color can't be represented in the new color space, an exception will be thrown.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.ForceLowTruncate">
+            <summary>
+            "Truncates" component values in the new color space if they're lower than the new color space's lower boundaries.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.ForceLowStretch">
+            <summary>
+            "Stretches" component values in the new color space if they're lower than the new color space's lower boundaries.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.ForceHighTruncate">
+            <summary>
+            "Truncates" component values in the new color space if they're lower than the new color space's upper boundaries.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.ForceHighStretch">
+            <summary>
+            "Stretches" component values in the new color space if they're lower than the new color space's upper boundaries.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.ForceLow">
+            <summary>Combination of ForceLowStretch and ForceLowTruncate</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.ForceHigh">
+            <summary>Combination of ForceHighStretch and ForceHighTruncate</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.ForceTruncate">
+            <summary>Combination of ForceLowTruncate and ForceHighTruncate</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.ForceStretch">
+            <summary>Combination of ForceLowStretch and ForceHighStretch</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.Force">
+            <summary>Combination of ForceLow and ForceHigh</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.ColorSpaces.ColorStrategy.Default">
+            <summary>NoForce</summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.LightSpectrums.SpectrumStrategy">
+            <summary>Enum type used to specify alternative strategies in color conversion.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.SpectrumStrategy.WaveLength1NmStep">
+            <summary>Use the 1nm step matching functions to obtain the chromaticity components of the spectrum.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.SpectrumStrategy.WaveLength5NmStep">
+            <summary>Use the 5nm step matching functions to obtain the chromaticity components of the spectrum.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.SpectrumStrategy.TwoDegs">
+            <summary>Use the 2º matching functions to obtain the chromaticity components of the spectrum.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.SpectrumStrategy.TenDegs">
+            <summary>Use the 10º matching functions to obtain the chromaticity components of the spectrum.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.SpectrumStrategy.Nm1Deg2">
+            <summary>Combination of WaveLength1NmStep and TwoDegs</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.SpectrumStrategy.Nm5Deg2">
+            <summary>Combination of WaveLength5NmStep and TwoDegs</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.SpectrumStrategy.Nm1Deg10">
+            <summary>Combination of WaveLength1NmStep and TenDegs</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.SpectrumStrategy.Nm5Deg10">
+            <summary>Combination of WaveLength5NmStep and TenDegs</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.SpectrumStrategy.Default">
+            <summary>Nm5Deg2</summary>
+        </member>
+        <member name="T:Litipk.ColorSharp.Illuminants.CIE_B">
+            <summary>
+            The CIE Illuminant B is a (deprecated) daylight simulator intended to represent direct
+            noon sunlight with a correlated colour temperature of 4874 K.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.Illuminants.CIE_B.spectrum_Sample">
+            <value>'B' expressed in its 'original form', a light spectrum.</value>
+        </member>
+        <member name="T:Litipk.ColorSharp.Illuminants.CIE_C">
+            <summary>
+            The CIE illuminant C is a (deprecated) daylight simulator intended to represent
+            average daylight with a correlated colour temperature of 6774 K.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.Illuminants.CIE_C.spectrum_Sample">
+            <value>'C' expressed in its 'original form', a light spectrum.</value>
+        </member>
+        <member name="T:Litipk.ColorSharp.Illuminants.CIE_D50">
+            <summary>
+            CIE Standard Illuminant D50. Constructed to represent natural daylight at the horizon. CCT of 5003 K.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.Illuminants.CIE_D50.spectrum_Sample">
+            <value>D50 expressed in its 'original form', a light spectrum.</value>
+        </member>
+        <member name="T:Litipk.ColorSharp.Illuminants.CIE_D55">
+            <summary>
+            CIE Standard Illuminant D55. Constructed to represent mid-morning/mid-afternoon daylight. CCT of 5503 K.
+            </summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.Illuminants.CIE_D55.spectrum_Sample">
+            <value>D50 expressed in its 'original form', a light spectrum.</value>
+        </member>
+        <member name="T:Litipk.ColorSharp.LightSpectrums.BlackBodySpectrum">
+            <summary>Class to represent black body spectrums at a given temperature.</summary>
+        </member>
+        <member name="F:Litipk.ColorSharp.LightSpectrums.BlackBodySpectrum.CCT">
+            
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.BlackBodySpectrum.#ctor(System.Double)">
+            <param name="cct">Black body's temperature (in Kelvin degrees).</param>
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.BlackBodySpectrum.EvaluateAt(System.Double)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.BlackBodySpectrum.GetMaxValueOnSupport">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.BlackBodySpectrum.GetSupportMinValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.BlackBodySpectrum.GetSupportMaxValue">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.BlackBodySpectrum.IsInsideColorSpace(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.BlackBodySpectrum.GetCCT">
+            <inheritdoc />
+        </member>
+        <member name="M:Litipk.ColorSharp.LightSpectrums.BlackBodySpectrum.GetDuv">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

@@ -1,31 +1,42 @@
 ﻿struct Light {
    vec3 position;
    vec4 color;
+   float intensity;
 };
-
+uniform float ambient;
 
 #ifdef PHONG_LIGHT
-vec4 ApplyLight(mat4 model,Light light,vec3 fragNormal,vec3 fragVert) {
+vec4 ApplyLight(mat4 model,mat4 cam,Light light,vec4 surfaceColor,vec3 fragNormal,vec3 fragVert,float Shininess,vec3 SpecularColor) {
 
-    //calculate normal in world coordinates
-    mat3 normalMatrix = transpose(inverse(mat3(model)));
-    vec3 normal = normalize(normalMatrix * fragNormal);
+vec3 normal = normalize(transpose(inverse(mat3(model))) * fragNormal);
+    vec3 surfacePos = vec3(model * vec4(fragVert, 1));
+    vec3 surfaceToLight = normalize(light.position - surfacePos);
+    vec3 surfaceToCamera = normalize(cam[3].xyz - surfacePos);
     
-    //calculate the location of this fragment (pixel) in world coordinates
-    vec3 fragPosition = vec3(model * vec4(fragVert, 1));
+    //ambient
+    vec3 ambientColor = ambient * surfaceColor.rgb * light.color;
+
+    //diffuse
+    float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
+    vec3 diffuse = diffuseCoefficient * surfaceColor.rgb * light.color;
     
-    //calculate the vector from this pixels surface to the light source
-    vec3 surfaceToLight = light.position - fragPosition;
+    //specular
+    float specularCoefficient = 0.0;
+    if(diffuseCoefficient > 0.0)
+        specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))),Shininess);
+    vec3 specular = specularCoefficient * SpecularColor * light.color;
+    
+    //attenuation
+    float distanceToLight = length(light.position - surfacePos);
+    float attenuation = 1.0 / (1.0 + (1-light.intensity) * pow(distanceToLight, 2));
 
-    //calculate the cosine of the angle of incidence
-    float brightness = dot(normal, surfaceToLight) / (length(surfaceToLight) * length(normal));
-    brightness = clamp(brightness, 0, 1);
+    //linear color (color before gamma correction)
+    vec3 linearColor =ambientColor + attenuation*(diffuse + specular);
+    
+    //final color (after gamma correction)
+    vec3 gamma = vec3(1.0/2.2);
 
-    //calculate final color of the pixel, based on:
-    // 1. The angle of incidence: brightness
-    // 2. The color/intensities of the light: lights[0].intensities
-    // 3. The texture and texture coord: texture(tex, fragTexCoord)
-    return brightness * light.color;
+   return vec4(pow(linearColor, gamma), surfaceColor.a);
 
 }
 #endif

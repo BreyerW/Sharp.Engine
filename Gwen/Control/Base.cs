@@ -92,7 +92,10 @@ namespace Gwen.Control
         /// Invoked when mouse pointer leaves the control.
         /// </summary>
 		public event GwenEventHandler<EventArgs> HoverLeave;
-
+        public event GwenEventHandler<EventArgs> OnHover;
+        public event GwenEventHandler<EventArgs> OnMouseUp;
+        public event GwenEventHandler<EventArgs> OnMouseDown;
+        public event GwenEventHandler<EventArgs> OnMouseMove;
         /// <summary>
         /// Invoked when control's bounds have been changed.
         /// </summary>
@@ -1358,9 +1361,9 @@ namespace Gwen.Control
         /// </summary>
         protected virtual void OnMouseLeft()
         {
-            if (HoverLeave != null)
-				HoverLeave.Invoke(this, EventArgs.Empty);
-
+            
+            HoverLeave?.Invoke(this, EventArgs.Empty);
+        
             if (ToolTip != null)
                 Gwen.ToolTip.Disable(this);
 
@@ -1582,11 +1585,22 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="child">Control to examine.</param>
         /// <returns>True if the control is out child.</returns>
-        public bool IsChild(Base child)
+        public bool IsChild(Base child, bool deepCheck=false)
         {
-            return m_Children.Contains(child);
+            if (m_Children.Contains(child))
+                return true;
+            else if (deepCheck) {
+               return IsChild(child);
+            }
+            return false;
         }
-
+        private bool IsChild(Base parent) {
+            if (this == parent)
+                return true;
+            else if(parent?.Parent!=null)
+                return IsChild(parent.Parent);
+            return false;
+        }
         /// <summary>
         /// Converts local coordinates to canvas coordinates.
         /// </summary>

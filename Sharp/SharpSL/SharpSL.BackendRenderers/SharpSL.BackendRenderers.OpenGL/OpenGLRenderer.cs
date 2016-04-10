@@ -12,6 +12,57 @@ namespace SharpSL.BackendRenderers.OpenGL
 	{
 		#region IBackendRenderer implementation
 
+		public void FinishCommands ()
+		{
+			GL.Flush ();
+			GL.Finish ();
+			GL.PixelStore (PixelStoreParameter.UnpackAlignment,1);
+		}
+
+		public byte[] ReadPixels (int x,int y, int width,int height)
+		{
+			byte[] pixel = new byte[3];
+			int[] viewport = new int[4];
+			// Flip Y-axis (Windows <-> OpenGL)
+			GL.GetInteger(GetPName.Viewport, viewport);
+			Console.WriteLine ("view: "+viewport[0]);
+			GL.ReadPixels(viewport[0]+x,viewport[3]-(viewport[1]+y)+5, width, height, OpenTK.Graphics.OpenGL.PixelFormat.Rgb, PixelType.UnsignedByte, pixel);
+			return pixel;
+		}
+
+		public void SaveState ()
+		{
+			GL.PushAttrib(AttribMask.EnableBit | AttribMask.ColorBufferBit);
+		}
+
+		public void RestoreState ()
+		{
+			GL.PopAttrib();
+		}
+		public void SetStandardState ()
+		{
+			GL.CullFace (CullFaceMode.Back);
+			//GL.Disable (EnableCap.Blend);
+			GL.Enable (EnableCap.DepthTest);
+			GL.DepthFunc (DepthFunction.Less);
+			//GL.Enable(EnableCap.DebugOutput);
+			//GL.Enable(EnableCap.DebugOutputSynchronous);
+		}
+
+		public void SetFlatColorState ()
+		{
+			GL.Disable(EnableCap.Fog);
+			GL.Disable(EnableCap.Texture2D);
+			GL.Disable(EnableCap.Dither);
+			GL.Disable(EnableCap.Lighting);
+			GL.Disable(EnableCap.LineStipple);
+			GL.Disable(EnableCap.PolygonStipple);
+			GL.Disable(EnableCap.CullFace);
+			GL.Disable(EnableCap.Blend);
+			GL.Disable(EnableCap.AlphaTest);
+			GL.ShadeModel (ShadingModel.Flat);
+		}
+
 		public void GenerateBuffers (ref Shader shader)
 		{
 			shader.VertexID = GL.CreateShader(ShaderType.VertexShader);
@@ -22,10 +73,11 @@ namespace SharpSL.BackendRenderers.OpenGL
 		public void BindBuffers (ref Material mat)
 		{
 			var idLight = 0;
+			GL.Uniform1 (mat.Shader.uniformArray[UniformType.Float]["ambient"],Sharp.Light.ambientCoefficient);
 			foreach(var light in Sharp.Light.lights){
-				Console.WriteLine (idLight);
 				GL.Uniform3 (mat.Shader.uniformArray[UniformType.FloatVec3]["lights["+idLight+"].position"],light.entityObject.Position);
 				GL.Uniform4 (mat.Shader.uniformArray[UniformType.FloatVec4]["lights["+idLight+"].color"],light.color);
+				GL.Uniform1 (mat.Shader.uniformArray[UniformType.Float]["lights["+idLight+"].intensity"],light.intensity);
 				idLight++;
 			}
 			foreach (var matrixUniform in Material.globalMat4Array) {
@@ -122,9 +174,11 @@ namespace SharpSL.BackendRenderers.OpenGL
 			//Console.WriteLine ("error check"+GL.DebugMessageCallback);
 			var watch =System.Diagnostics.Stopwatch.StartNew();
 			var stride = Marshal.SizeOf (mesh.Vertices [0]);
-			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mesh.Vertices.Length * stride),CustomConverter.ToByteArray(mesh.Vertices,stride),(BufferUsageHint)mesh.UsageHint);
-
-			watch.Stop();
+            //CustomConverter.ToByteArray(mesh.Vertices,stride)
+            var ptr = CustomConverter.ToPtr(mesh.Vertices,stride);
+			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mesh.Vertices.Length * stride),ptr,(BufferUsageHint)mesh.UsageHint);
+            Marshal.FreeHGlobal(ptr);
+            watch.Stop();
 			Console.WriteLine("cast: "+ watch.ElapsedTicks);
 			//int tmpEBO;
 			//GL.GenBuffers(1, out tmpEBO);
@@ -231,6 +285,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public void ClearBuffer ()
 		{
+			GL.ClearColor (new OpenTK.Graphics.Color4(0f,0f,0f,0f));
 			GL.Clear(ClearBufferMask.DepthBufferBit|ClearBufferMask.ColorBufferBit);
 		}
 

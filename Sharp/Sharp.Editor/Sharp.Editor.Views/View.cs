@@ -9,7 +9,7 @@ namespace Sharp.Editor.Views
 	{
 		public static HashSet<View> views=new HashSet<View>();
 
-		public Canvas canvas;
+		public Base panel;
 		public Action makeContextCurrent;
 
 		protected View ()
@@ -18,28 +18,25 @@ namespace Sharp.Editor.Views
 		}
 
 		public virtual void Initialize (){
-			
-			canvas = new Canvas(MainEditorView.skin);
 			//canvas.ShouldDrawBackground = true;
 			//canvas.BackgroundColor = Color.FromArgb(255, 150, 170, 170);
 		}
 		public virtual void OnContextCreated(int width, int height){}
 		public virtual void Render (){
-			if (canvas.Parent != null) {
-				var absPos = canvas.CanvasPosToLocal (new System.Drawing.Point (canvas.X, canvas.Y));
-				SceneView.backendRenderer.Scissor (-absPos.X, canvas.Parent.Margin.Bottom, canvas.Parent.Width,canvas.Height);
-			} 
+			if (panel != null) {
+				var absPos =panel.LocalPosToCanvas (new System.Drawing.Point (panel.X, panel.Y));
+				SceneView.backendRenderer.Scissor (panel.Margin.Left+panel.Parent.X, panel.Margin.Bottom, panel.Width,panel.Height);
+				} 
 			else
-				SceneView.backendRenderer.Scissor (0, 0, canvas.Width, canvas.Height);
+				SceneView.backendRenderer.Scissor (0, 0, MainEditorView.canvas.Width,MainEditorView.canvas.Height);
 		}
 		public virtual void OnResize (int width, int height){
 
-			if (canvas.Parent != null) {
-				var absPos = canvas.CanvasPosToLocal (new System.Drawing.Point (canvas.X, canvas.Y));
-				canvas.SetSize (canvas.Parent.Width, canvas.Parent.Height);
+			if (panel != null) {
+			//	var absPos =MainEditorView.canvas.CanvasPosToLocal (new System.Drawing.Point (panel.X, panel.Y));
+				//panel.SetSize (width, height);
 			} else {
-				
-				canvas.SetSize (width,height);
+				MainEditorView.canvas.SetSize (width,height);
 			}
 			MainEditorView.renderer.Resize (width,height);
 
@@ -54,4 +51,3 @@ namespace Sharp.Editor.Views
 		}
 	}
 }
-

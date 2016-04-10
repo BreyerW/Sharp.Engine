@@ -34,13 +34,15 @@ namespace Sharp
 			var pressed = false;
 			prevMouseState =curMouseState;
 			curMouseState = Mouse.GetCursorState ();
-			foreach(var mouseCode in mouseCodes)
+            Gwen.Input.InputHandler.HoveredControl =input.m_Canvas.GetControlAt(curMouseState.X - oriX, curMouseState.Y - oriY);
+            foreach (var mouseCode in mouseCodes)
 				if (curMouseState[mouseCode]!=prevMouseState[mouseCode]){
-					evnt = new MouseButtonEventArgs (curMouseState.X - oriX, curMouseState.Y - oriY, mouseCode,true);//last param bugged
+                    evnt = new MouseButtonEventArgs(curMouseState.X - oriX, curMouseState.Y - oriY, mouseCode, true);//last param bugged
+                    //evnt = new MouseButtonEventArgs (curMouseState.X, curMouseState.Y, mouseCode,true);//last param bugged
 					if (curMouseState [mouseCode]) {
 						pressed = true;
-
-						OnMouseDown?.Invoke ((MouseButtonEventArgs)evnt);
+                        Gwen.Input.InputHandler.MouseFocus = Gwen.Input.InputHandler.HoveredControl;
+                        OnMouseDown?.Invoke ((MouseButtonEventArgs)evnt);
 					} else {
 						OnMouseUp?.Invoke ((MouseButtonEventArgs)evnt);
 

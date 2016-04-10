@@ -7,9 +7,9 @@ namespace Sharp.Editor
 {
 	public static class DrawHelper
 	{
-		public static void DrawGrid (System.Drawing.Color color,Vector3 pos, float X, float Y, int cell_size = 16, int grid_size = 2560)
+		public static void DrawGrid (System.Drawing.Color color,Vector3 pos, float X, float Y,ref Matrix4 projMat, int cell_size = 16, int grid_size = 2560)
 		{
-			MainEditorView.editorBackendRenderer.DrawGrid (color,pos,X,Y,cell_size,grid_size);
+			MainEditorView.editorBackendRenderer.DrawGrid (color,pos,X,Y,ref projMat,cell_size,grid_size);
 		}
 		public static void DrawBox(Vector3 pos1, Vector3 pos2)
 		{
@@ -127,6 +127,9 @@ namespace Sharp.Editor
 		public static void DrawLine(float v1x, float v1y, float v1z, float v2x, float v2y, float v2z, Color unColor)
 		{
 			MainEditorView.editorBackendRenderer.DrawLine (v1x,v1y, v1z, v2x, v2y, v2z, unColor);
+		}
+		public static void DrawTranslationGizmo(float thickness, float scale, Color xColor,Color yColor,Color zColor){
+			MainEditorView.editorBackendRenderer.DrawTranslateGizmo (thickness, scale, xColor,yColor,zColor);
 		}
 	}
 }

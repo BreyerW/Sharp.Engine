@@ -138,14 +138,14 @@ namespace Gwen.Input
         {
            // KeyboardKeyEventArgs ev = args as KeyboardKeyEventArgs;
             char ch = TranslateChar(args);
-			(InputHandler.KeyboardFocus ?? InputHandler.MouseFocus).GetCanvas().Input_Character(ch);
+			m_Canvas.Input_Character(ch);
 			Console.WriteLine (ch);
-			if (InputHandler.DoSpecialKeys((InputHandler.KeyboardFocus ?? InputHandler.MouseFocus).GetCanvas(), ch))
+			if (InputHandler.DoSpecialKeys(m_Canvas, ch))
                 return false;
 			
             Key iKey = TranslateKeyCode(args);
 
-			return (InputHandler.KeyboardFocus ?? InputHandler.MouseFocus).GetCanvas().Input_Key(iKey, true);
+			return m_Canvas.Input_Key(iKey, true);
         }
 
 		public bool ProcessKeyUp(global::OpenTK.Input.Key args)
@@ -155,7 +155,7 @@ namespace Gwen.Input
 			//m_Canvas.Input_Character(ch);
 			Key iKey = TranslateKeyCode(args);
 
-			return (InputHandler.KeyboardFocus ?? InputHandler.MouseFocus).GetCanvas().Input_Key(iKey, false);
+			return m_Canvas.Input_Key(iKey, false);
         }
 
         public void KeyPress(KeyPressEventArgs e)

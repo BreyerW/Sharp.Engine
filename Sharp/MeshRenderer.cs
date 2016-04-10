@@ -66,8 +66,7 @@ namespace Sharp
 			SceneView.backendRenderer.BindBuffers (ref mesh);
 			SceneView.backendRenderer.Allocate (ref mesh);
 		}
-	
-		public override void Render ()
+        public override void Render ()
 		{
 			
 			if (Camera.main.frustum.Intersect (mesh.bounds,entityObject.ModelMatrix) == 0) {
@@ -85,12 +84,12 @@ namespace Sharp
 				//if (!IsLoaded) return;
 			var shader = material.Shader;
 
-			SceneView.backendRenderer.Use(ref shader);
+            SceneView.backendRenderer.Use(ref shader);
 			SceneView.backendRenderer.BindBuffers(ref material);
 
 			SceneView.backendRenderer.BindBuffers(ref mesh);
 
-			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats [mesh.Vertices[0].GetType()].Values)
+            foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats [mesh.Vertices[0].GetType()].Values)
 				SceneView.backendRenderer.BindVertexAttrib (stride,vertAttrib);
 			
 			SceneView.backendRenderer.Use (ref mesh);
@@ -98,17 +97,15 @@ namespace Sharp
 		}
 		public override void SetupMatrices ()
 		{
-			var camMat =Camera.main.modelViewMatrix*Camera.main.projectionMatrix;
-
-			material.SetGlobalProperty ("camera", ref camMat);
-			material.SetGlobalProperty ("model", ref entityObject.ModelMatrix);
-
-			//int current = GL.GetInteger(GetPName.CurrentProgram);
-			//GL.ValidateProgram (material.shaderId);
-			//will return -1 without useprogram
-			//if (current != material.shaderId) 
-			//	GL.UseProgram(material.shaderId);
-		}
+			material.SetGlobalProperty ("camView", ref Camera.main.modelViewMatrix);
+			material.SetGlobalProperty ("camProjection", ref Camera.main.projectionMatrix);
+            material.SetProperty("model", ref entityObject.ModelMatrix);
+            //int current = GL.GetInteger(GetPName.CurrentProgram);
+            //GL.ValidateProgram (material.shaderId);
+            //will return -1 without useprogram
+            //if (current != material.shaderId) 
+            //	GL.UseProgram(material.shaderId);
+        }
 
 		public static void RegisterCustomAttribute(){
 		
