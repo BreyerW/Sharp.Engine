@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Net.Compilers.2.0.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.0.0\build\Microsoft.Net.Compilers.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -8,6 +9,8 @@
     <RootNamespace>Gtk</RootNamespace>
     <AssemblyName>GLWidget</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,11 +32,35 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="atk-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\atk-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="cairo-sharp, Version=1.10.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\cairo-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\gdk-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="gio-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\gio-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="glib-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\glib-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="gtk-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\gtk-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="pango-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\pango-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="OpenTK">
       <HintPath>..\packages\OpenTK.1.1.1589.5942\lib\NET40\OpenTK.dll</HintPath>
     </Reference>
@@ -46,4 +73,14 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.2.0.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.2.0.0\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\packages\GtkSharp.3.1.3\build\net45\GtkSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GtkSharp.3.1.3\build\net45\GtkSharp.targets'))" />
+    <Error Condition="!Exists('..\packages\GtkSharp.Win32.3.1.2\build\net45\GtkSharp.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GtkSharp.Win32.3.1.2\build\net45\GtkSharp.Win32.targets'))" />
+  </Target>
+  <Import Project="..\packages\GtkSharp.3.1.3\build\net45\GtkSharp.targets" Condition="Exists('..\packages\GtkSharp.3.1.3\build\net45\GtkSharp.targets')" />
+  <Import Project="..\packages\GtkSharp.Win32.3.1.2\build\net45\GtkSharp.Win32.targets" Condition="Exists('..\packages\GtkSharp.Win32.3.1.2\build\net45\GtkSharp.Win32.targets')" />
 </Project>

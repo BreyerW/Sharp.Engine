@@ -51,7 +51,7 @@ namespace SharpAsset.Pipeline
 				if (mesh.HasBones) {
 					
 					SkeletonPipeline.singleton.scene = scene;
-					AssetsView.tree.AddNode(()=> SkeletonPipeline.singleton.Import (""));
+					AssetsView.tree.AddNode(SkeletonPipeline.singleton.Import (""));
 				}
 				internalMesh.Indices=mesh.GetIndices();//(ushort[])(object)
 				//mesh.has

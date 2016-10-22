@@ -14,3 +14,17 @@ B:\Sharp.Engine\GLWidget\bin\Debug\pango-sharp.pdb
 B:\Sharp.Engine\GLWidget\obj\Debug\GLWidget.csprojResolveAssemblyReference.cache
 B:\Sharp.Engine\GLWidget\obj\Debug\GLWidget.dll
 B:\Sharp.Engine\GLWidget\obj\Debug\GLWidget.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\GLWidget.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\GLWidget.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\atk-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\gdk-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\glib-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\gtk-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\OpenTK.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\pango-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\OpenTK.xml
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\obj\Debug\GLWidget.csprojResolveAssemblyReference.cache
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\obj\Debug\GLWidget.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\obj\Debug\GLWidget.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\cairo-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Debug\gio-sharp.dll

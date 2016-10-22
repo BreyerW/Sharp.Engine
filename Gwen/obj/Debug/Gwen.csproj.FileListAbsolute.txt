@@ -5,3 +5,10 @@ B:\Sharp.Engine\Gwen\bin\Debug\OpenTK.xml
 B:\Sharp.Engine\Gwen\obj\Debug\Gwen.csprojResolveAssemblyReference.cache
 B:\Sharp.Engine\Gwen\obj\Debug\Gwen.dll
 B:\Sharp.Engine\Gwen\obj\Debug\Gwen.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\bin\Debug\Gwen.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\bin\Debug\Gwen.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\bin\Debug\OpenTK.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\bin\Debug\OpenTK.xml
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\obj\Debug\Gwen.csprojResolveAssemblyReference.cache
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\obj\Debug\Gwen.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\obj\Debug\Gwen.pdb

@@ -9,3 +9,14 @@ B:\Sharp.Engine\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.Properties.Resource
 B:\Sharp.Engine\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.OpenTK.csproj.GenerateResource.Cache
 B:\Sharp.Engine\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.OpenTK.dll
 B:\Sharp.Engine\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.OpenTK.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\bin\Debug\Gwen.Renderer.OpenTK.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\bin\Debug\Gwen.Renderer.OpenTK.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\bin\Debug\Gwen.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\bin\Debug\OpenTK.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\bin\Debug\Gwen.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\bin\Debug\OpenTK.xml
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.OpenTK.csprojResolveAssemblyReference.cache
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.Properties.Resources.resources
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.OpenTK.csproj.GenerateResource.Cache
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.OpenTK.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.OpenTK.pdb

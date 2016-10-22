@@ -1,0 +1,6 @@
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\bin\Release\Gwen.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\bin\Release\Gwen.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\bin\Release\OpenTK.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\bin\Release\OpenTK.xml
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\obj\Release\Gwen.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\Gwen\obj\Release\Gwen.pdb

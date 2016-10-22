@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Net.Compilers.2.0.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.0.0\build\Microsoft.Net.Compilers.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -7,14 +8,18 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>Sharp</RootNamespace>
     <AssemblyName>Sharp</AssemblyName>
+    <Features>refLocalsAndReturns</Features>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;__DEMO__</DefineConstants>
+    <DefineConstants>DEBUG;__DEMO__,__DEMO_EXPERIMENTAL__</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -30,31 +35,58 @@
     <ConsolePause>false</ConsolePause>
     <PlatformTarget>x86</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>__DEMO__,__DEMO_EXPERIMENTAL__</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="atk-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\atk-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="cairo-sharp, Version=1.10.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\cairo-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastMember.1.1.0\lib\net40\FastMember.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\gdk-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="gio-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\gio-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="glib-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\glib-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="gtk-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\gtk-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Migrant, Version=0.13.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Migrant.0.13\lib\net40\Migrant.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="pango-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f, processorArchitecture=MSIL">
+      <HintPath>..\packages\GtkSharp.3.1.3\lib\net45\pango-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SharpNav, Version=1.0.0.1, Culture=neutral, PublicKeyToken=0c16c0d534ce32cb, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpNav.OpenTK.1.0.0-alpha2\lib\net40\SharpNav.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="gtk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="gdk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="glib-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="glade-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="pango-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="atk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
     <Reference Include="OpenTK">
       <HintPath>..\packages\OpenTK.1.1.1589.5942\lib\NET40\OpenTK.dll</HintPath>
     </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="BEPUik">
       <HintPath>..\packages\BEPUphysics.1.4.0\lib\net40\BEPUik.dll</HintPath>
@@ -74,18 +106,12 @@
     <Reference Include="SmallBlockMemoryStream">
       <HintPath>..\packages\SmallBlockMemoryStream.1.0.0.0\lib\net20\SmallBlockMemoryStream.dll</HintPath>
     </Reference>
-    <Reference Include="Migrant">
-      <HintPath>..\packages\Migrant.0.12\lib\net40\Migrant.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="AssimpNet">
       <HintPath>..\packages\AssimpNet.3.3.1\lib\net45\AssimpNet.dll</HintPath>
     </Reference>
     <Reference Include="FreeImageNET">
       <HintPath>..\packages\FreeImageNET.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics.Vectors">
-      <HintPath>..\packages\System.Numerics.Vectors.4.1.1-beta-23516\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System.Numerics" />
@@ -95,6 +121,19 @@
     <Reference Include="ColorSharp">
       <HintPath>..\packages\ColorSharp.0.11.0.32448\lib\net40\ColorSharp.dll</HintPath>
     </Reference>
+    <Reference Include="System.Numerics.Vectors, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.1.1\lib\net46\System.Numerics.Vectors.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.0.0-rc3-24212-01\lib\netstandard1.1\System.ValueTuple.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="Wire, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Wire.0.8.1\lib\net45\Wire.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -102,6 +141,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Editor\Editor.UI\Vector3Drawer.cs" />
+    <Compile Include="Editor\Editor.UI\BooleanDrawer.cs" />
+    <Compile Include="Editor\Editor.UI\EditorUI.cs" />
     <Compile Include="gtk-gui\generated.cs" />
     <Compile Include="MainWindow.cs" />
     <Compile Include="gtk-gui\MainWindow.cs" />
@@ -120,21 +162,22 @@
     <Compile Include="Player.cs" />
     <Compile Include="Renderer.cs" />
     <Compile Include="Selection.cs" />
+    <Compile Include="Editor\PropertyDrawer.cs" />
     <Compile Include="SizeInBytes.cs" />
     <Compile Include="Main.cs" />
-    <Compile Include="Sharp.Editor\Manipulators.cs" />
-    <Compile Include="Sharp.Editor\DrawHelper.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\AssetsView.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\MainEditorView.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\SceneStructureView.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\SceneView.cs" />
+    <Compile Include="Editor\Manipulators.cs" />
+    <Compile Include="Editor\DrawHelper.cs" />
+    <Compile Include="Editor\Editor.Views\AssetsView.cs" />
+    <Compile Include="Editor\Editor.Views\MainEditorView.cs" />
+    <Compile Include="Editor\Editor.Views\SceneStructureView.cs" />
+    <Compile Include="Editor\Editor.Views\SceneView.cs" />
     <Compile Include="Sharp.Physic\ErrorOutput.cs" />
     <Compile Include="Collider.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\View.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\InspectorView.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CustomInspectorAttribute.cs" />
-    <Compile Include="Sharp.Editor\Inpector.cs" />
-    <Compile Include="Sharp.Editor\DefaultInspector.cs" />
+    <Compile Include="Editor\Editor.Views\View.cs" />
+    <Compile Include="Editor\Editor.Views\InspectorView.cs" />
+    <Compile Include="Editor\Editor.Attribs\CustomInspectorAttribute.cs" />
+    <Compile Include="Editor\Inspector.cs" />
+    <Compile Include="Editor\Editor.UI\DefaultInspector.cs" />
     <Compile Include="SharpAsset\IAsset.cs" />
     <Compile Include="SharpAsset\Mesh.cs" />
     <Compile Include="SharpAsset\Shader.cs" />
@@ -184,10 +227,21 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Content\BasicShader.shader" />
     <None Include="Content\FogShader.shader" />
     <None Include="Content\SkeletonShader.shader" />
     <None Include="Content\LightProcess.inc" />
   </ItemGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.2.0.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.2.0.0\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\packages\GtkSharp.3.1.3\build\net45\GtkSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GtkSharp.3.1.3\build\net45\GtkSharp.targets'))" />
+    <Error Condition="!Exists('..\packages\GtkSharp.Win32.3.1.2\build\net45\GtkSharp.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GtkSharp.Win32.3.1.2\build\net45\GtkSharp.Win32.targets'))" />
+  </Target>
+  <Import Project="..\packages\GtkSharp.3.1.3\build\net45\GtkSharp.targets" Condition="Exists('..\packages\GtkSharp.3.1.3\build\net45\GtkSharp.targets')" />
+  <Import Project="..\packages\GtkSharp.Win32.3.1.2\build\net45\GtkSharp.Win32.targets" Condition="Exists('..\packages\GtkSharp.Win32.3.1.2\build\net45\GtkSharp.Win32.targets')" />
 </Project>

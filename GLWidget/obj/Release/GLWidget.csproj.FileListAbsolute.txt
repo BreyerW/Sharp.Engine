@@ -1,0 +1,13 @@
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\GLWidget.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\atk-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\gdk-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\glib-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\gtk-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\OpenTK.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\pango-sharp.dll
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\atk-sharp.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\gdk-sharp.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\glib-sharp.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\OpenTK.xml
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\bin\Release\pango-sharp.pdb
+C:\Users\Damian\Source\Repos\Sharp.Engine\GLWidget\obj\Release\GLWidget.dll

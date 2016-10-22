@@ -5,17 +5,17 @@ public partial class MainWindow
 {
 	private global::Gtk.GLWidget glwidget1;
 
-	protected virtual void Build ()
+	protected virtual void Build()
 	{
-		global::Stetic.Gui.Initialize (this);
+		global::Stetic.Gui.Initialize(this);
 		// Widget MainWindow
 		this.HeightRequest = 100;
 		this.CanFocus = true;
 		this.Name = "MainWindow";
-		this.Title = global::Mono.Unix.Catalog.GetString ("MainWindow");
+		this.Title = global::Mono.Unix.Catalog.GetString("MainWindow");
 		this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 		// Container child MainWindow.Gtk.Container+ContainerChild
-		this.glwidget1 = new global::Gtk.GLWidget ();
+		this.glwidget1 = new global::Gtk.GLWidget();
 		this.glwidget1.CanFocus = true;
 		this.glwidget1.Name = "glwidget1";
 		this.glwidget1.SingleBuffer = false;
@@ -25,18 +25,19 @@ public partial class MainWindow
 		this.glwidget1.StencilBPP = 0;
 		this.glwidget1.Samples = 0;
 		this.glwidget1.Stereo = false;
-		this.glwidget1.GlVersionMajor = 2;
-		this.glwidget1.GlVersionMinor = 0;
-		this.Add (this.glwidget1);
-		if ((this.Child != null)) {
-			this.Child.ShowAll ();
+		this.glwidget1.GLVersionMajor = 2;
+		this.glwidget1.GLVersionMinor = 0;
+		this.Add(this.glwidget1);
+		if ((this.Child != null))
+		{
+			this.Child.ShowAll();
 		}
 		this.DefaultWidth = 400;
 		this.DefaultHeight = 300;
-		this.Show ();
-		this.DeleteEvent += new global::Gtk.DeleteEventHandler (this.OnDeleteEvent);
-		this.glwidget1.RenderFrame += new global::System.EventHandler (this.OnGlwidget1RenderFrame);
-		this.glwidget1.Initialized += new global::System.EventHandler (this.OnGlwidget1Initialized);
-		this.glwidget1.KeyPressEvent += new global::Gtk.KeyPressEventHandler (this.OnGlwidget1KeyPressEvent);
+		this.Show();
+		this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.OnDeleteEvent);
+		this.glwidget1.RenderFrame += new global::System.EventHandler(this.OnGlwidget1RenderFrame);
+		this.glwidget1.Initialized += new global::System.EventHandler(this.OnGlwidget1Initialized);
+		this.glwidget1.KeyPressEvent += new global::Gtk.KeyPressEventHandler(this.OnGlwidget1KeyPressEvent);
 	}
 }
