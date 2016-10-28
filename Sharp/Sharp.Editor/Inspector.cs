@@ -4,19 +4,24 @@ using System.Collections.Generic;
 
 namespace Sharp.Editor
 {
-	public abstract class Inpector<T>
+	public abstract class Inspector<T>
 	{
 		//private static Dictionary<Type, Base> predefinedInspectors;
-		internal Func<T> getTarget;
+		internal T getTarget;
 		//internal Func<T> setTarget;
 		public Properties properties;
 
 		public T Target {
-			get{return getTarget ();}
+			get{ return getTarget; }
 			//set{setTarget (value);}
 		}
 
-		public Inpector ()
+        /*public ref T Target
+        {
+            get { return ref getTarget; }
+            //set{setTarget (value);}
+        }*/
+        public Inspector ()
 		{
 		}
 		public abstract void OnInitializeGUI();

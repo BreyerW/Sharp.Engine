@@ -1,282 +1,319 @@
 ﻿using System;
 using OpenTK;
+using SharpAsset;
 
 namespace Sharp
 {
-	public class Camera: Component
-	{
-		public static Camera main;
-		public Frustum frustum;
-		public Matrix4 projectionMatrix;
-		public Matrix4 modelViewMatrix;
-		public bool moved=false;
+    public class Camera : Component
+    {
+        public static Camera main;
+        public Frustum frustum;
+        private Matrix4 projectionMatrix;
+        public Matrix4 ProjectionMatrix
+        {
+            get
+            {
+                return projectionMatrix;
+            }
+            set
+            {
+                projectionMatrix = value;
+                if (main != null)
+                    Material.SetGlobalProperty("camProjection", ref main.projectionMatrix);
+            }
+        }
 
-		#region Constructors
-		public Camera()
-		{
-			Speed = 50.0f;
-			TargetPosition =  new Vector3();
-			//TargetOrientation = new Quaternion();
-			MouseRotation = new Vector2(0, 0);
-			Movement = new Vector3(0, 0, 0);
-			//MouseLookEnabled = mouseLook;
+        private Matrix4 modelViewMatrix;
 
-			AspectRatio = 1f;
-			FieldOfView = 75;
-			ZNear = 0.1f;
-			ZFar = 1000f;
-			//Orientation = TargetOrientation;
-			SetProjectionMatrix ();
+        public Matrix4 ModelViewMatrix
+        {
+            get
+            {
+                return modelViewMatrix;
+            }
+            set
+            {
+                modelViewMatrix = value;
+                if (main != null)
+                    Material.SetGlobalProperty("camView", ref main.modelViewMatrix);
+            }
+        }
 
-		}
+        public bool moved = false;
 
-		#endregion
+        #region Constructors
+        public Camera()
+        {
+            Speed = 50.0f;
+            //TargetPosition =  new Vector3();
+            //TargetOrientation = new Quaternion();
+            MouseRotation = new Vector2(0, 0);
+            Movement = new Vector3(0, 0, 0);
+            //MouseLookEnabled = mouseLook;
 
-		#region Members
+            AspectRatio = 1f;
+            FieldOfView = 75;
+            ZNear = 0.1f;
+            ZFar = 1000f;
+            //Orientation = TargetOrientation;
+            SetProjectionMatrix();
 
-		#region Properties
+        }
 
-		//public Quaternion Orientation { get; set; }
+        #endregion
 
-		public Vector3 TargetPosition { get; set; }
-		//public Quaternion TargetOrientation { get; set; }
-		//public Quaternion TargetOrientationY { get; set; }
+        #region Members
 
-public float MouseYSensitivity=1f;
-public float MouseXSensitivity=1f;
+        #region Properties
 
-public Vector2 MouseRotation;
-public Vector3 Movement;
+        //public Quaternion Orientation { get; set; }
 
-public float Speed { get; set; }
-public float Acceleration { get; set; }
+        //public Vector3 TargetPosition { get; set; }
+        //public Quaternion TargetOrientation { get; set; }
+        //public Quaternion TargetOrientationY { get; set; }
 
-public float ZNear { get; set; }
-public float ZFar { get; set; }
-public float FieldOfView { get; set; }
-public float AspectRatio { get; set; }
+        public float MouseYSensitivity = 1f;
+        public float MouseXSensitivity = 1f;
 
-public CamMode CameraMode=CamMode.FlightCamera;
+        public Vector2 MouseRotation;
+        public Vector3 Movement;
 
-#endregion
+        public float Speed { get; set; }
+        public float Acceleration { get; set; }
 
-#region Public Methods
-public void Update()
-{
-	/*if (TargetPosition !=entityObject.Position)
-	{
-		entityObject.Position = Vector3.Lerp(entityObject.Position, TargetPosition, 1);
-	}*/
-}
+        public float ZNear { get; set; }
+        public float ZFar { get; set; }
+        public float FieldOfView { get; set; }
+        public float AspectRatio { get; set; }
 
-public void SetProjectionMatrix()
-{
-	projectionMatrix  = Matrix4.CreatePerspectiveFieldOfView((float)(FieldOfView * Math.PI / 180.0), AspectRatio, ZNear, ZFar);
-}
+        public CamMode CameraMode = CamMode.FlightCamera;
 
-public void SetModelviewMatrix()
-{
-	var translationMatrix = Matrix4.CreateTranslation(-entityObject.Position);
-			var rotationMatrix = Matrix4.CreateFromQuaternion(ToQuaterion(entityObject.Rotation));
-			//modelViewMatrix = rotationMatrix*translationMatrix; orbit 
-			modelViewMatrix = translationMatrix*rotationMatrix; //pan
-}
+        #endregion
+
+        #region Public Methods
+        public void Update()
+        {
+            /*if (TargetPosition !=entityObject.Position)
+            {
+                entityObject.Position = Vector3.Lerp(entityObject.Position, TargetPosition, 1);
+            }*/
+        }
+
+        public void SetProjectionMatrix()
+        {
+            ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(FieldOfView * Math.PI / 180.0), AspectRatio, ZNear, ZFar);
+        }
+
+        public void SetModelviewMatrix()
+        {
+            var translationMatrix = Matrix4.CreateTranslation(-entityObject.Position);
+            var rotationMatrix = Matrix4.CreateFromQuaternion(ToQuaterion(entityObject.Rotation));
+            //modelViewMatrix = rotationMatrix*translationMatrix; orbit 
+            ModelViewMatrix = translationMatrix * rotationMatrix; //pan
+        }
 
 
-		public static Matrix4 billboard(Vector3 position, Vector3 cameraPos, Vector3 cameraUp) {
-			Vector3 look =Vector3.Normalize(cameraPos - position);
-			Vector3 right =Vector3.Cross(cameraUp, look);
-			Vector3 up2 = Vector3.Cross(look, right);
-			Matrix4 transform=new Matrix4();
-			transform.M11 = right.X;
-			transform.M12 = right.Y;
-			transform.M13 = right.Z;
-			transform.M14 = 0.0f;
-			transform.M21 = up2.X;
-			transform.M22 = up2.Y;
-			transform.M23 = up2.Z;
-			transform.M24 = 0.0f;
-			transform.M31 = look.X;
-			transform.M32 = look.Y;
-			transform.M33 = look.Z;
-			transform.M34 = 0.0f;
-			transform.M41 =position.X;
-			transform.M42 = position.Y;
-			transform.M43 = position.Z;
-			transform.M44 = 1.0f;
-			// Uncomment this line to translate the position as well
-			// (without it, it's just a rotation)
-			//transform[3] = vec4(position, 0);
-			return transform;
-		}
+        public static Matrix4 billboard(Vector3 position, Vector3 cameraPos, Vector3 cameraUp)
+        {
+            Vector3 look = Vector3.Normalize(cameraPos - position);
+            Vector3 right = Vector3.Cross(cameraUp, look);
+            Vector3 up2 = Vector3.Cross(look, right);
+            Matrix4 transform = new Matrix4();
+            transform.M11 = right.X;
+            transform.M12 = right.Y;
+            transform.M13 = right.Z;
+            transform.M14 = 0.0f;
+            transform.M21 = up2.X;
+            transform.M22 = up2.Y;
+            transform.M23 = up2.Z;
+            transform.M24 = 0.0f;
+            transform.M31 = look.X;
+            transform.M32 = look.Y;
+            transform.M33 = look.Z;
+            transform.M34 = 0.0f;
+            transform.M41 = position.X;
+            transform.M42 = position.Y;
+            transform.M43 = position.Z;
+            transform.M44 = 1.0f;
+            // Uncomment this line to translate the position as well
+            // (without it, it's just a rotation)
+            //transform[3] = vec4(position, 0);
+            return transform;
+        }
 
-		private static bool WithinEpsilon(float a, float b)
-		{
-			float num = a - b;
-			return ((-1.401298E-45f <= num) && (num <= float.Epsilon));
-		}
-		public Vector3 ScreenToWorld(int x, int y, int width, int height,float time=-1f)
-		{
-			Vector4 vec;
+        private static bool WithinEpsilon(float a, float b)
+        {
+            float num = a - b;
+            return ((-1.401298E-45f <= num) && (num <= float.Epsilon));
+        }
+        public Vector3 ScreenToWorld(int x, int y, int width, int height, float time = -1f)
+        {
+            Vector4 vec;
 
-			vec.X = 2.0f * x / (float)width - 1;
-			vec.Y = -(2.0f * y / (float)height - 1);
-			vec.Z = time;
-			vec.W = 1.0f;
+            vec.X = 2.0f * x / (float)width - 1;
+            vec.Y = -(2.0f * y / (float)height - 1);
+            vec.Z = time;
+            vec.W = 1.0f;
 
-			Matrix4 viewInv = modelViewMatrix.Inverted ();
-			Matrix4 projInv = Camera.main.projectionMatrix.Inverted();
+            Matrix4 viewInv = modelViewMatrix.Inverted();
+            Matrix4 projInv = Camera.main.projectionMatrix.Inverted();
 
-			Vector4.Transform(ref vec, ref projInv, out vec);
-			Vector4.Transform(ref vec, ref viewInv, out vec);
+            Vector4.Transform(ref vec, ref projInv, out vec);
+            Vector4.Transform(ref vec, ref viewInv, out vec);
 
-			if (vec.W > 0.000001f || vec.W < -0.000001f)
-			{
-				vec.X /= vec.W;
-				vec.Y /= vec.W;
-				vec.Z /= vec.W;
-			}
+            if (vec.W > 0.000001f || vec.W < -0.000001f)
+            {
+                vec.X /= vec.W;
+                vec.Y /= vec.W;
+                vec.Z /= vec.W;
+            }
 
-			return vec.Xyz;
-		}
-		public Vector3 WorldToScreen( Vector3 pos, int width, int height) {
-			
-			var pos4 = Vector4.Transform (new Vector4 (pos, 1),modelViewMatrix*projectionMatrix);
+            return vec.Xyz;
+        }
+        public Vector3 WorldToScreen(Vector3 pos, int width, int height)
+        {
 
-			var NDCSpace=pos4.Xyz/pos4.W;
-			return new Vector3(NDCSpace.X*(width/(2f)),NDCSpace.Y*(height/(2f)),NDCSpace.Z);//look at divide part
-		}
-/// <summary>
-/// Sets up this camera with the specified Camera Mode
-/// </summary>
-/// <param name="mode">
-/// A <see cref="CamMode"/>
-/// </param>
-public void SetCameraMode(CamMode mode)
-{
-	CameraMode = mode;
-}
-		public Quaternion ToQuaterion(Vector3 angles) {
-			// Assuming the angles are in radians.
-			angles *= MathHelper.Pi / 180f;
+            var pos4 = Vector4.Transform(new Vector4(pos, 1), modelViewMatrix * projectionMatrix);
 
-			return Quaternion.FromMatrix (Matrix3.CreateRotationX (angles.Y) * Matrix3.CreateRotationY (angles.X) * Matrix3.CreateRotationZ (angles.Z));
-		}
-		public Vector3 ToEuler(Quaternion q) 
-		{ 
-			float sqw = q.W*q.W;
-			float sqx = q.X*q.X;
-			float sqy = q.Y*q.Y;
-			float sqz = q.Z*q.Z;
-			float unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
-			float test = q.X*q.Y + q.Z*q.W;
-				if (test > 0.499*unit) { // singularity at north pole
-				return new Vector3 (2f * (float)Math.Atan2(q.X,q.W),MathHelper.Pi/2,0)*180f/MathHelper.Pi;
-				}
-				if (test < -0.499*unit) { // singularity at south pole
-				return new Vector3 (-2f * (float)Math.Atan2(q.X,q.W),-MathHelper.Pi/2,0)*180f/MathHelper.Pi;
-				}
-			return new Vector3 ((float)Math.Atan2 (2 * q.Y * q.W - 2 * q.X * q.Z, sqx - sqy - sqz + sqw),
-				(float)Math.Asin (2 * test / unit),
-				(float)Math.Atan2 (2 * q.X * q.W - 2 * q.Y * q.Z, -sqx + sqy - sqz + sqw))*180f/MathHelper.Pi;
+            var NDCSpace = pos4.Xyz / pos4.W;
+            return new Vector3(NDCSpace.X * (width / (2f)), NDCSpace.Y * (height / (2f)), NDCSpace.Z);//look at divide part
+        }
+        /// <summary>
+        /// Sets up this camera with the specified Camera Mode
+        /// </summary>
+        /// <param name="mode">
+        /// A <see cref="CamMode"/>
+        /// </param>
+        public void SetCameraMode(CamMode mode)
+        {
+            CameraMode = mode;
+        }
+        public Quaternion ToQuaterion(Vector3 angles)
+        {
+            // Assuming the angles are in radians.
+            angles *= MathHelper.Pi / 180f;
 
-		}  
-#endregion
+            return Quaternion.FromMatrix(Matrix3.CreateRotationX(angles.Y) * Matrix3.CreateRotationY(angles.X) * Matrix3.CreateRotationZ(angles.Z));
+        }
+        public Vector3 ToEuler(Quaternion q)
+        {
+            float sqw = q.W * q.W;
+            float sqx = q.X * q.X;
+            float sqy = q.Y * q.Y;
+            float sqz = q.Z * q.Z;
+            float unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+            float test = q.X * q.Y + q.Z * q.W;
+            if (test > 0.499 * unit)
+            { // singularity at north pole
+                return new Vector3(2f * (float)Math.Atan2(q.X, q.W), MathHelper.Pi / 2, 0) * 180f / MathHelper.Pi;
+            }
+            if (test < -0.499 * unit)
+            { // singularity at south pole
+                return new Vector3(-2f * (float)Math.Atan2(q.X, q.W), -MathHelper.Pi / 2, 0) * 180f / MathHelper.Pi;
+            }
+            return new Vector3((float)Math.Atan2(2 * q.Y * q.W - 2 * q.X * q.Z, sqx - sqy - sqz + sqw),
+                (float)Math.Asin(2 * test / unit),
+                (float)Math.Atan2(2 * q.X * q.W - 2 * q.Y * q.Z, -sqx + sqy - sqz + sqw)) * 180f / MathHelper.Pi;
 
-#region Protected Methods
+        }
+        #endregion
 
-/// <summary>
-/// Clamps the mouse rotation values
-/// </summary>
-protected void ClampMouseValues()
-{
-			var newRot = new Vector3 (entityObject.Rotation);
-			if (newRot.Y >=360) //360 degrees in radians (or something in radians)
-				newRot.Y-= 360;
-			if (newRot.Y <= -360)
-				newRot.Y += 360;
-			
-			if (newRot.X >=360) //360 degrees in radians (or something in radians)
-				newRot.X-= 360;
-			if (newRot.X <= -360)
-				newRot.X+= 360;
-			entityObject.Rotation = newRot;
-	/*if (MouseRotation.Y >= 6.28) //360 degrees in radians (or something in radians)
-		MouseRotation.Y-= 6.28f;
-	if (MouseRotation.Y <= -6.28)
-		MouseRotation.Y += 6.28f;
-	/*if (MouseRotation.Y >= 1.57) //90 degrees in radians
-				MouseRotation.Y = 1.57f;
-			if (MouseRotation.Y <= -1.57)
-				MouseRotation.Y = -1.57f;*/
-}
+        #region Protected Methods
 
-/// <summary>
-/// Updates the Orientation Quaternion for this camera using the calculated Mouse Delta
-/// </summary>
-/// <param name="time">
-/// A <see cref="System.Double"/> containing the time since the last update
-/// </param>
-public void Rotate(float x, float y, float time=1)
-{
-			var newRot = new Vector3 (entityObject.Rotation);
-			newRot.X +=(x * MouseXSensitivity * time);
-			newRot.Y +=(y * MouseYSensitivity * time);
-			entityObject.Rotation = newRot;
-			SetModelviewMatrix ();
-	//Console.WriteLine("Rotation={0}", MouseRotation);
-	//ClampMouseValues();
-			if(frustum!=null)
-	frustum.Update (Camera.main.modelViewMatrix*Camera.main.projectionMatrix);
-	//ResetMouse();
+        /// <summary>
+        /// Clamps the mouse rotation values
+        /// </summary>
+        protected void ClampMouseValues()
+        {
+            var newRot = new Vector3(entityObject.Rotation);
+            if (newRot.Y >= 360) //360 degrees in radians (or something in radians)
+                newRot.Y -= 360;
+            if (newRot.Y <= -360)
+                newRot.Y += 360;
 
-}
+            if (newRot.X >= 360) //360 degrees in radians (or something in radians)
+                newRot.X -= 360;
+            if (newRot.X <= -360)
+                newRot.X += 360;
+            entityObject.Rotation = newRot;
+            /*if (MouseRotation.Y >= 6.28) //360 degrees in radians (or something in radians)
+                MouseRotation.Y-= 6.28f;
+            if (MouseRotation.Y <= -6.28)
+                MouseRotation.Y += 6.28f;
+            /*if (MouseRotation.Y >= 1.57) //90 degrees in radians
+                        MouseRotation.Y = 1.57f;
+                    if (MouseRotation.Y <= -1.57)
+                        MouseRotation.Y = -1.57f;*/
+        }
 
-/// <summary>
-/// Updates the Position vector for this camera
-/// </summary>
-/// <param name="time">
-/// A <see cref="System.Double"/> containing the time since the last update
-/// </param>
-public void Move(float x, float y,float z, float time=1f)
-{
-	Movement.X = 0;
-	Movement.Y = 0;
-	Movement.Z = 0;
-	if (x != 0) {
-		Movement.X = x*time;
-	}
-	else if (y != 0) {
-		Movement.Y = y*time;
-	}else if (z != 0) {
-		Movement.Z = z*time;
-	}
-	if (CameraMode == CamMode.FirstPerson)
-	{
-				TargetPosition += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.Rotation)));
-		TargetPosition = new Vector3(TargetPosition.X, 5, TargetPosition.Z);
-	}
-	else
-				TargetPosition += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.Rotation)));
-	if (CameraMode == CamMode.FlightCamera)
-		entityObject.Position = TargetPosition;
-	
-	SetModelviewMatrix ();
-	SetProjectionMatrix ();
-	
-	frustum.Update (Camera.main.modelViewMatrix*Camera.main.projectionMatrix);
-	moved = true;
-}
+        /// <summary>
+        /// Updates the Orientation Quaternion for this camera using the calculated Mouse Delta
+        /// </summary>
+        /// <param name="time">
+        /// A <see cref="System.Double"/> containing the time since the last update
+        /// </param>
+        public void Rotate(float x, float y, float time = 1)
+        {
+            var newRot = new Vector3(entityObject.Rotation);
+            newRot.X += (x * MouseXSensitivity * time);
+            newRot.Y += (y * MouseYSensitivity * time);
+            entityObject.Rotation = newRot;
+            SetModelviewMatrix();
+            //Console.WriteLine("Rotation={0}", MouseRotation);
+            //ClampMouseValues();
+            if (frustum != null)
+                frustum.Update(Camera.main.modelViewMatrix * Camera.main.projectionMatrix);
+            //ResetMouse();
 
-#endregion
+        }
 
-#endregion
+        /// <summary>
+        /// Updates the Position vector for this camera
+        /// </summary>
+        /// <param name="time">
+        /// A <see cref="System.Double"/> containing the time since the last update
+        /// </param>
+        public void Move(float x, float y, float z, float time = 1f)
+        {
+            Movement.X = 0;
+            Movement.Y = 0;
+            Movement.Z = 0;
+            if (x != 0)
+            {
+                Movement.X = x * time;
+            }
+            else if (y != 0)
+            {
+                Movement.Y = y * time;
+            }
+            else if (z != 0)
+            {
+                Movement.Z = z * time;
+            }
+            if (CameraMode == CamMode.FirstPerson)
+            {
+                entityObject.Position += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.Rotation)));
+                entityObject.Position = new Vector3(entityObject.Position.X, 5, entityObject.Position.Z);
+            }
+            else
+                entityObject.Position += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.Rotation)));
 
-}
-	public enum CamMode
-	{
-		FlightCamera,
-		FirstPerson,
-		NoClip
-	}
+            SetModelviewMatrix();
+            SetProjectionMatrix();
+
+            frustum.Update(Camera.main.modelViewMatrix * Camera.main.projectionMatrix);
+            moved = true;
+        }
+
+        #endregion
+
+        #endregion
+
+    }
+    public enum CamMode
+    {
+        FlightCamera,
+        FirstPerson,
+        NoClip
+    }
 }

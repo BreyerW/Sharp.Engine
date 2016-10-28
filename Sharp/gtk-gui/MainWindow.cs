@@ -37,6 +37,5 @@ public partial class MainWindow
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler (this.OnDeleteEvent);
 		this.glwidget1.RenderFrame += new global::System.EventHandler (this.OnGlwidget1RenderFrame);
 		this.glwidget1.Initialized += new global::System.EventHandler (this.OnGlwidget1Initialized);
-		this.glwidget1.KeyPressEvent += new global::Gtk.KeyPressEventHandler (this.OnGlwidget1KeyPressEvent);
 	}
 }

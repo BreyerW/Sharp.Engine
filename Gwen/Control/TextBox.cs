@@ -87,7 +87,7 @@ namespace Gwen.Control
         public TextBox(Base parent)
             : base(parent)
         {
-			AutoSizeToContents = false;
+            AutoSizeToContents = false;
             SetSize(200, 20);
 
             MouseInputEnabled = true;
@@ -287,7 +287,7 @@ namespace Gwen.Control
         protected override void OnMouseDoubleClickedLeft(int x, int y)
         {
             //base.OnMouseDoubleClickedLeft(x, y);
-			OnSelectAll(this, EventArgs.Empty);
+            OnSelectAll(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -479,7 +479,10 @@ namespace Gwen.Control
         public virtual void DeleteText(int startPos, int length)
         {
             string str = Text;
-            str = str.Remove(startPos, length);
+            if (startPos + length > str.Length)
+                str = str.Remove(startPos - 1, length);
+            else
+                str = str.Remove(startPos, length);
             SetText(str);
 
             if (m_CursorPos > startPos)
@@ -602,7 +605,7 @@ namespace Gwen.Control
         protected virtual void OnReturn()
         {
             if (SubmitPressed != null)
-				SubmitPressed.Invoke(this, EventArgs.Empty);
+                SubmitPressed.Invoke(this, EventArgs.Empty);
         }
     }
 }

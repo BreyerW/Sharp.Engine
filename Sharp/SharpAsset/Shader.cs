@@ -11,31 +11,35 @@ namespace SharpAsset
 	//so you could practice writing a shader on your own :P
 	public struct Shader: IAsset
 	{
-		public string Name{ get{return Path.GetFileNameWithoutExtension (FullPath);  } set{ }}
+        internal static Dictionary<string, Shader> shaders = new Dictionary<string, Shader>();
+
+        public string Name{ get{return Path.GetFileNameWithoutExtension (FullPath);  } set{ }}
 		public string Extension{ get{return Path.GetExtension (FullPath);  } set{ }}
 		public string FullPath{ get; set;}
 
-		public string VertexSource { get; private set; }
-		public string FragmentSource { get; private set; }
+		public string VertexSource { get; set; }
+		public string FragmentSource { get; set; }
 
 		internal int VertexID;
 		internal int FragmentID;
 
 		internal int Program;
 
-		public static Dictionary<string,Shader> shaders=new Dictionary<string, Shader>();
-		internal Dictionary<UniformType,Dictionary<string, int>> uniformArray;
+        internal Dictionary<UniformType, Dictionary<string, int>> uniformArray;//=new Dictionary<UniformType, Dictionary<string, int>> ();
 
-		public Shader(ref string vs, ref string fs, ref string pathToFile)
-		{
-			uniformArray = new Dictionary<UniformType, Dictionary<string, int>> ();
-			VertexSource = vs;
-			FragmentSource = fs;
-			FullPath=pathToFile;
-			FragmentID = 0;
-			VertexID = 0;
-			Program = 0;
-		}
+        public bool allocated;
+        public static Shader getAsset(string name) {
+            var shader = shaders[name];
+            if (!shader.allocated)
+            {
+                Console.WriteLine("shader allocation");
+                SceneView.backendRenderer.GenerateBuffers(ref shader);
+                SceneView.backendRenderer.Allocate(ref shader);
+                shader.allocated=true;
+                shaders[name] = shader;
+            }
+            return shader;
+        }
 		public override string ToString ()
 		{
 			return Name;

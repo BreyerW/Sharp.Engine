@@ -116,6 +116,34 @@
             Out parameter specifying if returned id has just been generated.
             </param>
         </member>
+        <member name="M:Antmicro.Migrant.ObjectIdentifier.GetId(System.Object)">
+            <summary>
+            For a given object, returns its unique ID. The new ID is used if object was
+            not presented to this class earlier, otherwise the previously returned is used.
+            </summary>
+            <returns>
+            The object's unique ID.
+            </returns>
+            <param name='o'>
+            An object to give unique ID for.
+            </param>
+        </member>
+        <member name="M:Antmicro.Migrant.ObjectIdentifier.SetIdentifierForObject(System.Object,System.Int32)">
+            <summary>
+            Sets new identifier for object.
+            
+            REMARK: Setting new mapping of object to id 
+            does not remove the old one. As a reuslt,
+            after this operation asking for id of old
+            object and new object results in returing
+            the same identifier. This behaviour is intended
+            to support surrogated objects.
+            
+            </summary>
+            <returns>The new identifier for object.</returns>
+            <param name="o">Object</param>
+            <param name="id">Identifier</param>
+        </member>
         <member name="M:Antmicro.Migrant.ObjectIdentifier.GetObject(System.Int32)">
             <summary>
             For an ID which was previously returned by the <see cref="M:Antmicro.Migrant.ObjectIdentifier.GetId(System.Object,System.Boolean@)"/> method,
@@ -147,6 +175,25 @@
             Gets the count of the unique objects presented to class. It is also
             the first unoccupied ID which will be returned for the new object.
             </summary>
+        </member>
+        <member name="M:Antmicro.Migrant.ObjectReader.ReadObjectInnerUsingReflection(Antmicro.Migrant.ObjectReader,System.Type,System.Int32)">
+            <summary>
+            Reads the object using reflection.
+            
+            REMARK: this method is not thread-safe
+            </summary>
+            <param name="objectReader">Object reader</param>
+            <param name="actualType">Type of object to deserialize</param>
+            <param name="objectId">Identifier of object to deserialize</param>
+        </member>
+        <member name="M:Antmicro.Migrant.ObjectWriter.WriteObjectUsingReflection(Antmicro.Migrant.ObjectWriter,System.Object)">
+            <summary>
+            Writes the object using reflection.
+            
+            REMARK: this method is not thread-safe!
+            </summary>
+            <param name="objectWriter">Object writer's object</param>
+            <param name="o">Object to serialize</param>
         </member>
         <member name="T:Antmicro.Migrant.PrimitiveReader">
             <summary>
@@ -705,6 +752,15 @@
             appropriate type will be serialized as is even if there is a surrogate for the more general type.
             </param>
         </member>
+        <member name="M:Antmicro.Migrant.Serializer.SurrogateForObjectSetter.SetSurrogateGenericType(System.Type)">
+            <summary>
+            Sets the generic surrogate type that should be used to replace the original one.
+            
+            It is required for the type to be generic, has the same amount of parameters as the original
+            one and to has a constructor accepting one parameter of the original type.
+            </summary>
+            <param name="t">Generic type.</param>
+        </member>
         <member name="T:Antmicro.Migrant.Serializer.OpenStreamSerializer">
             <summary>
             Serializer that is attached to one stream and can do consecutive serializations that are aware of the data written
@@ -792,7 +848,7 @@
             Tells serializer how to treat references between sessions of open stream serialization.
             </param>
         </member>
-        <member name="M:Antmicro.Migrant.Customization.Settings.With(Antmicro.Migrant.Customization.Method,Antmicro.Migrant.Customization.Method,Antmicro.Migrant.Customization.VersionToleranceLevel,System.Boolean,System.Boolean,System.Boolean,System.Boolean,Antmicro.Migrant.Customization.ReferencePreservation)">
+        <member name="M:Antmicro.Migrant.Customization.Settings.With(System.Nullable{Antmicro.Migrant.Customization.Method},System.Nullable{Antmicro.Migrant.Customization.Method},System.Nullable{Antmicro.Migrant.Customization.VersionToleranceLevel},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{Antmicro.Migrant.Customization.ReferencePreservation})">
             <summary>
             Initializes a new instance of the <see cref="T:Antmicro.Migrant.Customization.Settings"/> class.
             </summary>
@@ -1064,6 +1120,13 @@
             </summary>
             <param name="key">Key.</param>
             <param name="value">Value.</param>
+        </member>
+        <member name="M:Antmicro.Migrant.Utilities.SwapList.AddGenericTemplate(System.Type,System.Func{System.Type,System.Delegate})">
+            <summary>
+            Adds new key/dynamically generated pair or replaces one if the key already exists.
+            </summary>
+            <param name="genericType">Key.</param>
+            <param name="actualDelegateGenerator">Function generating final value.</param>
         </member>
         <member name="M:Antmicro.Migrant.Utilities.SwapList.GetByIndex(System.Int32)">
             <summary>

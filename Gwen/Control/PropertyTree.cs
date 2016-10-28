@@ -34,5 +34,12 @@ namespace Gwen.Control
 
             return props;
         }
+        public Properties AddOrGet(string label)
+        {
+            foreach (var child in Children)
+                if (child is PropertyTreeNode node && node.Text == label) return node.Children[0] as Properties;
+
+            return Add(label);
+        }
     }
 }

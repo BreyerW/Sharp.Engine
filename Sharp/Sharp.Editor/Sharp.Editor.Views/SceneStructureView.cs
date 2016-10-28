@@ -10,17 +10,18 @@ namespace Sharp.Editor.Views
 		public override void Initialize ()
 		{
 			base.Initialize ();
-
+            
 			if(tree==null)
 				tree = new  Gwen.Control.TreeControl (panel);
 			tree.SetSize (panel.Width, panel.Height);
 			tree.ShouldDrawBackground = false;
 			tree.SelectionChanged += (sender, args) => Selection.Asset = (sender as TreeNode).Content;
-
-			SceneView.OnAddedEntity += ReconstructTree;
+            
+            //var node = sender as TreeNode; if ( Selection.Asset ==node.Content) tree.UnselectAll(); else
+            SceneView.OnAddedEntity += ReconstructTree;
 			SceneView.OnRemovedEntity += ReconstructTree;
 			ReconstructTree ();
-		}
+        }
 		private void ReconstructTree(){
 			tree.RemoveAll ();
 			RegisterEntity(Camera.main.entityObject);
@@ -29,7 +30,7 @@ namespace Sharp.Editor.Views
 		}
 		private static void RegisterEntity(Entity ent){
 			//var id=SceneView.entities.IndexOf (ent);
-			tree.AddNode (()=>ent);
+			tree.AddNode (ent);
 		}
 		public override void OnMouseMove (OpenTK.Input.MouseMoveEventArgs evnt)
 		{

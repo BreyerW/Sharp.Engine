@@ -57,7 +57,7 @@ public partial class MainWindow: Gtk.Window
         foreach (var view in View.views) 
 			if(view.panel!=null && view.panel.IsVisible)
 			view.Render ();
-        
+        Sharp.Selection.IsSelectionDirty();
     }
 	protected override bool OnConfigureEvent (Gdk.EventConfigure evnt)
 	{
@@ -199,15 +199,5 @@ public partial class MainWindow: Gtk.Window
 		foreach(var view in View.views)
 			view.OnContextCreated (glwidget1.Allocation.Width,glwidget1.Allocation.Height);
 		QueueResize ();
-	}
-
-	protected void OnGlwidget1ShuttingDown (object sender, EventArgs e)
-	{
-		throw new NotImplementedException ();
-	}
-	[GLib.ConnectBefore]
-	protected void OnGlwidget1KeyPressEvent (object o, Gtk.KeyPressEventArgs args)
-	{
-		//Console.WriteLine(args.Event.Key.ToString ());
 	}
 }

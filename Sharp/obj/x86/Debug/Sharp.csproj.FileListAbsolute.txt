@@ -42,3 +42,5 @@ B:\Sharp.Engine\Sharp\bin\Debug\ColorSharp.xml
 B:\Sharp.Engine\Sharp\obj\x86\Debug\Sharp.csprojResolveAssemblyReference.cache
 B:\Sharp.Engine\Sharp\obj\x86\Debug\Sharp.exe
 B:\Sharp.Engine\Sharp\obj\x86\Debug\Sharp.pdb
+B:\Sharp.Engine\Sharp\bin\Debug\FastMember.dll
+B:\Sharp.Engine\Sharp\bin\Debug\SharpNav.dll

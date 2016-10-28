@@ -27,8 +27,8 @@
 		#pragma fragment
 
 		#define PHONG_LIGHT
-
-		#pragma include B:\Sharp_kopia\Sharp\Content\LightProcess.inc
+		
+		#pragma include B:\Sharp.Engine\Sharp\Content\LightProcess.inc
 
 		uniform mat4 model;
 		uniform mat4 camView;
@@ -49,6 +49,6 @@
             void main(void)
             {
             vec4 texColor= texture(MyTexture,out_uv.xy);
-	         frag_color =ApplyLight(model,camView,lights[0],texColor,out_normal,fragVert,float(80),vec3(1,1,1));
+	        frag_color =ApplyLight(model,camView,lights[0].position,lights[0].color,lights[0].intensity,texColor,out_normal,fragVert,float(80),vec3(1,1,1));
 	         //frag_color =color;
             }

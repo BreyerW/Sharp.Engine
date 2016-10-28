@@ -21,7 +21,6 @@ namespace SharpAsset
 
 		internal int VBO;
 		internal int EBO;
-		//public int TBO;
 
 		public UsageHint UsageHint;
 

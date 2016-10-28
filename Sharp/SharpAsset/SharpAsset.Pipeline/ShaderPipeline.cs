@@ -26,7 +26,6 @@ namespace SharpAsset.Pipeline
 					shaderStringBuffer.Add(shaderFile.ReadLine());
 				}
 				var shader=SplitShaders(shaderStringBuffer, ref pathToFile);
-				SceneView.backendRenderer.GenerateBuffers (ref shader);
 				Shader.shaders.Add (shader.Name,shader);
 				return shader;
 		}
@@ -61,8 +60,12 @@ namespace SharpAsset.Pipeline
 			string vertexShader, fragmentShader;
 			ProcessIncludes(vertexShaderBuffer, out vertexShader);
 			ProcessIncludes(fragmentShaderBuffer, out fragmentShader);
-
-			return new Shader (ref vertexShader,ref fragmentShader,ref name);
+            var shader = new Shader();
+            shader.uniformArray = new Dictionary<UniformType, Dictionary<string, int>>();
+            shader.FullPath = name;
+            shader.VertexSource = vertexShader;
+            shader.FragmentSource = fragmentShader;
+            return shader;
 		}
 		#endregion
 		#region ProcessIncludes

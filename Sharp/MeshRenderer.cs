@@ -42,7 +42,7 @@ namespace Sharp
 		internal Mesh<IndexType> mesh;
 		protected static readonly int sizeOfId=Marshal.SizeOf(typeof(IndexType));	
 
-		public Material material=new Material();
+		public Material material;
 
 		private static int stride;
 
@@ -97,8 +97,6 @@ namespace Sharp
 		}
 		public override void SetupMatrices ()
 		{
-			material.SetGlobalProperty ("camView", ref Camera.main.modelViewMatrix);
-			material.SetGlobalProperty ("camProjection", ref Camera.main.projectionMatrix);
             material.SetProperty("model", ref entityObject.ModelMatrix);
             //int current = GL.GetInteger(GetPName.CurrentProgram);
             //GL.ValidateProgram (material.shaderId);

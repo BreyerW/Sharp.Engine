@@ -29,7 +29,7 @@ namespace Sharp
 		{
 			entityObject.Scale = new OpenTK.Vector3 (20,20,20);
 			entityObject.SetModelMatrix ();
-			skele.MVP =entityObject.ModelMatrix*Camera.main.modelViewMatrix*Camera.main.projectionMatrix;
+			skele.MVP =entityObject.ModelMatrix*Camera.main.ModelViewMatrix*Camera.main.ProjectionMatrix;
 		}
 	}
 }

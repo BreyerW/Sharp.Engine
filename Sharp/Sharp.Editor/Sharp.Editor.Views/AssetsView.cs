@@ -13,7 +13,7 @@ namespace Sharp.Editor.Views
 	{
 		public static bool isDragging = false;
 
-		private static readonly DirectoryInfo root = new DirectoryInfo(@"B:\Sharp_kopia\Sharp\Content");
+		private static readonly DirectoryInfo root = new DirectoryInfo(@"B:\Sharp.Engine\Sharp\Content");
 		public static TreeControl tree;
 
 		public override void Initialize ()
@@ -35,7 +35,7 @@ namespace Sharp.Editor.Views
 				RecursiveBuildTree (root, tree);
 				foreach (FileInfo file in FilterFiles(root,SupportedFileFormatsAttribute.importers.Keys)) {
 				if (!file.Name.StartsWith (".") && SupportedFileFormatsAttribute.importers.ContainsKey(file.Extension))
-					tree.AddNode (()=>SupportedFileFormatsAttribute.importers [file.Extension].Import (file.FullName));
+					tree.AddNode (SupportedFileFormatsAttribute.importers [file.Extension].Import (file.FullName));
 				}
             
             tree.Show ();
@@ -80,7 +80,7 @@ namespace Sharp.Editor.Views
 					foreach (FileInfo file in FilterFiles(di,SharpAsset.Pipeline.SupportedFileFormatsAttribute.importers.Keys))
 					{
 						if (SupportedFileFormatsAttribute.importers.ContainsKey(file.Extension) && !file.Name.StartsWith("."))
-							iter.AddNode(()=>SupportedFileFormatsAttribute.importers[file.Extension].Import(file.FullName));
+							iter.AddNode(SupportedFileFormatsAttribute.importers[file.Extension].Import(file.FullName));
 					}
 					RecursiveBuildTree (di, iter);
 				}

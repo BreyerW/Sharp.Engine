@@ -32,6 +32,18 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastMember.1.1.0\lib\net40\FastMember.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Migrant, Version=0.13.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Migrant.0.13\lib\net40\Migrant.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SharpNav, Version=1.0.0.1, Culture=neutral, PublicKeyToken=0c16c0d534ce32cb, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpNav.OpenTK.1.0.0-alpha2\lib\net40\SharpNav.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="gtk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
@@ -55,6 +67,7 @@
     <Reference Include="OpenTK">
       <HintPath>..\packages\OpenTK.1.1.1589.5942\lib\NET40\OpenTK.dll</HintPath>
     </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="BEPUik">
       <HintPath>..\packages\BEPUphysics.1.4.0\lib\net40\BEPUik.dll</HintPath>
@@ -73,9 +86,6 @@
     </Reference>
     <Reference Include="SmallBlockMemoryStream">
       <HintPath>..\packages\SmallBlockMemoryStream.1.0.0.0\lib\net20\SmallBlockMemoryStream.dll</HintPath>
-    </Reference>
-    <Reference Include="Migrant">
-      <HintPath>..\packages\Migrant.0.12\lib\net40\Migrant.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="AssimpNet">
@@ -120,6 +130,9 @@
     <Compile Include="Player.cs" />
     <Compile Include="Renderer.cs" />
     <Compile Include="Selection.cs" />
+    <Compile Include="Sharp.Editor\PropertyDrawer.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.UI\BooleanDrawer.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Vector3Drawer.cs" />
     <Compile Include="SizeInBytes.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Sharp.Editor\Manipulators.cs" />
@@ -133,8 +146,8 @@
     <Compile Include="Sharp.Editor\Sharp.Editor.Views\View.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Views\InspectorView.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CustomInspectorAttribute.cs" />
-    <Compile Include="Sharp.Editor\Inpector.cs" />
-    <Compile Include="Sharp.Editor\DefaultInspector.cs" />
+    <Compile Include="Sharp.Editor\Inspector.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.UI\DefaultInspector.cs" />
     <Compile Include="SharpAsset\IAsset.cs" />
     <Compile Include="SharpAsset\Mesh.cs" />
     <Compile Include="SharpAsset\Shader.cs" />
@@ -184,6 +197,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <None Include="Content\TextureOnlyShader.shader" />
     <None Include="packages.config" />
     <None Include="Content\BasicShader.shader" />
     <None Include="Content\FogShader.shader" />

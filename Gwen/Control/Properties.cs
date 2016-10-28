@@ -19,7 +19,7 @@ namespace Gwen.Control
         /// <summary>
         /// Invoked when a property value has been changed.
         /// </summary>
-		public event GwenEventHandler<EventArgs> ValueChanged;
+        public event GwenEventHandler<EventArgs> ValueChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Properties"/> class.
@@ -29,10 +29,10 @@ namespace Gwen.Control
             : base(parent)
         {
             //m_SplitterBar = new SplitterBar(this);
-           // m_SplitterBar.SetPosition(80, 0);
-           // m_SplitterBar.Cursor = Cursors.SizeWE;
+            // m_SplitterBar.SetPosition(80, 0);
+            // m_SplitterBar.Cursor = Cursors.SizeWE;
             //m_SplitterBar.Dragged += OnSplitterMoved;
-           // m_SplitterBar.ShouldDrawBackground = false;
+            // m_SplitterBar.ShouldDrawBackground = false;
         }
 
         /// <summary>
@@ -41,21 +41,21 @@ namespace Gwen.Control
         /// <param name="skin">Skin to use.</param>
         protected override void PostLayout(Skin.Base skin)
         {
-           // m_SplitterBar.Height = 0;
+            // m_SplitterBar.Height = 0;
 
             if (SizeToChildren(false, true))
             {
                 InvalidateParent();
             }
 
-           // m_SplitterBar.SetSize(3, Height);
+            // m_SplitterBar.SetSize(3, Height);
         }
 
         /// <summary>
         /// Handles the splitter moved event.
         /// </summary>
         /// <param name="control">Event source.</param>
-		protected virtual void OnSplitterMoved(Base control, EventArgs args)
+        protected virtual void OnSplitterMoved(Base control, EventArgs args)
         {
             InvalidateChildren();
         }
@@ -66,11 +66,11 @@ namespace Gwen.Control
         /// <param name="label">Property name.</param>
         /// <param name="value">Initial value.</param>
         /// <returns>Newly created row.</returns>
-		public PropertyRow<string> Add(string label, string value="")
+        public PropertyRow<string> Add(string label, string value = "")
         {
-			return Add<string>(label, new Property.Text(this), value);
+            return Add<string>(label, new Property.Text(this), value);
         }
-		/*public Base Add(string label, object value)
+        /*public Base Add(string label, object value)
 		{
 			switch (value.GetType()) {
 			//case typeof()
@@ -93,23 +93,27 @@ namespace Gwen.Control
         /// <param name="prop">Property control.</param>
         /// <param name="value">Initial value.</param>
         /// <returns>Newly created row.</returns>
-		public PropertyRow<T> Add<T>(string label, Property.Base<T> prop, T value=default(T))
+        public PropertyRow<T> Add<T>(string label, Property.Base<T> prop, T value = default(T))
         {
             PropertyRow<T> row = new PropertyRow<T>(this, prop);
             row.Dock = Pos.Top;
             row.Label = label;
+            row.Name = label;
             row.ValueChanged += OnRowValueChanged;
 
             prop.SetValue(value, true);
 
-           // m_SplitterBar.BringToFront();
+            // m_SplitterBar.BringToFront();
             return row;
         }
-
-		private void OnRowValueChanged(Base control, EventArgs args)
+        public PropertyRow<T> Get<T>(string label)
+        {
+            return FindChildByName(label) as PropertyRow<T>;
+        }
+        private void OnRowValueChanged(Base control, EventArgs args)
         {
             if (ValueChanged != null)
-				ValueChanged.Invoke(control, EventArgs.Empty);
+                ValueChanged.Invoke(control, EventArgs.Empty);
         }
 
         /// <summary>
