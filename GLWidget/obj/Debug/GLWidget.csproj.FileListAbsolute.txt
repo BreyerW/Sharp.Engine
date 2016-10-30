@@ -14,17 +14,3 @@ B:\Sharp.Engine\GLWidget\bin\Debug\pango-sharp.pdb
 B:\Sharp.Engine\GLWidget\obj\Debug\GLWidget.csprojResolveAssemblyReference.cache
 B:\Sharp.Engine\GLWidget\obj\Debug\GLWidget.dll
 B:\Sharp.Engine\GLWidget\obj\Debug\GLWidget.pdb
-B:\Sharp.Engine3\GLWidget\bin\Debug\GLWidget.dll
-B:\Sharp.Engine3\GLWidget\bin\Debug\GLWidget.pdb
-B:\Sharp.Engine3\GLWidget\bin\Debug\atk-sharp.dll
-B:\Sharp.Engine3\GLWidget\bin\Debug\cairo-sharp.dll
-B:\Sharp.Engine3\GLWidget\bin\Debug\gdk-sharp.dll
-B:\Sharp.Engine3\GLWidget\bin\Debug\gio-sharp.dll
-B:\Sharp.Engine3\GLWidget\bin\Debug\glib-sharp.dll
-B:\Sharp.Engine3\GLWidget\bin\Debug\gtk-sharp.dll
-B:\Sharp.Engine3\GLWidget\bin\Debug\OpenTK.dll
-B:\Sharp.Engine3\GLWidget\bin\Debug\pango-sharp.dll
-B:\Sharp.Engine3\GLWidget\bin\Debug\OpenTK.xml
-B:\Sharp.Engine3\GLWidget\obj\Debug\GLWidget.csprojResolveAssemblyReference.cache
-B:\Sharp.Engine3\GLWidget\obj\Debug\GLWidget.dll
-B:\Sharp.Engine3\GLWidget\obj\Debug\GLWidget.pdb
