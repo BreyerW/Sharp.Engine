@@ -121,7 +121,7 @@ namespace Sharp.Editor.Views
             if (SceneStructureView.tree.SelectedChildren.Any())
             {
 
-                System.Drawing.Color xColor = System.Drawing.Color.Red, yColor = System.Drawing.Color.LimeGreen, zColor = System.Drawing.Color.Blue;
+                System.Drawing.Color xColor = System.Drawing.Color.Red, yColor = System.Drawing.Color.LimeGreen, zColor = System.Drawing.Color.Blue, selectedColor = System.Drawing.Color.Yellow;
 
                 foreach (var selected in SceneStructureView.tree.SelectedChildren)
                 {
@@ -130,23 +130,22 @@ namespace Sharp.Editor.Views
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
                     //var tmpMat =mesh.ModelMatrix* Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
                     GL.Enable(EnableCap.Blend);
-                    GL.Disable(EnableCap.DepthTest);
-                    GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+                    GL.Clear(ClearBufferMask.DepthBufferBit);
 
                     float cameraObjectDistance = (Camera.main.entityObject.Position - entity.Position).Length;
 
-                    DrawHelper.DrawTranslationGizmo(3, cameraObjectDistance / 11, xColor, yColor, zColor);
-                    GL.Enable(EnableCap.DepthTest);
-                    dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
-
+                    DrawHelper.DrawTranslationGizmo(3, cameraObjectDistance / 11, (selectedAxisId == 1 ? selectedColor : xColor), (selectedAxisId == 2 ? selectedColor : yColor), (selectedAxisId == 3 ? selectedColor : zColor));
+                    DrawHelper.DrawRotationGizmo(3, cameraObjectDistance / 11, (selectedAxisId == 4 ? selectedColor : xColor), (selectedAxisId == 5 ? selectedColor : yColor), (selectedAxisId == 6 ? selectedColor : zColor));
 
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
+
+                    /*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
                     if (renderer != null)
                     {
                         var max = renderer.mesh.bounds.Max;
                         var min = renderer.mesh.bounds.Min;
                         DrawHelper.DrawBox(min, max);
-                    }
+                    }*/
                 }
             }
 
@@ -170,9 +169,12 @@ namespace Sharp.Editor.Views
             {
 
                 System.Drawing.Color xColor = System.Drawing.Color.Red, yColor = System.Drawing.Color.LimeGreen, zColor = System.Drawing.Color.Blue;
-                for (int id = 1; id < 4; id++)
+                System.Drawing.Color xRotColor = System.Drawing.Color.Red, yRotColor = System.Drawing.Color.LimeGreen, zRotColor = System.Drawing.Color.Blue;
+
+                System.Drawing.Color color;
+                for (int id = 1; id < 7; id++)
                 {
-                    var color = System.Drawing.Color.FromArgb((id & 0x000000FF) >> 00, (id & 0x0000FF00) >> 08, (id & 0x00FF0000) >> 16);
+                    color = System.Drawing.Color.FromArgb((id & 0x000000FF) >> 00, (id & 0x0000FF00) >> 08, (id & 0x00FF0000) >> 16);
 
                     switch (id)
                     {
@@ -182,9 +184,17 @@ namespace Sharp.Editor.Views
                         case 2:
                             yColor = color;
                             break;
-
                         case 3:
                             zColor = color;
+                            break;
+                        case 4:
+                            xRotColor = color;
+                            break;
+                        case 5:
+                            yRotColor = color;
+                            break;
+                        case 6:
+                            zRotColor = color;
                             break;
                     }
                 }
@@ -197,8 +207,8 @@ namespace Sharp.Editor.Views
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
 
                     float cameraObjectDistance = (Camera.main.entityObject.Position - entity.Position).Length;
-                    DrawHelper.DrawTranslationGizmo(3, cameraObjectDistance / 11, xColor, yColor, zColor);
-
+                    DrawHelper.DrawTranslationGizmo(5, cameraObjectDistance / 11, xColor, yColor, zColor);
+                    DrawHelper.DrawRotationGizmo(5, cameraObjectDistance / 11, xRotColor, yRotColor, zRotColor);
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
                 }
                 backendRenderer.FinishCommands();
@@ -206,7 +216,7 @@ namespace Sharp.Editor.Views
                 // {
                 var pixel = backendRenderer.ReadPixels(locPos.Value.X, locPos.Value.Y, 1, 1);
                 int index = (((int)pixel[0]) << 00) + (((int)pixel[1]) << 08) + ((((int)pixel[2]) << 16));
-                if (index > 0 && index < 4)
+                if (index > 0 && index < 7)
                 {
                     selectedAxisId = index;
                     return mouseLocked = true;
@@ -312,23 +322,40 @@ namespace Sharp.Editor.Views
                     var constRValue = 1f;
                     var constSValue = 1f;
 
-                    var deltaX = oldX - evnt.X;
-                    var deltaY = oldY - evnt.Y;
+                    var startPointInWorld = Camera.main.ScreenToWorld(oldX, oldY, panel.Width, panel.Height);
+                    var endPointInWorld = Camera.main.ScreenToWorld(evnt.X, evnt.Y, panel.Width, panel.Height);
+                    var mouseVectorInWorld = (endPointInWorld - startPointInWorld);// ;
+
+                    var v = Vector3.Zero;
+
                     if (evnt.XDelta != 0 || evnt.YDelta != 0)
                         foreach (var selected in SceneStructureView.tree.SelectedChildren)
                         {
                             var entity = selected.Content as Entity;
-                            switch (selectedAxisId)
+
+                            if (selectedAxisId == 1 || selectedAxisId == 5)
                             {
-                                case 1:
-                                    entity.Position += new Vector3(-deltaX * constTValue, 0, 0);
-                                    break;
-                                case 2:
-                                    entity.Position += new Vector3(0, deltaY * constTValue, 0);
-                                    break;
-                                case 3:
-                                    entity.Position += new Vector3(0, 0, deltaX * constTValue);
-                                    break;
+                                v = Vector3.UnitX;
+                            }
+                            else if (selectedAxisId == 2 || selectedAxisId == 4)
+                            {
+                                v = Vector3.UnitY;
+                            }
+                            else
+                                v = Vector3.UnitZ;
+
+                            /*
+                             var delta = Vector3.Dot(mouseVectorInWorld, v) * v;
+                            var transMat = Matrix4.CreateTranslation(delta);
+                            entity.ModelMatrix = entity.ModelMatrix* transMat ;
+                             */
+                            if (selectedAxisId < 4)
+                                entity.Position += Vector3.Dot(v, mouseVectorInWorld) * v * 700;
+                            else if (selectedAxisId < 7)
+                            {
+                                var startVector = (entity.Position - startPointInWorld).Normalized();
+                                var endVector = (entity.Position - endPointInWorld).Normalized();
+                                entity.Rotation += Math.Sign(evnt.YDelta) * (float)AngleBetween(startVector, endVector) / 700 * v;
                             }
                         }
                 }

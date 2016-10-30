@@ -107,7 +107,7 @@ namespace Sharp
         public void SetModelviewMatrix()
         {
             var translationMatrix = Matrix4.CreateTranslation(-entityObject.Position);
-            var rotationMatrix = Matrix4.CreateFromQuaternion(ToQuaterion(entityObject.Rotation));
+            var rotationMatrix = Matrix4.CreateFromQuaternion(entityObject.ToQuaterion(entityObject.Rotation));
             //modelViewMatrix = rotationMatrix*translationMatrix; orbit 
             ModelViewMatrix = translationMatrix * rotationMatrix; //pan
         }
@@ -188,13 +188,7 @@ namespace Sharp
         {
             CameraMode = mode;
         }
-        public Quaternion ToQuaterion(Vector3 angles)
-        {
-            // Assuming the angles are in radians.
-            angles *= MathHelper.Pi / 180f;
 
-            return Quaternion.FromMatrix(Matrix3.CreateRotationX(angles.Y) * Matrix3.CreateRotationY(angles.X) * Matrix3.CreateRotationZ(angles.Z));
-        }
         public Vector3 ToEuler(Quaternion q)
         {
             float sqw = q.W * q.W;
@@ -292,11 +286,11 @@ namespace Sharp
             }
             if (CameraMode == CamMode.FirstPerson)
             {
-                entityObject.Position += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.Rotation)));
+                entityObject.Position += Vector3.Transform(Movement, Quaternion.Invert(entityObject.ToQuaterion(entityObject.Rotation)));
                 entityObject.Position = new Vector3(entityObject.Position.X, 5, entityObject.Position.Z);
             }
             else
-                entityObject.Position += Vector3.Transform(Movement, Quaternion.Invert(ToQuaterion(entityObject.Rotation)));
+                entityObject.Position += Vector3.Transform(Movement, Quaternion.Invert(entityObject.ToQuaterion(entityObject.Rotation)));
 
             SetModelviewMatrix();
             SetProjectionMatrix();

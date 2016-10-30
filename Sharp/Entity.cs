@@ -76,7 +76,11 @@ namespace Sharp
         private bool enabled;
         private HashSet<int> tags = new HashSet<int>();
         //public 
-        public Matrix4 ModelMatrix;
+        private Matrix4 modelMatrix;
+        public ref Matrix4 ModelMatrix
+        {
+            get { return ref modelMatrix; }
+        }
 
         public EventHandler OnTransformChanged;
 
@@ -137,9 +141,15 @@ namespace Sharp
         }
         public void SetModelMatrix()
         {
-            ModelMatrix = Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(rotation.X) * Matrix4.CreateRotationY(rotation.Y) * Matrix4.CreateRotationZ(rotation.Z) * Matrix4.CreateTranslation(position);
+            ModelMatrix = Matrix4.CreateScale(scale) * Matrix4.CreateFromQuaternion(ToQuaterion(rotation)) * Matrix4.CreateTranslation(position);
         }
+        public Quaternion ToQuaterion(Vector3 angles)
+        {
+            // Assuming the angles are in radians.
+            angles *= MathHelper.Pi / 180f;
 
+            return Quaternion.FromMatrix(Matrix3.CreateRotationX(angles.Y) * Matrix3.CreateRotationY(angles.X) * Matrix3.CreateRotationZ(angles.Z));
+        }
         public T GetComponent<T>() where T : Component
         {
             return components.OfType<T>().First();
