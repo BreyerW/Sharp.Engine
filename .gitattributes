@@ -1,7 +1,9 @@
 #*.logos linguist-language=csharp
 #*.Logos linguist-language=csharp
 *.Logos linguist-vendored
+**.Logos linguist-vendored
 *.logos linguist-vendored
+**.logos linguist-vendored
 ###############################################################################
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
