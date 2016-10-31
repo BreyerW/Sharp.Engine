@@ -1,3 +1,6 @@
+*.ps1 linguist-language=csharp
+*.psm1 linguist-language=csharp
+
 ###############################################################################
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
@@ -61,4 +64,3 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
-*.Logos linguist-language=CSharp
