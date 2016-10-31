@@ -1,5 +1,5 @@
-*.logos linguist-language=csharp
-*.Logos linguist-language=csharp
+#*.logos linguist-language=csharp
+#*.Logos linguist-language=csharp
 *.Logos linguist-vendored
 *.logos linguist-vendored
 ###############################################################################
