@@ -1,6 +1,7 @@
 *.logos linguist-language=csharp
 *.psm1 linguist-language=csharp
-
+*.logos linguist-language=csharp
+*.Logos linguist-language=csharp
 ###############################################################################
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
