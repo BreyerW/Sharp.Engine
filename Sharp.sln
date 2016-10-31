@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 15
+VisualStudioVersion = 15.0.25807.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharp", "Sharp\Sharp.csproj", "{14F5AB2B-6F1D-46AF-83CB-366DB9B240B4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLWidget", "GLWidget\GLWidget.csproj", "{34627299-AB51-4C99-B5DA-C03EB751B387}"
@@ -11,16 +13,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gwen.Renderer.OpenTK", "Gwe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpInput", "SharpInput\SharpInput.csproj", "{0434920A-0B3C-47A2-AFC2-60341CEA5428}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{66C0B1B5-C4C8-445C-8D67-3235244A713A}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Debug|x86.Build.0 = Debug|Any CPU
-		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Release|x86.ActiveCfg = Release|Any CPU
-		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Release|x86.Build.0 = Release|Any CPU
 		{14F5AB2B-6F1D-46AF-83CB-366DB9B240B4}.Debug|x86.ActiveCfg = Debug|x86
 		{14F5AB2B-6F1D-46AF-83CB-366DB9B240B4}.Debug|x86.Build.0 = Debug|x86
 		{14F5AB2B-6F1D-46AF-83CB-366DB9B240B4}.Release|x86.ActiveCfg = Release|x86
@@ -29,13 +32,20 @@ Global
 		{34627299-AB51-4C99-B5DA-C03EB751B387}.Debug|x86.Build.0 = Debug|Any CPU
 		{34627299-AB51-4C99-B5DA-C03EB751B387}.Release|x86.ActiveCfg = Release|Any CPU
 		{34627299-AB51-4C99-B5DA-C03EB751B387}.Release|x86.Build.0 = Release|Any CPU
-		{41650C82-D630-4E5C-845A-F1513C8FDC99}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{41650C82-D630-4E5C-845A-F1513C8FDC99}.Debug|x86.Build.0 = Debug|Any CPU
-		{41650C82-D630-4E5C-845A-F1513C8FDC99}.Release|x86.ActiveCfg = Release|Any CPU
-		{41650C82-D630-4E5C-845A-F1513C8FDC99}.Release|x86.Build.0 = Release|Any CPU
 		{ADDA2F43-96C0-497F-8216-29C67ABC9806}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{ADDA2F43-96C0-497F-8216-29C67ABC9806}.Debug|x86.Build.0 = Debug|Any CPU
 		{ADDA2F43-96C0-497F-8216-29C67ABC9806}.Release|x86.ActiveCfg = Release|Any CPU
 		{ADDA2F43-96C0-497F-8216-29C67ABC9806}.Release|x86.Build.0 = Release|Any CPU
+		{41650C82-D630-4E5C-845A-F1513C8FDC99}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{41650C82-D630-4E5C-845A-F1513C8FDC99}.Debug|x86.Build.0 = Debug|Any CPU
+		{41650C82-D630-4E5C-845A-F1513C8FDC99}.Release|x86.ActiveCfg = Release|Any CPU
+		{41650C82-D630-4E5C-845A-F1513C8FDC99}.Release|x86.Build.0 = Release|Any CPU
+		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Debug|x86.Build.0 = Debug|Any CPU
+		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Release|x86.ActiveCfg = Release|Any CPU
+		{0434920A-0B3C-47A2-AFC2-60341CEA5428}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
