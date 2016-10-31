@@ -1,4 +1,4 @@
-*.Logos linguist-language=csharp
+*.logos linguist-language=csharp
 *.psm1 linguist-language=csharp
 
 ###############################################################################
