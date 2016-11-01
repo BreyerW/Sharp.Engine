@@ -12,6 +12,7 @@ namespace Sharp
     {
         private static Stack<object> assets = new Stack<object>();
         private static Serializer serializer = new Serializer();
+        private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
         private static MD5 md5 = MD5.Create();//maybe sha instead
                                               //private static MemoryStream memStream = new MemoryStream();
         internal static string lastHash;
@@ -40,9 +41,9 @@ namespace Sharp
         {
 
             if (Asset == null) return;
-            var memStream = new MemoryStream();
-            serializer.Serialize(Asset, memStream);
-            var byteHash = md5.ComputeHash(memStream.GetBuffer());
+            //var memStream = new MemoryStream();
+            serializer.Serialize(Asset, memStream.GetStream());
+            var byteHash = md5.ComputeHash(memStream.GetStream().GetBuffer());
             //memStream.Position = 0;
             //memStream.SetLength(0);
             StringBuilder sb = new StringBuilder();

@@ -148,7 +148,28 @@ namespace Sharp
             // Assuming the angles are in radians.
             angles *= MathHelper.Pi / 180f;
 
-            return Quaternion.FromMatrix(Matrix3.CreateRotationX(angles.Y) * Matrix3.CreateRotationY(angles.X) * Matrix3.CreateRotationZ(angles.Z));
+            return Quaternion.FromMatrix(Matrix3.CreateRotationX(angles.X) * Matrix3.CreateRotationY(angles.Y) * Matrix3.CreateRotationZ(angles.Z));
+        }
+        public Vector3 ToEuler(Quaternion q)
+        {
+            float sqw = q.W * q.W;
+            float sqx = q.X * q.X;
+            float sqy = q.Y * q.Y;
+            float sqz = q.Z * q.Z;
+            float unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+            float test = q.X * q.Y + q.Z * q.W;
+            if (test > 0.499 * unit)
+            { // singularity at north pole
+                return new Vector3(2f * (float)Math.Atan2(q.X, q.W), MathHelper.Pi / 2, 0) * 180f / MathHelper.Pi;
+            }
+            if (test < -0.499 * unit)
+            { // singularity at south pole
+                return new Vector3(-2f * (float)Math.Atan2(q.X, q.W), -MathHelper.Pi / 2, 0) * 180f / MathHelper.Pi;
+            }
+            return new Vector3((float)Math.Atan2(2 * q.Y * q.W - 2 * q.X * q.Z, sqx - sqy - sqz + sqw),
+                (float)Math.Asin(2 * test / unit),
+                (float)Math.Atan2(2 * q.X * q.W - 2 * q.Y * q.Z, -sqx + sqy - sqz + sqw)) * 180f / MathHelper.Pi;
+
         }
         public T GetComponent<T>() where T : Component
         {

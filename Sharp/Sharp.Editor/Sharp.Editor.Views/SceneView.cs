@@ -34,6 +34,9 @@ namespace Sharp.Editor.Views
 
         public static bool mouseLocked = false;
         private static System.Drawing.Point? locPos = null;
+        private static System.Drawing.Point lastLocPos;
+        private static Vector3? rotVectSource;
+        private static float? rotAngleOrigin;
         private static int selectedAxisId = 0;
         private Vector3 normalizedMoveDir = Vector3.Zero;
 
@@ -103,6 +106,7 @@ namespace Sharp.Editor.Views
 
             if (locPos.HasValue)
             {
+                lastLocPos = locPos.Value;
                 //entities.Sort(OrdererBy.OrderByDistance); get hit point instead
                 if (!PickTestForGizmo())
                     PickTestForObject();
@@ -134,8 +138,8 @@ namespace Sharp.Editor.Views
 
                     float cameraObjectDistance = (Camera.main.entityObject.Position - entity.Position).Length;
 
-                    DrawHelper.DrawTranslationGizmo(3, cameraObjectDistance / 11, (selectedAxisId == 1 ? selectedColor : xColor), (selectedAxisId == 2 ? selectedColor : yColor), (selectedAxisId == 3 ? selectedColor : zColor));
-                    DrawHelper.DrawRotationGizmo(3, cameraObjectDistance / 11, (selectedAxisId == 4 ? selectedColor : xColor), (selectedAxisId == 5 ? selectedColor : yColor), (selectedAxisId == 6 ? selectedColor : zColor));
+                    DrawHelper.DrawTranslationGizmo(3, cameraObjectDistance / 25, (selectedAxisId == 1 ? selectedColor : xColor), (selectedAxisId == 2 ? selectedColor : yColor), (selectedAxisId == 3 ? selectedColor : zColor));
+                    DrawHelper.DrawRotationGizmo(3, cameraObjectDistance / 25, (selectedAxisId == 4 ? selectedColor : xColor), (selectedAxisId == 5 ? selectedColor : yColor), (selectedAxisId == 6 ? selectedColor : zColor));
 
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
 
@@ -207,8 +211,8 @@ namespace Sharp.Editor.Views
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
 
                     float cameraObjectDistance = (Camera.main.entityObject.Position - entity.Position).Length;
-                    DrawHelper.DrawTranslationGizmo(5, cameraObjectDistance / 11, xColor, yColor, zColor);
-                    DrawHelper.DrawRotationGizmo(5, cameraObjectDistance / 11, xRotColor, yRotColor, zRotColor);
+                    DrawHelper.DrawTranslationGizmo(5, cameraObjectDistance / 25, xColor, yColor, zColor);
+                    DrawHelper.DrawRotationGizmo(5, cameraObjectDistance / 25, xRotColor, yRotColor, zRotColor);
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
                 }
                 backendRenderer.FinishCommands();
@@ -329,20 +333,30 @@ namespace Sharp.Editor.Views
                     var v = Vector3.Zero;
 
                     if (evnt.XDelta != 0 || evnt.YDelta != 0)
+                    {
+                        var orig = Camera.main.entityObject.Position;
+                        var localMouse = panel.CanvasPosToLocal(evnt.Position);
+                        localMouse = new System.Drawing.Point(localMouse.X, localMouse.Y - 29);
+                        var start = Camera.main.ScreenToWorld(localMouse.X, localMouse.Y, panel.Width, panel.Height, 1);
+                        var ray = new Ray(orig, (start - orig).Normalized());
+
                         foreach (var selected in SceneStructureView.tree.SelectedChildren)
                         {
                             var entity = selected.Content as Entity;
 
-                            if (selectedAxisId == 1 || selectedAxisId == 5)
+                            if (selectedAxisId == 1 || selectedAxisId == 4)
                             {
                                 v = Vector3.UnitX;
                             }
-                            else if (selectedAxisId == 2 || selectedAxisId == 4)
+                            else if (selectedAxisId == 2 || selectedAxisId == 5)
                             {
                                 v = Vector3.UnitY;
                             }
                             else
                                 v = Vector3.UnitZ;
+
+                            var plane = BuildPlane(entity.Position, v);
+                            var intersectPlane = new Vector4(plane.Normal.X, plane.Normal.Y, plane.Normal.Z, plane.D);
 
                             /*
                              var delta = Vector3.Dot(mouseVectorInWorld, v) * v;
@@ -353,17 +367,46 @@ namespace Sharp.Editor.Views
                                 entity.Position += Vector3.Dot(v, mouseVectorInWorld) * v * 700;
                             else if (selectedAxisId < 7)
                             {
-                                var startVector = (entity.Position - startPointInWorld).Normalized();
-                                var endVector = (entity.Position - endPointInWorld).Normalized();
-                                entity.Rotation += Math.Sign(evnt.YDelta) * (float)AngleBetween(startVector, endVector) / 700 * v;
+                                if (!rotVectSource.HasValue)
+                                {
+                                    var len = ray.IntersectPlane(ref intersectPlane);
+                                    rotVectSource = (ray.origin + ray.direction * len - entity.Position).Normalized();
+                                    rotAngleOrigin = ComputeAngleOnPlane(entity, ref ray, ref intersectPlane);
+                                }
+                                var angle = ComputeAngleOnPlane(entity, ref ray, ref intersectPlane);
+                                //var rotAxisLocalSpace = Vector4.Transform(intersectPlane, entity.ModelMatrix.Inverted()).Normalized();
+                                //var deltaRot = Matrix4.CreateFromAxisAngle(rotAxisLocalSpace.Xyz, angle - rotAngleOrigin.Value);
+                                //entity.ModelMatrix = deltaRot * entity.ModelMatrix; //
+                                entity.Rotation += (MathHelper.RadiansToDegrees(angle - rotAngleOrigin.Value)) * v;
+                                rotAngleOrigin = angle;
                             }
                         }
+                    }
                 }
                 MainWindow.focusedView = this;
                 MainEditorView.canvas.NeedsRedraw = true;
             }
             oldX = evnt.X;
             oldY = evnt.Y;
+        }
+        System.Numerics.Plane BuildPlane(Vector3 pos, Vector3 normal)
+        {
+            System.Numerics.Vector4 baseForPlane = System.Numerics.Vector4.Zero;
+            normal.Normalize();
+            baseForPlane.W = Vector3.Dot(normal, pos);
+            baseForPlane.X = normal.X;
+            baseForPlane.Y = normal.Y;
+            baseForPlane.Z = normal.Z;
+            return new System.Numerics.Plane(baseForPlane);
+        }
+        float ComputeAngleOnPlane(Entity entity, ref Ray ray, ref Vector4 plane)
+        {
+            var len = ray.IntersectPlane(ref plane);
+            var localPos = (ray.origin + ray.direction * len - entity.Position).Normalized();
+            var perpendicularVect = Vector3.Cross(rotVectSource.Value, plane.Xyz).Normalized();
+            var angle = (float)Math.Acos(MathHelper.Clamp(Vector3.Dot(localPos, rotVectSource.Value), -0.9999f, 0.9999f));
+
+            return angle *= (Vector3.Dot(localPos, perpendicularVect) < 0.0f) ? -1.0f : 1.0f;
         }
         public override void OnMouseDown(MouseButtonEventArgs evnt)
         {
@@ -394,7 +437,7 @@ namespace Sharp.Editor.Views
                     Camera.main.SetModelviewMatrix();
                     var orig = Camera.main.entityObject.Position;
                     var dir = (Camera.main.ScreenToWorld(locPos.X, locPos.Y, panel.Width, panel.Height) - orig).Normalized();
-                    eObject.Position = orig + dir * Camera.main.ZFar * 0.1f;
+                    eObject.Position = -3 * Vector3.UnitZ; //orig + dir * Camera.main.ZFar * 0.1f;
                     if (asset.Content.GetType() == typeof(Skeleton))
                     {
                         var skele = (Skeleton)asset.Content;
@@ -417,6 +460,8 @@ namespace Sharp.Editor.Views
                 }
                 AssetsView.isDragging = false;
             }
+            rotVectSource = null;
+            rotAngleOrigin = null;
             mouseLocked = false;
             MainWindow.focusedView = null;
         }

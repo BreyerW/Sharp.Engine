@@ -54,7 +54,6 @@ namespace Sharp.Editor.Views
         }
         public void RenderComponents(Entity entity)
         {
-            Console.WriteLine("renderComps");
             var prop = ptree.AddOrGet("Transform");
             DefaultInspector.mappedPropertyDrawers[typeof(OpenTK.Vector3)].Invoke(prop, "Position", entity.Position, (object val) => { entity.Position = (Vector3)val; });
             DefaultInspector.mappedPropertyDrawers[typeof(OpenTK.Vector3)].Invoke(prop, "Rotation", entity.Rotation, (object val) => { entity.Rotation = (Vector3)val; });

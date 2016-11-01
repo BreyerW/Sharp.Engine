@@ -112,35 +112,6 @@ namespace Sharp
             ModelViewMatrix = translationMatrix * rotationMatrix; //pan
         }
 
-
-        public static Matrix4 billboard(Vector3 position, Vector3 cameraPos, Vector3 cameraUp)
-        {
-            Vector3 look = Vector3.Normalize(cameraPos - position);
-            Vector3 right = Vector3.Cross(cameraUp, look);
-            Vector3 up2 = Vector3.Cross(look, right);
-            Matrix4 transform = new Matrix4();
-            transform.M11 = right.X;
-            transform.M12 = right.Y;
-            transform.M13 = right.Z;
-            transform.M14 = 0.0f;
-            transform.M21 = up2.X;
-            transform.M22 = up2.Y;
-            transform.M23 = up2.Z;
-            transform.M24 = 0.0f;
-            transform.M31 = look.X;
-            transform.M32 = look.Y;
-            transform.M33 = look.Z;
-            transform.M34 = 0.0f;
-            transform.M41 = position.X;
-            transform.M42 = position.Y;
-            transform.M43 = position.Z;
-            transform.M44 = 1.0f;
-            // Uncomment this line to translate the position as well
-            // (without it, it's just a rotation)
-            //transform[3] = vec4(position, 0);
-            return transform;
-        }
-
         private static bool WithinEpsilon(float a, float b)
         {
             float num = a - b;
@@ -189,27 +160,6 @@ namespace Sharp
             CameraMode = mode;
         }
 
-        public Vector3 ToEuler(Quaternion q)
-        {
-            float sqw = q.W * q.W;
-            float sqx = q.X * q.X;
-            float sqy = q.Y * q.Y;
-            float sqz = q.Z * q.Z;
-            float unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
-            float test = q.X * q.Y + q.Z * q.W;
-            if (test > 0.499 * unit)
-            { // singularity at north pole
-                return new Vector3(2f * (float)Math.Atan2(q.X, q.W), MathHelper.Pi / 2, 0) * 180f / MathHelper.Pi;
-            }
-            if (test < -0.499 * unit)
-            { // singularity at south pole
-                return new Vector3(-2f * (float)Math.Atan2(q.X, q.W), -MathHelper.Pi / 2, 0) * 180f / MathHelper.Pi;
-            }
-            return new Vector3((float)Math.Atan2(2 * q.Y * q.W - 2 * q.X * q.Z, sqx - sqy - sqz + sqw),
-                (float)Math.Asin(2 * test / unit),
-                (float)Math.Atan2(2 * q.X * q.W - 2 * q.Y * q.Z, -sqx + sqy - sqz + sqw)) * 180f / MathHelper.Pi;
-
-        }
         #endregion
 
         #region Protected Methods
@@ -249,8 +199,8 @@ namespace Sharp
         public void Rotate(float x, float y, float time = 1)
         {
             var newRot = new Vector3(entityObject.Rotation);
-            newRot.X += (x * MouseXSensitivity * time);
-            newRot.Y += (y * MouseYSensitivity * time);
+            newRot.X += (y * MouseXSensitivity * time);
+            newRot.Y += (x * MouseYSensitivity * time);
             entityObject.Rotation = newRot;
             SetModelviewMatrix();
             //Console.WriteLine("Rotation={0}", MouseRotation);
