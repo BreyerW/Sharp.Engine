@@ -300,10 +300,10 @@ namespace Sharp.Editor.Views
         }
         public static double AngleBetween(Vector3 vector1, Vector3 vector2)
         {
-            var angle = Math.Atan2(vector1.Y, vector1.X) - Math.Atan2(vector2.Y, vector2.X) * (180 / Math.PI);
+            var angle = Math.Atan2(vector1.Y, vector1.X) - Math.Atan2(vector2.Y, vector2.X);// * (180 / Math.PI);
             if (angle < 0)
             {
-                angle = angle + 360;
+                //angle = angle + MathHelper.TwoPi;
             }
             return angle;
         }
@@ -319,7 +319,7 @@ namespace Sharp.Editor.Views
                     Camera.main.Rotate((float)evnt.XDelta, (float)evnt.YDelta, 0.3f);//maybe divide delta by fov?
                     SceneView.OnSetupMatrices?.Invoke();
                 }
-                else
+                else//simple, precise, snapping
                 {
 
                     var constTValue = 1f;
@@ -355,7 +355,7 @@ namespace Sharp.Editor.Views
                             else
                                 v = Vector3.UnitZ;
 
-                            var plane = BuildPlane(entity.Position, v);
+                            var plane = BuildPlane(entity.Position, -ray.direction);
                             var intersectPlane = new Vector4(plane.Normal.X, plane.Normal.Y, plane.Normal.Z, plane.D);
 
                             /*
@@ -404,9 +404,9 @@ namespace Sharp.Editor.Views
             var len = ray.IntersectPlane(ref plane);
             var localPos = (ray.origin + ray.direction * len - entity.Position).Normalized();
             var perpendicularVect = Vector3.Cross(rotVectSource.Value, plane.Xyz).Normalized();
-            var angle = (float)Math.Acos(MathHelper.Clamp(Vector3.Dot(localPos, rotVectSource.Value), -0.9999f, 0.9999f));
+            var angle = (float)AngleBetween(localPos, rotVectSource.Value); //(float)Math.Acos(MathHelper.Clamp(Vector3.Dot(localPos, rotVectSource.Value), -1f, 1f));
 
-            return angle *= (Vector3.Dot(localPos, perpendicularVect) < 0.0f) ? -1.0f : 1.0f;
+            return angle;// *= (Vector3.Dot(localPos, perpendicularVect) < 0.0f) ? 1.0f : -1.0f;
         }
         public override void OnMouseDown(MouseButtonEventArgs evnt)
         {

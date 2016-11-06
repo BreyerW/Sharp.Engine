@@ -141,7 +141,8 @@ namespace Sharp
         }
         public void SetModelMatrix()
         {
-            ModelMatrix = Matrix4.CreateScale(scale) * Matrix4.CreateFromQuaternion(ToQuaterion(rotation)) * Matrix4.CreateTranslation(position);
+            var angles = rotation * MathHelper.Pi / 180f;
+            ModelMatrix = Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(angles.X) * Matrix4.CreateRotationY(angles.Y) * Matrix4.CreateRotationZ(angles.Z) * Matrix4.CreateTranslation(position);
         }
         public Quaternion ToQuaterion(Vector3 angles)
         {

@@ -1,28 +1,31 @@
 ﻿using System;
 using Sharp;
 using System.Collections.Generic;
-using System.IO;
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using Antmicro.Migrant;
 using System.Text;
+using System.Threading;
 
 namespace Sharp
 {
     public static class Selection
     {
+        private static Timer dirtyTimer = new Timer(IsSelectionDirty, nameof(IsDirty), 33, 33);
         private static Stack<object> assets = new Stack<object>();
         private static Serializer serializer = new Serializer();
         private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
         private static MD5 md5 = MD5.Create();//maybe sha instead
-                                              //private static MemoryStream memStream = new MemoryStream();
         internal static string lastHash;
 
         public static object Asset
         {
             set
-            {//prevent identical values
+            {
                 if (value == Asset) return;
+                serializer.Serialize(value, memStream.GetStream());
                 assets.Push(value);
+                //Thread.SetData
                 OnSelectionChange?.Invoke(value, EventArgs.Empty);
             }
             get
@@ -32,34 +35,28 @@ namespace Sharp
                 return assets.Peek();
             }
         }
+
         public static EventHandler OnSelectionChange;
         public static EventHandler OnSelectionDirty;
         public static bool isDragging = false;
         public static bool IsDirty = false;
 
-        public static void IsSelectionDirty()
+        private static void IsSelectionDirty(object obj)
         {
-
             if (Asset == null) return;
-            //var memStream = new MemoryStream();
+
             serializer.Serialize(Asset, memStream.GetStream());
             var byteHash = md5.ComputeHash(memStream.GetStream().GetBuffer());
-            //memStream.Position = 0;
-            //memStream.SetLength(0);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < byteHash.Length; i++)
             {
                 sb.Append(byteHash[i].ToString("X2"));
             }
+
             var currentHash = sb.ToString();
             if (currentHash != lastHash)
-            {
-                lastHash = currentHash;
-                OnSelectionDirty?.Invoke(Asset, EventArgs.Empty);
-                //Console.WriteLine("GUI dirty");//powoduje problemy
-            }
-            //else IsDirty = false;
-
+                IsDirty = true;
+            lastHash = currentHash;
         }
     }
 }

@@ -76,7 +76,6 @@ B:\Sharp.Engine3\Sharp\bin\Debug\System.ValueTuple.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\GLWidget.pdb
 B:\Sharp.Engine3\Sharp\bin\Debug\Gwen.Renderer.OpenTK.pdb
 B:\Sharp.Engine3\Sharp\bin\Debug\Gwen.pdb
-B:\Sharp.Engine3\Sharp\bin\Debug\Migrant.xml
 B:\Sharp.Engine3\Sharp\bin\Debug\OpenTK.xml
 B:\Sharp.Engine3\Sharp\bin\Debug\BEPUik.xml
 B:\Sharp.Engine3\Sharp\bin\Debug\BEPUphysics.xml
@@ -88,3 +87,4 @@ B:\Sharp.Engine3\Sharp\bin\Debug\System.Numerics.Vectors.xml
 B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.csprojResolveAssemblyReference.cache
 B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.exe
 B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.pdb
+B:\Sharp.Engine3\Sharp\bin\Debug\Migrant.pdb

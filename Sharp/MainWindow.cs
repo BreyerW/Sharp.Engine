@@ -2,9 +2,10 @@
 using Gtk;
 using OpenTK;
 using OpenTK.Input;
-using Sharp;
+using System.Globalization;
 using Sharp.Editor.Views;
-using System.Collections.Generic;
+using System.Threading;
+
 //gwen to sharp.ui
 
 public partial class MainWindow : Gtk.Window
@@ -16,6 +17,7 @@ public partial class MainWindow : Gtk.Window
 
     public MainWindow() : base(Gtk.WindowType.Toplevel)
     {
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
         Build();
         GLib.Idle.Add(new GLib.IdleHandler(OnIdleProcessMain));
     }
@@ -58,7 +60,11 @@ public partial class MainWindow : Gtk.Window
         foreach (var view in View.views)
             if (view.panel != null && view.panel.IsVisible)
                 view.Render();
-        Sharp.Selection.IsSelectionDirty();
+        if (Sharp.Selection.IsDirty)
+        {
+            Sharp.Selection.OnSelectionDirty?.Invoke(Sharp.Selection.Asset, EventArgs.Empty);
+            Sharp.Selection.IsDirty = false;
+        }
     }
     protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
     {
