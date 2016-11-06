@@ -40,24 +40,24 @@ namespace Sharp
         }
         public Vector3 getPositiveVertex(Vector3 normal, Matrix4 modelMatrix)
         {
-            Vector3 positiveVertex = Min;// add /scale
+            Vector3 positiveVertex = Vector3.TransformPosition(Min, modelMatrix);// add /scale
+            var max = Vector3.TransformPosition(Max, modelMatrix);
+            if (normal.X >= 0.0f) positiveVertex.X = max.X;
+            if (normal.Y >= 0.0f) positiveVertex.Y = max.Y;
+            if (normal.Z >= 0.0f) positiveVertex.Z = max.Z;
 
-            if (normal.X >= 0.0f) positiveVertex.X = Max.X;
-            if (normal.Y >= 0.0f) positiveVertex.Y = Max.Y;
-            if (normal.Z >= 0.0f) positiveVertex.Z = Max.Z;
-
-            return Vector3.TransformPosition(positiveVertex, modelMatrix);
+            return positiveVertex;
         }
 
         public Vector3 getNegativeVertex(Vector3 normal, Matrix4 modelMatrix)
         {
-            Vector3 negativeVertex = Max;
+            Vector3 negativeVertex = Vector3.TransformPosition(Max, modelMatrix);
+            var min = Vector3.TransformPosition(Min, modelMatrix);
+            if (normal.X >= 0.0f) negativeVertex.X = min.X;
+            if (normal.Y >= 0.0f) negativeVertex.Y = min.Y;
+            if (normal.Z >= 0.0f) negativeVertex.Z = min.Z;
 
-            if (normal.X >= 0.0f) negativeVertex.X = Min.X;
-            if (normal.Y >= 0.0f) negativeVertex.Y = Min.Y;
-            if (normal.Z >= 0.0f) negativeVertex.Z = Min.Z;
-
-            return Vector3.TransformPosition(negativeVertex, modelMatrix);
+            return negativeVertex;
         }
         public bool Intersect(ref Ray ray, ref Matrix4 matrix, out Vector3 hitPoint)
         {

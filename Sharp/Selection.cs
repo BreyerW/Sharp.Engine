@@ -16,6 +16,7 @@ namespace Sharp
         private static Serializer serializer = new Serializer();
         private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
         private static MD5 md5 = MD5.Create();//maybe sha instead
+        private static HashSet<Type> typesWarmed = new HashSet<Type>();
         internal static string lastHash;
 
         public static object Asset
@@ -23,7 +24,11 @@ namespace Sharp
             set
             {
                 if (value == Asset) return;
-                serializer.Serialize(value, memStream.GetStream());
+                if (!typesWarmed.Contains(value.GetType()))
+                {
+                    serializer.Serialize(value, memStream.GetStream());
+                    typesWarmed.Add(value.GetType());
+                }
                 assets.Push(value);
                 //Thread.SetData
                 OnSelectionChange?.Invoke(value, EventArgs.Empty);
@@ -43,9 +48,10 @@ namespace Sharp
 
         private static void IsSelectionDirty(object obj)
         {
-            if (Asset == null) return;
+            if (Asset == null || !typesWarmed.Contains(Asset.GetType())) return;
 
             serializer.Serialize(Asset, memStream.GetStream());
+
             var byteHash = md5.ComputeHash(memStream.GetStream().GetBuffer());
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < byteHash.Length; i++)

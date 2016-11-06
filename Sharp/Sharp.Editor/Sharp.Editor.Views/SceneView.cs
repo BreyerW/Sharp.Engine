@@ -285,17 +285,17 @@ namespace Sharp.Editor.Views
             //if (!canvas.IsHovered)
             //return;
             if (evnt[OpenTK.Input.Key.Q])
-                Camera.main.Move(0f, 1f, 0f, 0.03f);
+                Camera.main.Move(0f, 1f, 0f, 0.01f);
             if (evnt[OpenTK.Input.Key.E])
-                Camera.main.Move(0f, -1f, 0f, 0.03f);
+                Camera.main.Move(0f, -1f, 0f, 0.01f);
             if (evnt[OpenTK.Input.Key.A])
-                Camera.main.Move(-1f, 0f, 0f, 0.03f);
+                Camera.main.Move(-1f, 0f, 0f, 0.01f);
             if (evnt[OpenTK.Input.Key.D])
-                Camera.main.Move(1f, 0f, 0f, 0.03f);
+                Camera.main.Move(1f, 0f, 0f, 0.01f);
             if (evnt[OpenTK.Input.Key.W])
-                Camera.main.Move(0f, 0f, -1f, 0.03f);
+                Camera.main.Move(0f, 0f, -1f, 0.01f);
             if (evnt[OpenTK.Input.Key.S])
-                Camera.main.Move(0f, 0f, 1f, 0.03f);
+                Camera.main.Move(0f, 0f, 1f, 0.01f);
             OnSetupMatrices?.Invoke();
         }
         public static double AngleBetween(Vector3 vector1, Vector3 vector2)

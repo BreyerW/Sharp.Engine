@@ -6,7 +6,7 @@ using SharpAsset;
 
 namespace Sharp
 {
-	/*public class MeshRenderer<IndexType>: Renderer where IndexType : struct,IConvertible
+    /*public class MeshRenderer<IndexType>: Renderer where IndexType : struct,IConvertible
 	{
 		
 
@@ -37,66 +37,68 @@ namespace Sharp
 			//renderingStage++;
 		}
 	}*/
-	public class MeshRenderer<IndexType,VertexFormat>: Renderer where IndexType : struct,IConvertible where VertexFormat : struct, IVertex
-	{
-		internal Mesh<IndexType> mesh;
-		protected static readonly int sizeOfId=Marshal.SizeOf(typeof(IndexType));	
+    public class MeshRenderer<IndexType, VertexFormat> : Renderer where IndexType : struct, IConvertible where VertexFormat : struct, IVertex
+    {
+        internal Mesh<IndexType> mesh;
+        protected static readonly int sizeOfId = Marshal.SizeOf(typeof(IndexType));
 
-		public Material material;
+        public Material material;
 
-		private static int stride;
+        private static int stride;
 
-		//public static VertexAttribute[] vertAttribs; //convert to cache type
+        //public static VertexAttribute[] vertAttribs; //convert to cache type
 
 
-		public MeshRenderer (IAsset meshToRender)
-		{
-			mesh = (Mesh<IndexType>)meshToRender;
-			var type=mesh.Vertices[0].GetType();
-			stride = Marshal.SizeOf (type);
+        public MeshRenderer(IAsset meshToRender)
+        {
+            mesh = (Mesh<IndexType>)meshToRender;
+            var type = mesh.Vertices[0].GetType();
+            stride = Marshal.SizeOf(type);
 
-			if(!RegisterAsAttribute.registeredVertexFormats.ContainsKey(type))
-				RegisterAsAttribute.ParseVertexFormat (type);
+            if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(type))
+                RegisterAsAttribute.ParseVertexFormat(type);
 
-			Allocate ();
-		}
+            Allocate();
+        }
 
-		private void Allocate(){
-			SceneView.backendRenderer.GenerateBuffers (ref mesh);
-			SceneView.backendRenderer.BindBuffers (ref mesh);
-			SceneView.backendRenderer.Allocate (ref mesh);
-		}
-        public override void Render ()
-		{
-			
-			if (Camera.main.frustum.Intersect (mesh.bounds,entityObject.ModelMatrix) == 0) {
-				//Console.WriteLine ("cull");
-				return;
-			}
-			//Console.WriteLine ("no-cull ");
+        private void Allocate()
+        {
+            SceneView.backendRenderer.GenerateBuffers(ref mesh);
+            SceneView.backendRenderer.BindBuffers(ref mesh);
+            SceneView.backendRenderer.Allocate(ref mesh);
+        }
+        public override void Render()
+        {
 
-				//int current = GL.GetInteger (GetPName.CurrentProgram);
-				//GL.ValidateProgram (material.shaderId);
-				//if (current != material.shaderId) {
+            if (Camera.main.frustum.Intersect(mesh.bounds, entityObject.ModelMatrix) == 0)
+            {
+                Console.WriteLine("cull");
+                return;
+            }
+            //Console.WriteLine ("no-cull ");
 
-				
-				//}
-				//if (!IsLoaded) return;
-			var shader = material.Shader;
+            //int current = GL.GetInteger (GetPName.CurrentProgram);
+            //GL.ValidateProgram (material.shaderId);
+            //if (current != material.shaderId) {
+
+
+            //}
+            //if (!IsLoaded) return;
+            var shader = material.Shader;
 
             SceneView.backendRenderer.Use(ref shader);
-			SceneView.backendRenderer.BindBuffers(ref material);
+            SceneView.backendRenderer.BindBuffers(ref material);
 
-			SceneView.backendRenderer.BindBuffers(ref mesh);
+            SceneView.backendRenderer.BindBuffers(ref mesh);
 
-            foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats [mesh.Vertices[0].GetType()].Values)
-				SceneView.backendRenderer.BindVertexAttrib (stride,vertAttrib);
-			
-			SceneView.backendRenderer.Use (ref mesh);
-			SceneView.backendRenderer.ChangeShader();
-		}
-		public override void SetupMatrices ()
-		{
+            foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.Vertices[0].GetType()].Values)
+                SceneView.backendRenderer.BindVertexAttrib(stride, vertAttrib);
+
+            SceneView.backendRenderer.Use(ref mesh);
+            SceneView.backendRenderer.ChangeShader();
+        }
+        public override void SetupMatrices()
+        {
             material.SetProperty("model", ref entityObject.ModelMatrix);
             //int current = GL.GetInteger(GetPName.CurrentProgram);
             //GL.ValidateProgram (material.shaderId);
@@ -105,9 +107,10 @@ namespace Sharp
             //	GL.UseProgram(material.shaderId);
         }
 
-		public static void RegisterCustomAttribute(){
-		
-		}
-	}
+        public static void RegisterCustomAttribute()
+        {
+
+        }
+    }
 }
 
