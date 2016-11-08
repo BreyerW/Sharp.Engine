@@ -45,6 +45,13 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Color4(Color.White);
             GL.LineWidth(1f);
         }
+        public void DrawScaleGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor)
+        {
+            this.DrawCube(scale / 2f, -scale / 4f, 3.5f * scale, scale / 4f, yColor);
+            this.DrawCube(scale / 2f, -scale / 4f, -scale / 4f, 4f * scale, zColor);
+            this.DrawCube(scale / 2f, 3.5f * scale, -scale / 4f, scale / 4f, xColor);
+            GL.Color4(Color.White);
+        }
         public void DrawLine(float v1x, float v1y, float v1z, float v2x, float v2y, float v2z, Color unColor)
         {
             GL.Color4(unColor);
@@ -125,82 +132,38 @@ namespace SharpSL.BackendRenderers.OpenGL
         }
         public void DrawCube(float size, float posX, float posY, float posZ, Color unColor)
         {
-            uint[] indices = new uint[]
+            float[] vertices =
             {
-                0u,
-                1u,
-                2u,
-                3u,
-                2u,
-                1u,
-                4u,
-                0u,
-                6u,
-                6u,
-                0u,
-                2u,
-                5u,
-                1u,
-                4u,
-                4u,
-                1u,
-                0u,
-                7u,
-                3u,
-                1u,
-                7u,
-                1u,
-                5u,
-                5u,
-                4u,
-                7u,
-                7u,
-                4u,
-                6u,
-                7u,
-                2u,
-                3u,
-                7u,
-                6u,
-                2u
+                 0.0f, 0.0f, 0.0f,
+                 1.0f, 0.0f, 0.0f,
+                 1.0f, 1.0f, 0.0f,
+                0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, -1.0f,
+                1.0f, 0.0f, -1.0f,
+                1.0f, 1.0f, -1.0f,
+                0.0f, 1.0f, -1.0f,
+                 1.0f, 0.0f, 0.0f,
+               1.0f, 0.0f, -1.0f,
+               1.0f, 1.0f, -1.0f,
+               1.0f, 1.0f, 0.0f,
+               0.0f, 0.0f, 0.0f,
+               0.0f, 0.0f, -1.0f,
+               0.0f, 1.0f, -1.0f,
+               0.0f, 1.0f, 0.0f,
+               0.0f, 1.0f, 0.0f,
+               1.0f, 1.0f, 0.0f,
+               1.0f, 1.0f, -1.0f,
+               0.0f, 1.0f, -1.0f,
+               0.0f, 0.0f, 0.0f,
+               1.0f, 0.0f, 0.0f,
+               1.0f, 0.0f, -1.0f,
+               0.0f, 0.0f, -1.0f
             };
-            float[] pointer = new float[]
-            {
-                1f,
-                1f,
-                1f,
-                -1f,
-                1f,
-                1f,
-                1f,
-                -1f,
-                1f,
-                -1f,
-                -1f,
-                1f,
-                1f,
-                1f,
-                -1f,
-                -1f,
-                1f,
-                -1f,
-                1f,
-                -1f,
-                -1f,
-                -1f,
-                -1f,
-                -1f
-            };
-            size *= 0.5f;
-            GL.PushMatrix();
-            GL.Translate(posX, posY, posZ);
-            GL.Scale(size, size, size);
             GL.Color4(unColor);
-            GL.EnableClientState(ArrayCap.VertexArray);
-            GL.VertexPointer<float>(3, VertexPointerType.Float, 0, pointer);
-            GL.DrawElements<uint>(PrimitiveType.Triangles, 36, DrawElementsType.UnsignedInt, indices);
-            GL.DisableClientState(ArrayCap.VertexArray);
-            GL.PopMatrix();
+            GL.Begin(PrimitiveType.Quads);
+            for (int i = 0; i < vertices.Length; i += 3)
+                GL.Vertex3(vertices[i] * size + posX, (vertices[i + 1]) * size + posY, (vertices[i + 2]) * size + posZ);
+            GL.End();
         }
         public void DrawPlaneXZ(float size, float sizeOffset, Color unColor)
         {

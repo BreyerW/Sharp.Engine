@@ -35,8 +35,10 @@ namespace Sharp.Editor.Views
         public static bool mouseLocked = false;
         private static System.Drawing.Point? locPos = null;
         private static System.Drawing.Point lastLocPos;
-        private static Vector3? rotVectSource;
+        private static Vector3? rotVectSource;//przezucic do manipulators i zmienic kod z render gizmo na bez loadmatrix
         private static float? rotAngleOrigin;
+        private static Vector3? relativeOrigin;
+        private static Vector3? planeOrigin;
         private static int selectedAxisId = 0;
         private Vector3 normalizedMoveDir = Vector3.Zero;
 
@@ -81,17 +83,9 @@ namespace Sharp.Editor.Views
         }
         public override void OnContextCreated(int width, int height)
         {
-            //GL.ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            //if(OnRenderFrame!=null)
-            //	renderer.mesh.MVPMatrix = renderer.mesh.ModelMatrix *Camera.main.GetViewMatrix()* Camera.main.projectionMatrix;
-
             Camera.main.AspectRatio = (float)(panel.Width / (float)panel.Height);
             Camera.main.SetProjectionMatrix();
             Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
-            //GL.Viewport(0, 0, width,height);
-
-            //GL.MatrixMode(MatrixMode.Projection);
-            //GL.LoadMatrix(ref Camera.main.projectionMatrix);
             OnSetupMatrices?.Invoke();
         }
         void ReorderEntities()
@@ -107,7 +101,6 @@ namespace Sharp.Editor.Views
             if (locPos.HasValue)
             {
                 lastLocPos = locPos.Value;
-                //entities.Sort(OrdererBy.OrderByDistance); get hit point instead
                 if (!PickTestForGizmo())
                     PickTestForObject();
                 locPos = null;
@@ -132,7 +125,6 @@ namespace Sharp.Editor.Views
                     var entity = selected.Content as Entity;
                     var mvpMat = entity.ModelMatrix * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
-                    //var tmpMat =mesh.ModelMatrix* Camera.main.modelViewMatrix * Camera.main.projectionMatrix;
                     GL.Enable(EnableCap.Blend);
                     GL.Clear(ClearBufferMask.DepthBufferBit);
 
@@ -140,7 +132,7 @@ namespace Sharp.Editor.Views
 
                     DrawHelper.DrawTranslationGizmo(3, cameraObjectDistance / 25, (selectedAxisId == 1 ? selectedColor : xColor), (selectedAxisId == 2 ? selectedColor : yColor), (selectedAxisId == 3 ? selectedColor : zColor));
                     DrawHelper.DrawRotationGizmo(3, cameraObjectDistance / 25, (selectedAxisId == 4 ? selectedColor : xColor), (selectedAxisId == 5 ? selectedColor : yColor), (selectedAxisId == 6 ? selectedColor : zColor));
-
+                    DrawHelper.DrawScaleGizmo(3, cameraObjectDistance / 25, (selectedAxisId == 7 ? selectedColor : xColor), (selectedAxisId == 8 ? selectedColor : yColor), (selectedAxisId == 9 ? selectedColor : zColor));
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
 
                     /*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
@@ -153,16 +145,7 @@ namespace Sharp.Editor.Views
                 }
             }
 
-            /*	GL.DisableVertexAttribArray(0);
-                GL.DisableVertexAttribArray(1);
-                GL.DisableVertexAttribArray(2);
-                GL.DisableVertexAttribArray(3);
-
-                //GL.DebugMessageCallback(DebugCallbackInstance, IntPtr.Zero);
-                GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-                GL.BindBuffer(BufferTarget.ArrayBuffer, 0);*/
-
-            //canvas.RenderCanvas ();
+            //GL.DebugMessageCallback(DebugCallbackInstance, IntPtr.Zero);
         }
         private bool PickTestForGizmo()
         {
@@ -174,9 +157,9 @@ namespace Sharp.Editor.Views
 
                 System.Drawing.Color xColor = System.Drawing.Color.Red, yColor = System.Drawing.Color.LimeGreen, zColor = System.Drawing.Color.Blue;
                 System.Drawing.Color xRotColor = System.Drawing.Color.Red, yRotColor = System.Drawing.Color.LimeGreen, zRotColor = System.Drawing.Color.Blue;
-
+                System.Drawing.Color xScaleColor = System.Drawing.Color.Red, yScaleColor = System.Drawing.Color.LimeGreen, zScaleColor = System.Drawing.Color.Blue;
                 System.Drawing.Color color;
-                for (int id = 1; id < 7; id++)
+                for (int id = 1; id < 10; id++)
                 {
                     color = System.Drawing.Color.FromArgb((id & 0x000000FF) >> 00, (id & 0x0000FF00) >> 08, (id & 0x00FF0000) >> 16);
 
@@ -200,6 +183,15 @@ namespace Sharp.Editor.Views
                         case 6:
                             zRotColor = color;
                             break;
+                        case 7:
+                            xScaleColor = color;
+                            break;
+                        case 8:
+                            yScaleColor = color;
+                            break;
+                        case 9:
+                            zScaleColor = color;
+                            break;
                     }
                 }
 
@@ -213,6 +205,8 @@ namespace Sharp.Editor.Views
                     float cameraObjectDistance = (Camera.main.entityObject.Position - entity.Position).Length;
                     DrawHelper.DrawTranslationGizmo(5, cameraObjectDistance / 25, xColor, yColor, zColor);
                     DrawHelper.DrawRotationGizmo(5, cameraObjectDistance / 25, xRotColor, yRotColor, zRotColor);
+                    DrawHelper.DrawScaleGizmo(5, cameraObjectDistance / 25, xScaleColor, yScaleColor, zScaleColor);
+
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
                 }
                 backendRenderer.FinishCommands();
@@ -220,7 +214,7 @@ namespace Sharp.Editor.Views
                 // {
                 var pixel = backendRenderer.ReadPixels(locPos.Value.X, locPos.Value.Y, 1, 1);
                 int index = (((int)pixel[0]) << 00) + (((int)pixel[1]) << 08) + ((((int)pixel[2]) << 16));
-                if (index > 0 && index < 7)
+                if (index > 0 && index < 10)
                 {
                     selectedAxisId = index;
                     return mouseLocked = true;
@@ -322,14 +316,6 @@ namespace Sharp.Editor.Views
                 else//simple, precise, snapping
                 {
 
-                    var constTValue = 1f;
-                    var constRValue = 1f;
-                    var constSValue = 1f;
-
-                    var startPointInWorld = Camera.main.ScreenToWorld(oldX, oldY, panel.Width, panel.Height);
-                    var endPointInWorld = Camera.main.ScreenToWorld(evnt.X, evnt.Y, panel.Width, panel.Height);
-                    var mouseVectorInWorld = (endPointInWorld - startPointInWorld);// ;
-
                     var v = Vector3.Zero;
 
                     if (evnt.XDelta != 0 || evnt.YDelta != 0)
@@ -344,11 +330,11 @@ namespace Sharp.Editor.Views
                         {
                             var entity = selected.Content as Entity;
 
-                            if (selectedAxisId == 1 || selectedAxisId == 4)
+                            if (selectedAxisId == 1 || selectedAxisId == 4 || selectedAxisId == 7)
                             {
                                 v = Vector3.UnitX;
                             }
-                            else if (selectedAxisId == 2 || selectedAxisId == 5)
+                            else if (selectedAxisId == 2 || selectedAxisId == 5 || selectedAxisId == 8)
                             {
                                 v = Vector3.UnitY;
                             }
@@ -357,19 +343,26 @@ namespace Sharp.Editor.Views
 
                             var plane = BuildPlane(entity.Position, -ray.direction);
                             var intersectPlane = new Vector4(plane.Normal.X, plane.Normal.Y, plane.Normal.Z, plane.D);
+                            var len = ray.IntersectPlane(ref intersectPlane);
 
-                            /*
-                             var delta = Vector3.Dot(mouseVectorInWorld, v) * v;
-                            var transMat = Matrix4.CreateTranslation(delta);
-                            entity.ModelMatrix = entity.ModelMatrix* transMat ;
-                             */
                             if (selectedAxisId < 4)
-                                entity.Position += Vector3.Dot(v, mouseVectorInWorld) * v * 700;
+                            {
+                                if (!relativeOrigin.HasValue)
+                                {
+                                    planeOrigin = ray.origin + ray.direction * len;
+                                    relativeOrigin = (planeOrigin - entity.Position) * (1f / (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
+                                }
+                                var newPos = ray.origin + ray.direction * len;
+                                var newOrigin = newPos - relativeOrigin.Value * (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
+                                var delta = newOrigin - entity.Position;
+                                var lenOnAxis = Vector3.Dot(delta, v);
+                                delta = v * lenOnAxis;
+                                entity.Position += delta;
+                            }
                             else if (selectedAxisId < 7)
                             {
                                 if (!rotVectSource.HasValue)
                                 {
-                                    var len = ray.IntersectPlane(ref intersectPlane);
                                     rotVectSource = (ray.origin + ray.direction * len - entity.Position).Normalized();
                                     rotAngleOrigin = ComputeAngleOnPlane(entity, ref ray, ref intersectPlane);
                                 }
@@ -380,6 +373,26 @@ namespace Sharp.Editor.Views
                                 entity.Rotation += (MathHelper.RadiansToDegrees(angle - rotAngleOrigin.Value)) * v;
                                 rotAngleOrigin = angle;
                             }
+                            else
+                            {
+                                if (!relativeOrigin.HasValue)
+                                {
+                                    planeOrigin = ray.origin + ray.direction * len;
+                                    relativeOrigin = (planeOrigin - entity.Position);// * (1f / (1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
+                                }
+                                var newPos = ray.origin + ray.direction * len;
+                                var newOrigin = newPos - relativeOrigin.Value;// * (1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
+                                var delta = newOrigin - entity.Position;
+                                var lenOnAxis = Vector3.Dot(v, delta);
+                                delta = v * lenOnAxis;
+                                var baseVector = planeOrigin.Value - entity.Position;
+                                float ratio = Vector3.Dot(v, baseVector + delta) / Vector3.Dot(v, baseVector);
+                                var scale = ratio * v;
+                                scale.X = scale.X == 0 ? entity.Scale.X : scale.X;
+                                scale.Y = scale.Y == 0 ? entity.Scale.Y : scale.Y;
+                                scale.Z = scale.Z == 0 ? entity.Scale.Z : scale.Z;
+                                entity.Scale = scale;
+                            }
                         }
                     }
                 }
@@ -388,6 +401,12 @@ namespace Sharp.Editor.Views
             }
             oldX = evnt.X;
             oldY = evnt.Y;
+        }
+        private float GetUniform(Vector3 pos, Matrix4 mat)
+        {
+            var trf = new Vector4(pos, 1f);
+            trf = Vector4.Transform(trf, mat);
+            return trf.W;
         }
         System.Numerics.Plane BuildPlane(Vector3 pos, Vector3 normal)
         {
@@ -437,7 +456,7 @@ namespace Sharp.Editor.Views
                     Camera.main.SetModelviewMatrix();
                     var orig = Camera.main.entityObject.Position;
                     var dir = (Camera.main.ScreenToWorld(locPos.X, locPos.Y, panel.Width, panel.Height) - orig).Normalized();
-                    eObject.Position = -3 * Vector3.UnitZ; //orig + dir * Camera.main.ZFar * 0.1f;
+                    eObject.Position = orig + dir * Camera.main.ZFar * 0.1f; //-3 * Vector3.UnitZ; //
                     if (asset.Content.GetType() == typeof(Skeleton))
                     {
                         var skele = (Skeleton)asset.Content;
@@ -462,6 +481,8 @@ namespace Sharp.Editor.Views
             }
             rotVectSource = null;
             rotAngleOrigin = null;
+            planeOrigin = null;
+            relativeOrigin = null;
             mouseLocked = false;
             MainWindow.focusedView = null;
         }

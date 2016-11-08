@@ -137,6 +137,10 @@ namespace Sharp.Editor
         {
             MainEditorView.editorBackendRenderer.DrawRotateGizmo(thickness, scale, xColor, yColor, zColor);
         }
+        public static void DrawScaleGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor)
+        {
+            MainEditorView.editorBackendRenderer.DrawScaleGizmo(thickness, scale, xColor, yColor, zColor);
+        }
     }
 }
 
