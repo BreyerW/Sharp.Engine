@@ -17,10 +17,12 @@ namespace Sharp.Editor.Views
 {
     public class SceneView : View
     {
+        internal static IBackendRenderer backendRenderer;
 
         private HashSet<Camera> camera;
         private int cell_size = 32;
         private int grid_size = 4096;
+
 
         public static HashSet<Entity> entities = new HashSet<Entity>();
         public static Action OnAddedEntity;
@@ -33,16 +35,12 @@ namespace Sharp.Editor.Views
         public static Action OnSetupMatrices;
 
         public static bool mouseLocked = false;
+        public static bool globalMode = false;
+
         private static System.Drawing.Point? locPos = null;
-        private static System.Drawing.Point lastLocPos;
-        private static Vector3? rotVectSource;//przezucic do manipulators i zmienic kod z render gizmo na bez loadmatrix
-        private static float? rotAngleOrigin;
-        private static Vector3? relativeOrigin;
-        private static Vector3? planeOrigin;
-        private static int selectedAxisId = 0;
         private Vector3 normalizedMoveDir = Vector3.Zero;
 
-        public static IBackendRenderer backendRenderer;
+
         /*DebugProc DebugCallbackInstance = DebugCallback;
 
 		static void DebugCallback(DebugSource source, DebugType type, int id,
@@ -88,10 +86,6 @@ namespace Sharp.Editor.Views
             Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
             OnSetupMatrices?.Invoke();
         }
-        void ReorderEntities()
-        {
-
-        }
         public override void Render()
         {
             base.Render();
@@ -100,7 +94,6 @@ namespace Sharp.Editor.Views
 
             if (locPos.HasValue)
             {
-                lastLocPos = locPos.Value;
                 if (!PickTestForGizmo())
                     PickTestForObject();
                 locPos = null;
@@ -111,28 +104,19 @@ namespace Sharp.Editor.Views
 
             DrawHelper.DrawGrid(System.Drawing.Color.GhostWhite, Camera.main.entityObject.Position, cell_size, grid_size, ref projMat);
 
-
             OnRenderFrame?.Invoke();
-
 
             if (SceneStructureView.tree.SelectedChildren.Any())
             {
-
-                System.Drawing.Color xColor = System.Drawing.Color.Red, yColor = System.Drawing.Color.LimeGreen, zColor = System.Drawing.Color.Blue, selectedColor = System.Drawing.Color.Yellow;
-
                 foreach (var selected in SceneStructureView.tree.SelectedChildren)
                 {
                     var entity = selected.Content as Entity;
-                    var mvpMat = entity.ModelMatrix * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+                    var mvpMat = (globalMode ? entity.ModelMatrix.ClearRotation() : entity.ModelMatrix).ClearScale() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
                     GL.Enable(EnableCap.Blend);
                     GL.Clear(ClearBufferMask.DepthBufferBit);
 
-                    float cameraObjectDistance = (Camera.main.entityObject.Position - entity.Position).Length;
-
-                    DrawHelper.DrawTranslationGizmo(3, cameraObjectDistance / 25, (selectedAxisId == 1 ? selectedColor : xColor), (selectedAxisId == 2 ? selectedColor : yColor), (selectedAxisId == 3 ? selectedColor : zColor));
-                    DrawHelper.DrawRotationGizmo(3, cameraObjectDistance / 25, (selectedAxisId == 4 ? selectedColor : xColor), (selectedAxisId == 5 ? selectedColor : yColor), (selectedAxisId == 6 ? selectedColor : zColor));
-                    DrawHelper.DrawScaleGizmo(3, cameraObjectDistance / 25, (selectedAxisId == 7 ? selectedColor : xColor), (selectedAxisId == 8 ? selectedColor : yColor), (selectedAxisId == 9 ? selectedColor : zColor));
+                    Manipulators.DrawCombinedGizmos(entity.Position);
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
 
                     /*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
@@ -154,7 +138,6 @@ namespace Sharp.Editor.Views
             backendRenderer.ChangeShader();
             if (SceneStructureView.tree.SelectedChildren.Any())
             {
-
                 System.Drawing.Color xColor = System.Drawing.Color.Red, yColor = System.Drawing.Color.LimeGreen, zColor = System.Drawing.Color.Blue;
                 System.Drawing.Color xRotColor = System.Drawing.Color.Red, yRotColor = System.Drawing.Color.LimeGreen, zRotColor = System.Drawing.Color.Blue;
                 System.Drawing.Color xScaleColor = System.Drawing.Color.Red, yScaleColor = System.Drawing.Color.LimeGreen, zScaleColor = System.Drawing.Color.Blue;
@@ -198,14 +181,11 @@ namespace Sharp.Editor.Views
                 foreach (var selected in SceneStructureView.tree.SelectedChildren)
                 {
                     var entity = selected.Content as Entity;
-                    var mvpMat = entity.ModelMatrix * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+                    var mvpMat = (globalMode ? entity.ModelMatrix.ClearRotation() : entity.ModelMatrix).ClearScale() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
 
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
 
-                    float cameraObjectDistance = (Camera.main.entityObject.Position - entity.Position).Length;
-                    DrawHelper.DrawTranslationGizmo(5, cameraObjectDistance / 25, xColor, yColor, zColor);
-                    DrawHelper.DrawRotationGizmo(5, cameraObjectDistance / 25, xRotColor, yRotColor, zRotColor);
-                    DrawHelper.DrawScaleGizmo(5, cameraObjectDistance / 25, xScaleColor, yScaleColor, zScaleColor);
+                    Manipulators.DrawCombinedGizmos(entity.Position, xColor, yColor, zColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
 
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
                 }
@@ -216,11 +196,11 @@ namespace Sharp.Editor.Views
                 int index = (((int)pixel[0]) << 00) + (((int)pixel[1]) << 08) + ((((int)pixel[2]) << 16));
                 if (index > 0 && index < 10)
                 {
-                    selectedAxisId = index;
+                    Manipulators.selectedAxisId = index;
                     return mouseLocked = true;
                 }
                 else
-                    selectedAxisId = 0;
+                    Manipulators.selectedAxisId = 0;
                 //}
             }
             return false;
@@ -292,15 +272,7 @@ namespace Sharp.Editor.Views
                 Camera.main.Move(0f, 0f, 1f, 0.01f);
             OnSetupMatrices?.Invoke();
         }
-        public static double AngleBetween(Vector3 vector1, Vector3 vector2)
-        {
-            var angle = Math.Atan2(vector1.Y, vector1.X) - Math.Atan2(vector2.Y, vector2.X);// * (180 / Math.PI);
-            if (angle < 0)
-            {
-                //angle = angle + MathHelper.TwoPi;
-            }
-            return angle;
-        }
+
         int oldX;
         int oldY;
         public override void OnMouseMove(MouseMoveEventArgs evnt)
@@ -308,16 +280,13 @@ namespace Sharp.Editor.Views
             //Console.WriteLine ("locked? "+mouseLocked);
             if (mouseLocked)
             {
-                if (selectedAxisId == 0)
+                if (Manipulators.selectedAxisId == 0)
                 {
                     Camera.main.Rotate((float)evnt.XDelta, (float)evnt.YDelta, 0.3f);//maybe divide delta by fov?
                     SceneView.OnSetupMatrices?.Invoke();
                 }
                 else//simple, precise, snapping
                 {
-
-                    var v = Vector3.Zero;
-
                     if (evnt.XDelta != 0 || evnt.YDelta != 0)
                     {
                         var orig = Camera.main.entityObject.Position;
@@ -330,68 +299,17 @@ namespace Sharp.Editor.Views
                         {
                             var entity = selected.Content as Entity;
 
-                            if (selectedAxisId == 1 || selectedAxisId == 4 || selectedAxisId == 7)
+                            if (Manipulators.selectedAxisId < 4)
                             {
-                                v = Vector3.UnitX;
+                                Manipulators.HandleTranslation(entity, ref ray);
                             }
-                            else if (selectedAxisId == 2 || selectedAxisId == 5 || selectedAxisId == 8)
+                            else if (Manipulators.selectedAxisId < 7)
                             {
-                                v = Vector3.UnitY;
-                            }
-                            else
-                                v = Vector3.UnitZ;
-
-                            var plane = BuildPlane(entity.Position, -ray.direction);
-                            var intersectPlane = new Vector4(plane.Normal.X, plane.Normal.Y, plane.Normal.Z, plane.D);
-                            var len = ray.IntersectPlane(ref intersectPlane);
-
-                            if (selectedAxisId < 4)
-                            {
-                                if (!relativeOrigin.HasValue)
-                                {
-                                    planeOrigin = ray.origin + ray.direction * len;
-                                    relativeOrigin = (planeOrigin - entity.Position) * (1f / (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
-                                }
-                                var newPos = ray.origin + ray.direction * len;
-                                var newOrigin = newPos - relativeOrigin.Value * (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
-                                var delta = newOrigin - entity.Position;
-                                var lenOnAxis = Vector3.Dot(delta, v);
-                                delta = v * lenOnAxis;
-                                entity.Position += delta;
-                            }
-                            else if (selectedAxisId < 7)
-                            {
-                                if (!rotVectSource.HasValue)
-                                {
-                                    rotVectSource = (ray.origin + ray.direction * len - entity.Position).Normalized();
-                                    rotAngleOrigin = ComputeAngleOnPlane(entity, ref ray, ref intersectPlane);
-                                }
-                                var angle = ComputeAngleOnPlane(entity, ref ray, ref intersectPlane);
-                                //var rotAxisLocalSpace = Vector4.Transform(intersectPlane, entity.ModelMatrix.Inverted()).Normalized();
-                                //var deltaRot = Matrix4.CreateFromAxisAngle(rotAxisLocalSpace.Xyz, angle - rotAngleOrigin.Value);
-                                //entity.ModelMatrix = deltaRot * entity.ModelMatrix; //
-                                entity.Rotation += (MathHelper.RadiansToDegrees(angle - rotAngleOrigin.Value)) * v;
-                                rotAngleOrigin = angle;
+                                Manipulators.HandleRotation(entity, ref ray);
                             }
                             else
                             {
-                                if (!relativeOrigin.HasValue)
-                                {
-                                    planeOrigin = ray.origin + ray.direction * len;
-                                    relativeOrigin = (planeOrigin - entity.Position);// * (1f / (1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
-                                }
-                                var newPos = ray.origin + ray.direction * len;
-                                var newOrigin = newPos - relativeOrigin.Value;// * (1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
-                                var delta = newOrigin - entity.Position;
-                                var lenOnAxis = Vector3.Dot(v, delta);
-                                delta = v * lenOnAxis;
-                                var baseVector = planeOrigin.Value - entity.Position;
-                                float ratio = Vector3.Dot(v, baseVector + delta) / Vector3.Dot(v, baseVector);
-                                var scale = ratio * v;
-                                scale.X = scale.X == 0 ? entity.Scale.X : scale.X;
-                                scale.Y = scale.Y == 0 ? entity.Scale.Y : scale.Y;
-                                scale.Z = scale.Z == 0 ? entity.Scale.Z : scale.Z;
-                                entity.Scale = scale;
+                                Manipulators.HandleScale(entity, ref ray);
                             }
                         }
                     }
@@ -402,37 +320,13 @@ namespace Sharp.Editor.Views
             oldX = evnt.X;
             oldY = evnt.Y;
         }
-        private float GetUniform(Vector3 pos, Matrix4 mat)
-        {
-            var trf = new Vector4(pos, 1f);
-            trf = Vector4.Transform(trf, mat);
-            return trf.W;
-        }
-        System.Numerics.Plane BuildPlane(Vector3 pos, Vector3 normal)
-        {
-            System.Numerics.Vector4 baseForPlane = System.Numerics.Vector4.Zero;
-            normal.Normalize();
-            baseForPlane.W = Vector3.Dot(normal, pos);
-            baseForPlane.X = normal.X;
-            baseForPlane.Y = normal.Y;
-            baseForPlane.Z = normal.Z;
-            return new System.Numerics.Plane(baseForPlane);
-        }
-        float ComputeAngleOnPlane(Entity entity, ref Ray ray, ref Vector4 plane)
-        {
-            var len = ray.IntersectPlane(ref plane);
-            var localPos = (ray.origin + ray.direction * len - entity.Position).Normalized();
-            var perpendicularVect = Vector3.Cross(rotVectSource.Value, plane.Xyz).Normalized();
-            var angle = (float)AngleBetween(localPos, rotVectSource.Value); //(float)Math.Acos(MathHelper.Clamp(Vector3.Dot(localPos, rotVectSource.Value), -1f, 1f));
 
-            return angle;// *= (Vector3.Dot(localPos, perpendicularVect) < 0.0f) ? 1.0f : -1.0f;
-        }
         public override void OnMouseDown(MouseButtonEventArgs evnt)
         {
             if (evnt.Button == MouseButton.Right)
             {//canvas.IsHovered
                 mouseLocked = true;
-                selectedAxisId = 0;
+                Manipulators.selectedAxisId = 0;
             }
             else if (evnt.Button == MouseButton.Left)
             {
@@ -479,10 +373,7 @@ namespace Sharp.Editor.Views
                 }
                 AssetsView.isDragging = false;
             }
-            rotVectSource = null;
-            rotAngleOrigin = null;
-            planeOrigin = null;
-            relativeOrigin = null;
+            Manipulators.Reset();
             mouseLocked = false;
             MainWindow.focusedView = null;
         }
