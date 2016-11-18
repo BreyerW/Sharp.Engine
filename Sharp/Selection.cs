@@ -42,7 +42,7 @@ namespace Sharp
 
         static Selection()
         {
-            Repeat(IsSelectionDirty, 33, 33, CancellationToken.None);
+            Repeat(IsSelectionDirty, 30, 30, CancellationToken.None);
         }
 
         private static void IsSelectionDirty(CancellationToken token)

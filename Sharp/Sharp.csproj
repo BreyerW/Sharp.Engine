@@ -137,7 +137,7 @@
     <Compile Include="Frustum.cs" />
     <Compile Include="GenericColor.cs" />
     <Compile Include="InputHandler.cs" />
-    <Compile Include="Material.cs" />
+    <Compile Include="SharpAsset\Material.cs" />
     <Compile Include="MeshRenderer.cs" />
     <Compile Include="ObjectPlacement.cs" />
     <Compile Include="Player.cs" />
@@ -146,6 +146,7 @@
     <Compile Include="Sharp.Editor\PropertyDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\BooleanDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Vector3Drawer.cs" />
+    <Compile Include="SharpAsset\ShaderParameter.cs" />
     <Compile Include="SizeInBytes.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Sharp.Editor\Manipulators.cs" />

@@ -19,7 +19,7 @@ namespace Sharp
             {
                 projectionMatrix = value;
                 if (main != null)
-                    Material.SetGlobalProperty("camProjection", ref main.projectionMatrix);
+                    Material.BindGlobalProperty("camProjection", () => { return ref main.projectionMatrix; });
             }
         }
 
@@ -35,7 +35,7 @@ namespace Sharp
             {
                 modelViewMatrix = value;
                 if (main != null)
-                    Material.SetGlobalProperty("camView", ref main.modelViewMatrix);
+                    Material.BindGlobalProperty("camView", () => { return ref main.modelViewMatrix; });
             }
         }
 

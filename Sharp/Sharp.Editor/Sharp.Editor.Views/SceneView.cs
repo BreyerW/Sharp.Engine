@@ -215,7 +215,7 @@ namespace Sharp.Editor.Views
             var hitList = new SortedList<Vector3, int>(new OrderByDistanceToCamera());
             foreach (var ent in entities)
             {
-                dynamic render = ent.GetComponent(typeof(MeshRenderer<,>));
+                dynamic render = ent.GetComponent(typeof(MeshRenderer<>));
                 Vector3 hitPoint = Vector3.Zero;
                 if (render != null && render.mesh.bounds.Intersect(ref ray, ref ent.ModelMatrix, out hitPoint))
                 {
@@ -338,38 +338,18 @@ namespace Sharp.Editor.Views
             //	Console.WriteLine ("down");
         }
         public override void OnMouseUp(MouseButtonEventArgs args)
-        { //bug czasem blokuje sie myszka na znaczonym obiekcie i nie da sie zaznaczyc innego ma to cos wspolnego z manipulatorem
-            Console.WriteLine("up? " + AssetsView.isDragging);
+        {
             if (AssetsView.isDragging)
             {
+                var locPos = panel.CanvasPosToLocal(args.Position);
+                Camera.main.SetModelviewMatrix();
+                var orig = Camera.main.entityObject.Position;
+                var dir = (Camera.main.ScreenToWorld(locPos.X, locPos.Y, panel.Width, panel.Height) - orig).Normalized();
                 //makeContextCurrent ();
                 foreach (var asset in AssetsView.tree.SelectedChildren)
                 {
-                    var eObject = new Entity();
-                    var locPos = panel.CanvasPosToLocal(args.Position);
-                    Camera.main.SetModelviewMatrix();
-                    var orig = Camera.main.entityObject.Position;
-                    var dir = (Camera.main.ScreenToWorld(locPos.X, locPos.Y, panel.Width, panel.Height) - orig).Normalized();
-                    eObject.Position = orig + dir * Camera.main.ZFar * 0.1f; //-3 * Vector3.UnitZ; //
-                    if (asset.Content.GetType() == typeof(Skeleton))
-                    {
-                        var skele = (Skeleton)asset.Content;
-                        var renderer = eObject.AddComponent(new SkeletonRenderer(ref skele));
-                        var shader = Shader.getAsset("SkeletonShader");
-                    }
-                    else if (asset.Content.GetType().GetGenericTypeDefinition() == typeof(Mesh<>))
-                    {
 
-                        var mesh = asset.Content as IAsset;
-                        var renderer = eObject.AddComponent(new MeshRenderer<ushort, BasicVertexFormat>(mesh)) as MeshRenderer<ushort, BasicVertexFormat>;
-                        //FromMatrix (scene.RootNode.Transform);
-                        var shader = Shader.getAsset("TextureOnlyShader");
-                        renderer.material = new Material();
-                        renderer.material.Shader = shader;
-                        var tex = Texture.getAsset("duckCM");
-                        renderer.material.SetProperty("MyTexture", ref tex);
-                    }
-                    eObject.Instatiate();
+                    (asset.Content as IAsset).PlaceIntoScene(null, orig + dir * Camera.main.ZFar * 0.1f);
                 }
                 AssetsView.isDragging = false;
             }

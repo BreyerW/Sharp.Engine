@@ -37,7 +37,7 @@ namespace Sharp
 			//renderingStage++;
 		}
 	}*/
-    public class MeshRenderer<IndexType, VertexFormat> : Renderer where IndexType : struct, IConvertible where VertexFormat : struct, IVertex
+    public class MeshRenderer<IndexType> : Renderer where IndexType : struct, IConvertible //where VertexFormat : struct, IVertex
     {
         internal Mesh<IndexType> mesh;
         protected static readonly int sizeOfId = Marshal.SizeOf(typeof(IndexType));
@@ -49,12 +49,12 @@ namespace Sharp
         //public static VertexAttribute[] vertAttribs; //convert to cache type
 
 
-        public MeshRenderer(IAsset meshToRender)
+        public MeshRenderer(IAsset meshToRender, Material mat)
         {
             mesh = (Mesh<IndexType>)meshToRender;
             var type = mesh.Vertices[0].GetType();
             stride = Marshal.SizeOf(type);
-
+            material = mat;
             if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(type))
                 RegisterAsAttribute.ParseVertexFormat(type);
 
@@ -66,6 +66,7 @@ namespace Sharp
             SceneView.backendRenderer.GenerateBuffers(ref mesh);
             SceneView.backendRenderer.BindBuffers(ref mesh);
             SceneView.backendRenderer.Allocate(ref mesh);
+            material.BindProperty("model", () => { return ref entityObject.ModelMatrix; });
         }
         public override void Render()
         {
@@ -99,7 +100,6 @@ namespace Sharp
         }
         public override void SetupMatrices()
         {
-            material.SetProperty("model", ref entityObject.ModelMatrix);
             //int current = GL.GetInteger(GetPName.CurrentProgram);
             //GL.ValidateProgram (material.shaderId);
             //will return -1 without useprogram

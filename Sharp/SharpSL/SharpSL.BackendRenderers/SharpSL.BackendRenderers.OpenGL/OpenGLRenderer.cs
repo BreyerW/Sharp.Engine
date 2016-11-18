@@ -73,45 +73,25 @@ namespace SharpSL.BackendRenderers.OpenGL
         public void BindBuffers(ref Material mat)
         {
             var idLight = 0;
-            if (mat.Shader.uniformArray.ContainsKey(UniformType.Float) && mat.Shader.uniformArray[UniformType.Float].ContainsKey("ambient"))
+            if (mat.Shader.uniformArray.ContainsKey("ambient"))
             {
-                GL.Uniform1(mat.Shader.uniformArray[UniformType.Float]["ambient"], Sharp.Light.ambientCoefficient);
+                GL.Uniform1(mat.Shader.uniformArray["ambient"], Sharp.Light.ambientCoefficient);
                 foreach (var light in Sharp.Light.lights)
                 {
-                    GL.Uniform3(mat.Shader.uniformArray[UniformType.FloatVec3]["lights[" + idLight + "].position"], light.entityObject.Position);
+                    GL.Uniform3(mat.Shader.uniformArray["lights[" + idLight + "].position"], light.entityObject.Position);
                     //GL.UniformMatrix4(mat.Shader.uniformArray[UniformType.FloatMat4]["lights[" + idLight + "].modelMatrix"],false,ref light.entityObject.ModelMatrix);
-                    GL.Uniform4(mat.Shader.uniformArray[UniformType.FloatVec4]["lights[" + idLight + "].color"], light.color);
-                    GL.Uniform1(mat.Shader.uniformArray[UniformType.Float]["lights[" + idLight + "].intensity"], light.intensity);
+                    GL.Uniform4(mat.Shader.uniformArray["lights[" + idLight + "].color"], light.color);
+                    GL.Uniform1(mat.Shader.uniformArray["lights[" + idLight + "].intensity"], light.intensity);
                     //GL.Uniform1(mat.Shader.uniformArray[UniformType.Float]["lights[" + idLight + "].angle"], light.angle);
                     idLight++;
                 }
             }
-            foreach (var matrixUniform in Material.globalMat4Array)
-            {
-                var mat4 = matrixUniform.Value;
-                GL.UniformMatrix4(mat.Shader.uniformArray[UniformType.FloatMat4][matrixUniform.Key], false, ref mat4);
-            }
+            foreach (var param in mat.localParams)
+                param.Value.ConsumeData(param.Key);
 
-            int texSlot = 0;
-            foreach (var texUniform in Material.globalTexArray)
-            {
-                GL.ActiveTexture(TextureUnit.Texture0 + texSlot);
-                GL.BindTexture(TextureTarget.Texture2D, texUniform.Value);
-                GL.Uniform1(mat.Shader.uniformArray[UniformType.Sampler2D][texUniform.Key], (int)TextureUnit.Texture0 + texSlot);
-                texSlot++;
-            }
-            foreach (var texUniform in mat.texArray)
-            {
-                GL.ActiveTexture(TextureUnit.Texture0 + texSlot);
-                GL.BindTexture(TextureTarget.Texture2D, texUniform.Value);
-                GL.Uniform1(texUniform.Key, (int)TextureUnit.Texture0 + texSlot);
-                texSlot++;
-            }
-            foreach (var matrixUniform in mat.mat4Array)
-            {
-                var mat4 = matrixUniform.Value;
-                GL.UniformMatrix4(matrixUniform.Key, false, ref mat4);
-            }
+            foreach (var param in Material.globalParams)
+                param.Value.ConsumeData(mat.Shader.uniformArray[param.Key]);
+
         }
 
         public void Use(ref Shader shader)
@@ -223,7 +203,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.ShaderSource(shader.VertexID, shader.VertexSource); //make global frag and vert source, compile once and then mix them to shader
             GL.CompileShader(shader.VertexID);
             GL.GetShaderInfoLog(shader.VertexID, out info);
-            GL.GetShader(shader.VertexID, ShaderParameter.CompileStatus, out status_code);
+            GL.GetShader(shader.VertexID, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
 
             if (status_code != 1)
                 throw new ApplicationException(info);
@@ -232,7 +212,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.ShaderSource(shader.FragmentID, shader.FragmentSource);
             GL.CompileShader(shader.FragmentID);
             GL.GetShaderInfoLog(shader.FragmentID, out info);
-            GL.GetShader(shader.FragmentID, ShaderParameter.CompileStatus, out status_code);
+            GL.GetShader(shader.FragmentID, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
 
             if (status_code != 1)
                 throw new ApplicationException(info);
@@ -261,10 +241,8 @@ namespace SharpSL.BackendRenderers.OpenGL
 
                 GL.GetActiveUniform(shader.Program, i, stringBuilder.Capacity, out num, out size, out uniType, stringBuilder);
                 Console.WriteLine(stringBuilder.ToString() + " " + uniType + " : " + size);
-                if (!shader.uniformArray.ContainsKey((UniformType)uniType))
-                    shader.uniformArray.Add((UniformType)uniType, new System.Collections.Generic.Dictionary<string, int>() { [stringBuilder.ToString()] = i });
-                else
-                    shader.uniformArray[(UniformType)uniType].Add(stringBuilder.ToString(), i);
+                if (!shader.uniformArray.ContainsKey(stringBuilder.ToString()))
+                    shader.uniformArray.Add(stringBuilder.ToString(), i);
             }
             //GL.UseProgram(Program);
 
@@ -324,6 +302,19 @@ namespace SharpSL.BackendRenderers.OpenGL
         {
             GL.EnableVertexAttribArray(attrib.shaderLocation);
             GL.VertexAttribPointer(attrib.shaderLocation, attrib.Dimension, (VertexAttribPointerType)attrib.type, false, stride, attrib.offset);
+        }
+
+        public void Send(ref int location, ref Matrix4 mat)
+        {
+            //GL.UniformMatrix4(location, mat.Length, false, ref mat[0].Row0.X);
+            GL.UniformMatrix4(location, false, ref mat);
+        }
+
+        public void Send(ref int location, ref int tbo, int slot)
+        {
+            //GL.ActiveTexture(TextureUnit.Texture0 + slot);
+            GL.BindTexture(TextureTarget.Texture2D, tbo);
+            GL.Uniform1(location, (int)TextureUnit.Texture0 + slot);
         }
 
         #endregion
