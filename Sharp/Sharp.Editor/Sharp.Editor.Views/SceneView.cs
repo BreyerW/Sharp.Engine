@@ -8,21 +8,18 @@ using Gwen.Control;
 using System.Diagnostics;
 using OpenTK.Input;
 using Sharp.Editor;
+
 //using PhysX;
-using Sharp.Physic;
+using SharpAsset.Pipeline;
 using System.Linq;
-using SharpSL.BackendRenderers;
 
 namespace Sharp.Editor.Views
 {
     public class SceneView : View
     {
-        internal static IBackendRenderer backendRenderer;
-
         private HashSet<Camera> camera;
         private int cell_size = 32;
         private int grid_size = 4096;
-
 
         public static HashSet<Entity> entities = new HashSet<Entity>();
         public static Action OnAddedEntity;
@@ -33,14 +30,12 @@ namespace Sharp.Editor.Views
         public static Action OnUpdate;
         public static Action OnRenderFrame;
         public static Action OnSetupMatrices;
-
-        public static bool mouseLocked = false;
         public static bool globalMode = false;
 
         private static System.Drawing.Point? locPos = null;
         private Vector3 normalizedMoveDir = Vector3.Zero;
 
-
+        public bool mouseLocked = false;
         /*DebugProc DebugCallbackInstance = DebugCallback;
 
 		static void DebugCallback(DebugSource source, DebugType type, int id,
@@ -50,6 +45,11 @@ namespace Sharp.Editor.Views
 			Console.WriteLine("[GL] {0}; {1}; {2}; {3}; {4};",
 				source, type, id, severity, msg);
 		}*/
+
+        public SceneView(uint attachToWindow) : base(attachToWindow)
+        {
+        }
+
         public override void Initialize()
         {
             //ErrorOutput errorOutput = new ErrorOutput();
@@ -74,11 +74,10 @@ namespace Sharp.Editor.Views
             var light = eLight.AddComponent<Light>();
             eLight.Instatiate();
 
-
             OnSetupMatrices?.Invoke();
             base.Initialize();
-
         }
+
         public override void OnContextCreated(int width, int height)
         {
             Camera.main.AspectRatio = (float)(panel.Width / (float)panel.Height);
@@ -86,6 +85,7 @@ namespace Sharp.Editor.Views
             Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
             OnSetupMatrices?.Invoke();
         }
+
         public override void Render()
         {
             base.Render();
@@ -98,8 +98,8 @@ namespace Sharp.Editor.Views
                     PickTestForObject();
                 locPos = null;
             }
-            backendRenderer.ClearBuffer();
-            backendRenderer.SetStandardState();
+            MainWindow.backendRenderer.ClearBuffer();
+            MainWindow.backendRenderer.SetStandardState();
             var projMat = Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
 
             DrawHelper.DrawGrid(System.Drawing.Color.GhostWhite, Camera.main.entityObject.Position, cell_size, grid_size, ref projMat);
@@ -131,11 +131,12 @@ namespace Sharp.Editor.Views
 
             //GL.DebugMessageCallback(DebugCallbackInstance, IntPtr.Zero);
         }
+
         private bool PickTestForGizmo()
         {
-            backendRenderer.ClearBuffer();
-            backendRenderer.SetFlatColorState();
-            backendRenderer.ChangeShader();
+            MainWindow.backendRenderer.ClearBuffer();
+            MainWindow.backendRenderer.SetFlatColorState();
+            MainWindow.backendRenderer.ChangeShader();
             if (SceneStructureView.tree.SelectedChildren.Any())
             {
                 System.Drawing.Color xColor = System.Drawing.Color.Red, yColor = System.Drawing.Color.LimeGreen, zColor = System.Drawing.Color.Blue;
@@ -151,27 +152,35 @@ namespace Sharp.Editor.Views
                         case 1:
                             xColor = color;
                             break;
+
                         case 2:
                             yColor = color;
                             break;
+
                         case 3:
                             zColor = color;
                             break;
+
                         case 4:
                             xRotColor = color;
                             break;
+
                         case 5:
                             yRotColor = color;
                             break;
+
                         case 6:
                             zRotColor = color;
                             break;
+
                         case 7:
                             xScaleColor = color;
                             break;
+
                         case 8:
                             yScaleColor = color;
                             break;
+
                         case 9:
                             zScaleColor = color;
                             break;
@@ -189,10 +198,10 @@ namespace Sharp.Editor.Views
 
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
                 }
-                backendRenderer.FinishCommands();
+                MainWindow.backendRenderer.FinishCommands();
                 // if (locPos.HasValue)
                 // {
-                var pixel = backendRenderer.ReadPixels(locPos.Value.X, locPos.Value.Y, 1, 1);
+                var pixel = MainWindow.backendRenderer.ReadPixels(locPos.Value.X, locPos.Value.Y, 1, 1);
                 int index = (((int)pixel[0]) << 00) + (((int)pixel[1]) << 08) + ((((int)pixel[2]) << 16));
                 if (index > 0 && index < 10)
                 {
@@ -205,6 +214,7 @@ namespace Sharp.Editor.Views
             }
             return false;
         }
+
         private void PickTestForObject()
         {
             // if (locPos.HasValue && selectedAxisId < 1)
@@ -220,23 +230,22 @@ namespace Sharp.Editor.Views
                 if (render != null && render.mesh.bounds.Intersect(ref ray, ref ent.ModelMatrix, out hitPoint))
                 {
                     Console.WriteLine("Select " + ent.name + ent.id);
-                    hitList.Add(hitPoint, ent.id);
+                    if (!hitList.ContainsKey(hitPoint))
+                        hitList.Add(hitPoint, ent.id);
                     //break;
                 }
             }
             if (hitList.Count > 0)
             {
-
-                //var id = entities.(ent);
                 var entity = entities.First((ent) => ent.id == hitList.Values[0]);
                 Console.WriteLine("Select " + entity.name + entity.id);
                 Selection.Asset = entity;
-                //Selection.assets.Add (ent);
                 SceneStructureView.tree.UnselectAll();
                 SceneStructureView.tree.FindNodeByContent(entity).IsSelected = true;
             }
             //}
         }
+
         public override void OnResize(int width, int height)
         {
             OnSetupMatrices?.Invoke();
@@ -247,37 +256,76 @@ namespace Sharp.Editor.Views
                 Camera.main.SetProjectionMatrix();
             }
         }
-        public override void OnKeyPressEvent(ref KeyboardState evnt)
+
+        public override void OnKeyPressEvent(SDL2.SDL.SDL_Keycode keyCode)
         {
             if (Camera.main.moved)
             {
-                MainEditorView.canvas.NeedsRedraw = true;
                 Camera.main.moved = false;
                 Camera.main.SetModelviewMatrix();
-
             }
             //if (!canvas.IsHovered)
             //return;
-            if (evnt[OpenTK.Input.Key.Q])
-                Camera.main.Move(0f, 1f, 0f, 0.01f);
-            if (evnt[OpenTK.Input.Key.E])
-                Camera.main.Move(0f, -1f, 0f, 0.01f);
-            if (evnt[OpenTK.Input.Key.A])
-                Camera.main.Move(-1f, 0f, 0f, 0.01f);
-            if (evnt[OpenTK.Input.Key.D])
-                Camera.main.Move(1f, 0f, 0f, 0.01f);
-            if (evnt[OpenTK.Input.Key.W])
-                Camera.main.Move(0f, 0f, -1f, 0.01f);
-            if (evnt[OpenTK.Input.Key.S])
-                Camera.main.Move(0f, 0f, 1f, 0.01f);
+            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_q)
+                Camera.main.Move(0f, 1f, 0f);
+            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_e)
+                Camera.main.Move(0f, -1f, 0f);
+            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_a)
+                Camera.main.Move(-1f, 0f, 0f);
+            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_d)
+                Camera.main.Move(1f, 0f, 0f);
+            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_w)
+                Camera.main.Move(0f, 0f, -1f);
+            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_s)
+                Camera.main.Move(0f, 0f, 1f);
             OnSetupMatrices?.Invoke();
         }
 
-        int oldX;
-        int oldY;
-        public override void OnMouseMove(MouseMoveEventArgs evnt)
+        private int oldX;
+        private int oldY;
+
+        public override void OnMouseDown(MouseButtonEventArgs evnt)
         {
-            //Console.WriteLine ("locked? "+mouseLocked);
+            if (evnt.Button == MouseButton.Right)
+            {//canvas.IsHovered
+                mouseLocked = true;
+                Manipulators.selectedAxisId = 0;
+            }
+            else if (evnt.Button == MouseButton.Left)
+            {
+                Console.WriteLine(evnt.Position);
+                mouseLocked = false;
+                locPos = panel.CanvasPosToLocal(evnt.Position);
+                locPos = new System.Drawing.Point(locPos.Value.X, locPos.Value.Y - 29);
+                //MainEditorView.canvas.NeedsRedraw = true;
+            }
+            //	Console.WriteLine ("down");
+        }
+
+        public override void OnMouseUp(MouseButtonEventArgs args)
+        {
+            if (AssetsView.isDragging)
+            {
+                var locPos = panel.CanvasPosToLocal(args.Position);
+                Camera.main.SetModelviewMatrix();
+                var orig = Camera.main.entityObject.Position;
+                var dir = (Camera.main.ScreenToWorld(locPos.X, locPos.Y, panel.Width, panel.Height) - orig).Normalized();
+                //makeContextCurrent ();
+                foreach (var asset in AssetsView.tree[AssetsView.whereDragStarted].SelectedChildren)
+                {
+                    Console.WriteLine(asset.Content.GetType());
+                    (string name, string extension) = (ValueTuple<string, string>)asset.Content;
+                    Pipeline.GetPipeline(extension).Import(name).PlaceIntoScene(null, orig + dir * Camera.main.ZFar * 0.1f);
+                }
+                AssetsView.isDragging = false;
+                AssetsView.whereDragStarted = 0;
+            }
+            Manipulators.Reset();
+        }
+
+        public override void OnGlobalMouseMove(MouseMoveEventArgs evnt)
+        {
+            //Console.WriteLine("global mouse move " + mouseLocked);
             if (mouseLocked)
             {
                 if (Manipulators.selectedAxisId == 0)
@@ -290,7 +338,9 @@ namespace Sharp.Editor.Views
                     if (evnt.XDelta != 0 || evnt.YDelta != 0)
                     {
                         var orig = Camera.main.entityObject.Position;
-                        var localMouse = panel.CanvasPosToLocal(evnt.Position);
+                        var winPos = Window.windows[attachedToWindow].Position;
+                        var canvasPos = new System.Drawing.Point(evnt.Position.X - winPos.x, evnt.Position.Y - winPos.y);
+                        var localMouse = panel.CanvasPosToLocal(canvasPos);
                         localMouse = new System.Drawing.Point(localMouse.X, localMouse.Y - 29);
                         var start = Camera.main.ScreenToWorld(localMouse.X, localMouse.Y, panel.Width, panel.Height, 1);
                         var ray = new Ray(orig, (start - orig).Normalized());
@@ -314,53 +364,20 @@ namespace Sharp.Editor.Views
                         }
                     }
                 }
-                MainWindow.focusedView = this;
-                MainEditorView.canvas.NeedsRedraw = true;
             }
             oldX = evnt.X;
             oldY = evnt.Y;
         }
 
-        public override void OnMouseDown(MouseButtonEventArgs evnt)
+        public override void OnGlobalMouseUp(MouseButtonEventArgs evnt)
         {
-            if (evnt.Button == MouseButton.Right)
-            {//canvas.IsHovered
-                mouseLocked = true;
-                Manipulators.selectedAxisId = 0;
-            }
-            else if (evnt.Button == MouseButton.Left)
-            {
-                mouseLocked = false;
-                locPos = panel.CanvasPosToLocal(evnt.Position);
-                locPos = new System.Drawing.Point(locPos.Value.X, locPos.Value.Y - 29);
-                MainEditorView.canvas.NeedsRedraw = true;
-            }
-            //	Console.WriteLine ("down");
-        }
-        public override void OnMouseUp(MouseButtonEventArgs args)
-        {
-            if (AssetsView.isDragging)
-            {
-                var locPos = panel.CanvasPosToLocal(args.Position);
-                Camera.main.SetModelviewMatrix();
-                var orig = Camera.main.entityObject.Position;
-                var dir = (Camera.main.ScreenToWorld(locPos.X, locPos.Y, panel.Width, panel.Height) - orig).Normalized();
-                //makeContextCurrent ();
-                foreach (var asset in AssetsView.tree.SelectedChildren)
-                {
-
-                    (asset.Content as IAsset).PlaceIntoScene(null, orig + dir * Camera.main.ZFar * 0.1f);
-                }
-                AssetsView.isDragging = false;
-            }
-            Manipulators.Reset();
+            Console.WriteLine("global mouse happened");
             mouseLocked = false;
-            MainWindow.focusedView = null;
         }
     }
-    class OrderByDistanceToCamera : IComparer<Vector3>
-    {
 
+    internal class OrderByDistanceToCamera : IComparer<Vector3>
+    {
         public int Compare(Vector3 x, Vector3 y)
         {
             var xDistance = (x - Camera.main.entityObject.Position).Length;
@@ -371,4 +388,3 @@ namespace Sharp.Editor.Views
         }
     }
 }
-

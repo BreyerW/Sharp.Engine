@@ -38,7 +38,7 @@ namespace Gwen.Control
                 Invalidate();
             }
         }
-        
+
         /// <summary>
         /// Text color.
         /// </summary>
@@ -53,7 +53,7 @@ namespace Gwen.Control
         /// Text override - used to display different string.
         /// </summary>
         public string TextOverride { get { return m_Text.TextOverride; } set { m_Text.TextOverride = value; } }
-        
+
         /// <summary>
         /// Width of the text (in pixels).
         /// </summary>
@@ -71,11 +71,28 @@ namespace Gwen.Control
         /// Text length (in characters).
         /// </summary>
         public int TextLength { get { return m_Text.Length; } }
+
         public int TextRight { get { return m_Text.Right; } }
-        public virtual void MakeColorNormal() { TextColor = Skin.Colors.Label.Default; }
-        public virtual void MakeColorBright() { TextColor = Skin.Colors.Label.Bright; }
-        public virtual void MakeColorDark() { TextColor = Skin.Colors.Label.Dark; }
-        public virtual void MakeColorHighlight() { TextColor = Skin.Colors.Label.Highlight; }
+
+        public virtual void MakeColorNormal()
+        {
+            TextColor = Skin.Colors.Label.Default;
+        }
+
+        public virtual void MakeColorBright()
+        {
+            TextColor = Skin.Colors.Label.Bright;
+        }
+
+        public virtual void MakeColorDark()
+        {
+            TextColor = Skin.Colors.Label.Dark;
+        }
+
+        public virtual void MakeColorHighlight()
+        {
+            TextColor = Skin.Colors.Label.Highlight;
+        }
 
         /// <summary>
         /// Determines if the control should autosize to its text.
@@ -87,50 +104,61 @@ namespace Gwen.Control
         /// </summary>
         public Padding TextPadding { get { return m_TextPadding; } set { m_TextPadding = value; Invalidate(); InvalidateParent(); } }
 
-		public override event Base.GwenEventHandler<ClickedEventArgs> Clicked {
-			add {
-				base.Clicked += value;
-				MouseInputEnabled = ClickEventAssigned;
-			}
-			remove {
-				base.Clicked -= value;
-				MouseInputEnabled = ClickEventAssigned;
-			}
-		}
+        public override event Base.GwenEventHandler<ClickedEventArgs> Clicked
+        {
+            add
+            {
+                base.Clicked += value;
+                MouseInputEnabled = ClickEventAssigned;
+            }
+            remove
+            {
+                base.Clicked -= value;
+                MouseInputEnabled = ClickEventAssigned;
+            }
+        }
 
-		public override event Base.GwenEventHandler<ClickedEventArgs> DoubleClicked {
-			add {
-				base.DoubleClicked += value;
-				MouseInputEnabled = ClickEventAssigned;
-			}
-			remove {
-				base.DoubleClicked -= value;
-				MouseInputEnabled = ClickEventAssigned;
-			}
-		}
+        public override event Base.GwenEventHandler<ClickedEventArgs> DoubleClicked
+        {
+            add
+            {
+                base.DoubleClicked += value;
+                MouseInputEnabled = ClickEventAssigned;
+            }
+            remove
+            {
+                base.DoubleClicked -= value;
+                MouseInputEnabled = ClickEventAssigned;
+            }
+        }
 
-		public override event Base.GwenEventHandler<ClickedEventArgs> RightClicked {
-			add {
-				base.RightClicked += value;
-				MouseInputEnabled = ClickEventAssigned;
-			}
-			remove {
-				base.RightClicked -= value;
-				MouseInputEnabled = ClickEventAssigned;
-			}
-		}
+        public override event Base.GwenEventHandler<ClickedEventArgs> RightClicked
+        {
+            add
+            {
+                base.RightClicked += value;
+                MouseInputEnabled = ClickEventAssigned;
+            }
+            remove
+            {
+                base.RightClicked -= value;
+                MouseInputEnabled = ClickEventAssigned;
+            }
+        }
 
-		public override event Base.GwenEventHandler<ClickedEventArgs> DoubleRightClicked {
-			add {
-				base.DoubleRightClicked += value;
-				MouseInputEnabled = ClickEventAssigned;
-			}
-			remove {
-				base.DoubleRightClicked -= value;
-				MouseInputEnabled = ClickEventAssigned;
-			}
-		}
-
+        public override event Base.GwenEventHandler<ClickedEventArgs> DoubleRightClicked
+        {
+            add
+            {
+                base.DoubleRightClicked += value;
+                MouseInputEnabled = ClickEventAssigned;
+            }
+            remove
+            {
+                base.DoubleRightClicked -= value;
+                MouseInputEnabled = ClickEventAssigned;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Label"/> class.
@@ -141,7 +169,7 @@ namespace Gwen.Control
             m_Text = new Text(this);
             //m_Text.Font = Skin.DefaultFont;
 
-			MouseInputEnabled = false;
+            MouseInputEnabled = false;
             SetSize(100, 10);
             Alignment = Pos.Left | Pos.Top;
 
@@ -155,8 +183,8 @@ namespace Gwen.Control
         /// <param name="y"></param>
         /// <returns></returns>
         protected virtual Point GetClosestCharacter(int x, int y)
-        { 
-            return new Point(m_Text.GetClosestCharacter(m_Text.CanvasPosToLocal(new Point(x, y))), 0); 
+        {
+            return new Point(m_Text.GetClosestCharacter(m_Text.CanvasPosToLocal(new Point(x, y))), 0);
         }
 
         /// <summary>
@@ -172,7 +200,7 @@ namespace Gwen.Control
         /// <summary>
         /// Handler for text changed event.
         /// </summary>
-        protected virtual void OnTextChanged() {}
+        protected virtual void OnTextChanged() { }
 
         /// <summary>
         /// Lays out the control's interior according to alignment, padding, dock etc.
@@ -190,14 +218,14 @@ namespace Gwen.Control
             int x = m_TextPadding.Left + Padding.Left;
             int y = m_TextPadding.Top + Padding.Top;
 
-            if (0 != (align & Pos.Right)) 
+            if (0 != (align & Pos.Right))
                 x = Width - m_Text.Width - m_TextPadding.Right - Padding.Right;
             if (0 != (align & Pos.CenterH))
                 x = (int)((m_TextPadding.Left + Padding.Left) + ((Width - m_Text.Width - m_TextPadding.Left - Padding.Left - m_TextPadding.Right - Padding.Right) * 0.5f));
 
             if (0 != (align & Pos.CenterV))
                 y = (int)((m_TextPadding.Top + Padding.Top) + ((Height - m_Text.Height) * 0.5f) - m_TextPadding.Bottom - Padding.Bottom);
-            if (0 != (align & Pos.Bottom)) 
+            if (0 != (align & Pos.Bottom))
                 y = Height - m_Text.Height - m_TextPadding.Bottom - Padding.Bottom;
 
             m_Text.SetPosition(x, y);
@@ -228,7 +256,7 @@ namespace Gwen.Control
             m_Text.SetPosition(m_TextPadding.Left + Padding.Left, m_TextPadding.Top + Padding.Top);
             m_Text.SizeToContents();
 
-            SetSize(m_Text.Width + Padding.Left + Padding.Right + m_TextPadding.Left + m_TextPadding.Right, 
+            SetSize(m_Text.Width + Padding.Left + Padding.Right + m_TextPadding.Left + m_TextPadding.Right,
                 m_Text.Height + Padding.Top + Padding.Bottom + m_TextPadding.Top + m_TextPadding.Bottom);
             InvalidateParent();
         }
@@ -252,21 +280,24 @@ namespace Gwen.Control
         {
         }
 
-		/// <summary>
-		/// Updates control colors.
-		/// </summary>
-		public override void UpdateColors() {
-			if (IsDisabled) {
-				TextColor = Skin.Colors.Button.Disabled;
-				return;
-			}
+        /// <summary>
+        /// Updates control colors.
+        /// </summary>
+        public override void UpdateColors()
+        {
+            if (IsDisabled)
+            {
+                TextColor = Skin.Colors.Button.Disabled;
+                return;
+            }
 
-			if (IsHovered && ClickEventAssigned) {
-				TextColor = Skin.Colors.Button.Hover;
-				return;
-			}
+            if (IsHovered && ClickEventAssigned)
+            {
+                TextColor = Skin.Colors.Button.Hover;
+                return;
+            }
 
-			TextColor = Skin.Colors.Button.Normal;
-		}
+            TextColor = Skin.Colors.Button.Normal;
+        }
     }
 }

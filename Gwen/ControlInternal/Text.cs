@@ -176,8 +176,8 @@ namespace Gwen.ControlInternal
                 return new Point(0, 0);
             }
 
-            //string sub = (TextOverride ?? String).Substring(0, index);
-            Point p = Skin.Renderer.MeasureText(Font, String);
+            string sub = (TextOverride ?? String).Substring(0, index);
+            Point p = Skin.Renderer.MeasureText(Font, sub);
 
             //if(p.Y >= Font.Size)
             //	p = new Point(p.X, p.Y - Font.Size);

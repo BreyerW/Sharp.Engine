@@ -20,3 +20,6 @@ B:\Sharp.Engine3\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.Properties.Resourc
 B:\Sharp.Engine3\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.OpenTK.csproj.GenerateResource.Cache
 B:\Sharp.Engine3\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.OpenTK.dll
 B:\Sharp.Engine3\Gwen.Renderer.OpenTK\obj\Debug\Gwen.Renderer.OpenTK.pdb
+B:\Sharp.Engine3\Gwen.Renderer.OpenTK\bin\Debug\SDL2-CS.dll
+B:\Sharp.Engine3\Gwen.Renderer.OpenTK\bin\Debug\SDL2-CS.dll.config
+B:\Sharp.Engine3\Gwen.Renderer.OpenTK\bin\Debug\SDL2-CS.pdb

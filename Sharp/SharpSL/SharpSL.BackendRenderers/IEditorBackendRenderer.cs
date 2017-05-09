@@ -29,7 +29,7 @@ namespace SharpSL
         void DrawLine(float v1x, float v1y, float v1z, float v2x, float v2y, float v2z, Color unColor);
         void DrawTranslateGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor);
         void DrawRotateGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor);
-        void DrawScaleGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor);
+        void DrawScaleGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor, Vector3 offset);
         void LoadMatrix(ref Matrix4 mat);
         void UnloadMatrix();
     }

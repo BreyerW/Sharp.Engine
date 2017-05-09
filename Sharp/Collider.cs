@@ -2,9 +2,7 @@
 
 namespace Sharp
 {
-	public class Collider :Component
-	{
-
-	}
+    public class Collider : Component
+    {
+    }
 }
-

@@ -214,7 +214,6 @@ namespace Gwen.Control
             m_LastInputTime = Platform.Neutral.GetTimeInSeconds();
 
             MakeCaretVisible();
-
             Point pA = GetCharacterPosition(m_CursorPos);
             Point pB = GetCharacterPosition(m_CursorEnd);
 
@@ -503,7 +502,7 @@ namespace Gwen.Control
 
             DeleteText(start, end - start);
 
-            // Move the cursor to the start of the selection, 
+            // Move the cursor to the start of the selection,
             // since the end is probably outside of the string now.
             m_CursorPos = start;
             m_CursorEnd = start;
@@ -573,7 +572,6 @@ namespace Gwen.Control
                 if (realCaretPos > Width * 0.1f && realCaretPos < Width * 0.9f)
                     return;
             }
-
             // The ideal position is for the caret to be right in the middle
             int idealx = (int)(-caretPos + Width * 0.5f);
 

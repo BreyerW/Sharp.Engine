@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Sharp
 {
-    public static class Selection
+    public static class Selection//enimachine engine
     {
         private static Stack<object> assets = new Stack<object>();
         private static Serializer serializer = new Serializer();
@@ -38,7 +38,6 @@ namespace Sharp
         public static EventHandler OnSelectionChange;
         public static EventHandler OnSelectionDirty;
         public static bool isDragging = false;
-        public static bool IsDirty = false;
 
         static Selection()
         {
@@ -60,9 +59,10 @@ namespace Sharp
 
             var currentHash = sb.ToString();
             if (currentHash != lastHash)
-                IsDirty = true;
+                Gwen.Control.Base.isDirty = true;
             lastHash = currentHash;
         }
+
         public static async Task Repeat(Action<CancellationToken> doWork, int delayInMilis, int periodInMilis, CancellationToken cancellationToken, bool singleThreaded = false)
         {
             await Task.Delay(delayInMilis, cancellationToken).ConfigureAwait(singleThreaded);
@@ -74,4 +74,3 @@ namespace Sharp
         }
     }
 }
-

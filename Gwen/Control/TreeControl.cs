@@ -44,7 +44,7 @@ namespace Gwen.Control
 
             m_ScrollControl.SetInnerSize(1000, 1000); // todo: why such arbitrary numbers?
 
-			Dock = Pos.None;
+            Dock = Pos.None;
         }
 
         /// <summary>
@@ -94,22 +94,41 @@ namespace Gwen.Control
             if (!m_MultiSelect /*|| InputHandler.InputHandler.IsKeyDown(Key.Control)*/)
                 UnselectAll();
         }
-		public TreeNode FindNodeByContent(object content, bool recursive = false){
-			var b =Children.OfType<TreeNode> ().First(node => node.Content == content);
-			if (b != null)
-				return b;
-			
-			if (recursive)
-			{
-				foreach (TreeNode child in Children)
-				{
-					b = child.TreeControl.FindNodeByContent(content, true);
-					if (b != null)
-						return b;
-				}
-			}
-			return null;
-		
-		}
+        public TreeNode FindNodeByContent(object content, bool recursive = false)
+        {
+            var cacheTreeNodes = Children.OfType<TreeNode>();
+            var b = cacheTreeNodes.FirstOrDefault(node => node.Content == content);
+            if (b != null)
+                return b;
+
+            if (recursive)
+            {
+                foreach (TreeNode child in cacheTreeNodes)
+                {
+                    b = child.TreeControl.FindNodeByContent(content, true);
+                    if (b != null)
+                        return b;
+                }
+            }
+            return null;
+        }
+        public TreeNode FindNodeByText(string text, bool recursive = false)
+        {
+            var cacheTreeNodes = Children.OfType<TreeNode>();
+            var b = cacheTreeNodes.FirstOrDefault(node => node.Text == text);
+            if (b != null)
+                return b;
+
+            if (recursive)
+            {
+                foreach (TreeNode child in cacheTreeNodes)
+                {
+                    b = child.TreeControl.FindNodeByContent(text, true);
+                    if (b != null)
+                        return b;
+                }
+            }
+            return null;
+        }
     }
 }

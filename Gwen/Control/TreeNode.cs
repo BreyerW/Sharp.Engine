@@ -82,7 +82,9 @@ namespace Gwen.Control
         /// Node's label.
         /// </summary>
         public string Text { get { return m_Title.Text; } set { m_Title.Text = value; } }
+
         public object Content;
+
         /// <summary>
         /// Invoked when the node label has been pressed.
         /// </summary>
@@ -217,9 +219,10 @@ namespace Gwen.Control
         {
             TreeNode node = new TreeNode(this);
             node.Text = label;
-
+            node.Name = label;
             return node;
         }
+
         public TreeNode AddNode(object content)
         {
             TreeNode node = new TreeNode(this);
@@ -227,6 +230,7 @@ namespace Gwen.Control
             node.Content = content;
             return node;
         }
+
         /// <summary>
         /// Opens the node.
         /// </summary>
@@ -352,6 +356,7 @@ namespace Gwen.Control
 
             base.OnChildAdded(child);
         }
+
         public override event GwenEventHandler<ClickedEventArgs> Clicked
         {
             add

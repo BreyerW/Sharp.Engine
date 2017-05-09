@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Sharp.Editor.Views;
+using Sharp;
 
 namespace SharpAsset.Pipeline
 {
-    [SupportedFileFormats(".shader", ".glsl")]
-    public class ShaderPipeline : Pipeline
+    [SupportedFiles(".shader", ".glsl")]
+    public class ShaderPipeline : Pipeline<Shader>
     {
-        public static readonly ShaderPipeline singleton = new ShaderPipeline();
-
         public override IAsset Import(string pathToFile)
         {
             //var format = Path.GetExtension (pathToFile);
@@ -17,8 +15,8 @@ namespace SharpAsset.Pipeline
             //throw new NotSupportedException (format+" format is not supported");
             var name = Path.GetFileNameWithoutExtension(pathToFile);
 
-            if (Shader.shaders.ContainsKey(name))
-                return Shader.shaders[name];
+            if (nameToKey.Contains(name))
+                return this[nameToKey.IndexOf(name)];
 
             List<string> shaderStringBuffer = new List<string>();
             using (StreamReader shaderFile = new StreamReader(pathToFile))
@@ -28,11 +26,15 @@ namespace SharpAsset.Pipeline
                     shaderStringBuffer.Add(shaderFile.ReadLine());
                 }
                 var shader = SplitShaders(shaderStringBuffer, ref pathToFile);
-                Shader.shaders.Add(shader.Name, shader);
+                nameToKey.Add(name);
+
+                this[nameToKey.IndexOf(name)] = shader;
                 return shader;
             }
         }
+
         #region SplitShaders
+
         /// <summary>
         /// Splits the shaders.
         /// </summary>
@@ -75,8 +77,11 @@ namespace SharpAsset.Pipeline
             shader.FragmentSource = fragmentShader;
             return shader;
         }
-        #endregion
+
+        #endregion SplitShaders
+
         #region ProcessIncludes
+
         /// <summary>
         /// Processes the includes.
         /// </summary>
@@ -104,11 +109,25 @@ namespace SharpAsset.Pipeline
             }
             shaderOut = finalShader;
         }
-        #endregion
+
+        #endregion ProcessIncludes
+
         public override void Export(string pathToExport, string format)
         {
             throw new NotImplementedException();
         }
+
+        public override ref Shader GetAsset(int index)
+        {
+            ref var shader = ref this[index];
+            if (!shader.allocated)
+            {
+                Console.WriteLine("shader allocation");
+                MainWindow.backendRenderer.GenerateBuffers(ref shader);
+                MainWindow.backendRenderer.Allocate(ref shader);
+                shader.allocated = true;
+            }
+            return ref this[index]; //ref
+        }
     }
 }
-

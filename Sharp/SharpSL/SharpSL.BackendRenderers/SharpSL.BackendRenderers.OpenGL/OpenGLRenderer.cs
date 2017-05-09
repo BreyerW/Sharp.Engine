@@ -39,6 +39,7 @@ namespace SharpSL.BackendRenderers.OpenGL
         {
             GL.PopAttrib();
         }
+
         public void SetStandardState()
         {
             GL.CullFace(CullFaceMode.Back);
@@ -87,11 +88,10 @@ namespace SharpSL.BackendRenderers.OpenGL
                 }
             }
             foreach (var param in mat.localParams)
-                param.Value.ConsumeData(param.Key);
+                param.Value.ConsumeData(mat.Shader.uniformArray[param.Key]);
 
             foreach (var param in Material.globalParams)
                 param.Value.ConsumeData(mat.Shader.uniformArray[param.Key]);
-
         }
 
         public void Use(ref Shader shader)
@@ -130,6 +130,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 			case Work.Allocate:
 				Allocate (ref shader);
 				break;
+
 			case Work.Delete:
 				Delete (ref shader);
 				break;
@@ -142,56 +143,31 @@ namespace SharpSL.BackendRenderers.OpenGL
 			case Work.Allocate:
 				Allocate(ref mesh);
 				break;
+
 			case Work.Use:
 				Use (ref mesh);
 				break;
 			}
 		}*/
+
         public void Allocate<IndexType>(ref Mesh<IndexType> mesh) where IndexType : struct, IConvertible
         {
-            //if (IsLoaded) return;
-            //VBO
-            //int tmpVBO;
-            //GL.GenBuffers(1, out tmpVBO);
             //Console.WriteLine ("error check"+GL.DebugMessageCallback);
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            var stride = Marshal.SizeOf(mesh.Vertices[0]);
-            //var ptr = CustomConverter.ToPtr(mesh.Vertices,stride);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mesh.Vertices.Length * stride), IntPtr.Zero, (BufferUsageHint)mesh.UsageHint);
-            var ptr = GL.MapBufferRange(BufferTarget.ArrayBuffer, IntPtr.Zero, (IntPtr)(mesh.Vertices.Length * stride), BufferAccessMask.MapReadBit | BufferAccessMask.MapWriteBit | BufferAccessMask.MapFlushExplicitBit);
+            //var ptr = CustomConverter.ToPtr(mesh.Vertices, stride);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mesh.length * mesh.stride), (!mesh.alwaysLocal && mesh.isMeshShared) ? mesh.PtrToSharedMesh.DangerousGetHandle() : mesh.PtrToLocalMesh.DangerousGetHandle(), (BufferUsageHint)mesh.UsageHint);
+            /*var ptr = GL.MapBufferRange(BufferTarget.ArrayBuffer, IntPtr.Zero, (IntPtr)(mesh.Vertices.Length * stride), BufferAccessMask.MapReadBit | BufferAccessMask.MapWriteBit | BufferAccessMask.MapFlushExplicitBit);
             for (int i = 0; i < mesh.Vertices.Length; i++)
             {
                 Marshal.StructureToPtr(mesh.Vertices[i], IntPtr.Add(ptr, i * stride), false);
             }
-            GL.UnmapBuffer(BufferTarget.ArrayBuffer);
-            //Marshal.FreeHGlobal(ptr);
+            GL.UnmapBuffer(BufferTarget.ArrayBuffer);*/
             watch.Stop();
             Console.WriteLine("cast: " + watch.ElapsedTicks);
-            //int tmpEBO;
-            //GL.GenBuffers(1, out tmpEBO);
 
             GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mesh.Indices.Length * Marshal.SizeOf(mesh.Indices[0])), ref mesh.Indices[0], (BufferUsageHint)mesh.UsageHint);
-
-            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            /*// Generate Array Buffer Id
-			mesh.TBO=GL.GenBuffer();
-			// Bind current context to Array Buffer ID
-			GL.BindBuffer(BufferTarget.ArrayBuffer, mesh.TBO);
-			// Send data to buffer
-			GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mesh.Vertices.Count * 8), shape.Texcoords, BufferUsageHint.StaticDraw);
-*/
-            // Validate that the buffer is the correct size
-            //GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out bufferSize);
-            //if (shape.Texcoords.Length * 8 != bufferSize)
-            //	throw new ApplicationException("TexCoord array not uploaded correctly");
-
-            // Clear the buffer Binding
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-
-
-            //IsLoaded = true;
         }
+
         public void Allocate(ref Shader shader)
         {
             if (shader.uniformArray.Count > 0)
@@ -217,7 +193,6 @@ namespace SharpSL.BackendRenderers.OpenGL
             if (status_code != 1)
                 throw new ApplicationException(info);
 
-
             GL.AttachShader(shader.Program, shader.FragmentID); //support multiple vert/frag shaders via foreach vert/frag source
             GL.AttachShader(shader.Program, shader.VertexID);
             GL.BindAttribLocation(shader.Program, 0, "vertex_position");
@@ -226,7 +201,6 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.BindAttribLocation(shader.Program, 3, "vertex_normal");
 
             GL.LinkProgram(shader.Program);
-
 
             int numOfUniforms = 0;
             GL.GetProgram(shader.Program, GetProgramParameterName.ActiveUniforms, out numOfUniforms);
@@ -238,7 +212,6 @@ namespace SharpSL.BackendRenderers.OpenGL
             Console.WriteLine("start uni query");
             for (int i = 0; i < numOfUniforms; i++)
             {
-
                 GL.GetActiveUniform(shader.Program, i, stringBuilder.Capacity, out num, out size, out uniType, stringBuilder);
                 Console.WriteLine(stringBuilder.ToString() + " " + uniType + " : " + size);
                 if (!shader.uniformArray.ContainsKey(stringBuilder.ToString()))
@@ -249,10 +222,12 @@ namespace SharpSL.BackendRenderers.OpenGL
             //Console.WriteLine (attribType);
             //GL.UseProgram(0);
         }
+
         public void Use<IndexType>(ref Mesh<IndexType> mesh) where IndexType : struct, IConvertible
         {
             GL.DrawElements(PrimitiveType.Triangles, mesh.Indices.Length, (DrawElementsType)Mesh<IndexType>.indiceType, IntPtr.Zero);
         }
+
         public void Delete(ref Shader shader)
         {
             if (shader.Program != 0)
@@ -262,15 +237,29 @@ namespace SharpSL.BackendRenderers.OpenGL
             if (shader.VertexID != 0)
                 GL.DeleteShader(shader.VertexID);
         }
+
         public void Scissor(int x, int y, int width, int height)
         {
             GL.Scissor(x, y, width, height);
             GL.Viewport(x, y, width, height);
         }
 
+        public void ClearColor()
+        {
+            ClearColor(0f, 0f, 0f, 0f);
+        }
+
+        public void ClearColor(float r, float g, float b, float a)
+        {
+            GL.Enable(EnableCap.Blend);
+            GL.Enable(EnableCap.AlphaTest);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+            GL.ClearColor(r, g, b, a);
+        }
+
         public void ClearBuffer()
         {
-            GL.ClearColor(new OpenTK.Graphics.Color4(0.25f, 0.25f, 0.25f, 0f));
             GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         }
 
@@ -298,6 +287,7 @@ namespace SharpSL.BackendRenderers.OpenGL
         {
             GL.UseProgram(0);
         }
+
         public void BindVertexAttrib(int stride, RegisterAsAttribute attrib)
         {
             GL.EnableVertexAttribArray(attrib.shaderLocation);
@@ -317,7 +307,6 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Uniform1(location, (int)TextureUnit.Texture0 + slot);
         }
 
-        #endregion
+        #endregion IBackendRenderer implementation
     }
 }
-

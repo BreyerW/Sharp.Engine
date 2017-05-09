@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using OpenTK;
 using Sharp;
+using SharpAsset.Pipeline;
 
 namespace SharpAsset
 {
@@ -32,9 +33,10 @@ namespace SharpAsset
                 bonesName.Add(boneName, bones.Count - 1);
             }
         }
+
         /*private int rootBone;
 		public Bone RootBone{
-			get{ 
+			get{
 				return bones [rootBone];
 			}
 			set{
@@ -49,11 +51,13 @@ namespace SharpAsset
         public Dictionary<string, int> bonesName;
 
         #region IAsset implementation
+
         public string FullPath
         {
             get;
             set;
         }
+
         public string Extension
         {
             get
@@ -65,6 +69,7 @@ namespace SharpAsset
                 //throw new NotImplementedException ();
             }
         }
+
         public string Name
         {
             get
@@ -82,27 +87,33 @@ namespace SharpAsset
             var eObject = new Entity();
             eObject.Position = worldPos;
             var renderer = eObject.AddComponent(new SkeletonRenderer(ref this));
-            var shader = Shader.getAsset("SkeletonShader");
+            var shader = Pipeline.Pipeline.GetPipeline<ShaderPipeline>().GetAsset("SkeletonShader");
             eObject.Instatiate();
         }
-        #endregion
 
+        #endregion IAsset implementation
     }
+
     public class Bone
     {
         public string Name { get; set; }
         public Matrix4 Offset { get; set; }
+
         // local matrix transform
         public Matrix4 LocalTransform { get; set; }
+
         // To-root transform
         public Matrix4 GlobalTransform { get; set; }
+
         // copy of the original local transform
         public Matrix4 OriginalLocalTransform { get; set; }
+
         // parent bone reference
         private int idParent;
+
         public Bone Parent { get; set; }
+
         // child bone references
         public List<Bone> Children { get; internal set; }
     }
 }
-

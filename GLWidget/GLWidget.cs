@@ -13,8 +13,9 @@ Usage:
 	When GraphicsContext.ShareContexts == False
 	To setup OpenGL state hook to the following events:
 		GLWidget.Initialized
-		GLWidget.ShuttingDown 
+		GLWidget.ShuttingDown
 */
+
 ////////////////////////////////////////////////////////////////////////////////
 using OpenTK;
 using OpenTK.Graphics;
@@ -105,7 +106,6 @@ using Cairo;
 		}
 		//public override void Dispose()
 		//{
-
 		//	base.Dispose();
 		//}
 
@@ -249,7 +249,6 @@ using Cairo;
 		}
 		//protected override bool on(Gdk.EventExpose eventExpose)
 		//{
-
 		//}
 
 		// Called on Resize
@@ -431,7 +430,9 @@ using Cairo;
 		static extern IntPtr glXChooseVisual(IntPtr display, int screen, int[] attr);
 	}
 }*/
+
 #region License
+
 //
 // The Open Toolkit Library License
 //
@@ -456,28 +457,28 @@ using Cairo;
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 //
-#endregion
+
+#endregion License
 
 namespace Gtk
 {
     [ToolboxItem(true)]
     public class GLWidget : DrawingArea
     {
-
         #region Static attrs.
 
-        static int _GraphicsContextCount;
-        static bool _SharedContextInitialized;
+        private static int _GraphicsContextCount;
+        private static bool _SharedContextInitialized;
 
-        #endregion
+        #endregion Static attrs.
 
         #region Attributes
 
-        IGraphicsContext _GraphicsContext;
-        IWindowInfo _WindowInfo;
-        bool _Initialized;
+        private IGraphicsContext _GraphicsContext;
+        private IWindowInfo _WindowInfo;
+        private bool _Initialized;
 
-        #endregion
+        #endregion Attributes
 
         #region Properties
 
@@ -515,7 +516,7 @@ namespace Gtk
             set;
         }
 
-        #endregion
+        #endregion Properties
 
         #region Construction/Destruction
 
@@ -576,7 +577,7 @@ namespace Gtk
             }
         }
 
-        #endregion
+        #endregion Construction/Destruction
 
         #region New Events
 
@@ -625,7 +626,7 @@ namespace Gtk
                 ShuttingDown(this, EventArgs.Empty);
         }
 
-        #endregion
+        #endregion New Events
 
         // Called when a widget is realized. (window handles and such are valid)
         // protected override void OnRealized() { base.OnRealized(); }
@@ -730,7 +731,7 @@ namespace Gtk
         [SuppressUnmanagedCodeSecurity, DllImport("libgdk-3-0.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr gdk_win32_window_get_handle(IntPtr w);
 
-        #endregion
+        #endregion Windows Specific initalization
 
         #region OSX Specific Initialization
 
@@ -747,12 +748,11 @@ namespace Gtk
         [SuppressUnmanagedCodeSecurity, DllImport("libgdk-quartz-2.0.0.dylib")]
         private static extern IntPtr gdk_quartz_window_get_nsview(IntPtr handle);
 
-        #endregion
+        #endregion OSX Specific Initialization
 
         #region X Specific Initialization
 
         private const string UnixLibGdkName = "libgdk-3.so.0";
-
 
         private const string UnixLibX11Name = "libX11.so.6";
         private const string UnixLibGLName = "libGL.so.1";
@@ -954,8 +954,6 @@ namespace Gtk
         [SuppressUnmanagedCodeSecurity, DllImport(UnixLibGLName)]
         private static extern IntPtr glXChooseVisual(IntPtr display, int screen, int[] attr);
 
-        #endregion
-
+        #endregion X Specific Initialization
     }
-
 }

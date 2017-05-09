@@ -5,49 +5,74 @@ using System.Collections.Generic;
 
 namespace Sharp.Editor.Views
 {
-	public abstract class View //sceneview, editorview, assetview, inspectorview
-	{
-		public static HashSet<View> views=new HashSet<View>();
+    public abstract class View //sceneview, editorview, assetview, inspectorview
+    {
+        public static Dictionary<uint, HashSet<View>> views = new Dictionary<uint, HashSet<View>>();
 
-		public Base panel;
-		public Action makeContextCurrent;
+        public Base panel;
 
-		protected View ()
-		{
-			views.Add (this);
-		}
+        protected uint attachedToWindow;//detach view from window and just use attachedToWindow?
 
-		public virtual void Initialize (){
-			//canvas.ShouldDrawBackground = true;
-			//canvas.BackgroundColor = Color.FromArgb(255, 150, 170, 170);
-		}
-		public virtual void OnContextCreated(int width, int height){}
-		public virtual void Render (){
-			if (panel != null) {
-				var absPos =panel.LocalPosToCanvas (new System.Drawing.Point (panel.X, panel.Y));
-				SceneView.backendRenderer.Scissor (panel.Margin.Left+panel.Parent.X, panel.Margin.Bottom, panel.Width,panel.Height);
-				} 
-			else
-				SceneView.backendRenderer.Scissor (0, 0, MainEditorView.canvas.Width,MainEditorView.canvas.Height);
-		}
-		public virtual void OnResize (int width, int height){
+        protected View(uint attachToWindow)
+        {
+            views[attachToWindow].Add(this);
+            attachedToWindow = attachToWindow;
+            Sharp.InputHandler.OnMouseMove += OnGlobalMouseMove;
+            Sharp.InputHandler.OnMouseUp += OnGlobalMouseUp;
+            Sharp.InputHandler.OnMouseDown += OnGlobalMouseDown;
+        }
 
-			if (panel != null) {
-			//	var absPos =MainEditorView.canvas.CanvasPosToLocal (new System.Drawing.Point (panel.X, panel.Y));
-				//panel.SetSize (width, height);
-			} else {
-				MainEditorView.canvas.SetSize (width,height);
-			}
-			MainEditorView.renderer.Resize (width,height);
+        public virtual void Initialize()
+        {
+            //canvas.ShouldDrawBackground = true;
+            //canvas.BackgroundColor = Color.FromArgb(255, 150, 170, 170);
+        }
 
-		}
-		public virtual void OnMouseMove(MouseMoveEventArgs evnt){
-		}
-		public virtual void OnMouseUp(MouseButtonEventArgs evnt){
-		}
-		public virtual void OnMouseDown(MouseButtonEventArgs evnt){
-		}
-		public virtual void OnKeyPressEvent (ref KeyboardState evnt){
-		}
-	}
+        public virtual void OnContextCreated(int width, int height)
+        {
+        }
+
+        public virtual void Render()
+        {
+            if (panel != null)
+            {
+                var absPos = panel.LocalPosToCanvas(new System.Drawing.Point(panel.X, panel.Y));
+                MainWindow.backendRenderer.Scissor(panel.Margin.Left + panel.Parent.X, panel.Margin.Bottom, panel.Width, panel.Height);
+            }
+            else
+                MainWindow.backendRenderer.Scissor(0, 0, Window.windows[attachedToWindow].mainView.canvas.Width, Window.windows[attachedToWindow].mainView.canvas.Height);
+        }
+
+        public virtual void OnResize(int width, int height)
+        {
+        }
+
+        public virtual void OnMouseMove(MouseMoveEventArgs evnt)
+        {
+        }
+
+        public virtual void OnMouseUp(MouseButtonEventArgs evnt)
+        {
+        }
+
+        public virtual void OnMouseDown(MouseButtonEventArgs evnt)
+        {
+        }
+
+        public virtual void OnGlobalMouseMove(MouseMoveEventArgs evnt/*View startView, View overView*/)
+        {
+        }
+
+        public virtual void OnGlobalMouseUp(MouseButtonEventArgs evnt)
+        {
+        }
+
+        public virtual void OnGlobalMouseDown(MouseButtonEventArgs evnt)
+        {
+        }
+
+        public virtual void OnKeyPressEvent(SDL2.SDL.SDL_Keycode keyCode)
+        {
+        }
+    }
 }

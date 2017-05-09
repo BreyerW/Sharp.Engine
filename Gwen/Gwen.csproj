@@ -44,13 +44,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="OpenTK">
-      <HintPath>..\packages\OpenTK.1.1.1589.5942\lib\NET40\OpenTK.dll</HintPath>
+    <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+      <Private>True</Private>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Align.cs" />
@@ -87,15 +91,7 @@
     <Compile Include="Control\Layout\Positioner.cs" />
     <Compile Include="Control\MessageBox.cs" />
     <Compile Include="Control\ProgressBar.cs" />
-    <Compile Include="Control\Properties.cs" />
-    <Compile Include="Control\PropertyRow.cs" />
-    <Compile Include="ControlInternal\PropertyRowLabel.cs" />
-    <Compile Include="Control\PropertyTree.cs" />
     <Compile Include="ControlInternal\PropertyTreeNode.cs" />
-    <Compile Include="Control\Property\Base.cs" />
-    <Compile Include="Control\Property\Check.cs" />
-    <Compile Include="Control\Property\Color.cs" />
-    <Compile Include="Control\Property\Text.cs" />
     <Compile Include="Control\ResizableControl.cs" />
     <Compile Include="Control\RichLabel.cs" />
     <Compile Include="Control\StatusBar.cs" />
@@ -174,11 +170,13 @@
     <Compile Include="Skin\Base.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Control\MultiVerticalSplitter.cs" />
-    <Compile Include="Control\Property\Vector3.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Content Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="OpenTK.dll.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -191,7 +189,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
 </Project>

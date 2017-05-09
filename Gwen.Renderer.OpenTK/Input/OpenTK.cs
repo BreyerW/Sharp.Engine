@@ -2,32 +2,34 @@
 using Gwen.Control;
 using OpenTK.Input;
 using OpenTK;
+using SDL2;
 
 namespace Gwen.Input
 {
     public class OpenTK
     {
-
         #region Properties
 
-		public Canvas m_Canvas = null;
+        public Canvas m_Canvas = null;
 
         private int m_MouseX = 0;
         private int m_MouseY = 0;
 
-        bool m_AltGr = false;
+        private bool m_AltGr = false;
 
-        #endregion
+        #endregion Properties
 
         #region Constructors
+
         public OpenTK()
         {
             //window.KeyPress += KeyPress;
         }
 
-        #endregion
+        #endregion Constructors
 
-       #region Methods
+        #region Methods
+
         public void Initialize(Canvas c)
         {
             m_Canvas = c;
@@ -38,36 +40,37 @@ namespace Gwen.Input
         /// </summary>
         /// <param name="key">OpenTK key code.</param>
         /// <returns>GWEN key code.</returns>
-        private Key TranslateKeyCode(global::OpenTK.Input.Key key)
+        private Key TranslateKeyCode(SDL.SDL_Keycode key)
         {
             switch (key)
             {
-                case global::OpenTK.Input.Key.BackSpace: return Key.Backspace;
-                case global::OpenTK.Input.Key.Enter: return Key.Return;
-                case global::OpenTK.Input.Key.Escape: return Key.Escape;
-                case global::OpenTK.Input.Key.Tab: return Key.Tab;
-                case global::OpenTK.Input.Key.Space: return Key.Space;
-                case global::OpenTK.Input.Key.Up: return Key.Up;
-                case global::OpenTK.Input.Key.Down: return Key.Down;
-                case global::OpenTK.Input.Key.Left: return Key.Left;
-                case global::OpenTK.Input.Key.Right: return Key.Right;
-                case global::OpenTK.Input.Key.Home: return Key.Home;
-                case global::OpenTK.Input.Key.End: return Key.End;
-                case global::OpenTK.Input.Key.Delete: return Key.Delete;
-                case global::OpenTK.Input.Key.LControl:
+                case SDL.SDL_Keycode.SDLK_BACKSPACE: return Key.Backspace;
+                case SDL.SDL_Keycode.SDLK_RETURN: return Key.Return;
+                case SDL.SDL_Keycode.SDLK_ESCAPE: return Key.Escape;
+                case SDL.SDL_Keycode.SDLK_TAB: return Key.Tab;
+                case SDL.SDL_Keycode.SDLK_SPACE: return Key.Space;
+                case SDL.SDL_Keycode.SDLK_UP: return Key.Up;
+                case SDL.SDL_Keycode.SDLK_DOWN: return Key.Down;
+                case SDL.SDL_Keycode.SDLK_LEFT: return Key.Left;
+                case SDL.SDL_Keycode.SDLK_RIGHT: return Key.Right;
+                case SDL.SDL_Keycode.SDLK_HOME: return Key.Home;
+                case SDL.SDL_Keycode.SDLK_END: return Key.End;
+                case SDL.SDL_Keycode.SDLK_DELETE: return Key.Delete;
+                case SDL.SDL_Keycode.SDLK_LCTRL:
                     this.m_AltGr = true;
                     return Key.Control;
-                case global::OpenTK.Input.Key.LAlt: return Key.Alt;
-                case global::OpenTK.Input.Key.LShift: return Key.Shift;
-                case global::OpenTK.Input.Key.RControl: return Key.Control;
-                case global::OpenTK.Input.Key.RAlt: 
+
+                case SDL.SDL_Keycode.SDLK_LALT: return Key.Alt;
+                case SDL.SDL_Keycode.SDLK_LSHIFT: return Key.Shift;
+                case SDL.SDL_Keycode.SDLK_RCTRL: return Key.Control;
+                case SDL.SDL_Keycode.SDLK_RALT:
                     if (this.m_AltGr)
                     {
                         this.m_Canvas.Input_Key(Key.Control, false);
                     }
                     return Key.Alt;
-                case global::OpenTK.Input.Key.RShift: return Key.Shift;
-                
+
+                case SDL.SDL_Keycode.SDLK_RSHIFT: return Key.Shift;
             }
             return Key.Invalid;
         }
@@ -77,24 +80,18 @@ namespace Gwen.Input
         /// </summary>
         /// <param name="key">OpenTK key code.</param>
         /// <returns>Translated character.</returns>
-        private static char TranslateChar(global::OpenTK.Input.Key key)
-		{
-			if (key >= global::OpenTK.Input.Key.A && key <= global::OpenTK.Input.Key.Z)
-				return (char)('a' + ((int)key - (int)global::OpenTK.Input.Key.A));
-			else if (key >= global::OpenTK.Input.Key.Number0 && key <= global::OpenTK.Input.Key.Number9)
-				return (char)('0' + ((int)key - (int)global::OpenTK.Input.Key.Number0));
-			else if (key == global::OpenTK.Input.Key.BackSpace)
-				return (char)8;
-			else
-				switch (key) {
-					case global::OpenTK.Input.Key.Period: return '.';
-					case global::OpenTK.Input.Key.Comma: return ',';	
-			}
-			return char.MinValue;
+        private static char TranslateChar(SDL.SDL_Keycode key)
+        {
+            if (key == SDL.SDL_Keycode.SDLK_LEFT)
+                return (char)27;
+            else if (key == SDL.SDL_Keycode.SDLK_RIGHT)
+                return (char)26;
+            return (char)key;
+            // return char.MinValue;
         }
 
-		public bool ProcessMouseMessage(EventArgs args,bool pressed=false)
-		{
+        public bool ProcessMouseMessage(EventArgs args, bool pressed = false)
+        {
             if (null == m_Canvas) return false;
 
             if (args is MouseMoveEventArgs)
@@ -113,56 +110,54 @@ namespace Gwen.Input
             {
                 MouseButtonEventArgs ev = args as MouseButtonEventArgs;
 
-				/* We can not simply cast ev.Button to an int, as 1 is middle click, not right click. */
-				int ButtonID = -1; //Do not trigger event.
+                /* We can not simply cast ev.Button to an int, as 1 is middle click, not right click. */
+                int ButtonID = -1; //Do not trigger event.
 
-				if (ev.Button == MouseButton.Left)
-					ButtonID = 0;
-				else if (ev.Button == MouseButton.Right)
-					ButtonID = 1;
-				if (ButtonID != -1) //We only care about left and right click for now
-					return m_Canvas.Input_MouseButton(ButtonID,pressed);
+                if (ev.Button == MouseButton.Left)
+                    ButtonID = 0;
+                else if (ev.Button == MouseButton.Right)
+                    ButtonID = 1;
+                if (ButtonID != -1) //We only care about left and right click for now
+                    return m_Canvas.Input_MouseButton(ButtonID, pressed);
             }
 
             if (args is MouseWheelEventArgs)
             {
                 MouseWheelEventArgs ev = args as MouseWheelEventArgs;
-                return m_Canvas.Input_MouseWheel(ev.Delta*60);
+                return m_Canvas.Input_MouseWheel(ev.Delta * 60);
             }
 
             return false;
         }
 
-
-		public bool ProcessKeyDown(global::OpenTK.Input.Key args)
+        public bool ProcessKeyDown(SDL.SDL_Keycode args)
         {
-           // KeyboardKeyEventArgs ev = args as KeyboardKeyEventArgs;
+            // KeyboardKeyEventArgs ev = args as KeyboardKeyEventArgs;
             char ch = TranslateChar(args);
-			m_Canvas.Input_Character(ch);
-			Console.WriteLine (ch);
-			if (InputHandler.DoSpecialKeys(m_Canvas, ch))
+            m_Canvas.Input_Character(ch);
+            Console.WriteLine(ch);
+            if (InputHandler.DoSpecialKeys(m_Canvas, ch))
                 return false;
-			
-            Key iKey = TranslateKeyCode(args);
 
-			return m_Canvas.Input_Key(iKey, true);
+            Key iKey = TranslateKeyCode(args);
+            //Console.WriteLine(iKey);
+            return m_Canvas.Input_Key(iKey, true);
         }
 
-		public bool ProcessKeyUp(global::OpenTK.Input.Key args)
+        public bool ProcessKeyUp(SDL.SDL_Keycode args)
         {
+            //char ch = TranslateChar(args);
+            //m_Canvas.Input_Character(ch);
+            Key iKey = TranslateKeyCode(args);
 
-           // char ch = TranslateChar(args);
-			//m_Canvas.Input_Character(ch);
-			Key iKey = TranslateKeyCode(args);
-
-			return m_Canvas.Input_Key(iKey, false);
+            return m_Canvas.Input_Key(iKey, false);
         }
 
         public void KeyPress(KeyPressEventArgs e)
         {
-            m_Canvas.Input_Character(e.KeyChar);   
+            m_Canvas.Input_Character(e.KeyChar);
         }
 
-        #endregion
+        #endregion Methods
     }
 }

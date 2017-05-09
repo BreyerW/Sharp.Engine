@@ -13,8 +13,6 @@ namespace SharpAsset
     //so you could practice writing a shader on your own :P
     public struct Shader : IAsset
     {
-        internal static Dictionary<string, Shader> shaders = new Dictionary<string, Shader>();
-
         public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
         public string Extension { get { return Path.GetExtension(FullPath); } set { } }
         public string FullPath { get; set; }
@@ -30,19 +28,7 @@ namespace SharpAsset
         internal Dictionary<string, int> uniformArray;//=new Dictionary<UniformType, Dictionary<string, int>> ();
 
         public bool allocated;
-        public static Shader getAsset(string name)
-        {
-            var shader = shaders[name];
-            if (!shader.allocated)
-            {
-                Console.WriteLine("shader allocation");
-                SceneView.backendRenderer.GenerateBuffers(ref shader);
-                SceneView.backendRenderer.Allocate(ref shader);
-                shader.allocated = true;
-                shaders[name] = shader;
-            }
-            return shaders[name]; //ref
-        }
+
         public override string ToString()
         {
             return Name;
@@ -50,12 +36,14 @@ namespace SharpAsset
 
         public void Dispose()
         {
-            SceneView.backendRenderer.Delete(ref this);
+            MainWindow.backendRenderer.Delete(ref this);
         }
+
         public void PlaceIntoScene(Entity context, Vector3 worldPos)
         {
         }
     }
+
     public enum UniformType
     {
         Int = 5124,
@@ -163,4 +151,3 @@ namespace SharpAsset
         UnsignedIntAtomicCounter = 37595
     }
 }
-

@@ -17,6 +17,8 @@ namespace Sharp.Editor
         internal static Vector3? relativeOrigin;
         internal static Vector3? planeOrigin;
         internal static Vector3? rotVectSource;
+        internal static Vector3? scaleOrigin;
+        internal static Vector3 scaleOffset;
         public static void DrawCombinedGizmos(Vector3 pos)
         {
             DrawCombinedGizmos(pos, (selectedAxisId == 1 ? selectedColor : xColor), (selectedAxisId == 2 ? selectedColor : yColor), (selectedAxisId == 3 ? selectedColor : zColor), (selectedAxisId == 4 ? selectedColor : xColor), (selectedAxisId == 5 ? selectedColor : yColor), (selectedAxisId == 6 ? selectedColor : zColor), (selectedAxisId == 7 ? selectedColor : xColor), (selectedAxisId == 8 ? selectedColor : yColor), (selectedAxisId == 9 ? selectedColor : zColor), 3f);
@@ -26,7 +28,7 @@ namespace Sharp.Editor
             float scale = (Camera.main.entityObject.Position - pos).Length / 25f;
             DrawHelper.DrawTranslationGizmo(thickness, scale, xColor, yColor, zColor);
             DrawHelper.DrawRotationGizmo(thickness, scale, xRotColor, yRotColor, zRotColor);
-            DrawHelper.DrawScaleGizmo(thickness, scale, xScaleColor, yScaleColor, zScaleColor);
+            DrawHelper.DrawScaleGizmo(thickness, scale, xScaleColor, yScaleColor, zScaleColor, scaleOffset);
         }
         //public static (Color, Color, Color) ComputeColorId() {
 
@@ -37,6 +39,8 @@ namespace Sharp.Editor
             rotAngleOrigin = null;
             planeOrigin = null;
             relativeOrigin = null;
+            scaleOrigin = null;
+            scaleOffset = Vector3.Zero;
         }
         private static Vector3 GetAxis()
         {
@@ -94,25 +98,20 @@ namespace Sharp.Editor
         }
         public static void HandleScale(Entity entity, ref Ray ray)
         {
+
             var v = GetAxis();
+            if (!SceneView.globalMode)
+                v = Vector3.TransformVector(v, entity.ModelMatrix.ClearTranslation().ClearScale()).Normalized();
             var len = ComputeLength(ref ray, entity.Position);
-            if (!relativeOrigin.HasValue)
+            if (!planeOrigin.HasValue)
             {
                 planeOrigin = ray.origin + ray.direction * len;
-                relativeOrigin = (planeOrigin - entity.Position);// * (1f / (1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
+                scaleOrigin = entity.Scale;
             }
             var newPos = ray.origin + ray.direction * len;
-            var newOrigin = newPos - relativeOrigin.Value;// * (1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
-            var delta = newOrigin - entity.Position;
-            var lenOnAxis = Vector3.Dot(v, delta);
-            delta = v * lenOnAxis;
-            var baseVector = planeOrigin.Value - entity.Position;
-            float ratio = Vector3.Dot(v, baseVector + delta) / Vector3.Dot(v, baseVector);
-            var scale = ratio * v;
-            scale.X = scale.X == 0 ? entity.Scale.X : scale.X;
-            scale.Y = scale.Y == 0 ? entity.Scale.Y : scale.Y;
-            scale.Z = scale.Z == 0 ? entity.Scale.Z : scale.Z;
-            entity.Scale = scale;
+            var delta = (newPos - entity.Position).Length / (planeOrigin.Value - entity.Position).Length;
+            scaleOffset = newPos * v;
+            entity.Scale = scaleOrigin.Value + v * delta - v;
         }
         private static float GetUniform(Vector3 pos, Matrix4 mat)
         {
@@ -157,3 +156,22 @@ namespace Sharp.Editor
     }
 }
 
+/*var v = GetAxis();
+            var len = ComputeLength(ref ray, entity.Position);
+            if (!relativeOrigin.HasValue)
+            {
+                planeOrigin = ray.origin + ray.direction * len;
+                relativeOrigin = (planeOrigin - entity.Position);// * (1f / (1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
+            }
+            var newPos = ray.origin + ray.direction * len;
+            var newOrigin = newPos - relativeOrigin.Value;// * (1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
+            var delta = newOrigin - entity.Position;
+            var lenOnAxis = Vector3.Dot(v, delta);
+            delta = v * lenOnAxis;
+            var baseVector = planeOrigin.Value - entity.Position;
+            float ratio = Vector3.Dot(v, baseVector + delta) / Vector3.Dot(v, baseVector);
+            var scale = ratio * v;
+            scale.X = scale.X == 0 ? entity.Scale.X : scale.X;
+            scale.Y = scale.Y == 0 ? entity.Scale.Y : scale.Y;
+            scale.Z = scale.Z == 0 ? entity.Scale.Z : scale.Z;
+            entity.Scale = scale;*/

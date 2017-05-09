@@ -10,11 +10,13 @@ using Gwen.Input;
 
 namespace Gwen.Control
 {
-	enum PropagationMode{
-		None,
-		Upward,
-		Downward
-	}
+    internal enum PropagationMode
+    {
+        None,
+        Upward,
+        Downward
+    }
+
     /// <summary>
     /// Base control class.
     /// </summary>
@@ -27,18 +29,19 @@ namespace Gwen.Control
         /// <param name="args" >Additional arguments. May be empty (EventArgs.Empty).</param>
 		public delegate void GwenEventHandler<in T>(Base sender, T arguments) where T : System.EventArgs;
 
+        public static bool isDirty = false;
         private bool m_Disposed;
 
         private Base m_Parent;
 
         /// <summary>
-        /// This is the panel's actual parent - most likely the logical 
+        /// This is the panel's actual parent - most likely the logical
         /// parent's InnerPanel (if it has one). You should rarely need this.
         /// </summary>
         private Base m_ActualParent;
 
         /// <summary>
-        /// If the innerpanel exists our children will automatically become children of that 
+        /// If the innerpanel exists our children will automatically become children of that
         /// instead of us - allowing us to move them all around by moving that panel (useful for scrolling etc).
         /// </summary>
         protected Base m_InnerPanel;
@@ -92,43 +95,50 @@ namespace Gwen.Control
         /// Invoked when mouse pointer leaves the control.
         /// </summary>
 		public event GwenEventHandler<EventArgs> HoverLeave;
+
         public event GwenEventHandler<EventArgs> OnHover;
+
         public event GwenEventHandler<EventArgs> OnMouseUp;
+
         public event GwenEventHandler<EventArgs> OnMouseDown;
+
         public event GwenEventHandler<EventArgs> OnMouseMove;
+
         /// <summary>
         /// Invoked when control's bounds have been changed.
         /// </summary>
 		public event GwenEventHandler<EventArgs> BoundsChanged;
 
-		/// <summary>
-		/// Invoked when the control has been left-clicked.
-		/// </summary>
-		public virtual event GwenEventHandler<ClickedEventArgs> Clicked;
+        /// <summary>
+        /// Invoked when the control has been left-clicked.
+        /// </summary>
+        public virtual event GwenEventHandler<ClickedEventArgs> Clicked;
 
-		/// <summary>
-		/// Invoked when the control has been double-left-clicked.
-		/// </summary>
-		public virtual event GwenEventHandler<ClickedEventArgs> DoubleClicked;
+        /// <summary>
+        /// Invoked when the control has been double-left-clicked.
+        /// </summary>
+        public virtual event GwenEventHandler<ClickedEventArgs> DoubleClicked;
 
-		/// <summary>
-		/// Invoked when the control has been right-clicked.
-		/// </summary>
-		public virtual event GwenEventHandler<ClickedEventArgs> RightClicked;
+        /// <summary>
+        /// Invoked when the control has been right-clicked.
+        /// </summary>
+        public virtual event GwenEventHandler<ClickedEventArgs> RightClicked;
 
-		/// <summary>
-		/// Invoked when the control has been double-right-clicked.
-		/// </summary>
-		public virtual event GwenEventHandler<ClickedEventArgs> DoubleRightClicked;
+        /// <summary>
+        /// Invoked when the control has been double-right-clicked.
+        /// </summary>
+        public virtual event GwenEventHandler<ClickedEventArgs> DoubleRightClicked;
 
-		/// <summary>
-		/// Returns true if any on click events are set.
-		/// </summary>
-		internal bool ClickEventAssigned {
-			get {
-				return Clicked != null || RightClicked != null || DoubleClicked != null || DoubleRightClicked != null;
-			}
-		}
+        /// <summary>
+        /// Returns true if any on click events are set.
+        /// </summary>
+        internal bool ClickEventAssigned
+        {
+            get
+            {
+                return Clicked != null || RightClicked != null || DoubleClicked != null || DoubleRightClicked != null;
+            }
+        }
 
         /// <summary>
         /// Accelerator map.
@@ -583,7 +593,6 @@ namespace Gwen.Control
         /// </summary>
         protected virtual void OnAccelerator()
         {
-
         }
 
         /// <summary>
@@ -725,13 +734,13 @@ namespace Gwen.Control
         /// <returns>Found control or null.</returns>
         public virtual Base FindChildByName(string name, bool recursive = false)
         {
-            Base b = m_Children.Find(x => x.m_Name == name);
+            Base b = Children.Find(x => x.Name == name);
             if (b != null)
                 return b;
 
             if (recursive)
             {
-                foreach (Base child in m_Children)
+                foreach (Base child in Children)
                 {
                     b = child.FindChildByName(name, true);
                     if (b != null)
@@ -740,6 +749,7 @@ namespace Gwen.Control
             }
             return null;
         }
+
         /// <summary>
         /// Attaches specified control as a child of this one.
         /// </summary>
@@ -749,13 +759,16 @@ namespace Gwen.Control
         /// <param name="child">Control to be added as a child.</param>
         public virtual void AddChild(Base child)
         {
-			if (m_InnerPanel != null) {
-				m_InnerPanel.AddChild(child);
-			} else {
-				m_Children.Add(child);
-				child.m_ActualParent = this;
-			}
-			OnChildAdded(child);
+            if (m_InnerPanel != null)
+            {
+                m_InnerPanel.AddChild(child);
+            }
+            else
+            {
+                m_Children.Add(child);
+                child.m_ActualParent = this;
+            }
+            OnChildAdded(child);
         }
 
         /// <summary>
@@ -987,7 +1000,6 @@ namespace Gwen.Control
             if (Parent != null)
                 Parent.OnChildBoundsChanged(oldBounds, this);
 
-
             if (m_Bounds.Width != oldBounds.Width || m_Bounds.Height != oldBounds.Height)
             {
                 Invalidate();
@@ -1013,7 +1025,6 @@ namespace Gwen.Control
         /// </summary>
         protected virtual void OnChildBoundsChanged(Rectangle oldChildBounds, Base child)
         {
-
         }
 
         /// <summary>
@@ -1097,9 +1108,9 @@ namespace Gwen.Control
         /// Rendering logic implementation.
         /// </summary>
         /// <param name="skin">Skin to use.</param>
-        internal virtual void DoRender(Skin.Base skin)
+        public virtual void DoRender(Skin.Base skin)
         {
-            // If this control has a different skin, 
+            // If this control has a different skin,
             // then so does its children.
             if (m_Skin != null)
                 skin = m_Skin;
@@ -1203,7 +1214,6 @@ namespace Gwen.Control
         /// <param name="newSkin">New skin.</param>
         protected virtual void OnSkinChanged(Skin.Base newSkin)
         {
-
         }
 
         /// <summary>
@@ -1235,7 +1245,6 @@ namespace Gwen.Control
         /// <param name="dy">Y change.</param>
         protected virtual void OnMouseMoved(int x, int y, int dx, int dy)
         {
-
         }
 
         /// <summary>
@@ -1254,8 +1263,8 @@ namespace Gwen.Control
         /// <param name="down">If set to <c>true</c> mouse button is down.</param>
         protected virtual void OnMouseClickedLeft(int x, int y, bool down)
         {
-			if (down && Clicked != null)
-				Clicked(this, new ClickedEventArgs(x, y, down));
+            if (down && Clicked != null)
+                Clicked(this, new ClickedEventArgs(x, y, down));
         }
 
         /// <summary>
@@ -1274,8 +1283,8 @@ namespace Gwen.Control
         /// <param name="down">If set to <c>true</c> mouse button is down.</param>
         protected virtual void OnMouseClickedRight(int x, int y, bool down)
         {
-			if (down && RightClicked != null)
-				RightClicked(this, new ClickedEventArgs(x, y, down));
+            if (down && RightClicked != null)
+                RightClicked(this, new ClickedEventArgs(x, y, down));
         }
 
         /// <summary>
@@ -1293,13 +1302,13 @@ namespace Gwen.Control
         /// <param name="y">Y coordinate.</param>
         protected virtual void OnMouseDoubleClickedLeft(int x, int y)
         {
-			// [omeg] should this be called?
-			// [halfofastaple] Maybe. Technically, a double click is still technically a single click. However, this shouldn't be called here, and
-			//					Should be called by the event handler.
+            // [omeg] should this be called?
+            // [halfofastaple] Maybe. Technically, a double click is still technically a single click. However, this shouldn't be called here, and
+            //					Should be called by the event handler.
             OnMouseClickedLeft(x, y, true);
 
-			if (DoubleClicked != null)
-				DoubleClicked(this, new ClickedEventArgs(x, y, true));
+            if (DoubleClicked != null)
+                DoubleClicked(this, new ClickedEventArgs(x, y, true));
         }
 
         /// <summary>
@@ -1317,11 +1326,11 @@ namespace Gwen.Control
         /// <param name="y">Y coordinate.</param>
         protected virtual void OnMouseDoubleClickedRight(int x, int y)
         {
-			// [halfofastaple] See: OnMouseDoubleClicked for discussion on triggering single clicks in a double click event
+            // [halfofastaple] See: OnMouseDoubleClicked for discussion on triggering single clicks in a double click event
             OnMouseClickedRight(x, y, true);
 
-			if (DoubleRightClicked != null)
-				DoubleRightClicked(this, new ClickedEventArgs(x, y, true));
+            if (DoubleRightClicked != null)
+                DoubleRightClicked(this, new ClickedEventArgs(x, y, true));
         }
 
         /// <summary>
@@ -1338,7 +1347,7 @@ namespace Gwen.Control
         protected virtual void OnMouseEntered()
         {
             if (HoverEnter != null)
-				HoverEnter.Invoke(this, EventArgs.Empty);
+                HoverEnter.Invoke(this, EventArgs.Empty);
 
             if (ToolTip != null)
                 Gwen.ToolTip.Enable(this);
@@ -1361,9 +1370,8 @@ namespace Gwen.Control
         /// </summary>
         protected virtual void OnMouseLeft()
         {
-            
             HoverLeave?.Invoke(this, EventArgs.Empty);
-        
+
             if (ToolTip != null)
                 Gwen.ToolTip.Disable(this);
 
@@ -1585,22 +1593,26 @@ namespace Gwen.Control
         /// </summary>
         /// <param name="child">Control to examine.</param>
         /// <returns>True if the control is out child.</returns>
-        public bool IsChild(Base child, bool deepCheck=false)
+        public bool IsChild(Base child, bool deepCheck = false)
         {
             if (m_Children.Contains(child))
                 return true;
-            else if (deepCheck) {
-               return IsChild(child);
+            else if (deepCheck)
+            {
+                return IsChild(child);
             }
             return false;
         }
-        private bool IsChild(Base parent) {
+
+        private bool IsChild(Base parent)
+        {
             if (this == parent)
                 return true;
-            else if(parent?.Parent!=null)
+            else if (parent?.Parent != null)
                 return IsChild(parent.Parent);
             return false;
         }
+
         /// <summary>
         /// Converts local coordinates to canvas coordinates.
         /// </summary>
@@ -1648,7 +1660,6 @@ namespace Gwen.Control
                     x -= m_Parent.m_InnerPanel.X;
                     y -= m_Parent.m_InnerPanel.Y;
                 }
-
 
                 return m_Parent.CanvasPosToLocal(new Point(x, y));
             }
@@ -1746,19 +1757,16 @@ namespace Gwen.Control
         // receiver
         public virtual void DragAndDrop_HoverEnter(Package p, int x, int y)
         {
-
         }
 
         // receiver
         public virtual void DragAndDrop_HoverLeave(Package p)
         {
-
         }
 
         // receiver
         public virtual void DragAndDrop_Hover(Package p, int x, int y)
         {
-
         }
 
         // receiver
@@ -1814,7 +1822,7 @@ namespace Gwen.Control
             {
                 if (m_Accelerators.ContainsKey(accelerator))
                 {
-					m_Accelerators[accelerator].Invoke(this, EventArgs.Empty);
+                    m_Accelerators[accelerator].Invoke(this, EventArgs.Empty);
                     return true;
                 }
             }
@@ -1848,7 +1856,6 @@ namespace Gwen.Control
         /// <param name="skin">Skin to use.</param>
         protected virtual void PostLayout(Skin.Base skin)
         {
-
         }
 
         /// <summary>
@@ -1870,7 +1877,6 @@ namespace Gwen.Control
         /// </remarks>
         public virtual void UpdateColors()
         {
-
         }
 
         /// <summary>
@@ -2069,17 +2075,17 @@ namespace Gwen.Control
 
         internal void InputPaste(Base from)
         {
-			OnPaste(from, EventArgs.Empty);
+            OnPaste(from, EventArgs.Empty);
         }
 
         internal void InputCut(Base from)
         {
-			OnCut(from, EventArgs.Empty);
+            OnCut(from, EventArgs.Empty);
         }
 
         internal void InputSelectAll(Base from)
         {
-			OnSelectAll(from, EventArgs.Empty);
+            OnSelectAll(from, EventArgs.Empty);
         }
 
         /// <summary>
@@ -2102,7 +2108,6 @@ namespace Gwen.Control
         /// <param name="skin">Skin to use.</param>
         protected virtual void RenderUnder(Skin.Base skin)
         {
-
         }
 
         /// <summary>
@@ -2111,7 +2116,6 @@ namespace Gwen.Control
         /// <param name="skin">Skin to use.</param>
         protected virtual void RenderOver(Skin.Base skin)
         {
-
         }
 
         /// <summary>
@@ -2119,7 +2123,6 @@ namespace Gwen.Control
         /// </summary>
         public virtual void Think()
         {
-
         }
 
         /// <summary>
@@ -2127,7 +2130,6 @@ namespace Gwen.Control
         /// </summary>
         protected virtual void OnKeyboardFocus()
         {
-
         }
 
         /// <summary>
@@ -2135,7 +2137,6 @@ namespace Gwen.Control
         /// </summary>
         protected virtual void OnLostKeyboardFocus()
         {
-
         }
 
         /// <summary>
@@ -2188,5 +2189,5 @@ namespace Gwen.Control
                 child.Y = Math.Max(0, child.Y);
             }
         }
-	}
+    }
 }
