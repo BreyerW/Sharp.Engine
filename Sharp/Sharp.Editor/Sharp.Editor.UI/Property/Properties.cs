@@ -6,6 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections;
 using Sharp.Editor.UI.Property;
+using Sharp.Commands;
 
 namespace Sharp.Control
 {
@@ -109,22 +110,20 @@ namespace Sharp.Control
                 else if (propertyInfo.PropertyType.GetInterfaces()
     .Any(i => i == typeof(IList)))//isassignablefrom?
                 {
-                    Console.WriteLine("array");
                     prop = new ArrayDrawer(this) as Gwen.Control.Property.PropertyDrawer<T>;
                 }
                 else
                     prop = Activator.CreateInstance(mappedPropertyDrawers[(typeof(object), attrib?.GetType())].type, this) as Gwen.Control.Property.PropertyDrawer<T>;
             }
-
+            prop.getter = DelegateGenerator.GenerateGetter<T>(instance, propertyInfo);
+            prop.setter = DelegateGenerator.GenerateSetter<T>(instance, propertyInfo);
             PropertyRow<T> row = new PropertyRow<T>(this, prop);
             row.Dock = Pos.Top;
             row.Label = label;
             row.Name = label;
             row.ValueChanged += OnRowValueChanged;
-            row.getter = DelegateGenerator.GenerateGetter<T>(instance, propertyInfo);
-            row.setter = DelegateGenerator.GenerateSetter<T>(instance, propertyInfo);
-            prop.SetValue(row.getter(), true);
-
+            isDirty = true;
+            prop.Value = prop.getter();
             // m_SplitterBar.BringToFront();
             return row;
         }

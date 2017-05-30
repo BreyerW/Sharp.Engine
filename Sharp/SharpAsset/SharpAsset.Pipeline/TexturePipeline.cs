@@ -17,9 +17,9 @@ namespace SharpAsset.Pipeline
             ref var tex = ref this[index];
             if (!tex.allocated)
             {
-                MainWindow.backendRenderer.GenerateBuffers(ref tex);
-                MainWindow.backendRenderer.BindBuffers(ref tex);
-                MainWindow.backendRenderer.Allocate(ref tex);
+                MainWindow.backendRenderer.GenerateBuffers(ref tex.TBO);
+                MainWindow.backendRenderer.BindBuffers(ref tex.TBO);
+                MainWindow.backendRenderer.Allocate(ref tex.bitmap);
                 tex.allocated = true;
                 //this[index] = tex;
             }

@@ -9,6 +9,22 @@ namespace Sharp.Editor.UI.Property
     {
         public TreeControl arrayTree;
 
+        public override IList Value
+        {
+            get => null;
+            set
+            {
+                arrayTree.DeleteAllChildren();
+                var node = arrayTree.AddNode("0");
+                foreach (var val in value)
+                {
+                    if (val is IList list) IterateRecursively(list, node.AddNode("1"), 1);
+                    else
+                        node.AddNode(val);
+                }
+            }
+        }
+
         public ArrayDrawer(Base parent) : base(parent)
         {
             //Array.Resize(ref Value,)
@@ -24,20 +40,7 @@ namespace Sharp.Editor.UI.Property
             Parent.Invalidate();
         }
 
-        public override void SetValue(IList value, bool fireEvents = false)
-        {
-            arrayTree.DeleteAllChildren();
-            var node = arrayTree.AddNode("0");
-            foreach (var val in value)
-            {
-                Console.WriteLine("gettype " + val.GetType());
-                if (val is IList list) IterateRecursively(list, node.AddNode("1"), 1);
-                else
-                    node.AddNode(val);
-            }
-        }
-
-        private void IterateRecursively(IList list, TreeNode node, int depth)
+        private void IterateRecursively(IList list, TreeNode node, int depth)//SharpSerializer?
         {
             if (depth is 8) return;
             foreach (var val in list)

@@ -9,13 +9,12 @@ namespace Sharp
     public class Entity
     {
         private static int lastId = 0;
-        private Vector3 position = Vector3.Zero;
+        internal Vector3 position = Vector3.Zero;
 
         public readonly int id;
         public Entity parent;
         public List<Entity> childs = new List<Entity>();
         public string name = "Entity Object";
-
 
         public Vector3 Position
         {
@@ -30,7 +29,7 @@ namespace Sharp
             }
         }
 
-        private Vector3 rotation = Vector3.Zero;
+        internal Vector3 rotation = Vector3.Zero;
 
         public Vector3 Rotation
         {
@@ -45,7 +44,7 @@ namespace Sharp
             }
         }
 
-        private Vector3 scale = Vector3.One;
+        internal Vector3 scale = Vector3.One;
 
         public Vector3 Scale
         {
@@ -59,6 +58,7 @@ namespace Sharp
                 OnTransformChanged?.Invoke(this, EventArgs.Empty);
             }
         }
+
         public bool active
         {
             get { return enabled; }
@@ -73,10 +73,13 @@ namespace Sharp
                 //OnDisableInternal ();
             }
         }
+
         private bool enabled;
         private HashSet<int> tags = new HashSet<int>();
-        //public 
+
+        //public
         private Matrix4 modelMatrix;
+
         public ref Matrix4 ModelMatrix
         {
             get { return ref modelMatrix; }
@@ -92,6 +95,7 @@ namespace Sharp
             id = ++lastId;
             lastId = id;
         }
+
         public static Entity[] FindAllWithTags(bool activeOnly = true, params string[] lookupTags)
         {
             //find all entities with tags in scene
@@ -109,6 +113,7 @@ namespace Sharp
                         intersectedArr.Remove(entity);
             return intersectedArr.ToArray();
         }
+
         //public Entity[] FindWithTags(bool activeOnly=true, params string[] lookupTags){
         //find children entities with tags in scene
         //}
@@ -130,6 +135,7 @@ namespace Sharp
                 }
             }
         }
+
         public void RemoveTags(params string[] tagsToRemove)
         {
             foreach (var tag in tagsToRemove)
@@ -139,11 +145,13 @@ namespace Sharp
                 tags.Remove(id);
             }
         }
+
         public void SetModelMatrix()
         {
             var angles = rotation * MathHelper.Pi / 180f;
             ModelMatrix = Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(angles.X) * Matrix4.CreateRotationY(angles.Y) * Matrix4.CreateRotationZ(angles.Z) * Matrix4.CreateTranslation(position);
         }
+
         public Quaternion ToQuaterion(Vector3 angles)
         {
             // Assuming the angles are in radians.
@@ -151,6 +159,7 @@ namespace Sharp
 
             return Quaternion.FromMatrix(Matrix3.CreateRotationX(angles.X) * Matrix3.CreateRotationY(angles.Y) * Matrix3.CreateRotationZ(angles.Z));
         }
+
         public static Vector3 ToEuler(Quaternion q)
         {
             // Store the Euler angles in radians
@@ -190,9 +199,9 @@ namespace Sharp
 
             return pitchYawRoll;
         }
+
         public static Vector3 rotationMatrixToEulerAngles(Matrix4 mat)
         {
-
             //assert(isRotationMatrix(R));
             mat.Transpose();
             float sy = (float)Math.Sqrt(mat[0, 0] * mat[0, 0] + mat[1, 0] * mat[1, 0]);
@@ -213,12 +222,13 @@ namespace Sharp
                 z = 0;
             }
             return new Vector3(x, y, z);
-
         }
+
         public T GetComponent<T>() where T : Component
         {
-            return components.OfType<T>().First();
+            return (components.Find((obj) => obj is T)) as T;
         }
+
         public Component GetComponent(Type type)
         {
             foreach (var component in components)
@@ -226,14 +236,17 @@ namespace Sharp
                     return component;
             return null;
         }
+
         public List<Component> GetAllComponents()
         {
             return components;
         }
+
         public T AddComponent<T>() where T : Component, new()
         {
             return AddComponent(new T()) as T;
         }
+
         public Component AddComponent(Component comp)
         {
             comp.entityObject = this;
@@ -253,12 +266,14 @@ namespace Sharp
 			components.Add (comp.GetType(), comp);
 			return components [comp.GetType()] as Renderer;
 		}*/
+
         public void Instatiate()
         {
             SceneView.entities.Add(this);
             SceneView.OnAddedEntity?.Invoke();
             lastId = id;
         }
+
         public void Instatiate(Vector3 pos, Vector3 rot, Vector3 s)
         {
             scale = s;
@@ -266,15 +281,16 @@ namespace Sharp
             rotation = rot;
             Instatiate();
         }
+
         public void Destroy()
         {
             SceneView.entities.Remove(this);
             SceneView.OnRemovedEntity?.Invoke();
         }
+
         public override string ToString()
         {
             return name;
         }
     }
 }
-

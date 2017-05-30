@@ -19,10 +19,5 @@ namespace Sharp.Editor.UI.Property
             get { return slider.Value; }
             set { slider.Value = (float)value; }
         }
-
-        public override void SetValue(object value, bool fireEvents = false)
-        {
-            slider.Value = (float)value;
-        }
     }
 }

@@ -51,7 +51,7 @@ namespace Sharp.Editor.Views
             };
             Selection.OnSelectionDirty += (sender, args) =>
             {
-                if (sender is Entity entity) RenderComponents(entity);
+                //if (sender is Entity entity) RenderComponents(entity);
             };
             base.Initialize();
         }
@@ -86,6 +86,27 @@ namespace Sharp.Editor.Views
                 }
             }
         }
+
+        /*  private void UpdateInspector() {
+              var prop = ptree.AddOrGet("Transform", out bool exist);
+              if (exist)
+              {
+                  prop.
+              }
+              var comps = entity.GetAllComponents();
+              foreach (var component in comps)
+              {
+                  prop = ptree.AddOrGet(component.GetType().Name, out exist);
+                  if (!exist)
+                  {
+                      Console.WriteLine("component");
+                      var inspector = new DefaultComponentDrawer();
+                      inspector.properties = prop;
+                      inspector.getTarget = component;
+                      inspector.OnInitializeGUI();
+                  }
+              }
+          }*/
 
         public override void Render()
         {

@@ -1,13 +1,7 @@
 ﻿using System.Collections.Generic;
 using OpenTK;
-using OpenTK.Graphics.OpenGL;
-using SharpAsset;
 using System;
-using System.Runtime.InteropServices;
-using Gwen.Control;
-using System.Diagnostics;
 using OpenTK.Input;
-using Sharp.Editor;
 
 //using PhysX;
 using SharpAsset.Pipeline;
@@ -112,11 +106,10 @@ namespace Sharp.Editor.Views
                 {
                     var entity = selected.Content as Entity;
                     var mvpMat = (globalMode ? entity.ModelMatrix.ClearRotation() : entity.ModelMatrix).ClearScale() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
-                    MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
-                    GL.Enable(EnableCap.Blend);
-                    GL.Clear(ClearBufferMask.DepthBufferBit);
 
-                    Manipulators.DrawCombinedGizmos(entity.Position);
+                    MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
+                    MainWindow.backendRenderer.ClearDepth();
+                    Manipulators.DrawCombinedGizmos(entity);
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
 
                     /*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
@@ -194,7 +187,7 @@ namespace Sharp.Editor.Views
 
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
 
-                    Manipulators.DrawCombinedGizmos(entity.Position, xColor, yColor, zColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
+                    Manipulators.DrawCombinedGizmos(entity, xColor, yColor, zColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
 
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
                 }
@@ -225,7 +218,7 @@ namespace Sharp.Editor.Views
             var hitList = new SortedList<Vector3, int>(new OrderByDistanceToCamera());
             foreach (var ent in entities)
             {
-                dynamic render = ent.GetComponent(typeof(MeshRenderer<>));
+                var render = ent.GetComponent<MeshRenderer>();
                 Vector3 hitPoint = Vector3.Zero;
                 if (render != null && render.mesh.bounds.Intersect(ref ray, ref ent.ModelMatrix, out hitPoint))
                 {
@@ -257,7 +250,7 @@ namespace Sharp.Editor.Views
             }
         }
 
-        public override void OnKeyPressEvent(SDL2.SDL.SDL_Keycode keyCode)
+        public override void OnKeyPressEvent(ref byte[] keyboardState)
         {
             if (Camera.main.moved)
             {
@@ -266,17 +259,17 @@ namespace Sharp.Editor.Views
             }
             //if (!canvas.IsHovered)
             //return;
-            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_q)
+            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_Q] is 1)
                 Camera.main.Move(0f, 1f, 0f);
-            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_e)
+            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_E] is 1)
                 Camera.main.Move(0f, -1f, 0f);
-            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_a)
+            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_A] is 1)
                 Camera.main.Move(-1f, 0f, 0f);
-            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_d)
+            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_D] is 1)
                 Camera.main.Move(1f, 0f, 0f);
-            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_w)
+            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_W] is 1)
                 Camera.main.Move(0f, 0f, -1f);
-            if (keyCode == SDL2.SDL.SDL_Keycode.SDLK_s)
+            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_S] is 1)
                 Camera.main.Move(0f, 0f, 1f);
             OnSetupMatrices?.Invoke();
         }

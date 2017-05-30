@@ -7,18 +7,14 @@ using OpenTK;
 
 namespace SharpAsset
 {
-    //This will hold our shader code in a nice clean class
-    //this example only uses a shader with position and color
-    //but didnt want to leave out the other bits for the shader
-    //so you could practice writing a shader on your own :P
-    public struct Shader : IAsset
+    public struct Shader : IAsset//move backendrenderer here?
     {
         public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
         public string Extension { get { return Path.GetExtension(FullPath); } set { } }
         public string FullPath { get; set; }
 
-        public string VertexSource { get; set; }
-        public string FragmentSource { get; set; }
+        public string VertexSource;
+        public string FragmentSource;
 
         internal int VertexID;
         internal int FragmentID;
@@ -36,7 +32,7 @@ namespace SharpAsset
 
         public void Dispose()
         {
-            MainWindow.backendRenderer.Delete(ref this);
+            MainWindow.backendRenderer.Delete(ref Program, ref VertexID, ref FragmentID);
         }
 
         public void PlaceIntoScene(Entity context, Vector3 worldPos)

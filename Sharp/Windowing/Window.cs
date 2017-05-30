@@ -4,10 +4,11 @@ using Sharp.Editor.Views;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Sharp.Editor;
 
 namespace Sharp
 {
-    public abstract class Window
+    public abstract class Window//investigate GetWindowData
     {
         private static bool quit = false;
         private static SDL.SDL_EventFilter filter = OnResize;
@@ -66,7 +67,7 @@ namespace Sharp
 
         public readonly IntPtr handle;
         public readonly uint windowId;
-        public MainEditorView mainView;
+        public MainEditorView mainView;  //detach it from window?
         //public bool toBeClosed = false;
 
         public (int width, int height) Size
@@ -114,10 +115,13 @@ namespace Sharp
                     if (windows.Contains(sdlEvent.window.windowID))
                         windows[sdlEvent.window.windowID].OnEvent(sdlEvent);
                 }
+                //Selection.IsSelectionDirty(System.Threading.CancellationToken.None);
+
+                InputHandler.ProcessKeyboardPresses();
                 onRenderFrame?.Invoke();
                 if (Gwen.Control.Base.isDirty)
                 {
-                    Sharp.Selection.OnSelectionDirty?.Invoke(Sharp.Selection.Asset, EventArgs.Empty);
+                    Selection.OnSelectionDirty?.Invoke(Selection.Asset, EventArgs.Empty);
                     Gwen.Control.Base.isDirty = false;
                 }
             }
@@ -126,7 +130,6 @@ namespace Sharp
         private void OnInternalRenderFrame()
         {
             SDL.SDL_GL_MakeCurrent(handle, context);
-            OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.ScissorTest);
             OnRenderFrame();
             SDL.SDL_GL_SwapWindow(handle);
         }
@@ -139,31 +142,33 @@ namespace Sharp
             {
                 case SDL.SDL_EventType.SDL_KEYDOWN:
                 case SDL.SDL_EventType.SDL_KEYUP:
-                    foreach (var view in View.views[windowId])
-                        if (view.panel != null && view.panel.IsVisible)
-                            view.OnKeyPressEvent(evnt.key.keysym.sym);
-                    Sharp.InputHandler.ProcessKeyboard(evnt.key.keysym.sym, evnt.key.type == SDL.SDL_EventType.SDL_KEYDOWN);
+                    if (evnt.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE)
+                    {
+                        quit = MainWindowId == FocusedWindowId;
+                        windows[FocusedWindowId].Close();
+                    }
+                    //Console.WriteLine("1 " + (uint)'1' + " : ! " + (uint)'!');
+                    InputHandler.ProcessKeyboard();
                     break;
 
                 case SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN:
                     InputHandler.isMouseDragging = true;
-                    Sharp.InputHandler.ProcessMouse(SDL.SDL_BUTTON(evnt.button.button), true);
+                    InputHandler.ProcessMouse(SDL.SDL_BUTTON(evnt.button.button), true);
                     break;
 
                 case SDL.SDL_EventType.SDL_MOUSEBUTTONUP:
                     focusGained = false;
                     InputHandler.isMouseDragging = false;
-                    Sharp.InputHandler.ProcessMouse(SDL.SDL_BUTTON(evnt.button.button), false);
+                    InputHandler.ProcessMouse(SDL.SDL_BUTTON(evnt.button.button), false);
                     break;
 
                 case SDL.SDL_EventType.SDL_MOUSEMOTION:
-
-                    Sharp.InputHandler.ProcessMouseMove();//evnt.motion.xrel instead of
-
+                    InputHandler.ProcessMouseMove();//evnt.motion.xrel instead of
                     break;
 
                 case SDL.SDL_EventType.SDL_MOUSEWHEEL: InputHandler.ProcessMouseWheel(evnt.wheel.y); break;
                 case SDL.SDL_EventType.SDL_WINDOWEVENT: OnWindowEvent(ref evnt.window); break;
+                case SDL.SDL_EventType.SDL_QUIT: quit = true; break;
             }
         }
 
@@ -210,7 +215,7 @@ namespace Sharp
                 case SDL.SDL_EventType.SDL_MOUSEBUTTONUP:
                     focusGained = false;
                     InputHandler.isMouseDragging = false;
-                    Sharp.InputHandler.ProcessMouse(SDL.SDL_BUTTON(evt.button.button), false);
+                    InputHandler.ProcessMouse(SDL.SDL_BUTTON(evt.button.button), false);
                     break;
 
                 case SDL.SDL_EventType.SDL_WINDOWEVENT: OnWindowEvent(ref evt.window); break;

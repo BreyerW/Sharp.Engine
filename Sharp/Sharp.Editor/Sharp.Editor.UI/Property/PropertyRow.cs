@@ -1,6 +1,5 @@
 ﻿using System;
-using Gwen.ControlInternal;
-using Gwen.Skin;
+using Sharp.Commands;
 
 namespace Gwen.Control
 {
@@ -13,9 +12,6 @@ namespace Gwen.Control
         private readonly Property.PropertyDrawer<T> m_Property;
         private bool m_LastEditing;
         private bool m_LastHover;
-
-        public Action<T> setter;
-        public Func<T> getter;
 
         /// <summary>
         /// Invoked when the property value has changed.
@@ -30,7 +26,15 @@ namespace Gwen.Control
         /// <summary>
         /// Property value.
         /// </summary>
-        public T Value { get { return m_Property.Value; } set { m_Property.Value = value; } }
+        public T Value
+        {
+            get { return m_Property.Value; }
+            set
+            {
+                //Console.WriteLine("buuu");
+                m_Property.Value = value;
+            }
+        }
 
         /// <summary>
         /// Indicates whether the control is hovered by mouse pointer.
@@ -65,7 +69,6 @@ namespace Gwen.Control
             m_Property = prop;
             m_Property.Parent = this;
             m_Property.Dock = Pos.Fill;
-            m_Property.ValueChanged += OnValueChanged;
         }
 
         /// <summary>
@@ -94,8 +97,8 @@ namespace Gwen.Control
         public override void DoRender(Gwen.Skin.Base skin)
         {
             base.DoRender(skin);
-            if (!(getter is null) && isDirty)
-                Value = getter();
+            if (isDirty)
+                Value = m_Property.getter();
         }
 
         /// <summary>
@@ -117,9 +120,7 @@ namespace Gwen.Control
 
         protected virtual void OnValueChanged(Base control, EventArgs args)
         {
-            if (ValueChanged != null)
-                ValueChanged.Invoke(this, EventArgs.Empty);
-            setter?.Invoke(Value);
+            ValueChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnEditingChanged()

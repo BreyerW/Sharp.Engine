@@ -1,0 +1,228 @@
+v1.4.19
+-------
+- added TOKENS.ARRAY_TYPED for typed arrays
+- deserialize t[] into an object correctly as t[] not object[]
+- added BJSONParameters.UseTypedArrays to control above (default = true)
+- renamed main solution file
+- added TOKENS.TYPES_POINTER for $types into bytes stream at the end
+- optimize serialize memory usage
+- if you put a DataSet into an object then it will deserialize correctly
+
+v1.4.18
+-------
+- bug fix enumerating dynamic objects
+
+v1.4.17
+-------
+- bug fix nested dictionary D<,D<,>>
+
+v1.4.16
+-------
+- added support for interface object properties (thanks to DrDeadCrash)
+
+v1.4.15
+-------
+- synced reflection.cs with fastJSON
+- bug fix read only properties to output
+- added test for readonly properties 
+- added NonSerialized to the list of ignore default attributes
+- support for ExpandoObject serialization with test
+
+v1.4.14
+-------
+- bug fix DateTime in anonymous type InvalidProgramException (thanks to skottmckay)
+- fixed broken custom type handler (sorry to all)
+- added test for custom types
+- fixed byte[] in Dictionary values with test
+
+v1.4.13
+-------
+- bug fix ToObject<Dictionary<string, List<X>>>() (thanks to sleiN13)
+- bug fix CreateStringKeyDictionary() (thanks to John Earnshaw)
+- type access optimizations
+- test restructuring
+
+v1.4.12
+-------
+- usings cleanup
+- bug fix : edge case CreateArray() bt is null -> default to typeof(object)
+
+v1.4.11
+-------
+- added support for char type
+- dynamic object processing enhancements (thanks to Justin Dearing)
+
+v1.4.10
+-------
+- added BJSONParameters.SerializerMaxDepth
+- speed optimize (thanks to wmjordan)
+- added BJSONSerializer.Dispose() to get rid of compiler warnings
+
+v1.4.9
+------
+- support for multidimensional arrays (thanks to wmjordan)
+
+v1.4.8
+------
+- bug fix public static properties
+
+v1.4.7
+------
+- bug fix byte[] keys with Dictionary (thanks to Stanislav Lukeš)
+
+v1.4.6
+------
+- bug fix serializing static fields and properties
+- skip indexer properties on objects (thanks to scymen)
+
+v1.4.5
+------
+- code sync reflection.cs with fastJSON v2.1.7
+
+v1.4.4
+------
+- bug fix deserialize private set and no set properties 
+- added ReadonlyTest() test for the above 
+
+v1.4.3
+------
+- bug fix deserializing a struct property in a class
+
+v1.4.2
+------
+- bug fix circular references
+
+v1.4.1
+------
+- bug fix obj.List<List<object>> and obj.List<object[]> 
+- added code intellisense help for methods
+- added ClearReflectionCache() to reset all internal structures
+
+v1.4.0
+------
+- *breaking change* : removed the BJSON.Instance singleton 
+- moved all the state from BJSON to the Reflection singleton
+- all of the BJSON interface is now static  
+- added BJSONParameters overloads for ToObject()
+- support for circular referenced object structures
+- added circular test
+
+v1.3.14.1
+---------
+- added ParametricConstructorOverride parameter to control non default constructors
+
+v1.3.14
+-------
+- fixed create enum from value and string
+- replaced safedictionary with dictionary for some of the internals so no locks on read
+- added custom ignore attributes (Thanks to Jared Thirsk)
+- using IsDefined instead of GetCustomAttributes (Thanks to Andrew Rissing)
+- moved all the reflection code out of BJSON.cs
+- now you can deserialize non default constructor classes (Thanks to Anton Afanasyev)
+
+v1.3.13
+-------
+- fixed working with const properties and fields (i.e ignored)
+
+v1.3.12
+-------
+- bug fix dynamic json and root arrays e.g. [1,2,3,4]
+- bug fix objects in array dynamic types e.g. [1,2,{"prop":90}]
+- added support for special collections : StringDictionary, NameValueCollection
+
+v1.3.11
+-------
+- added signed assembly 
+- version numbers will stay at 1.0.0.0 for drop in compatibility
+- file version will reflect the build number
+- bug fix deserializing to dictionaries instead of dataset when type is not defined
+- access inner property in arrays in dynamic types e.g. d.arr[1].a 
+
+v1.3.10
+-------
+- fixed hastable deserialize
+- added test for hashtable
+- changed list of getters to array ~3% performance gain
+- removed unused code
+
+v1.3.9
+------
+- fix dynamic objects and lists
+- fix deserialize Dictionary<T, List<V>> and Dictionary<T, V[]>
+- added tests for dictionary with lists
+
+v1.3.8
+------
+- added serialization of static fields and properties
+- fixed disabling extensions in the output
+- fixed serializing anonymous types
+- added support for dynamic objects
+
+v1.3.7
+------
+- customtype is now builtin
+- added UseUTCTimes property for datetime 
+- switched to properttype enum instead of booleans
+- using switch instead of linked if statements
+- unified DynamicMethod between silverlight and full .net
+- SafeDictionary lock fixes
+
+v1.3.6
+-------
+- bug fix comma and nulls
+- UTC parameter for controlling dates
+- unified reflection code with Silverlight4
+- locks in SafeDictionary
+
+v1.3.5
+------
+- added support for root level DataSet and DataTable deserialize (you have to do ToObject<DataSet>(...) )
+- added dataset tests
+- added MonoDroid project
+
+v1.3.4
+------
+- singleton uses ThreadStatic for concurrency (thanks to Philip Jander) 
+- bug fix extra comma in the output when only 1 property in the object (thanks to Philip Jander) 
+
+v1.3.3
+------
+- bug fix deserialize zero length arrays
+- test for German locale numbers
+
+v1.3.2
+------
+- null object serialize fixed
+- added sealed keyword to classes
+- bug fix SerializeNullValues=false and an extra comma at the end
+- FillObject nested types
+
+v1.3.1
+------
+- bug fix $types and arrays
+- optimize writting $types
+
+v1.3
+----
+- bug fix reflection code 
+- added unit tests 
+- changed ArrayList to List<object>
+- updated code to be similar to fastJSON 
+- deserialize ToObject< Dictionary<T,V> >  
+- deserialize ToObject< List<T> >
+- added FillObject method
+
+v1.2
+----
+- refactored reflection code into Reflection class
+- added support for top level struct object serialize/deserialize
+
+v1.1
+----
+- bug fix datetime to local time
+- added BJSONParameters 
+- added global types (reverse format from fastJSON to overcome size limits on name strings)
+
+v1.0
+----
+- initial release

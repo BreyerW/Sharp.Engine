@@ -3,13 +3,13 @@ using SharpAsset;
 
 namespace Sharp
 {
-    public class SkinnedMeshRenderer<IndexType> : MeshRenderer<IndexType> where IndexType : struct, IConvertible //where VertexFormat : struct, IVertex
+    public class SkinnedMeshRenderer : MeshRenderer
     {
         private Skeleton skeleton;
-        public SkinnedMeshRenderer(IAsset meshToRender, Material mat, Skeleton skele) : base(meshToRender, mat)
+
+        public SkinnedMeshRenderer(ref Mesh meshToRender, Material mat, Skeleton skele) : base(ref meshToRender, mat)
         {
             skeleton = skele;
         }
     }
 }
-

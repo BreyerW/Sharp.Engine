@@ -12,23 +12,20 @@ namespace Sharp
         public static Vector2 lastPos;
         public static int startTime = System.Diagnostics.Process.GetCurrentProcess().StartTime.Millisecond;
 
+        static MainWindow()
+        {
+            MainEditorView.editorBackendRenderer = new SharpSL.BackendRenderers.OpenGL.EditorOpenGLRenderer();
+            backendRenderer = new SharpSL.BackendRenderers.OpenGL.OpenGLRenderer();
+        }
+
         public MainWindow(string title) : base(title, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE)
         {
         }
 
         public void Initialize(params View[] viewsToOpen)
         {
-            MainEditorView.editorBackendRenderer = new SharpSL.BackendRenderers.OpenGL.EditorOpenGLRenderer();
-            backendRenderer = new SharpSL.BackendRenderers.OpenGL.OpenGLRenderer();
+            backendRenderer.ClearColor();
             mainView.Initialize();
-            mainView.OnResize(1000, 700);
-
-            /*mainEditorView.splitter.OnSplitMoved += (o, args) =>
-            {
-                var (width, height) = windowSize;
-                //scene.OnResize(width, height);
-                //assets.OnResize(width, height);
-            };*/
             int id = 0;
             foreach (var view in viewsToOpen)
             {

@@ -11,14 +11,17 @@ namespace Sharp.Editor
         {
             MainEditorView.editorBackendRenderer.DrawGrid(color, pos, X, Y, ref projMat, cell_size, grid_size);
         }
+
         public static void DrawBox(Vector3 pos1, Vector3 pos2)
         {
             MainEditorView.editorBackendRenderer.DrawBox(pos1, pos2);
         }
+
         public static void DrawRectangle(Vector3 pos1, Vector3 pos2)
         {
             MainEditorView.editorBackendRenderer.DrawRectangle(pos1, pos2);
         }
+
         /// <summary>
         /// From http://code.google.com/p/3d-editor-toolkit/
         /// </summary>
@@ -29,6 +32,7 @@ namespace Sharp.Editor
         {
             MainEditorView.editorBackendRenderer.DrawCone(width, height, offset, axis);
         }
+
         /// <summary>
         /// From http://code.google.com/p/3d-editor-toolkit/
         /// </summary>
@@ -39,6 +43,7 @@ namespace Sharp.Editor
         {
             MainEditorView.editorBackendRenderer.DrawConeY(width, height, offset);
         }
+
         /// <summary>
         /// From http://code.google.com/p/3d-editor-toolkit/
         /// </summary>
@@ -60,6 +65,7 @@ namespace Sharp.Editor
         {
             MainEditorView.editorBackendRenderer.DrawConeX(width, height, offset);
         }
+
         /// <summary>
         /// From http://code.google.com/p/3d-editor-toolkit/
         /// </summary>
@@ -69,6 +75,7 @@ namespace Sharp.Editor
         {
             MainEditorView.editorBackendRenderer.DrawPlaneXZ(size, sizeOffset, unColor);
         }
+
         /// <summary>
         /// From http://code.google.com/p/3d-editor-toolkit/
         /// </summary>
@@ -78,6 +85,7 @@ namespace Sharp.Editor
         {
             MainEditorView.editorBackendRenderer.DrawPlaneZY(size, sizeOffset, unColor);
         }
+
         /// <summary>
         /// From http://code.google.com/p/3d-editor-toolkit/
         /// </summary>
@@ -87,8 +95,9 @@ namespace Sharp.Editor
         {
             MainEditorView.editorBackendRenderer.DrawPlaneYX(size, sizeOffset, unColor);
         }
+
         /// <summary>
-        /// From http://code.google.com/p/3d-editor-toolkit/ 
+        /// From http://code.google.com/p/3d-editor-toolkit/
         /// </summary>
         /// <param name="radius"></param>
         /// <param name="lats"></param>
@@ -97,50 +106,40 @@ namespace Sharp.Editor
         {
             MainEditorView.editorBackendRenderer.DrawSphere(radius, lats, longs, unColor);
         }
-        /// <summary>
-        /// From http://code.google.com/p/3d-editor-toolkit/  
-        /// </summary>
-        /// <param name="size"></param>
-        public static void DrawCircleY(float lineWidth, float size, Color unColor)
+
+        public static void DrawCircle(float lineWidth, float size, Color unColor, SharpSL.Plane plane, float angle = 360, bool filled = false)
         {
-            MainEditorView.editorBackendRenderer.DrawCircleY(size, lineWidth, unColor);
+            MainEditorView.editorBackendRenderer.DrawCircle(size, lineWidth, unColor, plane, angle, filled);
         }
-        /// <summary>
-        /// From http://code.google.com/p/3d-editor-toolkit/  
-        /// </summary>
-        /// <param name="size"></param>
-        public static void DrawCircleX(float lineWidth, float size, Color unColor)
-        {
-            MainEditorView.editorBackendRenderer.DrawCircleX(size, lineWidth, unColor);
-        }
-        /// <summary>
-        /// From http://code.google.com/p/3d-editor-toolkit/  
-        /// </summary>
-        /// <param name="size"></param>
-        public static void DrawCircleZ(float lineWidth, float size, Color unColor)
-        {
-            MainEditorView.editorBackendRenderer.DrawCircleZ(size, lineWidth, unColor);
-        }
+
         public static void DrawSelectionSquare(float x1, float y1, float x2, float y2, Color unColor)
         {
             MainEditorView.editorBackendRenderer.DrawSelectionSquare(x1, y1, x2, y2, unColor);
         }
+
         public static void DrawLine(float v1x, float v1y, float v1z, float v2x, float v2y, float v2z, Color unColor)
         {
             MainEditorView.editorBackendRenderer.DrawLine(v1x, v1y, v1z, v2x, v2y, v2z, unColor);
         }
+
         public static void DrawTranslationGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor)
         {
             MainEditorView.editorBackendRenderer.DrawTranslateGizmo(thickness, scale, xColor, yColor, zColor);
         }
+
         public static void DrawRotationGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor)
         {
             MainEditorView.editorBackendRenderer.DrawRotateGizmo(thickness, scale, xColor, yColor, zColor);
         }
+
         public static void DrawScaleGizmo(float thickness, float scale, Color xColor, Color yColor, Color zColor, Vector3 offset = default(Vector3))
         {
             MainEditorView.editorBackendRenderer.DrawScaleGizmo(thickness, scale, xColor, yColor, zColor, offset);
         }
+
+        public static void DrawFilledPolyline(float size, float lineWidth, Color color, ref Matrix4 mat, ref (float x, float y, float z)[] vecArray)
+        {
+            MainEditorView.editorBackendRenderer.DrawFilledPolyline(size, lineWidth, color, ref mat, ref vecArray);
+        }
     }
 }
-

@@ -1,6 +1,5 @@
 ﻿using System;
-using OpenTK;
-using System.Drawing;
+using System.Collections.Generic;
 using SharpAsset;
 
 namespace SharpSL.BackendRenderers
@@ -9,38 +8,44 @@ namespace SharpSL.BackendRenderers
     {
         //void Do(Work whatToDo, ref Shader shader);
         //void Do<IndexType> (Work whatToDo,ref Mesh<IndexType> mesh) where IndexType: struct, IConvertible;
-        void Allocate<IndexType>(ref Mesh<IndexType> mesh) where IndexType : struct, IConvertible;
+        void Allocate(ref UsageHint usageHint, ref byte vertsMemAddr, ref byte indicesMemAddr, int vertsMemLength, int indicesMemLength);
 
-        void Allocate(ref Shader shader);
+        void Allocate(ref int Program, ref int VertexID, ref int FragmentID, ref string VertexSource, ref string FragmentSource, ref Dictionary<string, int> uniformArray);
 
-        void Allocate(ref Texture tex);
+        void Allocate(ref System.Drawing.Bitmap bitmap);
 
-        void Use<IndexType>(ref Mesh<IndexType> mesh) where IndexType : struct, IConvertible;
+        void Use(ref IndiceType indiceType, int length);
 
-        void Use(ref Shader shader);
+        void Use(ref int Program);
 
-        void Delete(ref Shader shader);
+        void Delete(ref int Program, ref int VertexID, ref int FragmentID);
 
-        void Send(ref int location, ref Matrix4 mat);
+        void SendMatrix4(int location, ref float mat);
 
         //void Send(ref int location,ref int[] i);
-        void Send(ref int location, ref int tbo, int slot);
+        void SendTexture2D(int location, ref int tbo, int slot);
 
-        void GenerateBuffers<IndexType>(ref Mesh<IndexType> mesh) where IndexType : struct, IConvertible;
+        void SendUniform1(int location, ref float data);
 
-        void GenerateBuffers(ref Texture tex);
+        void SendUniform2(int location, ref float data);
 
-        void GenerateBuffers(ref Shader shader);
+        void SendUniform3(int location, ref float data);
 
-        void BindBuffers<IndexType>(ref Mesh<IndexType> mesh) where IndexType : struct, IConvertible;
+        void SendUniform4(int location, ref float data);
 
-        void BindBuffers(ref Texture tex);
+        void GenerateBuffers(ref int VBO, ref int EBO);
 
-        void BindBuffers(ref Material mat);
+        void GenerateBuffers(ref int TBO);
+
+        void GenerateBuffers(ref int Program, ref int VertexID, ref int FragmentID);
+
+        void BindBuffers(ref int VBO, ref int EBO);
+
+        void BindBuffers(ref int TBO);
 
         void ChangeShader();
 
-        void BindVertexAttrib(int stride, RegisterAsAttribute attrib);
+        void BindVertexAttrib(ref AttributeType type, int shaderLoc, int dim, int stride, int offset);//vertextype and IndicesType move to SL
 
         void SetupGraphic();
 
@@ -49,6 +54,10 @@ namespace SharpSL.BackendRenderers
         void ClearColor();
 
         void ClearColor(float r, float b, float g, float a);
+
+        void ClearDepth();
+
+        void EnableScissor();
 
         void Scissor(int x, int y, int width, int height);
 

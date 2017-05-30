@@ -1,10 +1,10 @@
 ﻿using System;
 using OpenTK.Graphics.OpenGL;
-using OpenTK;
 using System.Drawing.Imaging;
 using SharpAsset;
-using System.Runtime.InteropServices;
 using System.Text;
+using System.Collections.Generic;
+using TupleExtensions;
 
 namespace SharpSL.BackendRenderers.OpenGL
 {
@@ -64,64 +64,41 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.ShadeModel(ShadingModel.Flat);
         }
 
-        public void GenerateBuffers(ref Shader shader)
+        public void GenerateBuffers(ref int Program, ref int VertexID, ref int FragmentID)
         {
-            shader.VertexID = GL.CreateShader(ShaderType.VertexShader);
-            shader.FragmentID = GL.CreateShader(ShaderType.FragmentShader);
-            shader.Program = GL.CreateProgram();
+            VertexID = GL.CreateShader(ShaderType.VertexShader);
+            FragmentID = GL.CreateShader(ShaderType.FragmentShader);
+            Program = GL.CreateProgram();
         }
 
-        public void BindBuffers(ref Material mat)
+        public void Use(ref int Program)
         {
-            var idLight = 0;
-            if (mat.Shader.uniformArray.ContainsKey("ambient"))
-            {
-                GL.Uniform1(mat.Shader.uniformArray["ambient"], Sharp.Light.ambientCoefficient);
-                foreach (var light in Sharp.Light.lights)
-                {
-                    GL.Uniform3(mat.Shader.uniformArray["lights[" + idLight + "].position"], light.entityObject.Position);
-                    //GL.UniformMatrix4(mat.Shader.uniformArray[UniformType.FloatMat4]["lights[" + idLight + "].modelMatrix"],false,ref light.entityObject.ModelMatrix);
-                    GL.Uniform4(mat.Shader.uniformArray["lights[" + idLight + "].color"], light.color);
-                    GL.Uniform1(mat.Shader.uniformArray["lights[" + idLight + "].intensity"], light.intensity);
-                    //GL.Uniform1(mat.Shader.uniformArray[UniformType.Float]["lights[" + idLight + "].angle"], light.angle);
-                    idLight++;
-                }
-            }
-            foreach (var param in mat.localParams)
-                param.Value.ConsumeData(mat.Shader.uniformArray[param.Key]);
-
-            foreach (var param in Material.globalParams)
-                param.Value.ConsumeData(mat.Shader.uniformArray[param.Key]);
+            GL.UseProgram(Program);
         }
 
-        public void Use(ref Shader shader)
-        {
-            GL.UseProgram(shader.Program);
-        }
-
-        public void Allocate(ref Texture tex)
+        public void Allocate(ref System.Drawing.Bitmap bitmap)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
-            BitmapData bmp_data = tex.bitmap.LockBits(new System.Drawing.Rectangle(0, 0, tex.bitmap.Width, tex.bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            BitmapData bmp_data = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
                 OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
 
-            tex.bitmap.UnlockBits(bmp_data);
+            bitmap.UnlockBits(bmp_data);
         }
 
-        public void GenerateBuffers(ref Texture tex)
+        public void GenerateBuffers(ref int TBO)
         {
-            if (tex.TBO == -1)
-                tex.TBO = GL.GenTexture();
+            if (TBO == -1)
+                TBO = GL.GenTexture();
         }
 
-        public void BindBuffers(ref Texture tex)
+        public void BindBuffers(ref int TBO)
         {
             //GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, tex.TBO);
+            GL.BindTexture(TextureTarget.Texture2D, TBO);
         }
 
         /*public void Do (Work whatToDo, ref Shader shader)
@@ -150,12 +127,12 @@ namespace SharpSL.BackendRenderers.OpenGL
 			}
 		}*/
 
-        public void Allocate<IndexType>(ref Mesh<IndexType> mesh) where IndexType : struct, IConvertible
+        public void Allocate(ref UsageHint usageHint, ref byte vertsMemAddr, ref byte indicesMemAddr, int vertsMemLength, int indicesMemLength)
         {
             //Console.WriteLine ("error check"+GL.DebugMessageCallback);
             var watch = System.Diagnostics.Stopwatch.StartNew();
             //var ptr = CustomConverter.ToPtr(mesh.Vertices, stride);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mesh.length * mesh.stride), (!mesh.alwaysLocal && mesh.isMeshShared) ? mesh.PtrToSharedMesh.DangerousGetHandle() : mesh.PtrToLocalMesh.DangerousGetHandle(), (BufferUsageHint)mesh.UsageHint);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertsMemLength, ref vertsMemAddr, (BufferUsageHint)usageHint);
             /*var ptr = GL.MapBufferRange(BufferTarget.ArrayBuffer, IntPtr.Zero, (IntPtr)(mesh.Vertices.Length * stride), BufferAccessMask.MapReadBit | BufferAccessMask.MapWriteBit | BufferAccessMask.MapFlushExplicitBit);
             for (int i = 0; i < mesh.Vertices.Length; i++)
             {
@@ -165,57 +142,56 @@ namespace SharpSL.BackendRenderers.OpenGL
             watch.Stop();
             Console.WriteLine("cast: " + watch.ElapsedTicks);
 
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mesh.Indices.Length * Marshal.SizeOf(mesh.Indices[0])), ref mesh.Indices[0], (BufferUsageHint)mesh.UsageHint);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indicesMemLength, ref indicesMemAddr, (BufferUsageHint)usageHint);
         }
 
-        public void Allocate(ref Shader shader)
+        public void Allocate(ref int Program, ref int VertexID, ref int FragmentID, ref string VertexSource, ref string FragmentSource, ref Dictionary<string, int> uniformArray)
         {
-            if (shader.uniformArray.Count > 0)
-                return;
+            //if (shader.uniformArray.Count > 0)
+            //  return;
             int status_code;
             string info;
-
             // Compile vertex shader
-            GL.ShaderSource(shader.VertexID, shader.VertexSource); //make global frag and vert source, compile once and then mix them to shader
-            GL.CompileShader(shader.VertexID);
-            GL.GetShaderInfoLog(shader.VertexID, out info);
-            GL.GetShader(shader.VertexID, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
+            GL.ShaderSource(VertexID, VertexSource); //make global frag and vert source, compile once and then mix them to shader
+            GL.CompileShader(VertexID);
+            GL.GetShaderInfoLog(VertexID, out info);
+            GL.GetShader(VertexID, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
 
             if (status_code != 1)
                 throw new ApplicationException(info);
 
             // Compile fragment shader
-            GL.ShaderSource(shader.FragmentID, shader.FragmentSource);
-            GL.CompileShader(shader.FragmentID);
-            GL.GetShaderInfoLog(shader.FragmentID, out info);
-            GL.GetShader(shader.FragmentID, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
+            GL.ShaderSource(FragmentID, FragmentSource);
+            GL.CompileShader(FragmentID);
+            GL.GetShaderInfoLog(FragmentID, out info);
+            GL.GetShader(FragmentID, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
 
             if (status_code != 1)
                 throw new ApplicationException(info);
 
-            GL.AttachShader(shader.Program, shader.FragmentID); //support multiple vert/frag shaders via foreach vert/frag source
-            GL.AttachShader(shader.Program, shader.VertexID);
-            GL.BindAttribLocation(shader.Program, 0, "vertex_position");
-            GL.BindAttribLocation(shader.Program, 1, "vertex_color");
-            GL.BindAttribLocation(shader.Program, 2, "vertex_texcoord");
-            GL.BindAttribLocation(shader.Program, 3, "vertex_normal");
+            GL.AttachShader(Program, FragmentID); //support multiple vert/frag shaders via foreach vert/frag source
+            GL.AttachShader(Program, VertexID);
+            GL.BindAttribLocation(Program, 0, "vertex_position");
+            GL.BindAttribLocation(Program, 1, "vertex_color");
+            GL.BindAttribLocation(Program, 2, "vertex_texcoord");
+            GL.BindAttribLocation(Program, 3, "vertex_normal");
 
-            GL.LinkProgram(shader.Program);
+            GL.LinkProgram(Program);
 
             int numOfUniforms = 0;
-            GL.GetProgram(shader.Program, GetProgramParameterName.ActiveUniforms, out numOfUniforms);
+            GL.GetProgram(Program, GetProgramParameterName.ActiveUniforms, out numOfUniforms);
             int num;
-            GL.GetProgram(shader.Program, GetProgramParameterName.ActiveUniformMaxLength, out num);
+            GL.GetProgram(Program, GetProgramParameterName.ActiveUniformMaxLength, out num);
             StringBuilder stringBuilder = new StringBuilder((num == 0) ? 1 : num);
             int size = 0;
             ActiveUniformType uniType;
             Console.WriteLine("start uni query");
             for (int i = 0; i < numOfUniforms; i++)
             {
-                GL.GetActiveUniform(shader.Program, i, stringBuilder.Capacity, out num, out size, out uniType, stringBuilder);
+                GL.GetActiveUniform(Program, i, stringBuilder.Capacity, out num, out size, out uniType, stringBuilder);
                 Console.WriteLine(stringBuilder.ToString() + " " + uniType + " : " + size);
-                if (!shader.uniformArray.ContainsKey(stringBuilder.ToString()))
-                    shader.uniformArray.Add(stringBuilder.ToString(), i);
+                if (!uniformArray.ContainsKey(stringBuilder.ToString()))
+                    uniformArray.Add(stringBuilder.ToString(), i);
             }
             //GL.UseProgram(Program);
 
@@ -223,19 +199,19 @@ namespace SharpSL.BackendRenderers.OpenGL
             //GL.UseProgram(0);
         }
 
-        public void Use<IndexType>(ref Mesh<IndexType> mesh) where IndexType : struct, IConvertible
+        public void Use(ref IndiceType indiceType, int length)
         {
-            GL.DrawElements(PrimitiveType.Triangles, mesh.Indices.Length, (DrawElementsType)Mesh<IndexType>.indiceType, IntPtr.Zero);
+            GL.DrawElements(PrimitiveType.Triangles, length, (DrawElementsType)indiceType, IntPtr.Zero);
         }
 
-        public void Delete(ref Shader shader)
+        public void Delete(ref int Program, ref int VertexID, ref int FragmentID)
         {
-            if (shader.Program != 0)
-                GL.DeleteProgram(shader.Program);
-            if (shader.FragmentID != 0)
-                GL.DeleteShader(shader.FragmentID);
-            if (shader.VertexID != 0)
-                GL.DeleteShader(shader.VertexID);
+            if (Program != 0)
+                GL.DeleteProgram(Program);
+            if (FragmentID != 0)
+                GL.DeleteShader(FragmentID);
+            if (VertexID != 0)
+                GL.DeleteShader(VertexID);
         }
 
         public void Scissor(int x, int y, int width, int height)
@@ -246,7 +222,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
         public void ClearColor()
         {
-            ClearColor(0f, 0f, 0f, 0f);
+            ClearColor(0.21f, 0.21f, 0.21f, 0f);
         }
 
         public void ClearColor(float r, float g, float b, float a)
@@ -263,6 +239,17 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         }
 
+        public void ClearDepth()
+        {
+            //GL.Enable(EnableCap.Blend);
+            GL.Clear(ClearBufferMask.DepthBufferBit);
+        }
+
+        public void EnableScissor()
+        {
+            GL.Enable(EnableCap.ScissorTest);
+        }
+
         public void SetupGraphic()
         {
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
@@ -271,16 +258,16 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Hint(HintTarget.PolygonSmoothHint, HintMode.Nicest);
         }
 
-        public void GenerateBuffers<IndexType>(ref Mesh<IndexType> mesh) where IndexType : struct, IConvertible
+        public void GenerateBuffers(ref int VBO, ref int EBO)
         {
-            mesh.VBO = GL.GenBuffer();
-            mesh.EBO = GL.GenBuffer();
+            VBO = GL.GenBuffer();
+            EBO = GL.GenBuffer();
         }
 
-        public void BindBuffers<IndexType>(ref Mesh<IndexType> mesh) where IndexType : struct, IConvertible
+        public void BindBuffers(ref int VBO, ref int EBO)
         {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, mesh.VBO);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mesh.EBO);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO);
         }
 
         public void ChangeShader()
@@ -288,23 +275,43 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.UseProgram(0);
         }
 
-        public void BindVertexAttrib(int stride, RegisterAsAttribute attrib)
+        public void BindVertexAttrib(ref AttributeType type, int shaderLoc, int dim, int stride, int offset)
         {
-            GL.EnableVertexAttribArray(attrib.shaderLocation);
-            GL.VertexAttribPointer(attrib.shaderLocation, attrib.Dimension, (VertexAttribPointerType)attrib.type, false, stride, attrib.offset);
+            GL.EnableVertexAttribArray(shaderLoc);
+            GL.VertexAttribPointer(shaderLoc, dim, (VertexAttribPointerType)type, false, stride, offset);
         }
 
-        public void Send(ref int location, ref Matrix4 mat)
+        public void SendMatrix4(int location, ref float mat)
         {
             //GL.UniformMatrix4(location, mat.Length, false, ref mat[0].Row0.X);
-            GL.UniformMatrix4(location, false, ref mat);
+            GL.UniformMatrix4(location, 1, false, ref mat);
         }
 
-        public void Send(ref int location, ref int tbo, int slot)
+        public void SendTexture2D(int location, ref int tbo, int slot)
         {
             //GL.ActiveTexture(TextureUnit.Texture0 + slot);
             GL.BindTexture(TextureTarget.Texture2D, tbo);
             GL.Uniform1(location, (int)TextureUnit.Texture0 + slot);
+        }
+
+        public void SendUniform1(int location, ref float data)
+        {
+            GL.Uniform1(location, 1, ref data);
+        }
+
+        public void SendUniform2(int location, ref float data)
+        {
+            GL.Uniform2(location, 1, ref data);
+        }
+
+        public void SendUniform3(int location, ref float data)
+        {
+            GL.Uniform3(location, 1, ref data);
+        }
+
+        public void SendUniform4(int location, ref float data)
+        {
+            GL.Uniform4(location, 1, ref data);
         }
 
         #endregion IBackendRenderer implementation

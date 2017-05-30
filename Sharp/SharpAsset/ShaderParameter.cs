@@ -1,7 +1,9 @@
 ﻿using OpenTK;
 using Sharp;
+using System.Runtime.CompilerServices;
 
 namespace SharpAsset
+
 {
     public delegate ref T GetData<T>();
 
@@ -10,7 +12,7 @@ namespace SharpAsset
         void ConsumeData(int location);
     }
 
-    internal struct Matrix4Parameter : IParameter//attribute ShaderParameter generic bind can find all parameters
+    internal struct Matrix4Parameter : IParameter
     {
         public GetData<Matrix4> data;
 
@@ -21,11 +23,11 @@ namespace SharpAsset
 
         public void ConsumeData(int location)
         {
-            MainWindow.backendRenderer.Send(ref location, ref data());
+            MainWindow.backendRenderer.SendMatrix4(location, ref data().Row0.X);
         }
     }
 
-    internal struct Texture2DParameter : IParameter
+    internal struct Texture2DParameter : IParameter //zalatwiaj primitivy tutaj
     {
         private int Slot;
 
@@ -39,7 +41,7 @@ namespace SharpAsset
 
         public void ConsumeData(int location)
         {
-            MainWindow.backendRenderer.Send(ref location, ref data().TBO, Slot);
+            MainWindow.backendRenderer.SendTexture2D(location, ref data().TBO, Slot);
         }
     }
 }

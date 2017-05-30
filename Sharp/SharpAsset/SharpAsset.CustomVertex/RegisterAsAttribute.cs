@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Sharp;
+using System.Runtime.CompilerServices;
 
 namespace SharpAsset
 {
@@ -12,35 +13,15 @@ namespace SharpAsset
     {
         public static Dictionary<Type, Dictionary<VertexAttribute, RegisterAsAttribute>> registeredVertexFormats = new Dictionary<Type, Dictionary<VertexAttribute, RegisterAsAttribute>>();
 
-        public IntPtr offset;
-
-        public int Dimension
-        {
-            get
-            {
-                switch (format)
-                {
-                    case VertexAttribute.POSITION:
-                        return 3;//generatedFillers.Count;
-                    case VertexAttribute.COLOR:
-                        return 4;
-
-                    case VertexAttribute.UV:
-                        return 2;
-
-                    case VertexAttribute.NORMAL:
-                        return 3;
-                }
-                throw new InvalidOperationException(nameof(format) + " have wrong value");
-            }
-        }
-
+        public int offset;
+        public int dimension;
+        public int stride;
         public int shaderLocation;
         public VertexAttribute format;
-        public VertexType type;
-        public List<Action<IVertex, object>> generatedFillers = new List<Action<IVertex, object>>();
+        public AttributeType type;
+        //public List<Action<IVertex, object>> generatedFillers = new List<Action<IVertex, object>>();
 
-        public RegisterAsAttribute(VertexAttribute Format, VertexType Type)
+        public RegisterAsAttribute(VertexAttribute Format, AttributeType Type)
         {
             format = Format;
 
@@ -48,19 +29,24 @@ namespace SharpAsset
             {
                 case VertexAttribute.POSITION:
                     shaderLocation = 0;
+                    dimension = 3;
                     break;
 
                 case VertexAttribute.COLOR:
                     shaderLocation = 1;
+                    dimension = 4;
                     break;
 
                 case VertexAttribute.UV:
                     shaderLocation = 2;
+                    dimension = 2;
                     break;
 
                 case VertexAttribute.NORMAL:
                     shaderLocation = 3;
+                    dimension = 3;
                     break;
+                    //case default: throw new InvalidOperationException(nameof(format) + " have wrong value"); break;
             }
             type = Type;
         }
@@ -78,14 +64,15 @@ namespace SharpAsset
                 if (lastFormat != (int)attrib.format)
                 {
                     lastFormat = (int)attrib.format;
-                    attrib.offset = Marshal.OffsetOf(type, field.Name);
-                    attrib.generatedFillers = new List<Action<IVertex, object>>() { DelegateGenerator.GenerateSetter<IVertex>(field) };
+                    attrib.stride = Marshal.SizeOf(field.FieldType);
+                    attrib.offset = Marshal.OffsetOf(type, field.Name).ToInt32();
+                    //attrib.generatedFillers = new List<Action<IVertex, object>>() { DelegateGenerator.GenerateSetter<IVertex>(field) };
                     vertFormat.Add(attrib.format, attrib);
                 }
                 else if (attrib.format == VertexAttribute.POSITION)
                 {
                     //	dim++; //error prone
-                    vertFormat[attrib.format].generatedFillers.Add(DelegateGenerator.GenerateSetter<IVertex>(field));
+                    //vertFormat[attrib.format].generatedFillers.Add(DelegateGenerator.GenerateSetter<IVertex>(field));
                 }
                 //else if (attrib.format == VertexAttribute.UV)
                 //	numOfUV++;

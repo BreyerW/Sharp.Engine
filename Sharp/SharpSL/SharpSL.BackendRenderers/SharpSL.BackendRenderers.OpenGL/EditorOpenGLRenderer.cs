@@ -6,6 +6,7 @@ using SharpAsset;
 using SharpAsset.Pipeline;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Sharp;
 
 namespace SharpSL.BackendRenderers.OpenGL
 {
@@ -26,9 +27,9 @@ namespace SharpSL.BackendRenderers.OpenGL
         {
             //this.SetupGraphic();
             GL.LineWidth(thickness);
-            this.DrawCircleY(3.5f * scale, 3f, yColor);
-            this.DrawCircleZ(3.5f * scale, 3f, zColor);
-            this.DrawCircleX(3.5f * scale, 3f, xColor);
+            this.DrawCircle(3.5f * scale, 3f, yColor, Plane.Y);
+            this.DrawCircle(3.5f * scale, 3f, zColor, Plane.Z);
+            this.DrawCircle(3.5f * scale, 3f, xColor, Plane.X);
             GL.LineWidth(1f);
         }
 
@@ -75,40 +76,46 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Rect(x1, y1, x2, y2);
         }
 
-        public void DrawCircleX(float size, float lineWidth, Color unColor)
+        public void DrawCircle(float size, float lineWidth, Color unColor, Plane plane, float angle = 360, bool filled = false)
         {
+            GL.Enable(EnableCap.Blend); GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
             GL.Color4(unColor);
-            GL.Begin(BeginMode.LineLoop);
-            float num = 0.03141593f;
-            for (float num2 = 0f; num2 < 6.28318548f; num2 += num)
+            GL.Begin(filled ? PrimitiveType.TriangleFan : PrimitiveType.LineLoop);
+            float num = MathHelper.Pi * 0.01f;
+            float fraction = MathHelper.DegreesToRadians(Math.Abs(angle)) / MathHelper.TwoPi;
+
+            GL.Vertex3(0.0, 0.0, 0.0);
+
+            for (float num2 = 0; num2 < MathHelper.TwoPi * fraction + num; num2 += num)
             {
-                GL.Vertex3(0.0, Math.Sin((double)num2) * (double)size, Math.Cos((double)num2) * (double)size);
+                switch (plane)
+                {
+                    case Plane.X: GL.Vertex3(0.0, Math.Sin((double)num2) * (double)size, Math.Cos((double)num2) * (double)size); break;
+                    case Plane.Y: GL.Vertex3(Math.Sin((double)num2) * (double)size, 0.0, Math.Cos((double)num2) * (double)size); break;
+                    case Plane.Z: GL.Vertex3(Math.Sin((double)num2) * (double)size, Math.Cos((double)num2) * (double)size, 0.0); break;
+                }
             }
+
             GL.End();
         }
 
-        public void DrawCircleY(float size, float lineWidth, Color unColor)
+        public void DrawFilledPolyline(float size, float lineWidth, Color color, ref Matrix4 mat, ref (float x, float y, float z)[] vecArray)
         {
-            GL.Color4(unColor);
-            GL.Begin(PrimitiveType.LineLoop);
-            float num = 0.03141593f;
-            for (float num2 = 0f; num2 < 6.28318548f; num2 += num)
-            {
-                GL.Vertex3(Math.Sin((double)num2) * (double)size, 0.0, Math.Cos((double)num2) * (double)size);
-            }
-            GL.End();
-        }
+            GL.Enable(EnableCap.Blend); GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+            GL.Color4(color);
+            GL.LoadIdentity();
+            var copy = mat.ClearRotation() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+            GL.LoadMatrix(ref copy);
+            GL.PushMatrix();
 
-        public void DrawCircleZ(float size, float lineWidth, Color unColor)
-        {
-            GL.Color4(unColor);
-            GL.Begin(PrimitiveType.LineLoop);
-            float num = 0.03141593f;
-            for (float num2 = 0f; num2 < 6.28318548f; num2 += num)
+            GL.Begin(PrimitiveType.TriangleFan);
+            foreach (var vec in vecArray)
             {
-                GL.Vertex3(Math.Sin((double)num2) * (double)size, Math.Cos((double)num2) * (double)size, 0.0);
+                GL.Vertex3(vec.x, vec.y, vec.z);
             }
+
             GL.End();
+            GL.PopMatrix();
         }
 
         public void DrawSphere(float radius, int lats, int longs, Color unColor)

@@ -2,12 +2,14 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
+public delegate void RefAction<T>(ref T arg);
+
+public delegate ref TResult RefFunc<TResult>();
+
+public delegate ref TResult RefFunc<T, TResult>(ref T arg);
+
 namespace Sharp
 {
-    public delegate ref TResult RefFunc<TResult>();
-
-    public delegate ref TResult RefFunc<in T, TResult>(T arg);
-
     internal static class DelegateGenerator
     {
         /// <summary>

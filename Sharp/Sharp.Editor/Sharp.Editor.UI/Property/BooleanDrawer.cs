@@ -32,17 +32,7 @@ namespace Gwen.Control.Property
         public override bool Value
         {
             get { return m_CheckBox.IsChecked; }
-            set { base.Value = value; }
-        }
-
-        /// <summary>
-        /// Sets the property value.
-        /// </summary>
-        /// <param name="value">Value to set.</param>
-        /// <param name="fireEvents">Determines whether to fire "value changed" event.</param>
-		public override void SetValue(bool value, bool fireEvents = false)
-        {
-            m_CheckBox.IsChecked = value;
+            set { m_CheckBox.IsChecked = value; }
         }
 
         /// <summary>

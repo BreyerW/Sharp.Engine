@@ -9,6 +9,7 @@ namespace Sharp
         public static Camera main;
         public Frustum frustum;
         private Matrix4 projectionMatrix;
+
         public Matrix4 ProjectionMatrix
         {
             get
@@ -19,7 +20,7 @@ namespace Sharp
             {
                 projectionMatrix = value;
                 if (main != null)
-                    Material.BindGlobalProperty("camProjection", () => { return ref main.projectionMatrix; });
+                    Material.BindGlobalProperty("camProjection", () => ref main.projectionMatrix);
             }
         }
 
@@ -35,13 +36,14 @@ namespace Sharp
             {
                 modelViewMatrix = value;
                 if (main != null)
-                    Material.BindGlobalProperty("camView", () => { return ref main.modelViewMatrix; });
+                    Material.BindGlobalProperty("camView", () => ref main.modelViewMatrix);
             }
         }
 
         public bool moved = false;
 
         #region Constructors
+
         public Camera()
         {
             Speed = 50.0f;
@@ -57,10 +59,9 @@ namespace Sharp
             ZFar = 1000f;
             //Orientation = TargetOrientation;
             SetProjectionMatrix();
-
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Members
 
@@ -88,9 +89,10 @@ namespace Sharp
 
         public CamMode CameraMode = CamMode.FlightCamera;
 
-        #endregion
+        #endregion Properties
 
         #region Public Methods
+
         public void Update()
         {
             /*if (TargetPosition !=entityObject.Position)
@@ -108,7 +110,7 @@ namespace Sharp
         {
             var translationMatrix = Matrix4.CreateTranslation(-entityObject.Position);
             var rotationMatrix = Matrix4.CreateFromQuaternion(entityObject.ToQuaterion(entityObject.Rotation));
-            //modelViewMatrix = rotationMatrix*translationMatrix; orbit 
+            //modelViewMatrix = rotationMatrix*translationMatrix; orbit
             ModelViewMatrix = translationMatrix * rotationMatrix; //pan
         }
 
@@ -117,6 +119,7 @@ namespace Sharp
             float num = a - b;
             return ((-1.401298E-45f <= num) && (num <= float.Epsilon));
         }
+
         public Vector3 ScreenToWorld(int x, int y, int width, int height, float time = -1f)
         {
             Vector4 vec;
@@ -141,14 +144,15 @@ namespace Sharp
 
             return vec.Xyz;
         }
+
         public Vector3 WorldToScreen(Vector3 pos, int width, int height)
         {
-
             var pos4 = Vector4.Transform(new Vector4(pos, 1), modelViewMatrix * projectionMatrix);
 
             var NDCSpace = pos4.Xyz / pos4.W;
             return new Vector3(NDCSpace.X * (width / (2f)), NDCSpace.Y * (height / (2f)), NDCSpace.Z);//look at divide part
         }
+
         /// <summary>
         /// Sets up this camera with the specified Camera Mode
         /// </summary>
@@ -160,7 +164,7 @@ namespace Sharp
             CameraMode = mode;
         }
 
-        #endregion
+        #endregion Public Methods
 
         #region Protected Methods
 
@@ -208,7 +212,6 @@ namespace Sharp
             if (frustum != null)
                 frustum.Update(Camera.main.modelViewMatrix * Camera.main.projectionMatrix);
             //ResetMouse();
-
         }
 
         /// <summary>
@@ -249,11 +252,11 @@ namespace Sharp
             moved = true;
         }
 
-        #endregion
+        #endregion Protected Methods
 
-        #endregion
-
+        #endregion Members
     }
+
     public enum CamMode
     {
         FlightCamera,

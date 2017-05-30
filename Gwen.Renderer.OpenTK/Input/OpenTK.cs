@@ -40,37 +40,37 @@ namespace Gwen.Input
         /// </summary>
         /// <param name="key">OpenTK key code.</param>
         /// <returns>GWEN key code.</returns>
-        private Key TranslateKeyCode(SDL.SDL_Keycode key)
+        private Key TranslateKeyCode(SDL.SDL_Scancode key)
         {
             switch (key)
             {
-                case SDL.SDL_Keycode.SDLK_BACKSPACE: return Key.Backspace;
-                case SDL.SDL_Keycode.SDLK_RETURN: return Key.Return;
-                case SDL.SDL_Keycode.SDLK_ESCAPE: return Key.Escape;
-                case SDL.SDL_Keycode.SDLK_TAB: return Key.Tab;
-                case SDL.SDL_Keycode.SDLK_SPACE: return Key.Space;
-                case SDL.SDL_Keycode.SDLK_UP: return Key.Up;
-                case SDL.SDL_Keycode.SDLK_DOWN: return Key.Down;
-                case SDL.SDL_Keycode.SDLK_LEFT: return Key.Left;
-                case SDL.SDL_Keycode.SDLK_RIGHT: return Key.Right;
-                case SDL.SDL_Keycode.SDLK_HOME: return Key.Home;
-                case SDL.SDL_Keycode.SDLK_END: return Key.End;
-                case SDL.SDL_Keycode.SDLK_DELETE: return Key.Delete;
-                case SDL.SDL_Keycode.SDLK_LCTRL:
+                case SDL.SDL_Scancode.SDL_SCANCODE_BACKSPACE: return Key.Backspace;
+                case SDL.SDL_Scancode.SDL_SCANCODE_RETURN: return Key.Return;
+                case SDL.SDL_Scancode.SDL_SCANCODE_ESCAPE: return Key.Escape;
+                case SDL.SDL_Scancode.SDL_SCANCODE_TAB: return Key.Tab;
+                case SDL.SDL_Scancode.SDL_SCANCODE_SPACE: return Key.Space;
+                case SDL.SDL_Scancode.SDL_SCANCODE_UP: return Key.Up;
+                case SDL.SDL_Scancode.SDL_SCANCODE_DOWN: return Key.Down;
+                case SDL.SDL_Scancode.SDL_SCANCODE_LEFT: return Key.Left;
+                case SDL.SDL_Scancode.SDL_SCANCODE_RIGHT: return Key.Right;
+                case SDL.SDL_Scancode.SDL_SCANCODE_HOME: return Key.Home;
+                case SDL.SDL_Scancode.SDL_SCANCODE_END: return Key.End;
+                case SDL.SDL_Scancode.SDL_SCANCODE_DELETE: return Key.Delete;
+                case SDL.SDL_Scancode.SDL_SCANCODE_LCTRL:
                     this.m_AltGr = true;
                     return Key.Control;
 
-                case SDL.SDL_Keycode.SDLK_LALT: return Key.Alt;
-                case SDL.SDL_Keycode.SDLK_LSHIFT: return Key.Shift;
-                case SDL.SDL_Keycode.SDLK_RCTRL: return Key.Control;
-                case SDL.SDL_Keycode.SDLK_RALT:
+                case SDL.SDL_Scancode.SDL_SCANCODE_LALT: return Key.Alt;
+                case SDL.SDL_Scancode.SDL_SCANCODE_LSHIFT: return Key.Shift;
+                case SDL.SDL_Scancode.SDL_SCANCODE_RCTRL: return Key.Control;
+                case SDL.SDL_Scancode.SDL_SCANCODE_RALT:
                     if (this.m_AltGr)
                     {
                         this.m_Canvas.Input_Key(Key.Control, false);
                     }
                     return Key.Alt;
 
-                case SDL.SDL_Keycode.SDLK_RSHIFT: return Key.Shift;
+                case SDL.SDL_Scancode.SDL_SCANCODE_RSHIFT: return Key.Shift;
             }
             return Key.Invalid;
         }
@@ -80,14 +80,25 @@ namespace Gwen.Input
         /// </summary>
         /// <param name="key">OpenTK key code.</param>
         /// <returns>Translated character.</returns>
-        private static char TranslateChar(SDL.SDL_Keycode key)
+        private static char TranslateChar(SDL.SDL_Scancode key)
         {
-            if (key == SDL.SDL_Keycode.SDLK_LEFT)
+            var keyCode = SDL.SDL_GetKeyFromScancode(key);
+            if (key == SDL.SDL_Scancode.SDL_SCANCODE_LEFT)
                 return (char)27;
-            else if (key == SDL.SDL_Keycode.SDLK_RIGHT)
+            else if (key == SDL.SDL_Scancode.SDL_SCANCODE_RIGHT)
                 return (char)26;
-            return (char)key;
-            // return char.MinValue;
+            else
+            {
+                var modState = SDL.SDL_GetModState();
+                if (modState.HasFlag(SDL.SDL_Keymod.KMOD_LSHIFT) || modState.HasFlag(SDL.SDL_Keymod.KMOD_RSHIFT) || modState.HasFlag(SDL.SDL_Keymod.KMOD_CAPS))
+                    if (keyCode >= SDL.SDL_Keycode.SDLK_AMPERSAND && keyCode <= SDL.SDL_Keycode.SDLK_UNDERSCORE)
+                    {
+                        return (char)(keyCode - 16);
+                    }
+                    else
+                        return (char)(keyCode - 32);
+            }
+            return (char)keyCode;
         }
 
         public bool ProcessMouseMessage(EventArgs args, bool pressed = false)
@@ -130,12 +141,12 @@ namespace Gwen.Input
             return false;
         }
 
-        public bool ProcessKeyDown(SDL.SDL_Keycode args)
+        public bool ProcessKeyDown(SDL.SDL_Scancode args)
         {
             // KeyboardKeyEventArgs ev = args as KeyboardKeyEventArgs;
             char ch = TranslateChar(args);
             m_Canvas.Input_Character(ch);
-            Console.WriteLine(ch);
+            //Console.WriteLine(ch);
             if (InputHandler.DoSpecialKeys(m_Canvas, ch))
                 return false;
 
@@ -144,7 +155,7 @@ namespace Gwen.Input
             return m_Canvas.Input_Key(iKey, true);
         }
 
-        public bool ProcessKeyUp(SDL.SDL_Keycode args)
+        public bool ProcessKeyUp(SDL.SDL_Scancode args)
         {
             //char ch = TranslateChar(args);
             //m_Canvas.Input_Character(ch);

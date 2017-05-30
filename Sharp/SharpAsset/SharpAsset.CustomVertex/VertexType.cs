@@ -2,7 +2,7 @@
 
 namespace SharpAsset
 {
-	public enum VertexType
+	public enum AttributeType
 	{
 		Byte = 5120,
 		UnsignedByte,

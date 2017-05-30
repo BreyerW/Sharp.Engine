@@ -15,7 +15,7 @@ namespace Gwen.Control.Property
             posZ.Dock = Pos.Right;
             posZ.Width = 50;
             //posZ.MaximumSize=new System.Drawing.Point(70,17);
-            posZ.TextChanged += OnValueChanged;
+
             var label = new Label(this);
             label.Text = "Z ";
             label.Dock = Pos.Right;
@@ -24,7 +24,7 @@ namespace Gwen.Control.Property
             posY.Dock = Pos.Right;
             posY.Width = 50;
             //posY.MaximumSize=new System.Drawing.Point(70,17);
-            posY.TextChanged += OnValueChanged;
+
             label = new Label(this);
             label.Text = "Y ";
             label.Dock = Pos.Right;
@@ -33,11 +33,14 @@ namespace Gwen.Control.Property
             posX.Dock = Pos.Right;
             posX.Width = 50;
             //posX.MaximumSize=new System.Drawing.Point(70,17);
-            posX.TextChanged += OnValueChanged;
+
             label = new Label(this);
             label.Text = "X ";
             label.Font.Size = 7;
             label.Dock = Pos.Right;
+            posZ.TextChanged += OnValueChanged;
+            posX.TextChanged += OnValueChanged;
+            posY.TextChanged += OnValueChanged;
         }
 
         public override OpenTK.Vector3 Value
@@ -48,22 +51,11 @@ namespace Gwen.Control.Property
             }
             set
             {
-                base.Value = value;
+                //Console.WriteLine("buu");
+                posX.SetText(value.X);
+                posY.SetText(value.Y);
+                posZ.SetText(value.Z);
             }
-        }
-
-        /// <summary>
-        /// Sets the property value.
-        /// </summary>
-        /// <param name="value">Value to set.</param>
-        /// <param name="fireEvents">Determines whether to fire "value changed" event.</param>
-        public override void SetValue(OpenTK.Vector3 value, bool fireEvents = false)
-        {
-            var val = value;
-            var Val = Value;
-            posX.SetText(val.X, val.X != Val.X);
-            posY.SetText(val.Y, val.Y != Val.Y);
-            posZ.SetText(val.Z, val.Y != Val.Z);
         }
 
         /// <summary>

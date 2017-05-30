@@ -1,19 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using OpenTK;
 using OpenTK.Input;
 using Sharp.Editor.Views;
 using SDL2;
+using System.Reflection;
+using System.Linq;
+using Sharp.Editor;
 
 namespace Sharp
 {
     public static class InputHandler
     {
+        private static readonly int numKeys = (int)SDL.SDL_Scancode.SDL_NUM_SCANCODES;
         private static bool pressed = false;
+        private static IntPtr memAddrToKeyboard;
 
-        internal static KeyboardState prevKeyState;
-        internal static KeyboardState curKeyState;
+        internal static byte[] prevKeyState = new byte[numKeys];
+        internal static byte[] curKeyState = new byte[numKeys];
 
         public static Action<KeyboardKeyEventArgs> OnKeyDown;
         public static Action<KeyboardKeyEventArgs> OnKeyUp;
@@ -28,6 +34,21 @@ namespace Sharp
         public static Gwen.Input.OpenTK input = new Gwen.Input.OpenTK();
 
         private static readonly uint[] mouseCodes = new uint[] { SDL.SDL_BUTTON_LMASK, SDL.SDL_BUTTON_MMASK, SDL.SDL_BUTTON_RMASK, SDL.SDL_BUTTON_X1MASK, SDL.SDL_BUTTON_X2MASK };
+        private static readonly SDL.SDL_Scancode[] keyboardCodes = (SDL.SDL_Scancode[])Enum.GetValues(typeof(SDL.SDL_Scancode));
+        private static List<IMenuCommand> menuCommands = new List<IMenuCommand>();//keycombinations as key
+        private static SDL.SDL_Keymod modState;
+
+        static InputHandler()
+        {
+            memAddrToKeyboard = SDL.SDL_GetKeyboardState(out int _);
+            var types = Assembly.GetExecutingAssembly().GetTypes();
+
+            foreach (var type in types)
+                if (type.GetInterfaces().Contains(typeof(IMenuCommand)))
+                    menuCommands.Add(Activator.CreateInstance(type) as IMenuCommand);
+
+            menuCommands.Sort((item1, item2) => (item1.keyCombination.Length >= item2.keyCombination.Length) ? 0 : 1);
+        }
 
         public static void ProcessMouse(uint button, bool Pressed)
         {
@@ -38,6 +59,7 @@ namespace Sharp
             Gwen.Input.InputHandler.HoveredControl = input.m_Canvas.GetControlAt(x - winPos.x, y - winPos.y);
             evnt = new MouseButtonEventArgs(x - winPos.x, y - winPos.y, ConvertMaskToEnum(button), true);//last param bugged
             Gwen.Input.InputHandler.MouseFocus = Gwen.Input.InputHandler.HoveredControl;
+            Gwen.Input.InputHandler.KeyboardFocus = Gwen.Input.InputHandler.HoveredControl as Gwen.Control.TextBox;
             foreach (var view in View.views[Window.UnderMouseWindowId])
             {
                 if (view.panel != null && view.panel.IsChild(Gwen.Input.InputHandler.HoveredControl, true))
@@ -97,19 +119,56 @@ namespace Sharp
             else return MouseButton.LastButton;
         }
 
-        public static void ProcessKeyboard(SDL.SDL_Keycode keyCode, bool pressed)
+        public static void ProcessKeyboard()
         {
-            KeyboardKeyEventArgs evnt = null;
-            if (pressed)
+            modState = SDL.SDL_GetModState();
+            Unsafe.CopyBlock(ref prevKeyState[0], ref curKeyState[0], (uint)numKeys);
+            Marshal.Copy(memAddrToKeyboard, curKeyState, 0, numKeys);
+
+            foreach (var keyCode in keyboardCodes)
             {
-                OnKeyDown?.Invoke(evnt);
-                input.ProcessKeyDown(keyCode);
+                if (keyCode == SDL.SDL_Scancode.SDL_NUM_SCANCODES) continue;
+                int key = (int)keyCode;
+                if (curKeyState[key] != prevKeyState[key])
+                {
+                    if (pressed = curKeyState[key] is 1)
+                    {
+                        OnKeyDown?.Invoke(null);
+                        input.ProcessKeyDown(keyCode);
+                    }
+                    else
+                    {
+                        OnKeyUp?.Invoke(null);
+                        input.ProcessKeyUp(keyCode);
+                    }
+                }
             }
-            else
+            foreach (var command in menuCommands)
             {
-                OnKeyUp?.Invoke(evnt);
-                input.ProcessKeyUp(keyCode);
+                var combinationMet = true;
+                foreach (var key in command.keyCombination)
+                {
+                    switch (key)
+                    {
+                        case "CTRL": combinationMet = modState.HasFlag(SDL.SDL_Keymod.KMOD_LCTRL); break;
+                        case "SHIFT": combinationMet = modState.HasFlag(SDL.SDL_Keymod.KMOD_LSHIFT) || modState.HasFlag(SDL.SDL_Keymod.KMOD_RSHIFT); break;
+                        default:
+                            var keyCode = (int)SDL.SDL_GetScancodeFromKey((SDL.SDL_Keycode)key.ToCharArray()[0]);
+                            combinationMet = curKeyState[keyCode] is 1; break;
+                    }
+                    if (!combinationMet) break;
+                }
+                if (combinationMet) { command.Execute(); break; }
             }
+        }
+
+        public static void ProcessKeyboardPresses()
+        {
+            if (!(Gwen.Input.InputHandler.KeyboardFocus is null)) return;
+            if (View.views.TryGetValue(SDL.SDL_GetWindowID(SDL.SDL_GetKeyboardFocus()), out var views))
+                foreach (var view in views)
+                    if (view.panel != null && view.panel.IsVisible)
+                        view.OnKeyPressEvent(ref curKeyState);
         }
     }
 }

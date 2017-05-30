@@ -27,11 +27,11 @@ namespace Sharp
             set;
         } = 1;
 
-        public float[,,] testArray
-        {
-            get;
-            set;
-        } = { { { 80, 45 }, { 80, 45 }, { 80, 45 } } };
+        // public float[,,] testArray
+        // {
+        //    get;
+        //    set;
+        //  } = { { { 80, 45 }, { 80, 45 }, { 80, 45 } } };
 
         private bool enabled;
         public Entity entityObject;

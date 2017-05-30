@@ -123,8 +123,8 @@ namespace SharpAsset.Pipeline
             if (!shader.allocated)
             {
                 Console.WriteLine("shader allocation");
-                MainWindow.backendRenderer.GenerateBuffers(ref shader);
-                MainWindow.backendRenderer.Allocate(ref shader);
+                MainWindow.backendRenderer.GenerateBuffers(ref shader.Program, ref shader.VertexID, ref shader.FragmentID);
+                MainWindow.backendRenderer.Allocate(ref shader.Program, ref shader.VertexID, ref shader.FragmentID, ref shader.VertexSource, ref shader.FragmentSource, ref shader.uniformArray);
                 shader.allocated = true;
             }
             return ref this[index]; //ref

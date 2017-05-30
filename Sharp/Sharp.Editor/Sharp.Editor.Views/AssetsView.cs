@@ -8,6 +8,7 @@ using SharpAsset.Pipeline;
 using Gwen.Control;
 using OpenTK.Input;
 using System.Reflection;
+using TupleExtensions;
 
 namespace Sharp.Editor.Views
 {

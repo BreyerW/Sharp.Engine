@@ -17,9 +17,9 @@ namespace Sharp.Editor.Views
         {
             views[attachToWindow].Add(this);
             attachedToWindow = attachToWindow;
-            Sharp.InputHandler.OnMouseMove += OnGlobalMouseMove;
-            Sharp.InputHandler.OnMouseUp += OnGlobalMouseUp;
-            Sharp.InputHandler.OnMouseDown += OnGlobalMouseDown;
+            InputHandler.OnMouseMove += OnGlobalMouseMove;
+            InputHandler.OnMouseUp += OnGlobalMouseUp;
+            InputHandler.OnMouseDown += OnGlobalMouseDown;
         }
 
         public virtual void Initialize()
@@ -71,7 +71,7 @@ namespace Sharp.Editor.Views
         {
         }
 
-        public virtual void OnKeyPressEvent(SDL2.SDL.SDL_Keycode keyCode)
+        public virtual void OnKeyPressEvent(ref byte[] keyboardState)
         {
         }
     }
