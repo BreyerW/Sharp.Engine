@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Gwen.Control;
 using Sharp.Editor.UI;
-using Sharp.Editor.UI.Property;
+using Sharp.Editor.Attribs;
 using Sharp.Control;
 
 namespace Sharp.Editor.Views
@@ -56,6 +56,11 @@ namespace Sharp.Editor.Views
             base.Initialize();
         }
 
+        public override void Render()
+        {
+            //base.Render();
+        }
+
         public void RenderComponents(Entity entity)
         {
             var prop = ptree.AddOrGet("Transform", out bool exist);
@@ -67,10 +72,10 @@ namespace Sharp.Editor.Views
                 {
                     var attrib = entityProp.GetCustomAttribute<CustomPropertyDrawerAttribute>(true);
                     var attribType = attrib?.GetType();
-                    if (Properties.mappedPropertyDrawers.ContainsKey((entityProp.PropertyType, attribType)))
-                        Properties.mappedPropertyDrawers[(entityProp.PropertyType, attribType)].method.Invoke(prop, new object[] { entityProp.Name + ":", entity, entityProp });
+                    if (Properties.mappedPropertyDrawers.ContainsKey(entityProp.PropertyType))
+                        Properties.mappedPropertyDrawers[entityProp.PropertyType].method.Invoke(prop, new object[] { entityProp.Name + ":", entity, entityProp });
                     else
-                        Properties.mappedPropertyDrawers[(typeof(object), attribType)].method.Invoke(prop, new object[] { entityProp.Name + ":", entity, entityProp });
+                        Properties.mappedPropertyDrawers[typeof(object)].method.Invoke(prop, new object[] { entityProp.Name + ":", entity, entityProp });
                 }
             }
             var comps = entity.GetAllComponents();
@@ -107,15 +112,6 @@ namespace Sharp.Editor.Views
                   }
               }
           }*/
-
-        public override void Render()
-        {
-            //base.Render ();
-            /*if (Selection.assets.Count>0 && Selection.assets.Peek() != lastInspectedObj) {
-				lastInspectedObj = Selection.assets.Peek();
-			IEnumerable<PropertyInfo> props;
-			}*/
-        }
 
         public override void OnResize(int width, int height)
         {

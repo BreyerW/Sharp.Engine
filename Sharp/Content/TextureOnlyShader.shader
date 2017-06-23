@@ -1,4 +1,4 @@
-﻿#version 330
+﻿#version 420
 
 #pragma vertex
             in vec3 vertex_position;

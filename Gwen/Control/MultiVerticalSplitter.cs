@@ -7,10 +7,10 @@ namespace Gwen.Control
 {
     public class MultiVerticalSplitter : Base
     {
-		private readonly List<SplitterBar> m_HSplitter;
-		private readonly List<Base> m_Sections;
+        private readonly List<SplitterBar> m_HSplitter;
+        private readonly List<Base> m_Sections;
 
-		private List<float> m_HVal=new List<float>(); // 0-1
+        private List<float> m_HVal = new List<float>(); // 0-1
         private int m_BarSize; // pixels
         private int m_ZoomedSection; // 0-3
 
@@ -29,7 +29,8 @@ namespace Gwen.Control
         /// </summary>
 		public event GwenEventHandler<EventArgs> ZoomChanged;
 
-		public event GwenEventHandler<EventArgs> OnSplitMoved;
+        public event GwenEventHandler<EventArgs> OnSplitMoved;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSplitter"/> class.
         /// </summary>
@@ -37,17 +38,17 @@ namespace Gwen.Control
         public MultiVerticalSplitter(Base parent)
             : base(parent)
         {
-			m_Sections = new List<Base> ();
+            m_Sections = new List<Base>();
 
-			m_HSplitter = new List<SplitterBar>(){new SplitterBar(this)};
+            m_HSplitter = new List<SplitterBar>() { new SplitterBar(this) };
             m_HSplitter[0].SetPosition(128, 0);
             m_HSplitter[0].Dragged += OnHorizontalMoved;
             m_HSplitter[0].Cursor = Cursors.SizeWE;//remove winforms dependency
 
-			m_HVal.Add(0.5f);
+            m_HVal.Add(1f);
 
             SetPanel(0, null);
-            SetPanel(1, null);
+            //SetPanel(1, null);
 
             SplitterSize = 5;
             SplittersVisible = false;
@@ -60,16 +61,16 @@ namespace Gwen.Control
         /// </summary>
         public void CenterPanels()
         {
-			var evenSplit =1f / m_Sections.Count;
-			for (int i = 0; i < m_HSplitter.Count; i++)
-				m_HVal[i] = evenSplit*(i+1f);
+            var evenSplit = 1f / m_Sections.Count;
+            for (int i = 0; i < m_HSplitter.Count; i++)
+                m_HVal[i] = evenSplit * (i + 1f);
             Invalidate();
         }
 
         public void SetHValue(float value)
         {
             //if (value <= 1f || value >= 0)
-              //  m_HVal = value;
+            //  m_HVal = value;
         }
 
         /// <summary>
@@ -92,43 +93,46 @@ namespace Gwen.Control
         /// <summary>
         /// Gets or sets the size of the splitter.
         /// </summary>
-        public int SplitterSize { get { return m_BarSize; } set { m_BarSize = value; } }
+        public int SplitterSize { get { return m_Sections.Count is 1 ? 0 : m_BarSize; } set { m_BarSize = value; } }
 
-		private void UpdateHSplitter(SplitterBar split)
+        private void UpdateHSplitter(SplitterBar split)
         {
-			split.MoveTo((Width - split.Width) * (m_HVal[m_HSplitter.IndexOf(split)]), split.Y);
+            split.MoveTo((Width - split.Width) * (m_HVal[m_HSplitter.IndexOf(split)]), split.Y);
         }
 
-		protected void OnHorizontalMoved(Base control, EventArgs args)
+        protected void OnHorizontalMoved(Base control, EventArgs args)
         {
-			m_HVal[m_HSplitter.IndexOf(control as SplitterBar)] = CalculateValueHorizontal(control);
+            m_HVal[m_HSplitter.IndexOf(control as SplitterBar)] = CalculateValueHorizontal(control);
             Invalidate();
-			if (OnSplitMoved != null)
-				OnSplitMoved (control, EventArgs.Empty);
+            if (OnSplitMoved != null)
+                OnSplitMoved(control, EventArgs.Empty);
         }
 
-		private float CalculateValueHorizontal(Base control)
+        private float CalculateValueHorizontal(Base control)
         {
-			var id = m_HSplitter.IndexOf (control as SplitterBar);
-			if (id == 0) {
-				if(control.X < MinimumSize.X)
-				control.X = MinimumSize.X;
-				else if (m_HSplitter [id + 1].X - control.X < MinimumSize.X)
-					control.X = m_HSplitter [id + 1].X - MinimumSize.X;
-			}
-			else if (id == m_HSplitter.Count - 1) {
-				if(control.X > Width - MinimumSize.X)
-				control.X = Width - MinimumSize.X;
-				else if (control.X - m_HSplitter [id - 1].X < MinimumSize.X)
-					control.X = m_HSplitter [id - 1].X + MinimumSize.X;
-			}
-			else if(id>0 && id < m_HSplitter.Count - 1) {
-				if (control.X - m_HSplitter [id - 1].X < MinimumSize.X)
-					control.X = m_HSplitter [id - 1].X + MinimumSize.X;
-				else if (m_HSplitter [id + 1].X - control.X < MinimumSize.X)
-					control.X = m_HSplitter [id + 1].X - MinimumSize.X;
-			}
-			return control.X / (float)(Width - control.Width);
+            var id = m_HSplitter.IndexOf(control as SplitterBar);
+            if (id == 0)
+            {
+                if (control.X < MinimumSize.X)
+                    control.X = MinimumSize.X;
+                else if (m_HSplitter[id + 1].X - control.X < MinimumSize.X)
+                    control.X = m_HSplitter[id + 1].X - MinimumSize.X;
+            }
+            else if (id == m_HSplitter.Count - 1)
+            {
+                if (control.X > Width - MinimumSize.X)
+                    control.X = Width - MinimumSize.X;
+                else if (control.X - m_HSplitter[id - 1].X < MinimumSize.X)
+                    control.X = m_HSplitter[id - 1].X + MinimumSize.X;
+            }
+            else if (id > 0 && id < m_HSplitter.Count - 1)
+            {
+                if (control.X - m_HSplitter[id - 1].X < MinimumSize.X)
+                    control.X = m_HSplitter[id - 1].X + MinimumSize.X;
+                else if (m_HSplitter[id + 1].X - control.X < MinimumSize.X)
+                    control.X = m_HSplitter[id + 1].X - MinimumSize.X;
+            }
+            return control.X / (float)(Width - control.Width);
         }
 
         /// <summary>
@@ -137,21 +141,23 @@ namespace Gwen.Control
         /// <param name="skin">Skin to use.</param>
         protected override void Layout(Skin.Base skin)
         {
-			for (int i = 0; i < m_HSplitter.Count; i++) {
-				m_HSplitter[i].SetSize (m_BarSize, Height);
-				UpdateHSplitter (m_HSplitter[i]);
-			}
+            for (int i = 0; i < m_HSplitter.Count; i++)
+            {
+                m_HSplitter[i].SetSize(SplitterSize, Height);
+                UpdateHSplitter(m_HSplitter[i]);
+            }
             if (m_ZoomedSection == -1)
             {
-				if (m_Sections != null) {
-					m_Sections [0].SetBounds (0, 0, m_HSplitter[0].X, Height);
+                if (m_Sections != null)
+                {
+                    m_Sections[0].SetBounds(0, 0, m_HSplitter[0].X, Height);
 
-					if (m_Sections.Count > 1)
-						for (int i = 1; i < m_Sections.Count; i++)
-							if (m_Sections [i] != null)
-								m_Sections [i].SetBounds (m_HSplitter [i - 1].X + m_BarSize, 0,(i== m_Sections.Count-1) ? Width - (m_HSplitter [i - 1].X + m_BarSize):m_HSplitter [i].X- m_HSplitter [i-1].X- m_BarSize, Height);
-				}
-			}
+                    if (m_Sections.Count > 1)
+                        for (int i = 1; i < m_Sections.Count; i++)
+                            if (m_Sections[i] != null)
+                                m_Sections[i].SetBounds(m_HSplitter[i - 1].X + m_BarSize, 0, (i == m_Sections.Count - 1) ? Width - (m_HSplitter[i - 1].X + m_BarSize) : m_HSplitter[i].X - m_HSplitter[i - 1].X - m_BarSize, Height);
+                }
+            }
         }
 
         /// <summary>
@@ -161,31 +167,30 @@ namespace Gwen.Control
         /// <param name="panel">Control to assign.</param>
         public void SetPanel(int index, Base panel)
         {
-			if (index > m_HSplitter.Count) {
-				m_HSplitter.Add (new SplitterBar(this));
-				m_HVal.Add (0.75f);
-				m_HSplitter[index-1].SetPosition(128, 0);
-				m_HSplitter[index-1].Dragged += OnHorizontalMoved;
-				m_HSplitter[index-1].Cursor = Cursors.SizeWE;
-				m_HSplitter[index-1].ShouldDrawBackground = false;
+            if (index > m_HSplitter.Count)
+            {
+                m_HSplitter.Add(new SplitterBar(this));
+                m_HVal.Add(0.75f);
+                m_HSplitter[index - 1].SetPosition(128, 0);
+                m_HSplitter[index - 1].Dragged += OnHorizontalMoved;
+                m_HSplitter[index - 1].Cursor = Cursors.SizeWE;
+                m_HSplitter[index - 1].ShouldDrawBackground = false;
+            }
 
-			}
-
-			if (index>m_Sections.Count-1)
-				m_Sections.Add (panel);
-			else
-				m_Sections [index] = panel;
-				
+            if (index > m_Sections.Count - 1)
+                m_Sections.Add(panel);
+            else
+                m_Sections[index] = panel;
 
             if (panel != null)
             {
                 panel.Dock = Pos.None;
                 panel.Parent = this;
             }
-			CenterPanels ();
+            CenterPanels();
             Invalidate();
         }
-        
+
         /// <summary>
         /// Gets the specific inner section.
         /// </summary>
@@ -202,17 +207,17 @@ namespace Gwen.Control
         protected void OnZoomChanged()
         {
             if (ZoomChanged != null)
-				ZoomChanged.Invoke(this, EventArgs.Empty);
+                ZoomChanged.Invoke(this, EventArgs.Empty);
 
             if (m_ZoomedSection == -1)
             {
                 if (PanelUnZoomed != null)
-					PanelUnZoomed.Invoke(this, EventArgs.Empty);
+                    PanelUnZoomed.Invoke(this, EventArgs.Empty);
             }
             else
             {
                 if (PanelZoomed != null)
-					PanelZoomed.Invoke(this, EventArgs.Empty);
+                    PanelZoomed.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -244,13 +249,13 @@ namespace Gwen.Control
         public void UnZoom()
         {
             m_ZoomedSection = -1;
-            
+
             for (int i = 0; i < 2; i++)
             {
                 if (m_Sections[i] != null)
                     m_Sections[i].IsHidden = false;
             }
-            
+
             Invalidate();
             OnZoomChanged();
         }

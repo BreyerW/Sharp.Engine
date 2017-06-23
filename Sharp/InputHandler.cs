@@ -60,6 +60,7 @@ namespace Sharp
             evnt = new MouseButtonEventArgs(x - winPos.x, y - winPos.y, ConvertMaskToEnum(button), true);//last param bugged
             Gwen.Input.InputHandler.MouseFocus = Gwen.Input.InputHandler.HoveredControl;
             Gwen.Input.InputHandler.KeyboardFocus = Gwen.Input.InputHandler.HoveredControl as Gwen.Control.TextBox;
+
             foreach (var view in View.views[Window.UnderMouseWindowId])
             {
                 if (view.panel != null && view.panel.IsChild(Gwen.Input.InputHandler.HoveredControl, true))
@@ -73,7 +74,6 @@ namespace Sharp
             }
             if (pressed) OnMouseDown?.Invoke((MouseButtonEventArgs)evnt);
             else OnMouseUp?.Invoke((MouseButtonEventArgs)evnt);
-
             input.ProcessMouseMessage(evnt, pressed);
         }
 

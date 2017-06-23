@@ -24,6 +24,22 @@ namespace Sharp
             }
         }
 
+        private Matrix4 orthoMatrix;
+
+        public Matrix4 OrthoMatrix
+        {
+            get
+            {
+                return orthoMatrix;
+            }
+            set
+            {
+                orthoMatrix = value;
+                //if (main != null)
+                // Material.BindGlobalProperty("camProjection", () => ref main.projectionMatrix);
+            }
+        }
+
         private Matrix4 modelViewMatrix;
 
         public Matrix4 ModelViewMatrix
@@ -106,6 +122,11 @@ namespace Sharp
             ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(FieldOfView * Math.PI / 180.0), AspectRatio, ZNear, ZFar);
         }
 
+        public void SetOrthoMatrix(int width, int height)
+        {
+            OrthoMatrix = Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
+        }
+
         public void SetModelviewMatrix()
         {
             var translationMatrix = Matrix4.CreateTranslation(-entityObject.Position);
@@ -130,7 +151,7 @@ namespace Sharp
             vec.W = 1.0f;
 
             Matrix4 viewInv = modelViewMatrix.Inverted();
-            Matrix4 projInv = Camera.main.projectionMatrix.Inverted();
+            Matrix4 projInv = main.projectionMatrix.Inverted();
 
             Vector4.Transform(ref vec, ref projInv, out vec);
             Vector4.Transform(ref vec, ref viewInv, out vec);
@@ -151,6 +172,20 @@ namespace Sharp
 
             var NDCSpace = pos4.Xyz / pos4.W;
             return new Vector3(NDCSpace.X * (width / (2f)), NDCSpace.Y * (height / (2f)), NDCSpace.Z);//look at divide part
+        }
+
+        public Vector2 ScreenToNDC(Vector2 pos, int width, int height)
+        {
+            return ScreenToNDC((int)pos.X, (int)pos.Y, width, height);
+        }
+
+        public Vector2 ScreenToNDC(int x, int y, int width, int height)
+        {
+            Vector2 vec;
+
+            vec.X = 2.0f * x / (float)width - 1;
+            vec.Y = -(2.0f * y / (float)height - 1);
+            return vec;
         }
 
         /// <summary>

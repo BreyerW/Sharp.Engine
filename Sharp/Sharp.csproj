@@ -76,9 +76,6 @@
     <Reference Include="Puresharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Puresharp.0.0.0\lib\Puresharp.dll</HintPath>
     </Reference>
-    <Reference Include="SharpNav, Version=1.0.0.1, Culture=neutral, PublicKeyToken=0c16c0d534ce32cb, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpNav.OpenTK.1.0.0-alpha2\lib\net40\SharpNav.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -199,12 +196,23 @@
   <ItemGroup>
     <Compile Include="Commands\ChangeValueCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Curve.cs" />
+    <Compile Include="CurveMenuManager.cs" />
+    <Compile Include="CurveUtility.cs" />
     <Compile Include="DelegateGenerator.cs" />
     <Compile Include="Extension.cs" />
+    <Compile Include="Sharp.Editor\CurveSettings.cs" />
     <Compile Include="Sharp.Editor\MenuCommand.cs" />
     <Compile Include="Sharp.Editor\RedoCommand.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CurveRangeAttribute.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\DrawAsRegionAttribute.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\CurveDrawer.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\RegionDrawer.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Views\CurvesView.cs" />
+    <Compile Include="Sharp.Editor\TickHandler.cs" />
     <Compile Include="Sharp.Editor\UndoCommand.cs" />
     <Compile Include="Windowing\FloatingWindow.cs" />
+    <Compile Include="Windowing\ISplitter.cs" />
     <Compile Include="Windowing\MainWindow.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\ArrayDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\DefaultPropertyDrawer.cs" />
@@ -212,17 +220,18 @@
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\PropertyDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\BooleanDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Color.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\CustomPropertyDrawerAttribute.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CustomPropertyDrawerAttribute.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Properties.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\PropertyRow.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\PropertyRowLabel.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\PropertyTree.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\RangeAttribute.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\RangeAttribute.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\RangeDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Text.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Vector3Drawer.cs" />
     <Compile Include="SharpAsset\Recipe.cs" />
     <Compile Include="SharpSL\SharpSL.BackendRenderers\SharpSL.BackendRenderers.OpenGL\UIOpenGLRenderer.cs" />
+    <Compile Include="Windowing\VerticalSplitter.cs" />
     <Compile Include="Windowing\Window.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BasicVertexFormat.cs" />
@@ -231,7 +240,7 @@
     <Compile Include="Component.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="Frustum.cs" />
-    <Compile Include="GenericColor.cs" />
+    <Compile Include="Color.cs" />
     <Compile Include="InputHandler.cs" />
     <Compile Include="SharpAsset\Material.cs" />
     <Compile Include="MeshRenderer.cs" />

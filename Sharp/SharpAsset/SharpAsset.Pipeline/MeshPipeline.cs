@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Assimp;
 using System.Threading;
-using Assimp.Configs;
 using OpenTK;
 using System.IO;
 using Sharp;
@@ -39,7 +38,6 @@ namespace SharpAsset.Pipeline
             var format = Path.GetExtension(pathToFile);
             //if (!SupportedFileFormatsAttribute.supportedFileFormats.Contains (format))
             //throw new NotSupportedException (format+" format is not supported");
-
             var scene = asset.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals);
             if (!scene.HasMeshes) return null;
 

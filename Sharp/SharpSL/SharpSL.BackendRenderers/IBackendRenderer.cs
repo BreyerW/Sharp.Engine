@@ -12,11 +12,11 @@ namespace SharpSL.BackendRenderers
 
         void Allocate(ref int Program, ref int VertexID, ref int FragmentID, ref string VertexSource, ref string FragmentSource, ref Dictionary<string, int> uniformArray);
 
-        void Allocate(ref System.Drawing.Bitmap bitmap);
+        void Allocate(ref byte bitmap, int width, int height);
 
         void Use(ref IndiceType indiceType, int length);
 
-        void Use(ref int Program);
+        void Use(int Program);
 
         void Delete(ref int Program, ref int VertexID, ref int FragmentID);
 
@@ -59,15 +59,13 @@ namespace SharpSL.BackendRenderers
 
         void EnableScissor();
 
-        void Scissor(int x, int y, int width, int height);
+        void Viewport(int x, int y, int width, int height);
 
         void SetStandardState();
 
         void SetFlatColorState();
 
-        void SaveState();
-
-        void RestoreState();
+        void Clip(int x, int y, int width, int height);
 
         void FinishCommands();
 

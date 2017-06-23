@@ -1,6 +1,5 @@
 ﻿using System;
 using OpenTK.Graphics.OpenGL;
-using System.Drawing.Imaging;
 using SharpAsset;
 using System.Text;
 using System.Collections.Generic;
@@ -26,18 +25,8 @@ namespace SharpSL.BackendRenderers.OpenGL
             // Flip Y-axis (Windows <-> OpenGL)
             GL.GetInteger(GetPName.Viewport, viewport);
             Console.WriteLine("view: " + viewport[0]);
-            GL.ReadPixels(viewport[0] + x, viewport[3] - (viewport[1] + y) + 5, width, height, OpenTK.Graphics.OpenGL.PixelFormat.Rgb, PixelType.UnsignedByte, pixel);
+            GL.ReadPixels(viewport[0] + x, viewport[3] - (viewport[1] + y) + 5, width, height, PixelFormat.Rgb, PixelType.UnsignedByte, pixel);
             return pixel;
-        }
-
-        public void SaveState()
-        {
-            GL.PushAttrib(AttribMask.EnableBit | AttribMask.ColorBufferBit);
-        }
-
-        public void RestoreState()
-        {
-            GL.PopAttrib();
         }
 
         public void SetStandardState()
@@ -55,7 +44,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Disable(EnableCap.Fog);
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Dither);
-            GL.Disable(EnableCap.Lighting);
+            //GL.Disable(EnableCap.Lighting);
             GL.Disable(EnableCap.LineStipple);
             GL.Disable(EnableCap.PolygonStipple);
             GL.Disable(EnableCap.CullFace);
@@ -71,27 +60,23 @@ namespace SharpSL.BackendRenderers.OpenGL
             Program = GL.CreateProgram();
         }
 
-        public void Use(ref int Program)
+        public void Use(int Program)
         {
             GL.UseProgram(Program);
         }
 
-        public void Allocate(ref System.Drawing.Bitmap bitmap)
+        public void Allocate(ref byte bitmap, int width, int height)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
-            BitmapData bmp_data = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
-                OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmp_data.Scan0);
-
-            bitmap.UnlockBits(bmp_data);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0,
+                PixelFormat.Bgra, PixelType.UnsignedByte, ref bitmap);
         }
 
         public void GenerateBuffers(ref int TBO)
         {
-            if (TBO == -1)
+            if (TBO is -1)
                 TBO = GL.GenTexture();
         }
 
@@ -155,7 +140,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.ShaderSource(VertexID, VertexSource); //make global frag and vert source, compile once and then mix them to shader
             GL.CompileShader(VertexID);
             GL.GetShaderInfoLog(VertexID, out info);
-            GL.GetShader(VertexID, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
+            GL.GetShader(VertexID, ShaderParameter.CompileStatus, out status_code);
 
             if (status_code != 1)
                 throw new ApplicationException(info);
@@ -164,7 +149,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.ShaderSource(FragmentID, FragmentSource);
             GL.CompileShader(FragmentID);
             GL.GetShaderInfoLog(FragmentID, out info);
-            GL.GetShader(FragmentID, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
+            GL.GetShader(FragmentID, ShaderParameter.CompileStatus, out status_code);
 
             if (status_code != 1)
                 throw new ApplicationException(info);
@@ -214,15 +199,21 @@ namespace SharpSL.BackendRenderers.OpenGL
                 GL.DeleteShader(VertexID);
         }
 
-        public void Scissor(int x, int y, int width, int height)
+        public void Viewport(int x, int y, int width, int height)
         {
             GL.Scissor(x, y, width, height);
             GL.Viewport(x, y, width, height);
         }
 
+        public void Clip(int x, int y, int width, int height)
+        {
+            GL.Scissor(x, y, width, height);
+        }
+
         public void ClearColor()
         {
-            ClearColor(0.21f, 0.21f, 0.21f, 0f);
+            ClearColor(0.21f, 0.21f, 0.21f, 0f);//use 0.12f for background 0.25f use for ui elem
+            //ClearColor(1f, 1f, 1f, 0f);
         }
 
         public void ClearColor(float r, float g, float b, float a)
@@ -289,7 +280,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
         public void SendTexture2D(int location, ref int tbo, int slot)
         {
-            //GL.ActiveTexture(TextureUnit.Texture0 + slot);
+            //GL.ActiveTexture(TextureUnit.Texture0 + slot);//bugged?
             GL.BindTexture(TextureTarget.Texture2D, tbo);
             GL.Uniform1(location, (int)TextureUnit.Texture0 + slot);
         }

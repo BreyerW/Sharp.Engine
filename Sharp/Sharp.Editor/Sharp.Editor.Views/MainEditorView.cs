@@ -17,16 +17,15 @@ namespace Sharp.Editor.Views
 
         public MainEditorView(uint attachToWindow) : base(attachToWindow)
         {
+            renderer = new Gwen.Renderer.OpenTK();
+            skin = new Gwen.Skin.TexturedBase(renderer, @"B:\Sharp.Engine3\Gwen\DefaultSkin.png");
+            canvas = new Canvas(skin);
         }
 
         public override void Initialize()
         {
-            renderer = new Gwen.Renderer.OpenTK();
-            skin = new Gwen.Skin.TexturedBase(renderer, @"C:\\Users\\Damian\\Downloads\\GLWidget_ 1\\GLWidget\\GLWidgetTest\\bin\\Debug\\DefaultSkin.png");
-            canvas = new Canvas(skin);
             base.Initialize();
-
-            splitter = new Gwen.Control.MultiVerticalSplitter(canvas);
+            splitter = new MultiVerticalSplitter(canvas);
             splitter.SetPosition(0, 0);
             splitter.SplitterSize = 3;
             splitter.MinimumSize = new System.Drawing.Point(100, 100);
@@ -35,7 +34,6 @@ namespace Sharp.Editor.Views
 
         public override void Render()
         {
-            MainWindow.backendRenderer.SetupGraphic();
             base.Render();
             MainWindow.backendRenderer.ClearBuffer();
             canvas.RenderCanvas();
@@ -50,9 +48,9 @@ namespace Sharp.Editor.Views
             }
             else
             {
-                canvas.SetSize(width, height);
+                canvas?.SetSize(width, height);
             }
-            renderer.Resize(width, height);
+            renderer?.Resize(width, height);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using OpenTK;
 using Sharp.Editor.Views;
 using Sharp.Commands;
@@ -10,11 +9,16 @@ namespace Sharp.Editor
     {
         private static readonly int halfCircleSegments = 64;
 
-        public static readonly Color selectedColor = Color.FromArgb(255, 128, 16);
-        public static readonly Color fillColor = Color.FromArgb(175, 255, 128, 16);
-        public static readonly Color xColor = ColorTranslator.FromHtml("#FFAA0000");
-        public static readonly Color yColor = ColorTranslator.FromHtml("#FF00AA00");
-        public static readonly Color zColor = ColorTranslator.FromHtml("#FF0000AA");
+        /*public static readonly System.Drawing.Color selectedColor = System.Drawing.Color.FromArgb(255, 128, 16);
+        public static readonly System.Drawing.Color fillColor = System.Drawing.Color.FromArgb(175, 255, 128, 16);
+        public static readonly System.Drawing.Color xColor = ColorTranslator.FromHtml("#FFAA0000");
+        public static readonly System.Drawing.Color yColor = ColorTranslator.FromHtml("#FF00AA00");
+        public static readonly System.Drawing.Color zColor = ColorTranslator.FromHtml("#FF0000AA");*/
+        public static readonly Color selectedColor = new Color(0xFF1080FF);
+        public static readonly Color fillColor = new Color(0x801080FF);
+        public static readonly Color xColor = new Color(0xFF0000AA);
+        public static readonly Color yColor = new Color(0xFF00AA00);
+        public static readonly Color zColor = new Color(0xFFAA0000);
 
         internal static int selectedAxisId = 0;
         internal static float? rotAngleOrigin;
@@ -46,17 +50,17 @@ namespace Sharp.Editor
                 var cross = Vector3.Cross(startAxis, currentAngle);
                 var fullAngle = Vector3.CalculateAngle(startAxis, currentAngle);
                 var incAngle = fullAngle / halfCircleSegments;
-                var vectors = new(float x, float y, float z)[halfCircleSegments + 1];
-                vectors[0] = (0, 0, 0);
-                //vectors[1] = (startAxis.X * 3f * scale, startAxis.Y * 3f * scale, startAxis.Z * 3f * scale);
+                var vectors = new Vector3[halfCircleSegments + 1];
+                vectors[0] = new Vector3(0, 0, 0);
                 for (uint i = 1; i < halfCircleSegments + 1; i++)
                 {
                     var rotateMat = Matrix3.CreateFromAxisAngle(cross, incAngle * (i - 1));
                     var rotatedVec = Vector3.Transform(startAxis, rotateMat) * 3f * scale;
-                    vectors[i] = (rotatedVec.X, rotatedVec.Y, rotatedVec.Z);
+                    vectors[i] = new Vector3(rotatedVec.X, rotatedVec.Y, rotatedVec.Z);
                 }
-                //vectors[halfCircleSegments] = (currentAngle.X * 3f * scale, currentAngle.Y * 3f * scale, currentAngle.Z * 3f * scale);
-                DrawHelper.DrawFilledPolyline(thickness, 3f * scale, fillColor, ref startMat, ref vectors);
+                var mat = startMat.ClearRotation() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+                var fill = new Color(fillColor.R, fillColor.G, fillColor.B, fillColor.A);
+                DrawHelper.DrawFilledPolyline(thickness, 3f * scale, fill, ref mat, ref vectors);
             }
         }
 
@@ -114,7 +118,7 @@ namespace Sharp.Editor
 
         //private static Quaternion startRot = Quaternion.Identity;
 
-        public static void HandleRotation(Entity entity, ref Ray ray)//dziala dobrze tylko wtedy gdy gizmo jest na srodku camery, testuj to
+        public static void HandleRotation(Entity entity, ref Ray ray)//bugged when rescaled
         {
             var v = GetAxis();
             var unchangedV = v;

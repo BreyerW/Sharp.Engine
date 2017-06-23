@@ -72,14 +72,6 @@ namespace Sharp.Editor.Views
             base.Initialize();
         }
 
-        public override void OnContextCreated(int width, int height)
-        {
-            Camera.main.AspectRatio = (float)(panel.Width / (float)panel.Height);
-            Camera.main.SetProjectionMatrix();
-            Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
-            OnSetupMatrices?.Invoke();
-        }
-
         public override void Render()
         {
             base.Render();
@@ -96,7 +88,7 @@ namespace Sharp.Editor.Views
             MainWindow.backendRenderer.SetStandardState();
             var projMat = Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
 
-            DrawHelper.DrawGrid(System.Drawing.Color.GhostWhite, Camera.main.entityObject.Position, cell_size, grid_size, ref projMat);
+            DrawHelper.DrawGrid(Color.GhostWhite, Camera.main.entityObject.Position, cell_size, grid_size, ref projMat);
 
             OnRenderFrame?.Invoke();
 
@@ -127,19 +119,18 @@ namespace Sharp.Editor.Views
 
         private bool PickTestForGizmo()
         {
-            MainWindow.backendRenderer.ClearBuffer();
+            //MainWindow.backendRenderer.ClearBuffer();
             MainWindow.backendRenderer.SetFlatColorState();
             MainWindow.backendRenderer.ChangeShader();
             if (SceneStructureView.tree.SelectedChildren.Any())
             {
-                System.Drawing.Color xColor = System.Drawing.Color.Red, yColor = System.Drawing.Color.LimeGreen, zColor = System.Drawing.Color.Blue;
-                System.Drawing.Color xRotColor = System.Drawing.Color.Red, yRotColor = System.Drawing.Color.LimeGreen, zRotColor = System.Drawing.Color.Blue;
-                System.Drawing.Color xScaleColor = System.Drawing.Color.Red, yScaleColor = System.Drawing.Color.LimeGreen, zScaleColor = System.Drawing.Color.Blue;
-                System.Drawing.Color color;
+                Color xColor = Color.Red, yColor = Color.LimeGreen, zColor = Color.Blue;
+                Color xRotColor = Color.Red, yRotColor = Color.LimeGreen, zRotColor = Color.Blue;
+                Color xScaleColor = Color.Red, yScaleColor = Color.LimeGreen, zScaleColor = Color.Blue;
+                Color color;
                 for (int id = 1; id < 10; id++)
                 {
-                    color = System.Drawing.Color.FromArgb((id & 0x000000FF) >> 00, (id & 0x0000FF00) >> 08, (id & 0x00FF0000) >> 16);
-
+                    color = new Color((byte)((id & 0x000000FF) >> 00), (byte)((id & 0x0000FF00) >> 08), (byte)((id & 0x00FF0000) >> 16), 255);
                     switch (id)
                     {
                         case 1:
@@ -195,7 +186,8 @@ namespace Sharp.Editor.Views
                 // if (locPos.HasValue)
                 // {
                 var pixel = MainWindow.backendRenderer.ReadPixels(locPos.Value.X, locPos.Value.Y, 1, 1);
-                int index = (((int)pixel[0]) << 00) + (((int)pixel[1]) << 08) + ((((int)pixel[2]) << 16));
+                int index = ((pixel[0]) << 00) + ((pixel[1]) << 08) + (((pixel[2]) << 16));
+                Console.WriteLine("encoded index=" + index);
                 if (index > 0 && index < 10)
                 {
                     Manipulators.selectedAxisId = index;
@@ -248,6 +240,7 @@ namespace Sharp.Editor.Views
                 Camera.main.AspectRatio = (float)(panel.Width / (float)panel.Height);
                 Camera.main.SetProjectionMatrix();
             }
+            Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
         }
 
         public override void OnKeyPressEvent(ref byte[] keyboardState)
@@ -323,8 +316,8 @@ namespace Sharp.Editor.Views
             {
                 if (Manipulators.selectedAxisId == 0)
                 {
-                    Camera.main.Rotate((float)evnt.XDelta, (float)evnt.YDelta, 0.3f);//maybe divide delta by fov?
-                    SceneView.OnSetupMatrices?.Invoke();
+                    Camera.main.Rotate(evnt.XDelta, evnt.YDelta, 0.3f);//maybe divide delta by fov?
+                    OnSetupMatrices?.Invoke();
                 }
                 else//simple, precise, snapping
                 {

@@ -1,8 +1,5 @@
 ﻿using System.IO;
-using System.Collections.Generic;
-using System.Drawing;
 using System;
-using Sharp.Editor.Views;
 using OpenTK;
 using Sharp;
 
@@ -10,9 +7,13 @@ namespace SharpAsset
 {
     public struct Texture : IAsset
     {
-        internal bool allocated;
+        //internal bool allocated;
         internal int TBO;
-        internal Bitmap bitmap;
+
+        internal byte[] bitmap;
+        internal IntPtr ptr;
+        public int width;
+        public int height;
 
         public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
         public string Extension { get { return Path.GetExtension(FullPath); } set { } }

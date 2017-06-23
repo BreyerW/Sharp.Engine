@@ -30,6 +30,21 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SharpDL, Version=1.0.0.18, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDL.1.0.0.18\lib\net45\SharpDL.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDL.Events, Version=1.0.0.18, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDL.1.0.0.18\lib\net45\SharpDL.Events.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDL.Graphics, Version=1.0.0.18, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDL.1.0.0.18\lib\net45\SharpDL.Graphics.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDL.Input, Version=1.0.0.18, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDL.1.0.0.18\lib\net45\SharpDL.Input.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDL.Shared, Version=1.0.0.18, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDL.1.0.0.18\lib\net45\SharpDL.Shared.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -99,6 +114,9 @@
     <Compile Include="Xml\XmlReader.cs" />
     <Compile Include="Xml\XmlSerializer.cs" />
     <Compile Include="Xml\XmlWriter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

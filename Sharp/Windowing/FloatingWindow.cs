@@ -3,16 +3,16 @@ using SDL2;
 
 namespace Sharp
 {
-    internal class FloatingWindow : Window
+    public class FloatingWindow : Window
     {
-        public FloatingWindow(string title) : base(title, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE | SDL.SDL_WindowFlags.SDL_WINDOW_BORDERLESS)
+        public FloatingWindow(string title, IntPtr existingWin = default(IntPtr)) : base(title, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE, existingWin)
         {
         }
 
         public override void OnRenderFrame()
         {
-            SDL.SDL_GL_MakeCurrent(handle, context);
-            SDL.SDL_GL_SwapWindow(handle);
+            //MainWindow.backendRenderer.Scissor(0, 0, Size.width, Size.height);
+            //MainWindow.backendRenderer.ClearBuffer();
         }
     }
 }

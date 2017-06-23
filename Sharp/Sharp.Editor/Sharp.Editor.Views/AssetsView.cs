@@ -7,7 +7,6 @@ using System.Collections.Concurrent;
 using SharpAsset.Pipeline;
 using Gwen.Control;
 using OpenTK.Input;
-using System.Reflection;
 using TupleExtensions;
 
 namespace Sharp.Editor.Views
@@ -42,7 +41,7 @@ namespace Sharp.Editor.Views
         public override void Initialize()
         {
             base.Initialize();
-            tree.Add(attachedToWindow, new Gwen.Control.TreeControl(panel));
+            tree.Add(attachedToWindow, new TreeControl(panel));
             tree[attachedToWindow].SetSize(panel.Width, panel.Height);
             tree[attachedToWindow].ShouldDrawBackground = false;
             /*var type = typeof(GenericPipeline<>);

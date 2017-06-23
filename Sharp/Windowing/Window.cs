@@ -19,17 +19,21 @@ namespace Sharp
 
         public static uint MainWindowId
         {
-            get { return windows[1].windowId; }
+            get
+            {
+                int id = 0;
+                return windows[id].windowId;
+            }
         }
 
         public static uint TooltipWindowId
         {
-            get { return windows[2].windowId; }
+            get { int id = 1; return windows[id].windowId; }
         }
 
         public static uint PreviewWindowId
         {
-            get { return windows[3].windowId; }
+            get { int id = 2; return windows[id].windowId; }
         }
 
         //public static uint WhereDragStartedWindowId {
@@ -55,9 +59,9 @@ namespace Sharp
             }
             set
             {
-                if (windows.Contains(value))
+                if (windows.Contains(value) && View.mainViews[value] != null)
                 {
-                    InputHandler.input.Initialize(windows[value].mainView.canvas);
+                    InputHandler.input.Initialize(View.mainViews[value].canvas);
                     underMouseWindowId = value;
                 }
             }
@@ -67,11 +71,15 @@ namespace Sharp
 
         public readonly IntPtr handle;
         public readonly uint windowId;
-        public MainEditorView mainView;  //detach it from window?
+        //public MainEditorView mainView;  //detach it from window?
         //public bool toBeClosed = false;
 
         public (int width, int height) Size
         {
+            set
+            {
+                SDL.SDL_SetWindowSize(handle, value.width, value.height);
+            }
             get
             {
                 SDL.SDL_GetWindowSize(handle, out int width, out int height);
@@ -81,6 +89,10 @@ namespace Sharp
 
         public (int x, int y) Position
         {
+            set
+            {
+                SDL.SDL_SetWindowPosition(handle, value.x, value.y);
+            }
             get
             {
                 SDL.SDL_GetWindowPosition(handle, out int x, out int y);
@@ -93,16 +105,18 @@ namespace Sharp
             SDL.SDL_AddEventWatch(filter, IntPtr.Zero);
         }
 
-        public Window(string title, SDL.SDL_WindowFlags windowFlags)
+        public Window(string title, SDL.SDL_WindowFlags windowFlags, IntPtr existingWin = default(IntPtr))
         {
-            handle = SDL.SDL_CreateWindow(title, SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 1000, 700, windowFlags);
-
+            if (existingWin == default(IntPtr))
+                handle = SDL.SDL_CreateWindow(title, SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 1000, 700, windowFlags);
+            else
+                handle = SDL.SDL_CreateWindowFrom(existingWin);
             windowId = SDL.SDL_GetWindowID(handle);
             windows.Add(this);
-            SDL.SDL_SetWindowMinimumSize(handle, 500, 300);
             View.views.Add(windowId, new HashSet<View>());
-            mainView = new MainEditorView(windowId);
+            new MainEditorView(windowId);
             onRenderFrame += OnInternalRenderFrame;
+            MainWindow.backendRenderer.ClearColor();
         }
 
         public static void PollWindows()
@@ -130,7 +144,14 @@ namespace Sharp
         private void OnInternalRenderFrame()
         {
             SDL.SDL_GL_MakeCurrent(handle, context);
+
             OnRenderFrame();
+            var mainView = View.mainViews[windowId];
+            if (mainView.canvas is null) return;
+            mainView.Render();
+            foreach (var view in View.views[windowId])
+                if (view.panel != null && view.panel.IsVisible)
+                    view.Render();
             SDL.SDL_GL_SwapWindow(handle);
         }
 
@@ -142,10 +163,10 @@ namespace Sharp
             {
                 case SDL.SDL_EventType.SDL_KEYDOWN:
                 case SDL.SDL_EventType.SDL_KEYUP:
-                    if (evnt.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE)
+                    // if (evnt.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE)
                     {
-                        quit = MainWindowId == FocusedWindowId;
-                        windows[FocusedWindowId].Close();
+                        //   quit = MainWindowId == FocusedWindowId;
+                        //  windows[FocusedWindowId].Close();
                     }
                     //Console.WriteLine("1 " + (uint)'1' + " : ! " + (uint)'!');
                     InputHandler.ProcessKeyboard();
@@ -153,6 +174,8 @@ namespace Sharp
 
                 case SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN:
                     InputHandler.isMouseDragging = true;
+                    Console.WriteLine(evnt.button.x);
+                    HitTest(evnt.button.x, evnt.button.y);//use this to fix splitter bars
                     InputHandler.ProcessMouse(SDL.SDL_BUTTON(evnt.button.button), true);
                     break;
 
@@ -179,9 +202,7 @@ namespace Sharp
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE: if (evt.windowID == MainWindowId) quit = true; else windows[evt.windowID].Close(); break;
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
-                    if (View.views.TryGetValue(evt.windowID, out HashSet<View> views))
-                        foreach (var view in views)
-                            view.OnResize(evt.data1, evt.data2);
+                    View.mainViews[evt.windowID].OnResize(evt.data1, evt.data2);
                     onRenderFrame?.Invoke();
                     break;
 
@@ -190,21 +211,30 @@ namespace Sharp
                     UnderMouseWindowId = evt.windowID;
                     SDL.SDL_CaptureMouse(SDL.SDL_bool.SDL_FALSE); break;//convert to use getglobalmousestate when no events caputred?
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE:
+                    ;// Console.WriteLine("bu");
                     if (InputHandler.isMouseDragging)
                         SDL.SDL_CaptureMouse(SDL.SDL_bool.SDL_TRUE); break;
+                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_MOVED: break;
+                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED: if (windows.Contains(evt.windowID)) windows[evt.windowID].OnFocus(); break;
             }
         }
 
-        public static void OpenView(View view, Window win, int index)
+        private SDL.SDL_HitTestResult HitTest(int x, int y)
         {
-            var tab = new Gwen.Control.TabControl(win.mainView.splitter);
+            if (x < 5) return SDL.SDL_HitTestResult.SDL_HITTEST_RESIZE_LEFT;
+            return SDL.SDL_HitTestResult.SDL_HITTEST_NORMAL;
+        }
+
+        public static void OpenView(View view, int index)
+        {
+            var tab = new Gwen.Control.TabControl(view.mainView.splitter);
             var btn = tab.AddPage(view.GetType().ToString());
             var page = btn.Page;
             page.Margin = new Gwen.Margin(3, 3, 3, 3);
             view.panel = page; //make GLControl for gwen
             view.Initialize();
             view.panel.BoundsChanged += (obj, args) => view.OnResize(view.panel.Width, view.panel.Height);
-            win.mainView.splitter.SetPanel(index, tab);
+            view.mainView.splitter.SetPanel(index, tab);
         }
 
         public static int OnResize(IntPtr data, IntPtr e)
@@ -238,6 +268,10 @@ namespace Sharp
         public void Show()
         {
             SDL.SDL_ShowWindow(handle);
+        }
+
+        public virtual void OnFocus()
+        {
         }
     }
 

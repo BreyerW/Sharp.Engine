@@ -6,7 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections;
 using Sharp.Editor.UI.Property;
-using Sharp.Commands;
+using Sharp.Editor.Attribs;
 
 namespace Sharp.Control
 {
@@ -27,7 +27,7 @@ namespace Sharp.Control
         /// </summary>
         public event GwenEventHandler<EventArgs> ValueChanged;
 
-        internal static Dictionary<(Type primitiveType, Type attribType), (Type type, MethodInfo method)> mappedPropertyDrawers = new Dictionary<(Type primitiveType, Type attribType), (Type type, MethodInfo method)>();
+        internal static Dictionary<Type, (Type type, MethodInfo method)> mappedPropertyDrawers = new Dictionary<Type, (Type type, MethodInfo method)>();
 
         static Properties()
         {
@@ -47,7 +47,7 @@ namespace Sharp.Control
             {
                 genericArgs = type.BaseType.GetGenericArguments();
                 genericMethod = method.MakeGenericMethod(new[] { genericArgs[0] });
-                mappedPropertyDrawers.Add((genericArgs[0], genericArgs.Length > 1 ? genericArgs[1] : null), (type, genericMethod));
+                mappedPropertyDrawers.Add(genericArgs[0], (type, genericMethod));
             }
         }
 
@@ -102,19 +102,20 @@ namespace Sharp.Control
             if (Get<T>(propertyInfo.Name + ":") is PropertyRow<T> tmpRow) return tmpRow;
 
             Gwen.Control.Property.PropertyDrawer<T> prop;
-            var attrib = propertyInfo.GetCustomAttribute<CustomPropertyDrawerAttribute>(true);//customattributes when supporting priority/overriding
-                                                                                              // if (attrib is null)
+            var attribs = propertyInfo.GetCustomAttributes<CustomPropertyDrawerAttribute>(true);//customattributes when supporting priority/overriding
+                                                                                                // if (attrib is null)
             {
-                if (mappedPropertyDrawers.ContainsKey((typeof(T), attrib?.GetType())))
-                    prop = Activator.CreateInstance(mappedPropertyDrawers[(typeof(T), attrib?.GetType())].type, this) as Gwen.Control.Property.PropertyDrawer<T>;
+                if (mappedPropertyDrawers.ContainsKey(typeof(T)))
+                    prop = Activator.CreateInstance(mappedPropertyDrawers[typeof(T)].type, this) as Gwen.Control.Property.PropertyDrawer<T>;
                 else if (propertyInfo.PropertyType.GetInterfaces()
     .Any(i => i == typeof(IList)))//isassignablefrom?
                 {
                     prop = new ArrayDrawer(this) as Gwen.Control.Property.PropertyDrawer<T>;
                 }
                 else
-                    prop = Activator.CreateInstance(mappedPropertyDrawers[(typeof(object), attrib?.GetType())].type, this) as Gwen.Control.Property.PropertyDrawer<T>;
+                    prop = Activator.CreateInstance(mappedPropertyDrawers[typeof(object)].type, this) as Gwen.Control.Property.PropertyDrawer<T>;
             }
+            prop.attributes = attribs.ToArray();
             prop.getter = DelegateGenerator.GenerateGetter<T>(instance, propertyInfo);
             prop.setter = DelegateGenerator.GenerateSetter<T>(instance, propertyInfo);
             PropertyRow<T> row = new PropertyRow<T>(this, prop);

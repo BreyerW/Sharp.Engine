@@ -1,7 +1,7 @@
 ﻿using System;
 using Sharp.Control;
 using System.Reflection;
-using Sharp.Editor.UI.Property;
+using Sharp.Editor.Attribs;
 using System.Collections;
 using System.Linq;
 
@@ -37,13 +37,13 @@ namespace Sharp.Editor
         {
             var attrib = propertyInfo.GetCustomAttribute<CustomPropertyDrawerAttribute>(true);
             var attribType = attrib?.GetType();
-            if (Properties.mappedPropertyDrawers.ContainsKey((propertyInfo.PropertyType, attribType)))
-                Properties.mappedPropertyDrawers[(propertyInfo.PropertyType, attribType)].method.Invoke(properties, new object[] { propertyInfo.Name + ":", Target, propertyInfo });
+            if (Properties.mappedPropertyDrawers.ContainsKey(propertyInfo.PropertyType))
+                Properties.mappedPropertyDrawers[propertyInfo.PropertyType].method.Invoke(properties, new object[] { propertyInfo.Name + ":", Target, propertyInfo });
             else if (propertyInfo.PropertyType.GetInterfaces()
     .Any(i => i == typeof(IList)))
-                Properties.mappedPropertyDrawers[(typeof(IList), attribType)].method.Invoke(properties, new object[] { propertyInfo.Name + ":", Target, propertyInfo });
+                Properties.mappedPropertyDrawers[typeof(IList)].method.Invoke(properties, new object[] { propertyInfo.Name + ":", Target, propertyInfo });
             else
-                Properties.mappedPropertyDrawers[(typeof(object), attribType)].method.Invoke(properties, new object[] { propertyInfo.Name + ":", Target, propertyInfo });
+                Properties.mappedPropertyDrawers[typeof(object)].method.Invoke(properties, new object[] { propertyInfo.Name + ":", Target, propertyInfo });
         }
 
         public void BindProperty<T1>(Func<T1> getter)

@@ -47,7 +47,8 @@ namespace Sharp
             //}
             //if (!IsLoaded) return;
             var shader = material.Shader;
-            MainWindow.backendRenderer.Use(ref shader.Program);
+
+            MainWindow.backendRenderer.Use(shader.Program);
             material.SendData();
             MainWindow.backendRenderer.Use(ref mesh.indiceType, mesh.Indices.Length);
             MainWindow.backendRenderer.ChangeShader();

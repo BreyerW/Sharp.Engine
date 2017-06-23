@@ -93,7 +93,10 @@ namespace SharpAsset
                 }
             }
             foreach (var (key, value) in localParams)
+            {
                 value.ConsumeData(Shader.uniformArray[key]);
+                //Console.WriteLine(OpenTK.Graphics.OpenGL.GL.GetError() + " " + key);
+            }
 
             foreach (var (key, value) in globalParams)
                 value.ConsumeData(Shader.uniformArray[key]);

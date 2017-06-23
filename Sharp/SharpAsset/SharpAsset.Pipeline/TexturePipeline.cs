@@ -2,6 +2,8 @@
 using FreeImageAPI;
 using System.IO;
 using Sharp;
+using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace SharpAsset.Pipeline
 {
@@ -15,12 +17,12 @@ namespace SharpAsset.Pipeline
         public override ref Texture GetAsset(int index)
         {
             ref var tex = ref this[index];
-            if (!tex.allocated)
+            //if (tex.TBO is 0)
             {
                 MainWindow.backendRenderer.GenerateBuffers(ref tex.TBO);
                 MainWindow.backendRenderer.BindBuffers(ref tex.TBO);
-                MainWindow.backendRenderer.Allocate(ref tex.bitmap);
-                tex.allocated = true;
+                MainWindow.backendRenderer.Allocate(ref tex.bitmap[0], tex.width, tex.height);
+                //tex.allocated = true;
                 //this[index] = tex;
             }
             return ref this[index];
@@ -32,10 +34,14 @@ namespace SharpAsset.Pipeline
             if (nameToKey.Contains(name))
                 return this[nameToKey.IndexOf(name)];
             var texture = new Texture();
-            var dib = FreeImage.LoadEx(pathToFile);
+            var dib = FreeImage.ConvertTo32Bits(FreeImage.LoadEx(pathToFile));
+            var scanwidth = FreeImage.GetPitch(dib);
+            texture.width = (int)FreeImage.GetWidth(dib);
+            texture.height = (int)FreeImage.GetHeight(dib);
             texture.TBO = -1;
             texture.FullPath = pathToFile;
-            texture.bitmap = FreeImage.GetBitmap(dib);
+            texture.bitmap = new byte[scanwidth * texture.height];
+            FreeImage.ConvertToRawBits(texture.bitmap, dib, (int)scanwidth, 32, FreeImage.FI_RGBA_RED_MASK, FreeImage.FI_RGBA_GREEN_MASK, FreeImage.FI_RGBA_BLUE_MASK, true);
             //Console.WriteLine (IsPowerOfTwo(texture.bitmap.Width) +" : "+IsPowerOfTwo(texture.bitmap.Height));
             nameToKey.Add(name);
 

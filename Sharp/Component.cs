@@ -1,5 +1,5 @@
 ﻿using System;
-using Sharp.Editor.UI.Property;
+using Sharp.Editor.Attribs;
 
 namespace Sharp
 {
@@ -20,7 +20,7 @@ namespace Sharp
             }
         }
 
-        [Range]
+        [Range(0, 100)]
         public float testRange
         {
             get;
@@ -32,6 +32,11 @@ namespace Sharp
         //    get;
         //    set;
         //  } = { { { 80, 45 }, { 80, 45 }, { 80, 45 } } };
+        //[CurveRange()]
+        public Curve[] curves { get; set; } = new Curve[2] {
+            new Curve() { keys = new Keyframe[] { new Keyframe() { time = 0.1f, value = -10f }, new Keyframe() { time = 120f, value = 10f } } },
+            new Curve() { keys = new Keyframe[] { new Keyframe() { time = 0.4f, value = 0f }, new Keyframe() { time = 60f, value = 1f } } }
+        };
 
         private bool enabled;
         public Entity entityObject;
