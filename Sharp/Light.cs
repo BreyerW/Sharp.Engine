@@ -5,7 +5,7 @@ namespace Sharp
 {
     public class Light : Component
     {
-        internal OpenTK.Graphics.Color4 color = OpenTK.Graphics.Color4.White;
+        internal Color color = Color.White;
         internal float intensity = 1f;
         internal float angle = 90f;
 
@@ -14,7 +14,7 @@ namespace Sharp
         //public float radius{ get; set;}=1;
         public LightType type { get; set; } = LightType.Spot;
 
-        public OpenTK.Graphics.Color4 Color { get => color; }
+        public Color Color { get => color; }
         public float Intensity { get => intensity; set => intensity = value; }
         public float Angle { get => angle; set => angle = value; }
         public static float ambientCoefficient = 0.005f;

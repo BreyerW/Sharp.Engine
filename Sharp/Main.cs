@@ -2,11 +2,7 @@ using System;
 using System.Globalization;
 using SDL2;
 using System.Threading;
-using OpenTK;
-using OpenTK.Graphics;
 using Sharp.Editor.Views;
-using System.Runtime.InteropServices;
-using System.Security;
 
 namespace Sharp
 {
@@ -22,11 +18,10 @@ namespace Sharp
             SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
             //SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, (int)SDL.SDL_GLcontext.SDL_GL_CONTEXT_DEBUG_FLAG);
             OpenTK.Toolkit.Init();
-            var dummy = SDL.SDL_CreateWindow("", 0, 0, 1, 1, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL);
+            var dummy = SDL.SDL_CreateWindow("", 0, 0, 1, 1, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL); //convert dummy to splash screen?
 
             Window.context = SDL.SDL_GL_CreateContext(dummy);
-            var graphic = new GraphicsContext(ContextHandle.Zero, SDL.SDL_GL_GetProcAddress,
-                                                                    () => { return new ContextHandle(Window.context); });
+            MainWindow.backendRenderer.CreateContext(SDL.SDL_GL_GetProcAddress, SDL.SDL_GL_GetCurrentContext);
 
             var mWin = new MainWindow("test"); //Console.WriteLine("alpha: " + graphic.GraphicsMode.ColorFormat.Alpha);
             mWin.Initialize(new AssetsView(mWin.windowId), new SceneView(mWin.windowId), new SceneStructureView(mWin.windowId), new InspectorView(mWin.windowId));

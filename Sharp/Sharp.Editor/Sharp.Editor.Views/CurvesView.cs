@@ -131,7 +131,7 @@ namespace Sharp.Editor.Views
 
             Color c = new Color(drawer.curveColor.R, drawer.curveColor.G, drawer.curveColor.B, (byte)(drawer.curveColor.A * 0.75f));
             var mat = Matrix4.CreateOrthographicOffCenter(0, size.width, size.height, 0, -1, 1);
-            OpenTK.Graphics.OpenGL.GL.LoadMatrix(ref mat);
+            MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
 
             var direction = new Vector2(5, 5);
             for (int j = 0; j < 2; j++)
@@ -192,10 +192,11 @@ namespace Sharp.Editor.Views
             {
                 array[i] = new Vector3(RegionDrawer.CurveToViewSpace(drawer.region[i], scale, translation));
             }
-            OpenTK.Graphics.OpenGL.GL.DepthMask(false);
+            MainWindow.backendRenderer.WriteDepth(false);
             GridGUI();
             MainEditorView.editorBackendRenderer.DrawFilledPolyline(3, 3, ref c.R, ref mat, ref array, false);
-            OpenTK.Graphics.OpenGL.GL.DepthMask(true);
+            MainWindow.backendRenderer.WriteDepth();
+            MainEditorView.editorBackendRenderer.UnloadMatrix();
         }
 
         private void UpdateClickedKeyfr(Dictionary<Vector2, Keyframe>[] newSelected)
@@ -442,6 +443,7 @@ namespace Sharp.Editor.Views
 
         public override void OnGlobalMouseMove(MouseMoveEventArgs evnt)
         {
+            if (!Window.windows.Contains(attachedToWindow)) return;
             var mousePos = new Vector2(evnt.X - Window.windows[attachedToWindow].Position.x, evnt.Y - Window.windows[attachedToWindow].Position.y);
             if (tracking > -1)
             {

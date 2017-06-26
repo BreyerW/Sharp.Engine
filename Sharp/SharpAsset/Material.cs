@@ -2,6 +2,7 @@
 using System;
 using Sharp;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using SharpAsset.Pipeline;
 using TupleExtensions;
 
@@ -86,7 +87,7 @@ namespace SharpAsset
                 {
                     MainWindow.backendRenderer.SendUniform3(Shader.uniformArray["lights[" + idLight + "].position"], ref light.entityObject.position.X);
                     //GL.UniformMatrix4(mat.Shader.uniformArray[UniformType.FloatMat4]["lights[" + idLight + "].modelMatrix"],false,ref light.entityObject.ModelMatrix);
-                    MainWindow.backendRenderer.SendUniform4(Shader.uniformArray["lights[" + idLight + "].color"], ref light.color.A);
+                    MainWindow.backendRenderer.SendUniform4(Shader.uniformArray["lights[" + idLight + "].color"], ref Unsafe.As<byte, float>(ref light.color.A));
                     MainWindow.backendRenderer.SendUniform1(Shader.uniformArray["lights[" + idLight + "].intensity"], ref light.intensity);
                     //GL.Uniform1(mat.Shader.uniformArray[UniformType.Float]["lights[" + idLight + "].angle"], light.angle);
                     idLight++;

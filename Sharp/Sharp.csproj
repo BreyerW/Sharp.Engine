@@ -201,6 +201,7 @@
     <Compile Include="CurveUtility.cs" />
     <Compile Include="DelegateGenerator.cs" />
     <Compile Include="Extension.cs" />
+    <Compile Include="NumericsExtensions.cs" />
     <Compile Include="Sharp.Editor\CurveSettings.cs" />
     <Compile Include="Sharp.Editor\MenuCommand.cs" />
     <Compile Include="Sharp.Editor\RedoCommand.cs" />

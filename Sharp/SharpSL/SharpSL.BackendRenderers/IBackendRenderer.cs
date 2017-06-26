@@ -6,6 +6,8 @@ namespace SharpSL.BackendRenderers
 {
     public interface IBackendRenderer
     {
+        void CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext);
+
         //void Do(Work whatToDo, ref Shader shader);
         //void Do<IndexType> (Work whatToDo,ref Mesh<IndexType> mesh) where IndexType: struct, IConvertible;
         void Allocate(ref UsageHint usageHint, ref byte vertsMemAddr, ref byte indicesMemAddr, int vertsMemLength, int indicesMemLength);
@@ -64,6 +66,8 @@ namespace SharpSL.BackendRenderers
         void SetStandardState();
 
         void SetFlatColorState();
+
+        void WriteDepth(bool enable = true);
 
         void Clip(int x, int y, int width, int height);
 

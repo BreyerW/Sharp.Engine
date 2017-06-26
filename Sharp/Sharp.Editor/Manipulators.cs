@@ -8,12 +8,6 @@ namespace Sharp.Editor
     public static class Manipulators
     {
         private static readonly int halfCircleSegments = 64;
-
-        /*public static readonly System.Drawing.Color selectedColor = System.Drawing.Color.FromArgb(255, 128, 16);
-        public static readonly System.Drawing.Color fillColor = System.Drawing.Color.FromArgb(175, 255, 128, 16);
-        public static readonly System.Drawing.Color xColor = ColorTranslator.FromHtml("#FFAA0000");
-        public static readonly System.Drawing.Color yColor = ColorTranslator.FromHtml("#FF00AA00");
-        public static readonly System.Drawing.Color zColor = ColorTranslator.FromHtml("#FF0000AA");*/
         public static readonly Color selectedColor = new Color(0xFF1080FF);
         public static readonly Color fillColor = new Color(0x801080FF);
         public static readonly Color xColor = new Color(0xFF0000AA);
@@ -58,7 +52,9 @@ namespace Sharp.Editor
                     var rotatedVec = Vector3.Transform(startAxis, rotateMat) * 3f * scale;
                     vectors[i] = new Vector3(rotatedVec.X, rotatedVec.Y, rotatedVec.Z);
                 }
-                var mat = startMat.ClearRotation() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+
+                var rot = Matrix4.CreateFromQuaternion(startMat.ExtractRotation().Inverted());
+                var mat = rot * startMat * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
                 var fill = new Color(fillColor.R, fillColor.G, fillColor.B, fillColor.A);
                 DrawHelper.DrawFilledPolyline(thickness, 3f * scale, fill, ref mat, ref vectors);
             }

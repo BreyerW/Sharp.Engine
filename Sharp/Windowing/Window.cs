@@ -192,6 +192,20 @@ namespace Sharp
                 case SDL.SDL_EventType.SDL_MOUSEWHEEL: InputHandler.ProcessMouseWheel(evnt.wheel.y); break;
                 case SDL.SDL_EventType.SDL_WINDOWEVENT: OnWindowEvent(ref evnt.window); break;
                 case SDL.SDL_EventType.SDL_QUIT: quit = true; break;
+                case SDL.SDL_EventType.SDL_TEXTINPUT:
+                    // char types are 8-bit in C, but 16-bit in C#, so we use a byte (8-bit) here
+                    //byte[] rawBytes = new byte[SDL.SDL_TEXTINPUTEVENT_TEXT_SIZE];
+
+                    // we have a pointer to an unmanaged character array from the SDL2 lib (event.text.text),
+                    // so we need to explicitly marshal into our byte array
+                    //Marshal.Copy((IntPtr)evnt.text., rawBytes, 0, SDL.SDL_TEXTINPUTEVENT_TEXT_SIZE);
+
+                    // the character array is null terminated, so we need to find that terminator
+                    //int indexOfNullTerminator = Array.IndexOf(rawBytes, (byte)0);
+
+                    // finally, since the character array is UTF-8 encoded, get the UTF-8 string
+                    //string text = System.Text.Encoding.UTF8.GetString(rawBytes, 0, length);
+                    break;
             }
         }
 

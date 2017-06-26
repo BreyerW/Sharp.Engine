@@ -1,5 +1,7 @@
 ﻿using System;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics;
+using OpenTK;
 using SharpAsset;
 using System.Text;
 using System.Collections.Generic;
@@ -10,6 +12,12 @@ namespace SharpSL.BackendRenderers.OpenGL
     public class OpenGLRenderer : IBackendRenderer
     {
         #region IBackendRenderer implementation
+
+        public void CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext)
+        {
+            new GraphicsContext(ContextHandle.Zero, (function) => GetProcAddress(function),
+                                                                    () => new ContextHandle(GetCurrentContext()));
+        }
 
         public void FinishCommands()
         {
@@ -264,6 +272,11 @@ namespace SharpSL.BackendRenderers.OpenGL
         public void ChangeShader()
         {
             GL.UseProgram(0);
+        }
+
+        public void WriteDepth(bool enable = true)
+        {
+            GL.DepthMask(enable);
         }
 
         public void BindVertexAttrib(ref AttributeType type, int shaderLoc, int dim, int stride, int offset)
