@@ -73,13 +73,17 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.UseProgram(Program);
         }
 
-        public void Allocate(ref byte bitmap, int width, int height)
+        public void Allocate(ref byte bitmap, int width, int height, bool ui = false)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0,
-                PixelFormat.Bgra, PixelType.UnsignedByte, ref bitmap);
+            /* if (ui)
+             {
+                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+             }*/
+            GL.TexImage2D(TextureTarget.Texture2D, 0, ui ? PixelInternalFormat.Alpha : PixelInternalFormat.Rgba, width, height, 0,
+           ui ? PixelFormat.Alpha : PixelFormat.Bgra, PixelType.UnsignedByte, ref bitmap);
         }
 
         public void GenerateBuffers(ref int TBO)
@@ -195,6 +199,7 @@ namespace SharpSL.BackendRenderers.OpenGL
         public void Use(ref IndiceType indiceType, int length)
         {
             GL.DrawElements(PrimitiveType.Triangles, length, (DrawElementsType)indiceType, IntPtr.Zero);
+            slot = 0;
         }
 
         public void Delete(ref int Program, ref int VertexID, ref int FragmentID)
@@ -291,11 +296,14 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.UniformMatrix4(location, 1, false, ref mat);
         }
 
-        public void SendTexture2D(int location, ref int tbo, int slot)
+        private int slot = 0;
+
+        public void SendTexture2D(int location, ref int tbo)
         {
             //GL.ActiveTexture(TextureUnit.Texture0 + slot);//bugged?
             GL.BindTexture(TextureTarget.Texture2D, tbo);
             GL.Uniform1(location, (int)TextureUnit.Texture0 + slot);
+            slot = ++slot;
         }
 
         public void SendUniform1(int location, ref float data)

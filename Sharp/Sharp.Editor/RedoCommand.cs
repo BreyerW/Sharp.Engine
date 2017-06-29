@@ -14,11 +14,11 @@ namespace Sharp.Editor
 
         public static Stack<ICommand> undone = new Stack<ICommand>();
 
-        public void Execute()
+        public void Execute(bool reverse = false)
         {
             if (undone.Count is 0) return;
             var toRedo = undone.Pop();
-            toRedo.Execute();
+            toRedo.Execute(reverse);
             UndoCommand.done.Push(toRedo);
         }
     }

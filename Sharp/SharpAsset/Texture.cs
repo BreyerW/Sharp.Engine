@@ -11,7 +11,6 @@ namespace SharpAsset
         internal int TBO;
 
         internal byte[] bitmap;
-        internal IntPtr ptr;
         public int width;
         public int height;
 

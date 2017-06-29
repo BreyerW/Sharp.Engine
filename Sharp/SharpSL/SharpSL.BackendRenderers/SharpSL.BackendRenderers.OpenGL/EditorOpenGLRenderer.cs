@@ -79,11 +79,208 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Color4(0, 0, 0, 0);
         }
 
-        public void DrawSelectionSquare(float x1, float y1, float x2, float y2, ref byte unColor)
+        public void DrawSelectionSquare(float x1, float y1, float x2, float y2, ref byte unColor, float left = 0, float right = 0, float top = 0, float bottom = 0)
         {
             GL.Color4(ref unColor);
-            GL.PolygonMode(MaterialFace.Front, PolygonMode.Line);
-            GL.Rect(x1, y1, x2, y2);
+
+            GL.Begin(BeginMode.Quads);
+
+            GL.TexCoord2(left, top);
+            GL.Vertex3(x1, y1, 0);
+
+            GL.TexCoord2(left, bottom);
+            GL.Vertex3(x1, y2, 0);
+
+            GL.TexCoord2(right, bottom);
+            GL.Vertex3(x2, y2, 0);
+
+            GL.TexCoord2(right, top);
+            GL.Vertex3(x2, y1, 0);
+            /*
+            *+---+----------------------+---+
+            *| 3 |          4           | 7 |
+            *+---+----------------------+---+
+            *|   |                      |   |
+            *| 2 |          5           | 8 |
+            *|   |                      |   |
+            *+---+----------------------+---+
+            *| 1 |          6           | 9 |
+            *+---+----------------------+---+
+            */
+
+            #region old
+
+            /*
+            //1st square
+            GL.TexCoord2(0, 0);
+            GL.Vertex3(x1, y1, 0);
+
+            GL.TexCoord2(0, bottom / height);
+            GL.Vertex3(x1, y1 + bottom, 0);
+
+            GL.TexCoord2(left / width, bottom / height);
+            GL.Vertex3(x1 + left, y1 + bottom, 0);
+
+            GL.TexCoord2(left / width, 0);
+            GL.Vertex3(x1 + left, y1, 0);
+
+            //2nd square
+            GL.TexCoord2(0, bottom / height);
+            GL.Vertex3(x1, y1 + bottom, 0);
+
+            GL.TexCoord2(0, 1 - (top / height));
+            GL.Vertex3(x1, y2 - top, 0);
+
+            GL.TexCoord2(left / width, 1 - (top / height));
+            GL.Vertex3(x1 + left, y2 - top, 0);
+
+            GL.TexCoord2(left / width, bottom / height);
+            GL.Vertex3(x1 + left, y1 + bottom, 0);
+
+            //3rd square
+            GL.TexCoord2(0, 1 - (top / height));
+            GL.Vertex3(x1, y2 - top, 0);
+
+            GL.TexCoord2(0, 1);
+            GL.Vertex3(x1, y2, 0);
+
+            GL.TexCoord2(left / width, 1);
+            GL.Vertex3(x1 + left, y2, 0);
+
+            GL.TexCoord2(left / width, 1 - (top / height));
+            GL.Vertex3(x1 + left, y2 - top, 0);
+
+            //4th square
+            GL.TexCoord2(left / width, 1 - (top / height));
+            GL.Vertex3(x1 + left, y2 - top, 0);
+
+            GL.TexCoord2(left / width, 1);
+            GL.Vertex3(x1 + left, y2, 0);
+
+            GL.TexCoord2(1 - (right / width), 1);
+            GL.Vertex3(x2 - right, y2, 0);
+
+            GL.TexCoord2(1 - (right / width), 1 - (top / height));
+            GL.Vertex3(x2 - right, y2 - top, 0);
+
+            //5th square
+            GL.TexCoord2(left / width, bottom / height);
+            GL.Vertex3(x1 + left, y1 + bottom, 0);
+
+            GL.TexCoord2(left / width, 1 - (top / height));
+            GL.Vertex3(x1 + left, y2 - top, 0);
+
+            GL.TexCoord2(1 - (right / width), 1 - (top / height));
+            GL.Vertex3(x2 - right, y2 - top, 0);
+
+            GL.TexCoord2(1 - (right / width), bottom / height);
+            GL.Vertex3(x2 - right, y1 + bottom, 0);
+
+            //6th
+            GL.TexCoord2(left / width, 0);
+            GL.Vertex3(x1 + left, y1, 0);
+
+            GL.TexCoord2(left / width, bottom / height);
+            GL.Vertex3(x1 + left, y1 + bottom, 0);
+
+            GL.TexCoord2(1 - (right / width), bottom / height);
+            GL.Vertex3(x2 - right, y1 + bottom, 0);
+
+            GL.TexCoord2(1 - (right / width), 0);
+            GL.Vertex3(x2 - right, y1, 0);
+
+            //7th
+            GL.TexCoord2(1 - (right / width), 1 - (top / height));
+            GL.Vertex3(x2 - right, y2 - top, 0);
+
+            GL.TexCoord2(1 - (right / width), 1);
+            GL.Vertex3(x2 - right, y2, 0);
+
+            GL.TexCoord2(1, 1);
+            GL.Vertex3(x2, y2, 0);
+
+            GL.TexCoord2(1, 1 - (top / height));
+            GL.Vertex3(x2, y2 - top, 0);
+
+            //8th
+            GL.TexCoord2(1 - (right / width), bottom / height);
+            GL.Vertex3(x2 - right, y1 + bottom, 0);
+
+            GL.TexCoord2(1 - (right / width), 1 - (top / height));
+            GL.Vertex3(x2 - right, y2 - top, 0);
+
+            GL.TexCoord2(1, 1 - (top / height));
+            GL.Vertex3(x2, y2 - top, 0);
+
+            GL.TexCoord2(1, bottom / height);
+            GL.Vertex3(x2, y1 + bottom, 0);
+
+            //9th
+            GL.TexCoord2(1 - (right / width), 0);
+            GL.Vertex3(x2 - right, y1, 0);
+
+            GL.TexCoord2(1 - (right / width), bottom / height);
+            GL.Vertex3(x2 - right, y1 + bottom, 0);
+
+            GL.TexCoord2(1, bottom / height);
+            GL.Vertex3(x2, y1 + bottom, 0);
+
+            GL.TexCoord2(1, 0);
+            GL.Vertex3(x2, y1, 0);*/
+
+            #endregion old
+
+            /*
+                        //1st square
+                        // GL.TexCoord2(0, 0);
+                        GL.Vertex3(x1, y1, 0);
+
+                        //GL.TexCoord2(left / width, 0);
+                        GL.Vertex3(x1 + left, y1, 0);
+
+                        // GL.TexCoord2(1 - (right / width), 0);
+                        GL.Vertex3(x2 - right, y1, 0);
+
+                        // GL.TexCoord2(1, 0);
+                        GL.Vertex3(x2, y1, 0);
+
+                        // GL.TexCoord2(1, bottom / height);
+                        GL.Vertex3(x2, y1 + bottom, 0);
+
+                        // GL.TexCoord2(1, 1 - (top / height));
+                        GL.Vertex3(x2, y2 - top, 0);
+
+                        // GL.TexCoord2(1, 1);
+                        GL.Vertex3(x2, y2, 0);
+
+                        // GL.TexCoord2(1 - (right / width), 1);
+                        GL.Vertex3(x2 - right, y2, 0);
+
+                        //GL.TexCoord2(left / width, 1);
+                        GL.Vertex3(x1 + left, y2, 0);
+
+                        // GL.TexCoord2(0, 1);
+                        GL.Vertex3(x1, y2, 0);
+
+                        // GL.TexCoord2(0, 1 - (top / height));
+                        GL.Vertex3(x1, y2 - top, 0);
+
+                        // GL.TexCoord2(0, 1 - (top / height));
+                        GL.Vertex3(x1, y2 - top, 0);
+
+                        // GL.TexCoord2(left / width, bottom / height);
+                        GL.Vertex3(x1 + left, y1 + bottom, 0);
+
+                        // GL.TexCoord2(1 - (right / width), bottom / height);
+                        GL.Vertex3(x2 - right, y1 + bottom, 0);
+
+                        // GL.TexCoord2(1 - (right / width), 1 - (top / height));
+                        GL.Vertex3(x2 - right, y2 - top, 0);
+
+                        //GL.TexCoord2(left / width, 1 - (top / height));
+                        GL.Vertex3(x1 + left, y2 - top, 0);*/
+
+            GL.End();
         }
 
         public void DrawCircle(float size, float lineWidth, ref byte unColor, Plane plane, float angle = 360, bool filled = false)

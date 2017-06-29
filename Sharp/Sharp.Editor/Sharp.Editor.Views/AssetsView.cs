@@ -13,7 +13,7 @@ namespace Sharp.Editor.Views
 {
     public class AssetsView : View//TODO: nested entity, complete gizmo
     {
-        private static readonly DirectoryInfo root = new DirectoryInfo(Environment.CurrentDirectory + "\\Content"); //Path.GetFullPath(@"..\..\")
+        internal static readonly DirectoryInfo root = new DirectoryInfo(Environment.CurrentDirectory + "\\Content"); //Path.GetFullPath(@"..\..\")
         private static Dictionary<string, ConcurrentDictionary<string, FileInfo>> directories = new Dictionary<string, ConcurrentDictionary<string, FileInfo>>();//IAsset ordered by name
         private static readonly FileSystemWatcher dirWatcher = new FileSystemWatcher(root.FullName);
         private static HashSet<string> eventsOnceFired = new HashSet<string>();
@@ -28,7 +28,6 @@ namespace Sharp.Editor.Views
             dirWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
             dirWatcher.IncludeSubdirectories = true;
             dirWatcher.EnableRaisingEvents = true;
-            Pipeline.Initialize();
         }
 
         public AssetsView(uint attachToWindow) : base(attachToWindow)

@@ -13,24 +13,28 @@ namespace Squid
     /// </summary>
     /// <param name="sender">The sender.</param>
     public delegate void VoidEvent(Control sender);
+
     /// <summary>
     /// Delegate KeyEvent
     /// </summary>
     /// <param name="sender">The sender.</param>
     /// <param name="args">The <see cref="KeyEventArgs"/> instance containing the event data.</param>
     public delegate void KeyEvent(Control sender, KeyEventArgs args);
+
     /// <summary>
     /// Delegate MouseEvent
     /// </summary>
     /// <param name="sender">The sender.</param>
     /// <param name="args">The <see cref="MouseEventArgs"/> instance containing the event data.</param>
     public delegate void MouseEvent(Control sender, MouseEventArgs args);
+
     /// <summary>
     /// Delegate DragDropEvent
     /// </summary>
     /// <param name="sender">The sender.</param>
     /// <param name="e">The <see cref="DragDropEventArgs"/> instance containing the event data.</param>
     public delegate void DragDropEvent(Control sender, DragDropEventArgs e);
+
     /// <summary>
     /// Delegate EventWithArgs
     /// </summary>
@@ -397,7 +401,7 @@ namespace Squid
         }
 
         /// <summary>
-        /// Name of the ControlStyle 
+        /// Name of the ControlStyle
         /// </summary>
         [Style]
         [DefaultValue("")]
@@ -448,7 +452,7 @@ namespace Squid
         public IControlContainer Container { get { return _parent as IControlContainer; } }
 
         /// <summary>
-        /// Name of the cursor to use 
+        /// Name of the cursor to use
         /// </summary>
         [Cursor]
         [DefaultValue("")]
@@ -459,7 +463,7 @@ namespace Squid
         private string _originalTooltip;
 
         /// <summary>
-        /// Tooltip text 
+        /// Tooltip text
         /// </summary>
         [DefaultValue("")]
         [Multiline]
@@ -662,7 +666,7 @@ namespace Squid
                 _oldState = _state;
                 _state = value;
 
-                Style last =  Desktop.GetStyle(Style).Styles[_oldState];
+                Style last = Desktop.GetStyle(Style).Styles[_oldState];
                 Style next = Desktop.GetStyle(Style).Styles[_state];
 
                 TextureFade = last.IsTextureDifferent(next);
@@ -1027,31 +1031,39 @@ namespace Squid
                 case AnchorStyles.Bottom:
                     ResizeBottom(p.y);
                     break;
+
                 case AnchorStyles.Right:
                     ResizeRight(p.x);
                     break;
+
                 case AnchorStyles.Top:
                     ResizeTop(-p.y);
                     break;
+
                 case AnchorStyles.Left:
                     ResizeLeft(-p.x);
                     break;
+
                 case AnchorStyles.Bottom | AnchorStyles.Right:
                     ResizeRight(p.x);
                     ResizeBottom(p.y);
                     break;
+
                 case AnchorStyles.Bottom | AnchorStyles.Left:
                     ResizeLeft(-p.x);
                     ResizeBottom(p.y);
                     break;
+
                 case AnchorStyles.Top | AnchorStyles.Right:
                     ResizeRight(p.x);
                     ResizeTop(-p.y);
                     break;
+
                 case AnchorStyles.Top | AnchorStyles.Left:
                     ResizeLeft(-p.x);
                     ResizeTop(-p.y);
                     break;
+
                 case AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom:
                     ResizeLeft(-p.x / 2);
                     ResizeTop(-p.y / 2);
@@ -1199,7 +1211,7 @@ namespace Squid
         //    PerformLayout();
         //}
 
-        #endregion
+        #endregion old
 
         #region new
 
@@ -1221,7 +1233,6 @@ namespace Squid
                 FadeIn = FadeIn < 0 ? 0 : (FadeIn > 1 ? 1 : FadeIn);
                 FadeOut = FadeOut < 0 ? 0 : (FadeOut > 1 ? 1 : FadeOut);
             }
-
 
             int elementCount = Elements.Count;
             int controlCount = 0;
@@ -1361,7 +1372,7 @@ namespace Squid
             //OnLateUpdate();
         }
 
-        #endregion
+        #endregion new
 
         // ---------- protected ----------------
 
@@ -1405,22 +1416,31 @@ namespace Squid
             {
                 case Alignment.BottomCenter:
                     return Location + new Point((_size.x - tsize.x) / 2, _size.y - tsize.y - padding.Bottom);
+
                 case Alignment.BottomLeft:
                     return Location + new Point(padding.Left, _size.y - tsize.y - padding.Bottom);
+
                 case Alignment.BottomRight:
                     return Location + new Point(_size.x - tsize.x - padding.Right, _size.y - tsize.y - padding.Bottom);
+
                 case Alignment.MiddleCenter:
                     return Location + new Point((_size.x - tsize.x) / 2, (_size.y - tsize.y) / 2);
+
                 case Alignment.MiddleLeft:
                     return Location + new Point(padding.Left, (int)Math.Floor((float)(_size.y - tsize.y) / 2));
+
                 case Alignment.MiddleRight:
                     return Location + new Point(_size.x - tsize.x - padding.Right, (_size.y - tsize.y) / 2);
+
                 case Alignment.TopCenter:
                     return Location + new Point((_size.x - tsize.x) / 2, padding.Top);
+
                 case Alignment.TopLeft:
                     return Location + new Point(padding.Left, padding.Top);
+
                 case Alignment.TopRight:
                     return Location + new Point(_size.x - tsize.x - padding.Right, padding.Top);
+
                 default:
                     return Location;
             }
@@ -1443,22 +1463,31 @@ namespace Squid
             {
                 case Alignment.BottomCenter:
                     return Location + new Point((_size.x - tsize.x) / 2, _size.y - tsize.y - padding.Bottom);
+
                 case Alignment.BottomLeft:
                     return Location + new Point(padding.Left, _size.y - tsize.y - padding.Bottom);
+
                 case Alignment.BottomRight:
                     return Location + new Point(_size.x - tsize.x - padding.Right, _size.y - tsize.y - padding.Bottom);
+
                 case Alignment.MiddleCenter:
                     return Location + new Point((_size.x - tsize.x) / 2, (_size.y - tsize.y) / 2);
+
                 case Alignment.MiddleLeft:
                     return Location + new Point(padding.Left, (_size.y - tsize.y) / 2);
+
                 case Alignment.MiddleRight:
                     return Location + new Point(_size.x - tsize.x - padding.Right, (_size.y - tsize.y) / 2);
+
                 case Alignment.TopCenter:
                     return Location + new Point((_size.x - tsize.x) / 2, padding.Top);
+
                 case Alignment.TopLeft:
                     return Location + new Point(padding.Left, padding.Top);
+
                 case Alignment.TopRight:
                     return Location + new Point(_size.x - tsize.x - padding.Right, padding.Top);
+
                 default:
                     return Location;
             }
@@ -1659,8 +1688,6 @@ namespace Squid
 
             return rect;
         }
-
-
 
         // ---------- private ----------------
 
@@ -1919,39 +1946,50 @@ namespace Squid
                 case AnchorStyles.Top:
                     _position.x = _parent.Size.x - Bounds.Right - _size.x;
                     break;
+
                 case AnchorStyles.Top | AnchorStyles.Left:
                     // position unchanged
                     break;
+
                 case AnchorStyles.Top | AnchorStyles.Right:
                     _position.x = _parent.Size.x - Bounds.Right - _size.x;
                     break;
+
                 case AnchorStyles.Top | AnchorStyles.Bottom:
                     _size.y = (_parent.Size.y - Bounds.Bottom) - _position.y;
                     break;
+
                 case AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left:
                     _size.y = (_parent.Size.y - Bounds.Bottom) - _position.y;
                     break;
+
                 case AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right:
                     _size.y = (_parent.Size.y - Bounds.Bottom) - _position.y;
                     _position.x = _parent.Size.x - Bounds.Right - _size.x;
                     break;
+
                 case AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right:
                     _size.x = (_parent.Size.x - Bounds.Right) - _position.x;
                     break;
+
                 case AnchorStyles.Left | AnchorStyles.Right:
                     _size.x = (_parent.Size.x - Bounds.Right) - _position.x;
                     break;
+
                 case AnchorStyles.Bottom | AnchorStyles.Left:
                     _position.y = _parent.Size.y - Bounds.Bottom - _size.y;
                     break;
+
                 case AnchorStyles.Bottom | AnchorStyles.Right:
                     _position.x = _parent.Size.x - Bounds.Right - _size.x;
                     _position.y = _parent.Size.y - Bounds.Bottom - _size.y;
                     break;
+
                 case AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right:
                     _size.x = (_parent.Size.x - Bounds.Right) - _position.x;
                     _position.y = _parent.Size.y - Bounds.Bottom - _size.y;
                     break;
+
                 case AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right:
                     _size.x = (_parent.Size.x - Bounds.Right) - _position.x;
                     _size.y = (_parent.Size.y - Bounds.Bottom) - _position.y;
@@ -2074,7 +2112,7 @@ namespace Squid
             }
         }
 
-        protected void SliceTexture(int texture, TextureMode mode, Rectangle rect, Margin grid, float opacity, int color)
+        protected void SliceTexture(int texture, TextureMode mode, Rectangle rect, Margin grid, float opacity, int color)//build mesh every step?
         {
             bool repeat = mode == TextureMode.GridRepeat;
 
@@ -2083,12 +2121,10 @@ namespace Squid
             Rectangle inside = new Rectangle(location + new Point(grid.Left, grid.Top), _size - new Point(grid.Left + grid.Right, grid.Top + grid.Bottom));
 
             Rectangle slice = new Rectangle();
-
             int x1 = rect.Left + grid.Left;
             int y1 = rect.Top + grid.Top;
             int x2 = rect.Right - grid.Right;
             int y2 = rect.Bottom - grid.Bottom;
-
             if (grid.Top > 0 && grid.Left > 0)
             {
                 //// draw top left
@@ -2096,7 +2132,6 @@ namespace Squid
                 slice.Top = rect.Top;
                 slice.Right = x1;
                 slice.Bottom = y1;
-
                 Gui.Renderer.DrawTexture(texture, outside.Left, outside.Top, grid.Left, grid.Top, slice, color);
             }
 
@@ -2338,7 +2373,6 @@ namespace Squid
             foreach (Control control in Elements)
                 control.SetEnabled(value);
         }
-
 
         // ---------- internal ----------------
 
@@ -2919,7 +2953,6 @@ namespace Squid
             if (LostFocus != null)
                 LostFocus(this);
         }
-
 
         /// <summary>
         /// Determines whether the specified <see cref="System.Object" /> is equal to this instance.

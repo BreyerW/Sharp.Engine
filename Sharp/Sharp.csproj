@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\SharpFont.HarfBuzz.0.1.1\build\SharpFont.HarfBuzz.props" Condition="Exists('..\packages\SharpFont.HarfBuzz.0.1.1\build\SharpFont.HarfBuzz.props')" />
+  <Import Project="..\packages\SharpFont.4.0.1\build\SharpFont.props" Condition="Exists('..\packages\SharpFont.4.0.1\build\SharpFont.props')" />
+  <Import Project="..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props" Condition="Exists('..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props')" />
   <Import Project="..\packages\Microsoft.Net.Compilers.2.1.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.1.0\build\Microsoft.Net.Compilers.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -75,6 +78,12 @@
     </Reference>
     <Reference Include="Puresharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Puresharp.0.0.0\lib\Puresharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpFont, Version=4.0.1.200, Culture=neutral, PublicKeyToken=48add4c483071cdf, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpFont.4.0.1\lib\net45\SharpFont.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpFont.HarfBuzz, Version=0.1.0.0, Culture=neutral, PublicKeyToken=7f22260154a89e6f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpFont.HarfBuzz.0.1.1\lib\net20\SharpFont.HarfBuzz.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
@@ -211,7 +220,10 @@
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\RegionDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Views\CurvesView.cs" />
     <Compile Include="Sharp.Editor\TickHandler.cs" />
+    <Compile Include="Sharp.Editor\UIVertexFormat.cs" />
     <Compile Include="Sharp.Editor\UndoCommand.cs" />
+    <Compile Include="SharpAsset\Font.cs" />
+    <Compile Include="SharpAsset\SharpAsset.Pipeline\FontPipeline.cs" />
     <Compile Include="Windowing\FloatingWindow.cs" />
     <Compile Include="Windowing\ISplitter.cs" />
     <Compile Include="Windowing\MainWindow.cs" />
@@ -231,7 +243,7 @@
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Text.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Vector3Drawer.cs" />
     <Compile Include="SharpAsset\Recipe.cs" />
-    <Compile Include="SharpSL\SharpSL.BackendRenderers\SharpSL.BackendRenderers.OpenGL\UIOpenGLRenderer.cs" />
+    <Compile Include="SharpSL\SharpSL.BackendRenderers\UIRenderer.cs" />
     <Compile Include="Windowing\VerticalSplitter.cs" />
     <Compile Include="Windowing\Window.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -317,9 +329,44 @@
       <Project>{85480198-8711-4355-830e-72fd794ad3f6}</Project>
       <Name>SDL2-CS</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SQUID\SQUID.csproj">
+      <Project>{6ef039d2-e119-4f6f-9c4b-f9a00dac7aa1}</Project>
+      <Name>SQUID</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\duckCM.bmp" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\border.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\button_default.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\button_down.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\button_hot.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\checkbox_checked.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\checkbox_checked_hot.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\checkbox_default.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\checkbox_down.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\checkbox_hot.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_button_default.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_button_down.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_button_hot.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_default.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_down.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_hot.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\frame.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\handleNE.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\handleNW.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscrollUp_default.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscrollUp_down.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscrollUp_hot.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscroll_button.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscroll_button_down.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscroll_button_hot.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscroll_track.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\icons1.png" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\input_default.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\input_focused.dds" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\minimap.jpg" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\paperdoll.jpg" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\SampleMap.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -355,6 +402,9 @@
     <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.2.1.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.2.1.0\build\Microsoft.Net.Compilers.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Packaging.Tools.1.0.0-preview1-25301-01\build\Microsoft.Packaging.Tools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Packaging.Tools.1.0.0-preview1-25301-01\build\Microsoft.Packaging.Tools.targets'))" />
     <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.0-preview1-25301-01\build\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.0-preview1-25301-01\build\NETStandard.Library.targets'))" />
+    <Error Condition="!Exists('..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props'))" />
+    <Error Condition="!Exists('..\packages\SharpFont.4.0.1\build\SharpFont.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.4.0.1\build\SharpFont.props'))" />
+    <Error Condition="!Exists('..\packages\SharpFont.HarfBuzz.0.1.1\build\SharpFont.HarfBuzz.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.HarfBuzz.0.1.1\build\SharpFont.HarfBuzz.props'))" />
   </Target>
   <Import Project="..\packages\AssimpNet.3.3.2\build\AssimpNet.targets" Condition="Exists('..\packages\AssimpNet.3.3.2\build\AssimpNet.targets')" />
   <PropertyGroup>

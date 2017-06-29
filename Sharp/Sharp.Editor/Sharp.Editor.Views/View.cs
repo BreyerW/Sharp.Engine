@@ -47,7 +47,7 @@ namespace Sharp.Editor.Views
                 MainWindow.backendRenderer.Viewport(panel.Margin.Left + panel.Parent.X, panel.Margin.Bottom, panel.Width, panel.Height);
             }
             else
-                MainWindow.backendRenderer.Viewport(0, 0, mainView.canvas.Width, mainView.canvas.Height);
+                MainWindow.backendRenderer.Viewport(0, 0, Window.windows[attachedToWindow].Size.width, Window.windows[attachedToWindow].Size.height);
         }
 
         public virtual void OnResize(int width, int height)

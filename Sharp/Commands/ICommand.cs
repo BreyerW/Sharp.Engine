@@ -7,16 +7,11 @@ namespace Sharp.Commands
     {
         //string Indentifier { get;/*set;*/}
 
-        void Execute();
+        void Execute(bool reverse = false);
     }
 
     internal static class CommandHelper
     {
-        public static bool IsUndo(this ICommand command)
-        {
-            return UndoCommand.done.Contains(command);
-        }
-
         public static void StoreCommand(this ICommand command)
         {
             //command.Execute();

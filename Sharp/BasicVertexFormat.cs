@@ -26,20 +26,6 @@ namespace Sharp
         [RegisterAs(VertexAttribute.UV, AttributeType.Float)]
         public Vector2 texcoords;
 
-        //public Color<float> Color;
-
-        /*	public byte[] ConvertToBytes()
-            {
-                unsafe{
-                    var target = new byte[Stride];
-                    fixed(BasicVertexFormat* p=&this) {
-                        var bytePtr = (byte*)p;
-                        for (int i = 0; i < Stride; i++) {
-                            target [i] = *(bytePtr + i);
-                        }
-                    }
-    return target;
-        }
-        }*/
+        //public Color color;
     }
 }

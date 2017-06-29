@@ -3,6 +3,7 @@ using System.Globalization;
 using SDL2;
 using System.Threading;
 using Sharp.Editor.Views;
+using SharpAsset.Pipeline;
 
 namespace Sharp
 {
@@ -13,6 +14,8 @@ namespace Sharp
             MainEditorView.editorBackendRenderer = new SharpSL.BackendRenderers.OpenGL.EditorOpenGLRenderer();
             MainWindow.backendRenderer = new SharpSL.BackendRenderers.OpenGL.OpenGLRenderer();
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
+            Pipeline.Initialize();
+            Pipeline.GetPipeline<FontPipeline>().Import(@"C:\Windows\Fonts\tahoma.ttf");
             // OpenTK.Graphics.GraphicsContext.ShareContexts = false;
             SDL.SDL_SetHint(SDL.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
             SDL.SDL_Init(SDL.SDL_INIT_VIDEO);

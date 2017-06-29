@@ -29,19 +29,19 @@ namespace SharpAsset
 
     internal struct Texture2DParameter : IParameter //zalatwiaj primitivy tutaj
     {
-        private int Slot;
+        //private int Slot;
 
         public GetData<Texture> data;
 
-        public Texture2DParameter(GetData<Texture> getData, int slot)
+        public Texture2DParameter(GetData<Texture> getData/*, int slot*/)
         {
-            Slot = slot;
+            //Slot = slot;
             data = getData;
         }
 
         public void ConsumeData(int location)
         {
-            MainWindow.backendRenderer.SendTexture2D(location, ref data().TBO, Slot);
+            MainWindow.backendRenderer.SendTexture2D(location, ref data().TBO/*, Slot*/);
         }
     }
 }

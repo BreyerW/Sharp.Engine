@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace SharpAsset.Pipeline
 {
-    [SupportedFiles(".bmp", ".jpg", ".png")]
+    [SupportedFiles(".bmp", ".jpg", ".png", ".dds")]
     public class TexturePipeline : Pipeline<Texture>
     {
         public TexturePipeline()
@@ -17,7 +17,7 @@ namespace SharpAsset.Pipeline
         public override ref Texture GetAsset(int index)
         {
             ref var tex = ref this[index];
-            //if (tex.TBO is 0)
+            if (tex.TBO is -1)
             {
                 MainWindow.backendRenderer.GenerateBuffers(ref tex.TBO);
                 MainWindow.backendRenderer.BindBuffers(ref tex.TBO);

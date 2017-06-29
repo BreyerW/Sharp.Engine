@@ -124,7 +124,7 @@ namespace Sharp
 
         public void SetOrthoMatrix(int width, int height)
         {
-            OrthoMatrix = Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
+            OrthoMatrix = Matrix4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
         }
 
         public void SetModelviewMatrix()

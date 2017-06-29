@@ -21,9 +21,9 @@ namespace Sharp.Commands
             newValue = value;
         }
 
-        public void Execute()
+        public void Execute(bool reverse = false)
         {
-            if (this.IsUndo())
+            if (reverse)
                 _setValueAction(_originalValue);
             else _setValueAction(newValue);
         }

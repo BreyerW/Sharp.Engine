@@ -14,7 +14,7 @@ namespace SharpSL.BackendRenderers
 
         void Allocate(ref int Program, ref int VertexID, ref int FragmentID, ref string VertexSource, ref string FragmentSource, ref Dictionary<string, int> uniformArray);
 
-        void Allocate(ref byte bitmap, int width, int height);
+        void Allocate(ref byte bitmap, int width, int height, bool ui = false);
 
         void Use(ref IndiceType indiceType, int length);
 
@@ -25,7 +25,7 @@ namespace SharpSL.BackendRenderers
         void SendMatrix4(int location, ref float mat);
 
         //void Send(ref int location,ref int[] i);
-        void SendTexture2D(int location, ref int tbo, int slot);
+        void SendTexture2D(int location, ref int tbo/*, int slot*/);
 
         void SendUniform1(int location, ref float data);
 

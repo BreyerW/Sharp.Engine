@@ -10,7 +10,7 @@ namespace SharpAsset
 {
     public struct Material//IAsset
     {
-        private int lastSlot;
+        //private int lastSlot;
         private int shaderId;
 
         internal static Dictionary<string, IParameter> globalParams = new Dictionary<string, IParameter>();
@@ -54,8 +54,8 @@ namespace SharpAsset
         {
             if (!localParams.ContainsKey(propName))
             {
-                lastSlot = ++lastSlot;
-                localParams.Add(propName, new Texture2DParameter(getData, lastSlot));
+                //lastSlot = ++lastSlot;
+                localParams.Add(propName, new Texture2DParameter(getData/*, lastSlot*/));
             }
             //else
             //(localParams[shaderLoc] as Texture2DParameter).tbo = tex.TBO;

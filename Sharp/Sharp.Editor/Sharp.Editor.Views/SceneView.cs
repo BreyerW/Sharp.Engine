@@ -78,41 +78,41 @@ namespace Sharp.Editor.Views
 
             Camera.main.Update();
 
-            if (locPos.HasValue)
-            {
-                if (!PickTestForGizmo())
-                    PickTestForObject();
-                locPos = null;
-            }
-            MainWindow.backendRenderer.ClearBuffer();
-            MainWindow.backendRenderer.SetStandardState();
-            var projMat = Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+            /*  if (locPos.HasValue)
+              {
+                  if (!PickTestForGizmo())
+                      PickTestForObject();
+                  locPos = null;
+              }
+              MainWindow.backendRenderer.ClearBuffer();
+              MainWindow.backendRenderer.SetStandardState();
+              var projMat = Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
 
-            DrawHelper.DrawGrid(Color.GhostWhite, Camera.main.entityObject.Position, cell_size, grid_size, ref projMat);
+              DrawHelper.DrawGrid(Color.GhostWhite, Camera.main.entityObject.Position, cell_size, grid_size, ref projMat);
 
-            OnRenderFrame?.Invoke();
+              OnRenderFrame?.Invoke();
 
-            if (SceneStructureView.tree.SelectedChildren.Any())
-            {
-                foreach (var selected in SceneStructureView.tree.SelectedChildren)
-                {
-                    var entity = selected.Content as Entity;
-                    var mvpMat = (globalMode ? entity.ModelMatrix.ClearRotation() : entity.ModelMatrix).ClearScale() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+              if (SceneStructureView.tree.SelectedChildren.Any())
+              {
+                  foreach (var selected in SceneStructureView.tree.SelectedChildren)
+                  {
+                      var entity = selected.Content as Entity;
+                      var mvpMat = (globalMode ? entity.ModelMatrix.ClearRotation() : entity.ModelMatrix).ClearScale() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
 
-                    MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
-                    MainWindow.backendRenderer.ClearDepth();
-                    Manipulators.DrawCombinedGizmos(entity);
-                    MainEditorView.editorBackendRenderer.UnloadMatrix();
+                      MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
+                      MainWindow.backendRenderer.ClearDepth();
+                      Manipulators.DrawCombinedGizmos(entity);
+                      MainEditorView.editorBackendRenderer.UnloadMatrix();
 
-                    /*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
-                    if (renderer != null)
-                    {
-                        var max = renderer.mesh.bounds.Max;
-                        var min = renderer.mesh.bounds.Min;
-                        DrawHelper.DrawBox(min, max);
-                    }*/
-                }
-            }
+                      /*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
+                      if (renderer != null)
+                      {
+                          var max = renderer.mesh.bounds.Max;
+                          var min = renderer.mesh.bounds.Min;
+                          DrawHelper.DrawBox(min, max);
+                      }*
+                  }
+              }*/
 
             //GL.DebugMessageCallback(DebugCallbackInstance, IntPtr.Zero);
         }
