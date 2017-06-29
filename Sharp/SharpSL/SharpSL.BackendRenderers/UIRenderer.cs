@@ -18,14 +18,12 @@ namespace SharpSL.BackendRenderers
 
         public void DrawBox(int x, int y, int width, int height, int color)//DrawMesh?
         {
-            return;
             var col = new Color((uint)color);
-            MainEditorView.editorBackendRenderer.DrawSelectionSquare(x, y, x + width, y + height, ref col.R);
+            MainEditorView.editorBackendRenderer.DrawQuad(x, y, x + width, y + height, ref col.R);
         }
 
         public void DrawText(string text, int x, int y, int font, int color)//remove that replace with gettexture with special name and render as texture?
         {
-            return;
             var chars = text.AsSpan();
             MainWindow.backendRenderer.ChangeShader();
 
@@ -69,7 +67,7 @@ namespace SharpSL.BackendRenderers
                 int newwidth = MathHelper.NextPowerOfTwo(face.Glyph.Bitmap.Width);
                 int newheight = MathHelper.NextPowerOfTwo(face.Glyph.Bitmap.Rows);
                 // Allocate Memory For The Texture Data.
-                byte[] expanded_data = new byte[newwidth * newheight];
+                byte[] expanded_data = new byte[2 * newwidth * newheight];
 
                 // Here We Fill In The Data For The Expanded Bitmap.
                 // Notice That We Are Using A Two Channel Bitmap (One For
@@ -93,7 +91,7 @@ namespace SharpSL.BackendRenderers
                     Unsafe.CopyBlockUnaligned(ref expanded_data[j * newwidth], ref cBmp[j * face.Glyph.Bitmap.Width], (uint)face.Glyph.Bitmap.Width);
 
                 MainWindow.backendRenderer.Allocate(ref expanded_data[0], newwidth, newheight, true);
-                MainEditorView.editorBackendRenderer.DrawSelectionSquare(
+                MainEditorView.editorBackendRenderer.DrawQuad(
                       penX,
                  face.Glyph.Metrics.VerticalBearingY.ToSingle(),
                   penX + face.Glyph.Bitmap.Width,
@@ -117,13 +115,12 @@ namespace SharpSL.BackendRenderers
             MainWindow.backendRenderer.Allocate(ref texture2d.bitmap[0], texture2d.width, texture2d.height);
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
 
-            MainEditorView.editorBackendRenderer.DrawSelectionSquare(0, 0, width, height, ref col.R, (float)source.Left / texture2d.width, (float)source.Right / texture2d.width, (float)source.Top / texture2d.height, (float)source.Bottom / texture2d.height);
+            MainEditorView.editorBackendRenderer.DrawSlicedQuad(0, 0, width, height, (float)source.Left / texture2d.width, (float)source.Right / texture2d.width, (float)source.Top / texture2d.height, (float)source.Bottom / texture2d.height, ref col.R);
             MainEditorView.editorBackendRenderer.UnloadMatrix();
         }
 
         public void EndBatch(bool final)
         {
-            //throw new NotImplementedException();
         }
 
         public int GetFont(string name)
@@ -152,7 +149,8 @@ namespace SharpSL.BackendRenderers
 
         public void Scissor(int x, int y, int width, int height)
         {
-            //MainWindow.backendRenderer.Clip(x, y, width, height);
+            if (Camera.main is null) return;
+            MainWindow.backendRenderer.Clip(x, Camera.main.height - (y + height), width, height);
         }
 
         public void StartBatch()

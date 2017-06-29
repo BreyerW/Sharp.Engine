@@ -41,13 +41,13 @@ namespace Sharp.Editor.Views
 
         public virtual void Render()
         {
-            if (panel != null)
-            {
-                var absPos = panel.LocalPosToCanvas(new System.Drawing.Point(panel.X, panel.Y));
-                MainWindow.backendRenderer.Viewport(panel.Margin.Left + panel.Parent.X, panel.Margin.Bottom, panel.Width, panel.Height);
-            }
-            else
-                MainWindow.backendRenderer.Viewport(0, 0, Window.windows[attachedToWindow].Size.width, Window.windows[attachedToWindow].Size.height);
+            // if (panel != null)
+            // {
+            //   var absPos = panel.LocalPosToCanvas(new System.Drawing.Point(panel.X, panel.Y));
+            //   MainWindow.backendRenderer.Viewport(panel.Margin.Left + panel.Parent.X, panel.Margin.Bottom, panel.Width, panel.Height);
+            //}
+            //else
+            MainWindow.backendRenderer.Viewport(0, 0, Window.windows[attachedToWindow].Size.width, Window.windows[attachedToWindow].Size.height);
         }
 
         public virtual void OnResize(int width, int height)

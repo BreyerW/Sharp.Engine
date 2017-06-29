@@ -113,7 +113,7 @@ namespace Sharp.Editor
 
         public static void DrawSelectionSquare(float x1, float y1, float x2, float y2, Color unColor)
         {
-            MainEditorView.editorBackendRenderer.DrawSelectionSquare(x1, y1, x2, y2, ref unColor.R);
+            MainEditorView.editorBackendRenderer.DrawQuad(x1, y1, x2, y2, ref unColor.R);
         }
 
         public static void DrawLine(float v1x, float v1y, float v1z, float v2x, float v2y, float v2z, Color unColor)

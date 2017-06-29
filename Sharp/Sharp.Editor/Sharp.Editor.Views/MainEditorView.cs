@@ -25,7 +25,7 @@ namespace Sharp.Editor.Views
             desktop = new Desktop();
             //desktop.Position = new Point(0, 0);
             desktop.ShowCursor = false;
-            desktop.AutoSize = AutoSize.HorizontalVertical;
+            desktop.AutoSize = AutoSize.None;
             desktop.Skin = Gui.GenerateStandardSkin();
 
             Gui.Renderer = new SharpSL.BackendRenderers.UIRenderer();
@@ -51,11 +51,12 @@ namespace Sharp.Editor.Views
             button.Size = new Squid.Point(70, 50);
             button.Position = new Squid.Point(20, 20);
             button.Text = "buuu";
-            //button.Style = "button";
+            button.Style = "button";
             button.Parent = window1;
             button.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             //button.Cursor = Cursors.Link;
             button.MouseClick += (sender, args) => Console.WriteLine("clicked");
+            button.Scissor = true;
         }
 
         public override void Render()
@@ -68,6 +69,7 @@ namespace Sharp.Editor.Views
             //desktop.ProcessEvents();
             desktop.Update();
             desktop.Draw();
+            MainWindow.backendRenderer.Clip(0, 0, desktop.Size.x, desktop.Size.y);
         }
 
         public override void OnResize(int width, int height)

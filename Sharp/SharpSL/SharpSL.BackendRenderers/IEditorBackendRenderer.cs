@@ -45,7 +45,9 @@ namespace SharpSL
 
         void DrawFilledPolyline(float size, float lineWidth, ref byte color, ref Matrix4 mat, ref Vector3[] vecArray, bool fan = true);
 
-        void DrawSelectionSquare(float x1, float y1, float x2, float y2, ref byte unColor, float left = 0, float right = 0, float top = 0, float bottom = 0);
+        void DrawSlicedQuad(float x1, float y1, float x2, float y2, float left, float right, float top, float bottom, ref byte unColor);
+
+        void DrawQuad(float x1, float y1, float x2, float y2, ref byte unColor);
 
         void DrawLine(float v1x, float v1y, float v1z, float v2x, float v2y, float v2z, ref byte unColor, float width = 1f);
 

@@ -282,9 +282,9 @@ namespace Sharp.Editor.Views
 
         public override void Render()
         {
-            //  MainWindow.backendRenderer.ChangeShader();
-            // MainWindow.backendRenderer.Clip(panel.X, panel.Y, panel.Width, panel.Height);
-            // OnGUI();
+            // MainWindow.backendRenderer.ChangeShader();
+            //MainWindow.backendRenderer.Clip(panel.X, panel.Y, panel.Width, panel.Height);
+            //OnGUI();
         }
 
         private bool delayClear = true;

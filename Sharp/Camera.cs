@@ -102,7 +102,8 @@ namespace Sharp
         public float ZFar { get; set; }
         public float FieldOfView { get; set; }
         public float AspectRatio { get; set; }
-
+        public int width;
+        public int height;
         public CamMode CameraMode = CamMode.FlightCamera;
 
         #endregion Properties
@@ -125,6 +126,8 @@ namespace Sharp
         public void SetOrthoMatrix(int width, int height)
         {
             OrthoMatrix = Matrix4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
+            this.width = width;
+            this.height = height;
         }
 
         public void SetModelviewMatrix()

@@ -35,6 +35,11 @@ namespace Sharp.Editor.Views
                 RegisterEntity(entity);
         }
 
+        public override void Render()
+        {
+            //base.Render();
+        }
+
         private static void RegisterEntity(Entity ent)
         {
             //var id=SceneView.entities.IndexOf (ent);

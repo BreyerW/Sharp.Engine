@@ -77,11 +77,11 @@ namespace SharpSL.BackendRenderers.OpenGL
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-            /* if (ui)
-             {
-                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
-                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
-             }*/
+            if (ui)
+            {
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+            }
             GL.TexImage2D(TextureTarget.Texture2D, 0, ui ? PixelInternalFormat.Alpha : PixelInternalFormat.Rgba, width, height, 0,
            ui ? PixelFormat.Alpha : PixelFormat.Bgra, PixelType.UnsignedByte, ref bitmap);
         }
@@ -214,8 +214,8 @@ namespace SharpSL.BackendRenderers.OpenGL
 
         public void Viewport(int x, int y, int width, int height)
         {
-            GL.Scissor(x, y, width, height);
             GL.Viewport(x, y, width, height);
+            GL.Scissor(x, y, width, height);
         }
 
         public void Clip(int x, int y, int width, int height)

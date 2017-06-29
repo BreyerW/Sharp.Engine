@@ -79,7 +79,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Color4(0, 0, 0, 0);
         }
 
-        public void DrawSelectionSquare(float x1, float y1, float x2, float y2, ref byte unColor, float left = 0, float right = 0, float top = 0, float bottom = 0)
+        public void DrawSlicedQuad(float x1, float y1, float x2, float y2, float left, float right, float top, float bottom, ref byte unColor)
         {
             GL.Color4(ref unColor);
 
@@ -280,6 +280,26 @@ namespace SharpSL.BackendRenderers.OpenGL
                         //GL.TexCoord2(left / width, 1 - (top / height));
                         GL.Vertex3(x1 + left, y2 - top, 0);*/
 
+            GL.End();
+        }
+
+        public void DrawQuad(float x1, float y1, float x2, float y2, ref byte unColor)
+        {
+            // GL.Color4(ref unColor);
+
+            GL.Begin(BeginMode.Quads);
+
+            GL.TexCoord2(0, 0);
+            GL.Vertex3(x1, y1, 0);
+
+            GL.TexCoord2(0, 1);
+            GL.Vertex3(x1, y2, 0);
+
+            GL.TexCoord2(1, 1);
+            GL.Vertex3(x2, y2, 0);
+
+            GL.TexCoord2(1, 0);
+            GL.Vertex3(x2, y1, 0);
             GL.End();
         }
 

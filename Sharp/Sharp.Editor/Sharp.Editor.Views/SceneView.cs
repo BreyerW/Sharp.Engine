@@ -74,7 +74,7 @@ namespace Sharp.Editor.Views
 
         public override void Render()
         {
-            base.Render();
+            //base.Render();
 
             Camera.main.Update();
 
