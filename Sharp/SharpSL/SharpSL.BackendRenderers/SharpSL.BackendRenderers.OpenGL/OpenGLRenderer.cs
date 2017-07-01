@@ -34,6 +34,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.GetInteger(GetPName.Viewport, viewport);
             Console.WriteLine("view: " + viewport[0]);
             GL.ReadPixels(viewport[0] + x, viewport[3] - (viewport[1] + y) + 5, width, height, PixelFormat.Rgb, PixelType.UnsignedByte, pixel);
+
             return pixel;
         }
 

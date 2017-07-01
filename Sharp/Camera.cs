@@ -6,7 +6,7 @@ namespace Sharp
 {
     public class Camera : Component
     {
-        public static Camera main;
+        public static Camera main;//rename to or add current camera and generate camera for each window and sceneview
         public Frustum frustum;
         private Matrix4 projectionMatrix;
 

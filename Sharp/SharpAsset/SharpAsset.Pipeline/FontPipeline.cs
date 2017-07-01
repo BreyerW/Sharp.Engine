@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using SharpFont;
 using System.IO;
 using System.Threading;
+using OpenTK;
+using System.Runtime.CompilerServices;
 
 namespace SharpAsset.Pipeline
 {
@@ -28,7 +30,8 @@ namespace SharpAsset.Pipeline
                 return this[nameToKey.IndexOf(name)];
             var face = new Face(lib.Value, pathToFile);
             nameToKey.Add(name);
-            var font = new Font() { face = face };
+            var font = new Font() { face = face, fontAtlas = new Dictionary<uint, (Texture texture, int bearing)>() };
+            font.Size = 16;
             this[nameToKey.IndexOf(name)] = font;
             return font;
         }

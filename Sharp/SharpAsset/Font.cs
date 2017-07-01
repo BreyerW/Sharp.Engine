@@ -17,8 +17,9 @@ namespace SharpAsset
         public string Extension { get { return Path.GetExtension(FullPath); } set { } }
         public string FullPath { get; set; }
 
+        public Dictionary<uint, (Texture texture, int bearing)> fontAtlas;
         public Face face;
-        public float Size { get => (float)face.Size.Metrics.Height; set => face.SetCharSize(0, value, 72, 72); }
+        public uint Size { get => face.Size.Metrics.NominalHeight; set => face.SetPixelSizes(0, value); }
 
         public void PlaceIntoScene(Entity context, Vector3 worldPos)
         {
@@ -27,8 +28,6 @@ namespace SharpAsset
 
         public (int width, int height) Measure(string text)
         {
-            face.SetCharSize(0, 50, 72, 72);
-
             var font = HB.Font.FromFTFace(face);
             var buf = new HB.Buffer();
             buf.Direction = HB.Direction.RightToLeft;
@@ -47,6 +46,23 @@ namespace SharpAsset
                 width += glyphPositions[i].xAdvance >> 6;
             }
             return (width, height);
+        }
+
+        public void GenerateBitmapForChar(uint charCode)
+        {
+            face.LoadChar(charCode, LoadFlags.Default, LoadTarget.Normal);
+            face.Glyph.RenderGlyph(RenderMode.Normal);
+            var bitmap = face.Glyph.Bitmap;
+            var cBmp = bitmap.BufferData;
+
+            var width = MathHelper.NextPowerOfTwo(bitmap.Width);
+            var height = MathHelper.NextPowerOfTwo(bitmap.Rows);
+            int tbo = -1;
+            MainWindow.backendRenderer.GenerateBuffers(ref tbo);
+            MainWindow.backendRenderer.BindBuffers(ref tbo);//check all binds they may cause unnecessary memory consumption
+            fontAtlas.Add(charCode, (new Texture() { bitmap = new byte[width * height], width = width, height = height, TBO = tbo }, face.Glyph.Metrics.HorizontalBearingY.ToInt32()));//change bearing to vertical if vertical layout
+            for (int j = 0; j < bitmap.Rows; j++)
+                Unsafe.CopyBlock(ref fontAtlas[charCode].texture.bitmap[j * width], ref cBmp[j * bitmap.Width], (uint)bitmap.Width);
         }
     }
 }

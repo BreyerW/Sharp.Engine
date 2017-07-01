@@ -2478,10 +2478,6 @@ namespace Squid
             {
                 foreach (KeyData data in Gui.KeyBuffer)
                 {
-                    //   if (data.Scancode == 0) continue;
-
-                    // UnityEngine.Debug.Log(data.Scancode);
-
                     KeyEventArgs args = new KeyEventArgs(data);
 
                     if (data.Pressed)

@@ -50,7 +50,7 @@ namespace Sharp.Editor.Views
             Squid.Button button = new Squid.Button();
             button.Size = new Squid.Point(70, 50);
             button.Position = new Squid.Point(20, 20);
-            button.Text = "buuu";
+            button.Text = "hm3145";
             button.Style = "button";
             button.Parent = window1;
             button.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -61,15 +61,13 @@ namespace Sharp.Editor.Views
 
         public override void Render()
         {
-            base.Render();
+            //desktop.
+            //base.Render();
             MainWindow.backendRenderer.ClearBuffer();
             //canvas.RenderCanvas();
             //Console.WriteLine("drawtexture");
-            desktop.PerformLayout();
-            //desktop.ProcessEvents();
             desktop.Update();
             desktop.Draw();
-            MainWindow.backendRenderer.Clip(0, 0, desktop.Size.x, desktop.Size.y);
         }
 
         public override void OnResize(int width, int height)
