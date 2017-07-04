@@ -37,6 +37,7 @@ namespace Sharp.Editor.Views
         }
 
         private Squid.Window window1 = new Squid.Window();
+        private Squid.Window window2 = new Squid.Window();
 
         public override void Initialize()
         {
@@ -61,12 +62,18 @@ namespace Sharp.Editor.Views
             split.Parent = desktop;
             split.Dock = DockStyle.Fill;
             split.SplitButton.MouseClick += Split_MouseClick;
+            split.SplitButton.Style = "";
+            split.SplitButton.Size = new Point(2, 0);
             //split.Depth = 1;//depth conflict when two controls overlap with same parent - fix it
             //window1.Size = new Squid.Point(440, 340);
             window1.Dock = DockStyle.Fill;
             window1.Position = new Squid.Point(40, 100);
             window1.Parent = split.SplitFrame1;
             window1.Style = "window";
+            window2.Dock = DockStyle.Fill;
+            window2.Position = new Squid.Point(40, 100);
+            window2.Parent = split.SplitFrame2;
+            window2.Style = "window";
         }
 
         private void Split_MouseClick(Squid.Control sender, MouseEventArgs args)

@@ -6,7 +6,6 @@ namespace Sharp
 {
     public static class Time
     {
-        private static int lastTime;
         private static Stopwatch Clock = new Stopwatch();
 
         public static int startTime = Process.GetCurrentProcess().StartTime.Millisecond; //Environment.TickCount;

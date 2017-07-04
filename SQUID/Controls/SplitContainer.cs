@@ -127,7 +127,7 @@ namespace Squid
 
             if (Orientation == Orientation.Horizontal)
             {
-                if (SplitFrame2.Size.x > SplitFrame2.MinSize.x)
+                if (Size.x - (OldSize + p).x > SplitFrame2.MinSize.x)
                     SplitFrame1.ResizeTo(OldSize + p, AnchorStyles.Right);
                 AspectRatio = (float)SplitFrame1.Size.x / (float)Size.x;
             }
