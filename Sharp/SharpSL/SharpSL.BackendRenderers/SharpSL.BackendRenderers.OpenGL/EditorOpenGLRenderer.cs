@@ -76,15 +76,13 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Vertex2(pos - new Vector2(0, dir.Y));
             GL.Vertex2(pos - new Vector2(dir.X, 0));
             GL.End();
-            GL.Color4(0, 0, 0, 0);
+            GL.Color3((byte)255, (byte)255, (byte)255);
         }
 
         public void DrawSlicedQuad(float x1, float y1, float x2, float y2, float left, float right, float top, float bottom, ref byte unColor)
         {
-            GL.Color4(ref unColor);
-
             GL.Begin(BeginMode.Quads);
-
+            //GL.Color4(ref unColor);
             GL.TexCoord2(left, top);
             GL.Vertex3(x1, y1, 0);
 
@@ -96,6 +94,9 @@ namespace SharpSL.BackendRenderers.OpenGL
 
             GL.TexCoord2(right, top);
             GL.Vertex3(x2, y1, 0);
+
+            GL.End();
+            //GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
             /*
             *+---+----------------------+---+
             *| 3 |          4           | 7 |
@@ -279,16 +280,14 @@ namespace SharpSL.BackendRenderers.OpenGL
 
                         //GL.TexCoord2(left / width, 1 - (top / height));
                         GL.Vertex3(x1 + left, y2 - top, 0);*/
-
-            GL.End();
+            //
         }
 
-        public void DrawQuad(float x1, float y1, float x2, float y2, ref byte unColor)
+        public void DrawTexturedQuad(float x1, float y1, float x2, float y2, ref byte unColor)
         {
-            // GL.Color4(ref unColor);
+            GL.Color4(ref unColor);
 
             GL.Begin(BeginMode.Quads);
-
             GL.TexCoord2(0, 0);
             GL.Vertex3(x1, y1, 0);
 
@@ -300,6 +299,23 @@ namespace SharpSL.BackendRenderers.OpenGL
 
             GL.TexCoord2(1, 0);
             GL.Vertex3(x2, y1, 0);
+            GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
+            GL.End();
+        }
+
+        public void DrawQuad(float x1, float y1, float x2, float y2, ref byte unColor)
+        {
+            GL.Color4(ref unColor);
+            GL.Begin(BeginMode.Quads);
+
+            GL.Vertex3(x1, y1, 0);
+
+            GL.Vertex3(x1, y2, 0);
+
+            GL.Vertex3(x2, y2, 0);
+
+            GL.Vertex3(x2, y1, 0);
+            GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
             GL.End();
         }
 

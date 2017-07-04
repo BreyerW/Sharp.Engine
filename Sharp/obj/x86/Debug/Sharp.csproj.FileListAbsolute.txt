@@ -132,3 +132,4 @@ B:\Sharp.Engine3\Sharp\bin\Debug\freetype6.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\SharpFont.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\SharpFont.HarfBuzz.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\SharpFont.xml
+B:\Sharp.Engine3\Sharp\bin\Debug\System.ValueTuple.xml

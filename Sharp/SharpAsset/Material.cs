@@ -33,16 +33,7 @@ namespace SharpAsset
             }
             set
             {
-                var id = 0;
-                foreach (var shader in ShaderPipeline.assets)
-                {
-                    if (shader.Program == value.Program)
-                    {
-                        shaderId = id;
-                        break;
-                    }
-                    id++;
-                }
+                shaderId = ShaderPipeline.nameToKey.IndexOf(value.Name);
                 if (localParams == null)
                 {
                     localParams = new Dictionary<string, IParameter>();

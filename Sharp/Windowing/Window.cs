@@ -130,14 +130,23 @@ namespace Sharp
                         windows[sdlEvent.window.windowID].OnEvent(sdlEvent);
                 }
                 //Selection.IsSelectionDirty(System.Threading.CancellationToken.None);
+                /*  if (InputHandler.mustHandleKeyboard)
+                  {
+                      InputHandler.ProcessKeyboard();
+                      InputHandler.mustHandleKeyboard = false;
+                  }*/
 
                 InputHandler.ProcessKeyboardPresses();
+                InputHandler.ProcessMousePresses();
+                InputHandler.Update();
+                Squid.Gui.TimeElapsed = Time.deltaTime;
                 onRenderFrame?.Invoke();
                 if (Gwen.Control.Base.isDirty)
                 {
                     Selection.OnSelectionDirty?.Invoke(Selection.Asset, EventArgs.Empty);
                     Gwen.Control.Base.isDirty = false;
                 }
+                Time.SetTime();
             }
         }
 
@@ -169,20 +178,20 @@ namespace Sharp
                         //  windows[FocusedWindowId].Close();
                     }
                     //Console.WriteLine("1 " + (uint)'1' + " : ! " + (uint)'!');
+                    InputHandler.mustHandleKeyboard = true;
                     InputHandler.ProcessKeyboard();
                     break;
 
                 case SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN:
                     InputHandler.isMouseDragging = true;
-                    Console.WriteLine(evnt.button.x);
                     HitTest(evnt.button.x, evnt.button.y);//use this to fix splitter bars
-                    InputHandler.ProcessMouse(SDL.SDL_BUTTON(evnt.button.button), true);
+                    InputHandler.ProcessMouse();
                     break;
 
                 case SDL.SDL_EventType.SDL_MOUSEBUTTONUP:
                     focusGained = false;
                     InputHandler.isMouseDragging = false;
-                    InputHandler.ProcessMouse(SDL.SDL_BUTTON(evnt.button.button), false);
+                    InputHandler.ProcessMouse();
                     break;
 
                 case SDL.SDL_EventType.SDL_MOUSEMOTION:
@@ -198,7 +207,7 @@ namespace Sharp
 
                     // we have a pointer to an unmanaged character array from the SDL2 lib (event.text.text),
                     // so we need to explicitly marshal into our byte array
-                    //Marshal.Copy((IntPtr)evnt.text., rawBytes, 0, SDL.SDL_TEXTINPUTEVENT_TEXT_SIZE);
+                    //Marshal.Copy((IntPtr)evnt.text, rawBytes, 0, SDL.SDL_TEXTINPUTEVENT_TEXT_SIZE);
 
                     // the character array is null terminated, so we need to find that terminator
                     //int indexOfNullTerminator = Array.IndexOf(rawBytes, (byte)0);
@@ -217,7 +226,7 @@ namespace Sharp
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
                     View.mainViews[evt.windowID].OnResize(evt.data1, evt.data2);
-                    onRenderFrame?.Invoke();
+                    //onRenderFrame?.Invoke();
                     break;
 
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_TAKE_FOCUS: AssetsView.CheckIfDirTreeChanged(); break;
@@ -225,7 +234,7 @@ namespace Sharp
                     UnderMouseWindowId = evt.windowID;
                     SDL.SDL_CaptureMouse(SDL.SDL_bool.SDL_FALSE); break;//convert to use getglobalmousestate when no events caputred?
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE:
-                    ;// Console.WriteLine("bu");
+                    // Console.WriteLine("bu");
                     if (InputHandler.isMouseDragging)
                         SDL.SDL_CaptureMouse(SDL.SDL_bool.SDL_TRUE); break;
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_MOVED: break;
@@ -259,7 +268,7 @@ namespace Sharp
                 case SDL.SDL_EventType.SDL_MOUSEBUTTONUP:
                     focusGained = false;
                     InputHandler.isMouseDragging = false;
-                    InputHandler.ProcessMouse(SDL.SDL_BUTTON(evt.button.button), false);
+                    InputHandler.ProcessMouse();
                     break;
 
                 case SDL.SDL_EventType.SDL_WINDOWEVENT: OnWindowEvent(ref evt.window); break;

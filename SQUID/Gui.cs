@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 
 namespace Squid
 {
-
     public delegate string TranslateStringHandler(string text);
 
     /// <summary>
@@ -74,7 +73,7 @@ namespace Squid
         /// Gets the mouse movement.
         /// </summary>
         /// <value>The mouse movement.</value>
-        public static Point MouseMovement { get; private set; }
+        public static Point MouseDelta { get; private set; }
 
         /// <summary>
         /// Gets the mouse scroll.
@@ -133,7 +132,7 @@ namespace Squid
                 if (key.Key == Keys.LEFTSHIFT || key.Key == Keys.RIGHTSHIFT)
                     ShiftPressed = key.Pressed;
 
-                if (key.Key == Keys.ALT_LEFT || key.Key == Keys.ALT_RIGHT)
+                if (key.Key == Keys.LEFTALT || key.Key == Keys.RIGHTALT)
                     AltPressed = key.Pressed;
 
                 if (key.Key == Keys.LEFTCONTROL || key.Key == Keys.RIGHTCONTROL)
@@ -147,12 +146,16 @@ namespace Squid
         /// <param name="posX">x component of the position</param>
         /// <param name="posY">y component of the position</param>
         /// <param name="scroll">scrollwheel delta</param>
-        public static void SetMouse(int posX, int posY, int scroll)
+        public static void SetMouse(int posX, int posY)
         {
             Point m = MousePosition;
             MousePosition = new Point(posX, posY);
             Point move = MousePosition - m;
-            MouseMovement = move;
+            MouseDelta = move;
+        }
+
+        public static void SetMouseWheel(int scroll)
+        {
             MouseScroll = scroll;
         }
 
@@ -351,6 +354,5 @@ namespace Squid
 
             return skin;
         }
-
     }
 }

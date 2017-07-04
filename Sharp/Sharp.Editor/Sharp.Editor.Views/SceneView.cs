@@ -251,7 +251,7 @@ namespace Sharp.Editor.Views
                 Camera.main.SetModelviewMatrix();
             }
             //if (!canvas.IsHovered)
-            //return;
+            return;
             if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_Q] is 1)
                 Camera.main.Move(0f, 1f, 0f);
             if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_E] is 1)

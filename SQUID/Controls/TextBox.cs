@@ -222,18 +222,18 @@ namespace Squid
             GotFocus += TextBox_GotFocus;
         }
 
-        void TextBox_GotFocus(Control sender)
+        private void TextBox_GotFocus(Control sender)
         {
             SelectStart = SelectEnd = 0;
         }
 
-        void TextBox_LostFocus(Control sender)
+        private void TextBox_LostFocus(Control sender)
         {
             if (TextCommit != null)
                 TextCommit(this, null);
         }
 
-        void TextBox_MouseDoubleClick(Control sender, MouseEventArgs args)
+        private void TextBox_MouseDoubleClick(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 
@@ -258,7 +258,7 @@ namespace Squid
             Caret = SelectEnd;
         }
 
-        void TextBox_MousePress(Control sender, MouseEventArgs args)
+        private void TextBox_MousePress(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
             if (Gui.CtrlPressed) return;
@@ -305,7 +305,7 @@ namespace Squid
                 Caret = end;
         }
 
-        void TextBox_MouseDown(Control sender, MouseEventArgs args)
+        private void TextBox_MouseDown(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 
@@ -316,7 +316,7 @@ namespace Squid
             }
 
             Style style = Desktop.GetStyle(Style).Styles[State];
-
+            Console.WriteLine(SavedText);
             string masked = Text;
             if (IsPassword)
                 masked = new string(PasswordChar, masked.Length);
@@ -534,8 +534,6 @@ namespace Squid
 
         protected override void OnKeyDown(KeyEventArgs args)
         {
-            // UnityEngine.Debug.Log(args.Key);
-
             Desktop root = Desktop;
             if (root == null) return;
 
@@ -687,7 +685,6 @@ namespace Squid
                     {
                         if (IsSelection)
                             Gui.SetClipboard(Selection);
-
                     }
                     else if (args.Key == Keys.X) // copy
                     {
@@ -780,6 +777,7 @@ namespace Squid
                 masked = new string(PasswordChar, masked.Length);
 
             int font = Gui.Renderer.GetFont(style.Font);
+
             if (font < 0) return;
 
             Point p = AlignText(masked, Alignment.MiddleLeft, style.TextPadding, font);
@@ -834,8 +832,9 @@ namespace Squid
                 Gui.Renderer.DrawText(masked, p.x, p.y, font, ColorInt.FromArgb(opacity, UseTextColor ? TextColor : style.TextColor));
 
                 if (!ReadOnly && DoBlink > 0)
+                {
                     Gui.Renderer.DrawBox(p.x + s2.x, p.y, 1, s2.y, ColorInt.FromArgb(opacity, BlinkColor));
-
+                }
                 if (IsSelection)
                 {
                     int start = Math.Min(SelectStart, SelectEnd);

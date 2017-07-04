@@ -12,7 +12,6 @@ namespace Sharp
     {
         internal static IBackendRenderer backendRenderer;
         public static Vector2 lastPos;
-        public static int startTime = System.Diagnostics.Process.GetCurrentProcess().StartTime.Millisecond;
 
         public MainWindow(string title) : base(title, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE)
         {

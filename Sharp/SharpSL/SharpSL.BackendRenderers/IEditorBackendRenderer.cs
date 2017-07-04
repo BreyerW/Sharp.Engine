@@ -47,6 +47,8 @@ namespace SharpSL
 
         void DrawSlicedQuad(float x1, float y1, float x2, float y2, float left, float right, float top, float bottom, ref byte unColor);
 
+        void DrawTexturedQuad(float x1, float y1, float x2, float y2, ref byte unColor);
+
         void DrawQuad(float x1, float y1, float x2, float y2, ref byte unColor);
 
         void DrawLine(float v1x, float v1y, float v1z, float v2x, float v2y, float v2z, ref byte unColor, float width = 1f);

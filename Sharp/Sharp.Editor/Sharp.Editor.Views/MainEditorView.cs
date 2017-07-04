@@ -3,6 +3,7 @@ using Gwen.Control;
 using Gwen;
 using SharpSL;
 using Squid;
+using System.Threading.Tasks;
 
 namespace Sharp.Editor.Views
 {
@@ -17,6 +18,10 @@ namespace Sharp.Editor.Views
 
         public static IEditorBackendRenderer editorBackendRenderer;
 
+        static MainEditorView()
+        {
+        }
+
         public MainEditorView(uint attachToWindow) : base(attachToWindow)
         {
             renderer = new Gwen.Renderer.OpenTK();
@@ -27,7 +32,7 @@ namespace Sharp.Editor.Views
             desktop.ShowCursor = false;
             desktop.AutoSize = AutoSize.None;
             desktop.Skin = Gui.GenerateStandardSkin();
-
+            desktop.MouseClick += Split_MouseClick;
             Gui.Renderer = new SharpSL.BackendRenderers.UIRenderer();
         }
 
@@ -42,32 +47,47 @@ namespace Sharp.Editor.Views
             splitter.MinimumSize = new System.Drawing.Point(100, 100);
             splitter.Dock = Pos.Fill;
 
-            window1.Size = new Squid.Point(440, 340);
-            window1.Position = new Squid.Point(40, 40);
-            window1.Resizable = true;
-            window1.Parent = desktop;
-
-            Squid.Button button = new Squid.Button();
-            button.Size = new Squid.Point(70, 50);
-            button.Position = new Squid.Point(20, 20);
-            button.Text = "hm3145";
-            button.Style = "button";
-            button.Parent = window1;
-            button.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            //button.Cursor = Cursors.Link;
-            button.MouseClick += (sender, args) => Console.WriteLine("clicked");
-            button.Scissor = true;
+            var text = new Squid.TextArea();
+            text.Parent = window1;
+            text.Position = new Point(20, 20);
+            text.Size = new Point(100, 50);
+            text.Text = "buuu";
+            text.Style = "textbox";
+            text.Scissor = true;
+            //button powodowal problemy z memory. moze to znow problem z render textem
+            var split = new SplitContainer();
+            split.SplitFrame1.MinSize = new Point(300, 100);
+            split.SplitFrame2.MinSize = new Point(100, 100);
+            split.Parent = desktop;
+            split.Dock = DockStyle.Fill;
+            split.SplitButton.MouseClick += Split_MouseClick;
+            //split.Depth = 1;//depth conflict when two controls overlap with same parent - fix it
+            //window1.Size = new Squid.Point(440, 340);
+            window1.Dock = DockStyle.Fill;
+            window1.Position = new Squid.Point(40, 100);
+            window1.Parent = split.SplitFrame1;
+            window1.Style = "window";
         }
+
+        private void Split_MouseClick(Squid.Control sender, MouseEventArgs args)
+        {
+            Console.WriteLine("split clicked");
+        }
+
+        public int nextUpdate;
 
         public override void Render()
         {
-            //desktop.
             //base.Render();
             MainWindow.backendRenderer.ClearBuffer();
-            //canvas.RenderCanvas();
-            //Console.WriteLine("drawtexture");
-            desktop.Update();
+            //canvas.RenderCanvas();\
+            OnInternalUpdate();
             desktop.Draw();
+        }
+
+        private void OnInternalUpdate()
+        {
+            desktop.Update();
         }
 
         public override void OnResize(int width, int height)

@@ -96,7 +96,7 @@ namespace Squid
         /// </summary>
         /// <value><c>true</c> if [design mode]; otherwise, <c>false</c>.</value>
         [Xml.XmlIgnore]
-        public bool DesignMode { get; set; }
+        public bool DesignMode { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the drag drop snap.
@@ -527,7 +527,6 @@ namespace Squid
             PerformUpdate();
             PerformLayout();
             PerformLateUpdate();
-
             foreach (KeyData data in Gui.KeyBuffer)
             {
                 if (data.Pressed && data.Key == Keys.TAB)

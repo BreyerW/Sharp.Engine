@@ -23,10 +23,6 @@ namespace Squid
         /// The pressed
         /// </summary>
         public bool Pressed;
-        /// <summary>
-        /// The released
-        /// </summary>
-        public bool Released;
 
         /// <summary>
         /// Gets the key.

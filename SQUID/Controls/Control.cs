@@ -314,7 +314,7 @@ namespace Squid
         /// <summary>
         /// Returns the depth of the control
         /// </summary>
-        public int Depth { get; internal set; }
+        public int Depth { get; set; }
 
         /// <summary>
         /// Gets/Sets the color used to Tint the used Style
@@ -2492,8 +2492,7 @@ namespace Squid
                         else
                             OnKeyDown(args);
                     }
-
-                    if (data.Released)
+                    else
                     {
                         if (KeyUp != null)
                         {
@@ -2529,7 +2528,7 @@ namespace Squid
                 {
                     OnMousePress(i);
 
-                    if (!Gui.MouseMovement.IsEmpty && !_isMouseDrag)
+                    if (!Gui.MouseDelta.IsEmpty && !_isMouseDrag)
                     {
                         _isMouseDrag = true;
                         OnMouseDrag(i);

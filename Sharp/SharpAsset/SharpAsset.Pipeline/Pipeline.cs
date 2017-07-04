@@ -7,7 +7,7 @@ namespace SharpAsset.Pipeline
 {
     public abstract class Pipeline<T> : Pipeline where T : IAsset
     {
-        internal static T[] assets = new T[2];
+        private static T[] assets = new T[2];
         internal static List<string> nameToKey = new List<string>();
 
         protected ref T this[int index]

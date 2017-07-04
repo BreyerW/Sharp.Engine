@@ -13,3 +13,4 @@ B:\Sharp.Engine3\Gwen\bin\Debug\OpenTK.xml
 B:\Sharp.Engine3\Gwen\obj\Debug\Gwen.csprojResolveAssemblyReference.cache
 B:\Sharp.Engine3\Gwen\obj\Debug\Gwen.dll
 B:\Sharp.Engine3\Gwen\obj\Debug\Gwen.pdb
+B:\Sharp.Engine3\Gwen\bin\Debug\System.ValueTuple.xml

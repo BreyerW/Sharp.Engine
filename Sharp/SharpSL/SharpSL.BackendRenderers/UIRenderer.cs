@@ -13,15 +13,20 @@ namespace SharpSL.BackendRenderers
 {
     public class UIRenderer : ISquidRenderer
     {
-        private SharpFont.HarfBuzz.Buffer buffer;
+        private SharpFont.HarfBuzz.Buffer buffer = new SharpFont.HarfBuzz.Buffer();
         private SharpFont.HarfBuzz.Font hbFont;
         private int currentFace = -1;
-        private int currentTexture = -1;
 
         public void DrawBox(int x, int y, int width, int height, int color)//DrawMesh?
         {
             var col = new Color((uint)color);
-            MainEditorView.editorBackendRenderer.DrawQuad(x, y, x + width, y + height, ref col.R);
+            var mat = Matrix4.CreateTranslation(x, y, 0) * Camera.main.OrthoMatrix;
+            OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
+            OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Blend);
+            OpenTK.Graphics.OpenGL.GL.BlendFunc(OpenTK.Graphics.OpenGL.BlendingFactorSrc.SrcAlpha, OpenTK.Graphics.OpenGL.BlendingFactorDest.OneMinusSrcAlpha);
+            MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
+            MainEditorView.editorBackendRenderer.DrawQuad(0, 0, width, height, ref col.R);
+            MainEditorView.editorBackendRenderer.UnloadMatrix();
         }
 
         public void DrawText(string text, int x, int y, int font, int color)//remove that replace with gettexture with special name and render as texture?
@@ -30,14 +35,14 @@ namespace SharpSL.BackendRenderers
             MainWindow.backendRenderer.ChangeShader();
             buffer = null;
             buffer = new SharpFont.HarfBuzz.Buffer();
-            buffer.AddText(text);
-            ref var realFont = ref FontPipeline.assets[font];
+            ref var realFont = ref Pipeline.GetPipeline<FontPipeline>().GetAsset(font);
             ref var face = ref realFont.face;
             if (currentFace != font)
             {
                 hbFont = SharpFont.HarfBuzz.Font.FromFTFace(face);
                 currentFace = font;
             }
+            buffer.AddText(text);
             buffer.Script = SharpFont.HarfBuzz.Script.Common;
             buffer.Direction = Direction.LeftToRight;
             var col = new Color((uint)color);
@@ -62,23 +67,29 @@ namespace SharpSL.BackendRenderers
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
             for (int i = 0; i < chars.Length; ++i)
             {
+                if (chars[i] is ' ')
+                {
+                    penX += glyphPositions[i].xAdvance >> 6;
+                    penY -= glyphPositions[i].yAdvance >> 6;
+                    continue;
+                }
                 if (!realFont.fontAtlas.ContainsKey(chars[i]))
                     realFont.GenerateBitmapForChar(chars[i]);
                 var texChar = realFont.fontAtlas[chars[i]];
                 //draw the string
 
                 MainWindow.backendRenderer.Allocate(ref texChar.texture.bitmap[0], texChar.texture.width, texChar.texture.height, true);
-                MainEditorView.editorBackendRenderer.DrawQuad(
-                      penX + 1,
-                  texChar.texture.height - texChar.bearing,
-                  penX + texChar.texture.width,
-                 texChar.texture.height + (texChar.texture.height - texChar.bearing), ref col.R
+                MainEditorView.editorBackendRenderer.DrawTexturedQuad(
+                      penX,
+                   penY - texChar.texture.height - texChar.bearing,
+                  penX + texChar.texture.width - 2,
+                 penY - texChar.texture.height + (texChar.texture.height - texChar.bearing), ref col.R
                   );
                 penX += glyphPositions[i].xAdvance >> 6;
                 penY -= glyphPositions[i].yAdvance >> 6;
             }
             MainEditorView.editorBackendRenderer.UnloadMatrix();
-            MainWindow.backendRenderer.WriteDepth(false);
+            MainWindow.backendRenderer.WriteDepth(true);
         }
 
         // Here We Fill In The Data For The Expanded Bitmap.
@@ -99,7 +110,7 @@ namespace SharpSL.BackendRenderers
               }
           }*/
 
-        public void DrawTexture(int texture, int x, int y, int width, int height, Rectangle source, int color)
+        public void DrawTexture(int texture, int x, int y, int width, int height, Rectangle source, int color)//get into account slicing offset
         {
             ref var texture2d = ref Pipeline.GetPipeline<TexturePipeline>().GetAsset(texture);
             var col = new Color((uint)color);
@@ -108,12 +119,11 @@ namespace SharpSL.BackendRenderers
             OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
 
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
-            if (currentTexture != texture)
-            {
-                MainWindow.backendRenderer.Allocate(ref texture2d.bitmap[0], texture2d.width, texture2d.height);
-                currentTexture = texture;
-            }
-            MainEditorView.editorBackendRenderer.DrawSlicedQuad(0, 0, width, height, (float)source.Left / texture2d.width, (float)source.Right / texture2d.width, (float)source.Top / texture2d.height, (float)source.Bottom / texture2d.height, ref col.R);
+            MainWindow.backendRenderer.Allocate(ref texture2d.bitmap[0], texture2d.width, texture2d.height);
+            if (source.Left > 0 || source.Right > 0 || source.Top > 0 || source.Bottom > 0)
+                MainEditorView.editorBackendRenderer.DrawSlicedQuad(0, 0, width, height, (float)source.Left / texture2d.width, (float)source.Right / texture2d.width, (float)source.Top / texture2d.height, (float)source.Bottom / texture2d.height, ref col.R);
+            else
+                MainEditorView.editorBackendRenderer.DrawTexturedQuad(0, 0, width, height, ref col.R);
             MainEditorView.editorBackendRenderer.UnloadMatrix();
         }
 
@@ -128,7 +138,7 @@ namespace SharpSL.BackendRenderers
 
         public Point GetTextSize(string text, int font)
         {
-            ref var f = ref FontPipeline.assets[font];
+            ref var f = ref Pipeline.GetPipeline<FontPipeline>().GetAsset(font);
             var textSize = f.Measure(text);
             return new Point(textSize.width, textSize.height);
         }
@@ -141,7 +151,7 @@ namespace SharpSL.BackendRenderers
 
         public Point GetTextureSize(int texture)
         {
-            ref var texture2d = ref TexturePipeline.assets[texture];
+            ref var texture2d = ref Pipeline.GetPipeline<TexturePipeline>().GetAsset(texture);
             return new Point(texture2d.width, texture2d.height);
         }
 

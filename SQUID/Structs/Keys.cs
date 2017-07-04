@@ -240,7 +240,7 @@ namespace Squid
         /// <summary>
         /// The AL t_ LEFT
         /// </summary>
-        ALT_LEFT = 56,
+        LEFTALT = 56,
         /// <summary>
         /// The SPACE
         /// </summary>
@@ -512,7 +512,7 @@ namespace Squid
         /// <summary>
         /// The AL t_ RIGHT
         /// </summary>
-        ALT_RIGHT = 184,
+        RIGHTALT = 184,
         /// <summary>
         /// The RIGHTMENU
         /// </summary>

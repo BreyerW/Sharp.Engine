@@ -18,7 +18,7 @@ namespace Sharp.Editor
         {
             if (undone.Count is 0) return;
             var toRedo = undone.Pop();
-            toRedo.Execute(reverse);
+            toRedo.Execute(false);
             UndoCommand.done.Push(toRedo);
         }
     }

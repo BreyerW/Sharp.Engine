@@ -10,7 +10,7 @@ namespace Squid
     /// The Button resizes Frame1.
     /// </summary>
     [Toolbox]
-    public class SplitContainer : Control 
+    public class SplitContainer : Control
     {
         private Orientation _orientation;
         private Point ClickedPos;
@@ -46,7 +46,7 @@ namespace Squid
         /// <value>The aspect ratio.</value>
         public float AspectRatio { get; set; }
 
-         /// <summary>
+        /// <summary>
         /// Gets or sets the orientation.
         /// </summary>
         /// <value>The orientation.</value>
@@ -111,7 +111,7 @@ namespace Squid
             }
         }
 
-        void SplitButton_MouseDown(Control sender, MouseEventArgs args)
+        private void SplitButton_MouseDown(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 
@@ -119,7 +119,7 @@ namespace Squid
             OldSize = SplitFrame1.Size;
         }
 
-        void SplitButton_MousePress(Control sender, MouseEventArgs args)
+        private void SplitButton_MousePress(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 
@@ -127,12 +127,15 @@ namespace Squid
 
             if (Orientation == Orientation.Horizontal)
             {
-                SplitFrame1.ResizeTo(OldSize + p, AnchorStyles.Right);
+                if (SplitFrame2.Size.x > SplitFrame2.MinSize.x)
+                    SplitFrame1.ResizeTo(OldSize + p, AnchorStyles.Right);
                 AspectRatio = (float)SplitFrame1.Size.x / (float)Size.x;
             }
             else
             {
-                SplitFrame1.ResizeTo(OldSize + p, AnchorStyles.Bottom);
+                if (SplitFrame2.Size.y > SplitFrame2.MinSize.y)
+                    SplitFrame1.ResizeTo(OldSize + p, AnchorStyles.Bottom);
+
                 AspectRatio = (float)SplitFrame1.Size.y / (float)Size.y;
             }
         }
