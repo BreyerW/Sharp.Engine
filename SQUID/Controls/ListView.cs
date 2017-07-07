@@ -436,7 +436,7 @@ namespace Squid
             if (sender is ISelectable)
             {
                 ISelectable check = sender as ISelectable;
-                check.Selected = !check.Selected;
+                check.IsSelected = !check.IsSelected;
             }
 
             foreach (Control cell in row.Cells)
@@ -444,7 +444,7 @@ namespace Squid
                 if (!sender.Equals(cell) && cell is ISelectable)
                 {
                     ISelectable check = cell as ISelectable;
-                    check.Selected = !check.Selected;
+                    check.IsSelected = !check.IsSelected;
                 }
             }
         }

@@ -38,8 +38,10 @@ namespace Sharp.Editor.Views
 
         public override void Render()
         {
-            //base.Render();
+            MainWindow.backendRenderer.Viewport(0, 0, desktop.Size.x, desktop.Size.y);
+
             MainWindow.backendRenderer.ClearBuffer();
+            MainWindow.backendRenderer.ClearColor();
             OnInternalUpdate();
             desktop.Draw();
         }

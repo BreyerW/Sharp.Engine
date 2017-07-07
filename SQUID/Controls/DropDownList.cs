@@ -131,7 +131,7 @@ namespace Squid
 
         void Items_ItemRemoved(object sender, ListEventArgs<ListBoxItem> e)
         {
-            if (e.Item.Selected)
+            if (e.Item.IsSelected)
             {
                 Label.Text = string.Empty;
             
@@ -142,7 +142,7 @@ namespace Squid
 
         void Items_ItemAdded(object sender, ListEventArgs<ListBoxItem> e)
         {
-            if (e.Item.Selected)
+            if (e.Item.IsSelected)
             {
                 Label.Text = e.Item.Text;
 

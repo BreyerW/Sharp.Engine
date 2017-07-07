@@ -39,7 +39,7 @@ namespace Squid
         /// </summary>
         /// <value><c>true</c> if selected; otherwise, <c>false</c>.</value>
         [DefaultValue(false)]
-        public bool Selected { get; set; }
+        public bool IsSelected { get; set; }
 
         /// <summary>
         /// Gets or sets the leading.

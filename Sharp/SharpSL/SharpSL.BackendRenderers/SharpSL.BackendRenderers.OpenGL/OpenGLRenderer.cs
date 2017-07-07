@@ -41,10 +41,10 @@ namespace SharpSL.BackendRenderers.OpenGL
         public void SetStandardState()
         {
             GL.CullFace(CullFaceMode.Back);
-            //GL.Disable(EnableCap.Blend);
-            //GL.Enable(EnableCap.DepthTest);
+            GL.Disable(EnableCap.Blend);
+            GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Less);
-            GL.Disable(EnableCap.Texture2D);
+
             //GL.Enable(EnableCap.DebugOutput);
             //GL.Enable(EnableCap.DebugOutputSynchronous);
         }

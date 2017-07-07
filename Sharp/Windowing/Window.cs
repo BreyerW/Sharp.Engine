@@ -115,7 +115,6 @@ namespace Sharp
             View.views.Add(windowId, new HashSet<View>());
             new MainEditorView(windowId);
             onRenderFrame += OnInternalRenderFrame;
-            MainWindow.backendRenderer.ClearColor();
         }
 
         public static void PollWindows()
@@ -157,6 +156,7 @@ namespace Sharp
             OnRenderFrame();
             var mainView = View.mainViews[windowId];
             if (mainView.desktop is null) return;
+
             mainView.Render();
             foreach (var view in View.views[windowId])
                 if (view.panel != null && view.panel.IsVisible)
@@ -226,7 +226,7 @@ namespace Sharp
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
                     View.mainViews[evt.windowID].OnResize(evt.data1, evt.data2);
-                    onRenderFrame?.Invoke();
+
                     break;
 
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_TAKE_FOCUS: AssetsView.CheckIfDirTreeChanged(); break;
@@ -283,8 +283,9 @@ namespace Sharp
                     InputHandler.ProcessMouse();
                     break;
 
-                case SDL.SDL_EventType.SDL_WINDOWEVENT: OnWindowEvent(ref evt.window); break;
+                case SDL.SDL_EventType.SDL_WINDOWEVENT: OnWindowEvent(ref evt.window); onRenderFrame?.Invoke(); break;
             }
+
             return 1;
         }
 

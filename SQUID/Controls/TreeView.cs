@@ -56,12 +56,12 @@ namespace Squid
                 if (value == _selectedNode) return;
 
                 if (_selectedNode != null)
-                    _selectedNode.Selected = false;
+                    _selectedNode.IsSelected = false;
 
                 _selectedNode = value;
 
                 if (_selectedNode != null)
-                    _selectedNode.Selected = true;
+                    _selectedNode.IsSelected = true;
 
                 if (SelectedNodeChanged != null)
                     SelectedNodeChanged(this, _selectedNode);
@@ -157,7 +157,7 @@ namespace Squid
             TreeNode node = sender as TreeNode;
             if (node == null) return;
 
-            if (node.Selected)
+            if (node.IsSelected)
                 SelectedNode = node;
             else if (node == SelectedNode)
                 SelectedNode = null;
@@ -209,9 +209,9 @@ namespace Squid
         {
             TreeNode node = sender as TreeNode;
 
-            if (SelectedNode != null) SelectedNode.Selected = false;
+            if (SelectedNode != null) SelectedNode.IsSelected = false;
             SelectedNode = node;
-            if (SelectedNode != null) SelectedNode.Selected = true;
+            if (SelectedNode != null) SelectedNode.IsSelected = true;
 
             if (SelectedNodeChanged != null)
                 SelectedNodeChanged(this, SelectedNode);
@@ -276,7 +276,7 @@ namespace Squid
         /// </summary>
         /// <value><c>true</c> if selected; otherwise, <c>false</c>.</value>
         [DefaultValue(false)]
-        public bool Selected
+        public bool IsSelected
         {
             get { return _selected; }
             set
@@ -471,7 +471,7 @@ namespace Squid
         {
             Button = new Button();
             Button.Size = new Point(20, 20);
-            Button.Margin = new Margin(6);
+            Button.Margin = new Margin(5, 5, 3, 5);
             Button.Dock = DockStyle.Left;
             Button.MouseClick += Button_MouseClick;
             Childs.Add(Button);
@@ -495,7 +495,7 @@ namespace Squid
         {
             if (args.Button > 0) return;
 
-            Selected = true;
+            IsSelected = true;
         }
 
         private void Button_MouseClick(Control sender, MouseEventArgs args)

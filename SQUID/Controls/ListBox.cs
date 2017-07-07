@@ -101,7 +101,7 @@ namespace Squid
                 skipEvents = true;
 
                 if (_selectedItem != null)
-                    _selectedItem.Selected = false;
+                    _selectedItem.IsSelected = false;
 
                 skipEvents = false;
 
@@ -113,7 +113,7 @@ namespace Squid
                 skipEvents = true;
 
                 if (_selectedItem != null)
-                    _selectedItem.Selected = true;
+                    _selectedItem.IsSelected = true;
 
                 skipEvents = false;
 
@@ -186,7 +186,7 @@ namespace Squid
             skipEvents = true;
 
             foreach (ListBoxItem item in _selected)
-                item.Selected = false;
+                item.IsSelected = false;
 
             if (SelectedItemsChanged != null)
                 SelectedItemsChanged(this);
@@ -204,7 +204,7 @@ namespace Squid
             if (e.Item == null) return;
 
             skipEvents = true;
-            e.Item.Selected = false;
+            e.Item.IsSelected = false;
             skipEvents = false;
 
             if (SelectedItemsChanged != null)
@@ -216,7 +216,7 @@ namespace Squid
             if (e.Item == null) return;
 
             skipEvents = true;
-            e.Item.Selected = true;
+            e.Item.IsSelected = true;
             skipEvents = false;
 
             if (SelectedItemsChanged != null)
@@ -262,7 +262,7 @@ namespace Squid
         {
             ItemContainer.Controls.Clear();
 
-            if (e.Item.Selected)
+            if (e.Item.IsSelected)
             {
                 if (Multiselect)
                     _selected.Remove(e.Item);
@@ -270,7 +270,7 @@ namespace Squid
                     SelectedItem = null;
             }
 
-            e.Item.Selected = false;
+            e.Item.IsSelected = false;
             e.Item.MouseClick -= item_MouseClick;
             e.Item.SelectedChanged -= Item_SelectedChanged;
 
@@ -282,7 +282,7 @@ namespace Squid
         {
             ItemContainer.Controls.Clear();
 
-            if (e.Item.Selected)
+            if (e.Item.IsSelected)
             {
                 if (Multiselect)
                     _selected.Add(e.Item);
@@ -303,7 +303,7 @@ namespace Squid
 
             if (skipEvents) return;
 
-            if (item.Selected)
+            if (item.IsSelected)
             {
                 if (Multiselect)
                     _selected.Add(item);
@@ -326,7 +326,7 @@ namespace Squid
             {
                 item.MouseClick -= item_MouseClick;
                 item.SelectedChanged -= Item_SelectedChanged;
-                item.Selected = false;
+                item.IsSelected = false;
             }
             skipEvents = false;
 
@@ -343,17 +343,17 @@ namespace Squid
             {
                 if (MaxSelected > 0)
                 {
-                    if (!item.Selected)
+                    if (!item.IsSelected)
                     {
                         if (_selected.Count < MaxSelected)
-                            item.Selected = true;
+                            item.IsSelected = true;
                     }
                     else
-                        item.Selected = false;
+                        item.IsSelected = false;
                 }
                 else
                 {
-                    item.Selected = !item.Selected;
+                    item.IsSelected = !item.IsSelected;
                 }
             }
             else
@@ -386,7 +386,7 @@ namespace Squid
         /// </summary>
         /// <value><c>true</c> if selected; otherwise, <c>false</c>.</value>
         [DefaultValue(false)]
-        public bool Selected
+        public bool IsSelected
         {
             get { return _selected; }
             set

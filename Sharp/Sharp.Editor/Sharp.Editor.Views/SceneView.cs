@@ -59,10 +59,26 @@ namespace Sharp.Editor.Views
             eLight.Position = Camera.main.entityObject.Position;
             var light = eLight.AddComponent<Light>();
             eLight.Instatiate();
+            panel.AllowDrop = true;
+            panel.DragDrop += Panel_Drop;
             panel.SizeChanged += (sender) => OnResize(sender.Size.x, sender.Size.y);
             panel.MouseDown += (sender, args) => OnMouseDown(args.Button);
             OnSetupMatrices?.Invoke();
             base.Initialize();
+        }
+
+        private void Panel_Drop(Squid.Control sender, DragDropEventArgs e)
+        {
+            var locPos = new Point(Gui.MousePosition.x - panel.Location.x, Gui.MousePosition.y - panel.Location.y);
+            Camera.main.SetModelviewMatrix();
+            var orig = Camera.main.entityObject.Position;
+            var dir = (Camera.main.ScreenToWorld(locPos.x, locPos.y, panel.Size.x, panel.Size.y) - orig).Normalized();
+            if (e.Source.UserData is ValueTuple<string, string>[] entities)
+                foreach (var asset in entities)
+                {
+                    (string name, string extension) = asset;
+                    Pipeline.GetPipeline(extension).Import(name).PlaceIntoScene(null, orig + dir * Camera.main.ZFar * 0.1f);
+                }
         }
 
         public override void Render()
@@ -83,28 +99,27 @@ namespace Sharp.Editor.Views
             DrawHelper.DrawGrid(Color.White, Camera.main.entityObject.Position, cell_size, grid_size, ref projMat);
 
             OnRenderFrame?.Invoke();
-            /*
-                        /*if (SceneStructureView.tree.SelectedChildren.Any())
-                        {
-                            foreach (var selected in SceneStructureView.tree.SelectedChildren)
-                            {
-                                var entity = selected.Content as Entity;
-                                var mvpMat = (globalMode ? entity.ModelMatrix.ClearRotation() : entity.ModelMatrix).ClearScale() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
 
-                                MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
-                                MainWindow.backendRenderer.ClearDepth();
-                                Manipulators.DrawCombinedGizmos(entity);
-                                MainEditorView.editorBackendRenderer.UnloadMatrix();
+            if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
+            {
+                //foreach (var selected in SceneStructureView.tree.SelectedChildren)
+                {
+                    var mvpMat = (globalMode ? entity.ModelMatrix.ClearRotation() : entity.ModelMatrix).ClearScale() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
 
-                                /*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
-                                if (renderer != null)
-                                {
-                                    var max = renderer.mesh.bounds.Max;
-                                    var min = renderer.mesh.bounds.Min;
-                                    DrawHelper.DrawBox(min, max);
-                                }*
-                            }
-                        }*/
+                    MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
+                    MainWindow.backendRenderer.ClearDepth();
+                    Manipulators.DrawCombinedGizmos(entity);
+                    MainEditorView.editorBackendRenderer.UnloadMatrix();
+
+                    /*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
+                    if (renderer != null)
+                    {
+                        var max = renderer.mesh.bounds.Max;
+                        var min = renderer.mesh.bounds.Min;
+                        DrawHelper.DrawBox(min, max);
+                    }*/
+                }
+            }
 
             //GL.DebugMessageCallback(DebugCallbackInstance, IntPtr.Zero);
             MainWindow.backendRenderer.Viewport(0, 0, panel.Desktop.Size.x, panel.Desktop.Size.y);
@@ -165,9 +180,8 @@ namespace Sharp.Editor.Views
                 }
 
                 //foreach (var selected in SceneStructureView.tree.SelectedNode)
-                /*if(SceneStructureView.tree.SelectedNode!=null)
+                if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
                 {
-                    var entity = selected.Content as Entity;
                     var mvpMat = (globalMode ? entity.ModelMatrix.ClearRotation() : entity.ModelMatrix).ClearScale() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
 
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
@@ -175,7 +189,7 @@ namespace Sharp.Editor.Views
                     Manipulators.DrawCombinedGizmos(entity, xColor, yColor, zColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
 
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
-                }*/
+                }
                 MainWindow.backendRenderer.FinishCommands();
                 if (locPos.HasValue)
                 {
@@ -217,8 +231,8 @@ namespace Sharp.Editor.Views
                 var entity = entities.First((ent) => ent.id == hitList.Values[0]);
                 Console.WriteLine("Select " + entity.name + entity.id);
                 Selection.Asset = entity;
-                //SceneStructureView.tree.UnselectAll();
-                //SceneStructureView.tree.FindNodeByContent(entity).IsSelected = true;
+                SceneStructureView.tree.SelectedNode = null;
+                SceneStructureView.tree.Nodes.Find((item) => item.UserData == entity).IsSelected = true;
             }
         }
 
@@ -227,9 +241,8 @@ namespace Sharp.Editor.Views
             OnSetupMatrices?.Invoke();
             if (Camera.main != null)
             {
-                Camera.main.AspectRatio = (float)width / height;
+                Camera.main.AspectRatio = (float)panel.Size.x / panel.Size.y;
                 Camera.main.SetProjectionMatrix();
-                Console.WriteLine(Camera.main.AspectRatio);
             }
             Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
         }
@@ -271,28 +284,12 @@ namespace Sharp.Editor.Views
             {
                 mouseLocked = false;
                 locPos = new Point(Gui.MousePosition.x - panel.Location.x, Gui.MousePosition.y - panel.Location.y);
-                locPos = new Point(locPos.Value.x, locPos.Value.y - 29);
             }
             //	Console.WriteLine ("down");
         }
 
         public override void OnMouseUp(int buttonId)
         {
-            if (AssetsView.isDragging)
-            {
-                var locPos = new Point(Gui.MousePosition.x - panel.Location.x, Gui.MousePosition.y - panel.Location.y);
-                Camera.main.SetModelviewMatrix();
-                var orig = Camera.main.entityObject.Position;
-                var dir = (Camera.main.ScreenToWorld(locPos.x, locPos.y, panel.Size.x, panel.Size.y) - orig).Normalized();
-                /*foreach (var asset in AssetsView.tree[AssetsView.whereDragStarted].SelectedChildren)
-                {
-                    Console.WriteLine(asset.Content.GetType());
-                    (string name, string extension) = (ValueTuple<string, string>)asset.Content;
-                    Pipeline.GetPipeline(extension).Import(name).PlaceIntoScene(null, orig + dir * Camera.main.ZFar * 0.1f);
-                }*/
-                AssetsView.isDragging = false;
-                AssetsView.whereDragStarted = 0;
-            }
             Manipulators.Reset();
         }
 

@@ -18,19 +18,27 @@ namespace Sharp.Editor.Views
             if (tree == null)
                 tree = new TreeView();
             tree.Parent = panel;
-            //tree.SetSize(panel.Width, panel.Height);
             tree.Dock = DockStyle.Fill;
-            //tree.SelectionChanged += (sender, args) => Selection.Asset = (sender as TreeNode).Content;
+            tree.SelectedNodeChanged += Tree_SelectedNodeChanged;
 
-            //var node = sender as TreeNode; if ( Selection.Asset ==node.Content) tree.UnselectAll(); else
             SceneView.OnAddedEntity += ReconstructTree;
             SceneView.OnRemovedEntity += ReconstructTree;
             ReconstructTree();
         }
 
+        private void Tree_SelectedNodeChanged(Squid.Control sender, TreeNode value)
+        {
+            Console.WriteLine(value);
+            if (value is null) return;
+            Selection.Asset = value.UserData;
+
+            // var node = sender as TreeNode; if (Selection.Asset == node.Content) tree.UnselectAll();
+            // else
+        }
+
         private void ReconstructTree()
         {
-            //tree.RemoveAll();
+            tree.Nodes.Clear();
             RegisterEntity(Camera.main.entityObject);
             foreach (var entity in SceneView.entities)
                 RegisterEntity(entity);
@@ -38,7 +46,6 @@ namespace Sharp.Editor.Views
 
         public override void Render()
         {
-            //base.Render();
         }
 
         private static void RegisterEntity(Entity ent)
@@ -49,6 +56,9 @@ namespace Sharp.Editor.Views
             node.Label.TextAlign = Alignment.MiddleLeft;
             node.Style = "label";
             node.Label.Style = "label";
+            node.UserData = ent;
+            if (ent.childs.Count is 0)
+                node.Button.Style = "";
             tree.Nodes.Add(node);
         }
 
@@ -59,7 +69,6 @@ namespace Sharp.Editor.Views
 
         public override void OnResize(int width, int height)
         {
-            //tree.SetSize(panel.Width, panel.Height);
         }
     }
 }

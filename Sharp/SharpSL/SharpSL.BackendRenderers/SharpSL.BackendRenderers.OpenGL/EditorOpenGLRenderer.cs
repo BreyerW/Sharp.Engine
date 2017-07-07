@@ -97,6 +97,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Vertex3(x2, y1, 0);
             GL.End();
             GL.Color4((byte)0, (byte)0, (byte)0, (byte)255);
+
             /*
             *+---+----------------------+---+
             *| 3 |          4           | 7 |
@@ -300,7 +301,8 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.TexCoord2(1, 0);
             GL.Vertex3(x2, y1, 0);
 
-            GL.End(); GL.Color4((byte)0, (byte)0, (byte)0, (byte)255);
+            GL.End();
+            GL.Color4((byte)0, (byte)0, (byte)0, (byte)255);
         }
 
         public void DrawQuad(float x1, float y1, float x2, float y2, ref byte unColor)
@@ -604,7 +606,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             int num = (int)Math.Round((double)(pos.X / (float)cell_size)) * cell_size;
             int num2 = (int)Math.Round((double)(pos.Y / (float)cell_size)) * cell_size;
             int num3 = grid_size / cell_size;
-
+            GL.Disable(EnableCap.Texture2D);
             GL.LoadMatrix(ref projMat);
             GL.PushMatrix();
             GL.Translate((float)num - (float)grid_size / 2f, 0f, (float)num2 - (float)grid_size / 2f);
@@ -621,6 +623,7 @@ namespace SharpSL.BackendRenderers.OpenGL
                 GL.Vertex3(grid_size, 0, num4);
                 num5 = i;
             }
+            GL.Enable(EnableCap.Texture2D);
             GL.Color4(0, 0, 0, 0);
             GL.End();
             GL.PopMatrix();

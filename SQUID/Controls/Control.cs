@@ -2023,7 +2023,7 @@ namespace Squid
                 else
                     State = ControlState.Checked;
             }
-            else if (this is ISelectable && (this as ISelectable).Selected)
+            else if (this is ISelectable && (this as ISelectable).IsSelected)
             {
                 if (!Enabled)
                     State = ControlState.SelectedDisabled;

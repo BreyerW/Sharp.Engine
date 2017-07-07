@@ -85,7 +85,7 @@ namespace Squid
             Size = new Point(100, 100);
 
             ButtonFrame = new Frame();
-            ButtonFrame.Size = new Point(100, 35);
+            ButtonFrame.Size = new Point(100, 25);
             ButtonFrame.Dock = DockStyle.Top;
             ButtonFrame.Scissor = true;
             Childs.Add(ButtonFrame);

@@ -206,6 +206,7 @@ namespace Sharp.Editor.Views
                             node.Style = "label";
                             node.Label.Text = folder;
                             node.Label.Style = "label";
+                            node.Button.Size = new Point(10, 10);
                             node.Name = folder;
                             node.Label.TextAlign = Alignment.MiddleLeft;
                             t.Nodes.Add(node);
@@ -213,24 +214,39 @@ namespace Sharp.Editor.Views
                     }
                     //node = (TreeNode)node.FindChildByName(folder) ?? node.AddNode(folder);
                 }
-
                 foreach (var asset in files.Values.OrderBy(item => item, new CompareByName()))
                 {
                     var assetNode = new TreeNodeLabel();
                     assetNode.Name = asset.Name.Remove(asset.Name.Length - asset.Extension.Length);
                     assetNode.Label.Text = assetNode.Name;
+                    //assetNode.Label.Margin = new Margin(assetNode.Button.Position.x + node.Button.Size.x + t.Indent, 0, 0, 0);
+                    assetNode.Button.Style = "";
+                    assetNode.MouseDrag += AssetNode_MouseDrag;
                     assetNode.Label.TextAlign = Alignment.MiddleLeft;
                     assetNode.Style = "label";
+                    assetNode.UserData = new(string, string)[] { (asset.FullName, asset.Extension) };
                     assetNode.Label.Style = "label";
-                    node.Nodes.Add(assetNode);//.Content = (asset.FullName, asset.Extension);
+                    node.Nodes.Add(assetNode);
                 }
             }
+        }
+
+        private void AssetNode_MouseDrag(Squid.Control sender, Squid.MouseEventArgs args)
+        {
+            Console.WriteLine(sender);
+            var node = sender as TreeNodeLabel;
+            var draggedNode = new Label();
+            draggedNode.Tag = node.UserData;
+            //draggedNode.IsVisible = false;//for now dont show since sceneview overwrite this. convert all views to control someday with extra rendering
+            draggedNode.Dock = DockStyle.None;
+            draggedNode.Style = "button";
+            sender.DoDragDrop(draggedNode);
         }
 
         private void T_SelectedNodeChanged(Squid.Control sender, TreeNode value)
         {
             if (value is null) return;
-            value.Selected = true;
+            value.IsSelected = true;
         }
     }
 
