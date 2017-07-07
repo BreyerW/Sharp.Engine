@@ -86,13 +86,13 @@ namespace Squid
             Button.BeforeCheckedChanged += Button_BeforeCheckedChanged;
             Button.Style = "checkboxButton";
             Button.NoEvents = true;
-            Elements.Add(Button);
+            Childs.Add(Button);
 
             Label = new Label();
             Label.Dock = DockStyle.Fill;
             Label.Style = "checkboxLabel";
             Label.NoEvents = true;
-            Elements.Add(Label);
+            Childs.Add(Label);
         }
 
         void RadioButton_MouseClick(Control sender, MouseEventArgs args)

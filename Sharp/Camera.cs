@@ -40,6 +40,22 @@ namespace Sharp
             }
         }
 
+        private Matrix4 orthoLeftBottomMatrix;
+
+        public Matrix4 OrthoLeftBottomMatrix
+        {
+            get
+            {
+                return orthoLeftBottomMatrix;
+            }
+            set
+            {
+                orthoLeftBottomMatrix = value;
+                //if (main != null)
+                // Material.BindGlobalProperty("camProjection", () => ref main.projectionMatrix);
+            }
+        }
+
         private Matrix4 modelViewMatrix;
 
         public Matrix4 ModelViewMatrix
@@ -125,7 +141,9 @@ namespace Sharp
 
         public void SetOrthoMatrix(int width, int height)
         {
-            OrthoMatrix = Matrix4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
+            OrthoMatrix = Matrix4.CreateOrthographicOffCenter(0, width, 0, height, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
+            OrthoLeftBottomMatrix = Matrix4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
+
             this.width = width;
             this.height = height;
         }
@@ -247,8 +265,7 @@ namespace Sharp
             SetModelviewMatrix();
             //Console.WriteLine("Rotation={0}", MouseRotation);
             //ClampMouseValues();
-            if (frustum != null)
-                frustum.Update(Camera.main.modelViewMatrix * Camera.main.projectionMatrix);
+            frustum?.Update(Camera.main.modelViewMatrix * Camera.main.projectionMatrix);
             //ResetMouse();
         }
 

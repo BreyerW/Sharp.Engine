@@ -61,7 +61,7 @@ namespace Squid
             Left.MouseUp += Grip_OnUp;
             Left.Tag = AnchorStyles.Left;
             Left.Cursor = CursorNames.SizeWE;
-            Elements.Add(Left);
+            Childs.Add(Left);
 
             Top = new Control();
             Top.Size = new Point(2, 2);
@@ -71,7 +71,7 @@ namespace Squid
             Top.MouseUp += Grip_OnUp;
             Top.Tag = AnchorStyles.Top;
             Top.Cursor = CursorNames.SizeNS;
-            Elements.Add(Top);
+            Childs.Add(Top);
 
             Right = new Control();
             Right.Size = new Point(2, 2);
@@ -81,7 +81,7 @@ namespace Squid
             Right.MouseUp += Grip_OnUp;
             Right.Tag = AnchorStyles.Right;
             Right.Cursor = CursorNames.SizeWE;
-            Elements.Add(Right);
+            Childs.Add(Right);
 
             Bottom = new Control();
             Bottom.Size = new Point(2, 2);
@@ -91,7 +91,7 @@ namespace Squid
             Bottom.MouseUp += Grip_OnUp;
             Bottom.Tag = AnchorStyles.Bottom;
             Bottom.Cursor = CursorNames.SizeNS;
-            Elements.Add(Bottom);
+            Childs.Add(Bottom);
 
             TopLeft = new Control();
             TopLeft.Size = new Point(4, 4);
@@ -101,7 +101,7 @@ namespace Squid
             TopLeft.MouseUp += Grip_OnUp;
             TopLeft.Tag = AnchorStyles.Top | AnchorStyles.Left;
             TopLeft.Cursor = CursorNames.SizeNWSE;
-            Elements.Add(TopLeft);
+            Childs.Add(TopLeft);
 
             TopRight = new Control();
             TopRight.Size = new Point(4, 4);
@@ -112,7 +112,7 @@ namespace Squid
             TopRight.MouseUp += Grip_OnUp;
             TopRight.Tag = AnchorStyles.Top | AnchorStyles.Right;
             TopRight.Cursor = CursorNames.SizeNESW;
-            Elements.Add(TopRight);
+            Childs.Add(TopRight);
 
             BottomLeft = new Control();
             BottomLeft.Size = new Point(4, 4);
@@ -123,7 +123,7 @@ namespace Squid
             BottomLeft.MouseUp += Grip_OnUp;
             BottomLeft.Tag = AnchorStyles.Bottom | AnchorStyles.Left;
             BottomLeft.Cursor = CursorNames.SizeNESW;
-            Elements.Add(BottomLeft);
+            Childs.Add(BottomLeft);
 
             BottomRight = new Control();
             BottomRight.Size = new Point(8, 8);
@@ -134,7 +134,7 @@ namespace Squid
             BottomRight.MouseUp += Grip_OnUp;
             BottomRight.Tag = AnchorStyles.Bottom | AnchorStyles.Right;
             BottomRight.Cursor = CursorNames.SizeNWSE;
-            Elements.Add(BottomRight);
+            Childs.Add(BottomRight);
 
             Adjust();
         }

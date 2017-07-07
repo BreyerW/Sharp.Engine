@@ -111,10 +111,10 @@ namespace Sharp.Editor.Views
         public override void Initialize()
         {
             base.Initialize();
-            menu = new ListBox(panel);
+            // menu = new ListBox(panel);
             menu.RowSelected += (sender, args) => { menu.Hide(); menu.RemoveAllRows(); showDrag = -1; };
             menu.Hide();
-            badge = new Label(panel);
+            // badge = new Label(panel);
             badge.Hide();
         }
 
@@ -123,7 +123,7 @@ namespace Sharp.Editor.Views
             var size = Window.windows[attachedToWindow].Size;
             mainArea = (0, 29, size.width, size.height);
 
-            swatchArea = (40, 40 + 29, panel.Width - 80, size.height - 80 - 29);
+            swatchArea = (40, 40 + 29, panel.Size.x - 80, size.height - 80 - 29);
             var max = drawer.curvesRange.height + (drawer.curvesRange.y < 0 ? drawer.curvesRange.y : 0);
             var maxY = drawer.curvesRange.width + (drawer.curvesRange.x < 0 ? drawer.curvesRange.x : 0);
             scale = new Vector2(swatchArea.width / (drawer.curvesRange.width), -swatchArea.height / (drawer.curvesRange.height));//max-drawer.curvesRange.y
@@ -289,11 +289,11 @@ namespace Sharp.Editor.Views
 
         private bool delayClear = true;
 
-        public override void OnMouseDown(MouseButtonEventArgs evnt)//convert curve keys to basic gui? then use clicked/rightclicked etc events on them
+        public override void OnMouseDown(int buttonId)//convert curve keys to basic gui? then use clicked/rightclicked etc events on them
         {
-            var mousePos = new Vector2(evnt.X, evnt.Y);
+            var mousePos = new Vector2(Squid.Gui.MousePosition.x, Squid.Gui.MousePosition.y);
             var pos = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);
-            var rightClick = evnt.Button == MouseButton.Right;
+            var rightClick = buttonId is 1;
             if (clickedKeyframe[0].Count + clickedKeyframe[1].Count == 1)
             {
                 clickedKeyframe[0].Clear();
@@ -708,9 +708,9 @@ namespace Sharp.Editor.Views
 
                     if (array.Length != hLabels.Length)
                     {
-                        foreach (var label in hLabels)
+                        /*foreach (var label in hLabels)
                             if (label != null)
-                                panel.RemoveChild(label, true);
+                                panel.RemoveChild(label, true);*/
                         hLabels = new Label[array.Length];
                     }
                     float y = (float)Math.Floor(mainArea.height);
@@ -736,7 +736,7 @@ namespace Sharp.Editor.Views
                             }
                             if (hLabels[m] is null)
                             {
-                                hLabels[m] = new Label(panel);
+                                //hLabels[m] = new Label(panel);
                                 // hLabels[m].AutoSizeToContents = true;
                             }
                             hLabels[m].Text = num3.ToString("n" + numberOfDecimalsForMinimumDifference) + curveSettings.hTickStyle.unit;
@@ -756,9 +756,9 @@ namespace Sharp.Editor.Views
 
                     if (array2.Length != vLabels.Length)
                     {
-                        foreach (var label in vLabels)
+                        /*foreach (var label in vLabels)
                             if (label != null)
-                                panel.RemoveChild(label, true);
+                                panel.RemoveChild(label, true);*/
                         vLabels = new Label[array2.Length];
                     }
 
@@ -793,7 +793,7 @@ namespace Sharp.Editor.Views
                             }
                             if (vLabels[n] is null)
                             {
-                                vLabels[n] = new Label(panel);
+                                //vLabels[n] = new Label(panel);
                                 //vLabels[n].AutoSizeToContents = true;
                             }
                             vLabels[n].Text = num6.ToString(text) + curveSettings.vTickStyle.unit;

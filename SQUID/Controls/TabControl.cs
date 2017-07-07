@@ -21,7 +21,9 @@ namespace Squid
         /// Gets the button frame.
         /// </summary>
         /// <value>The button frame.</value>
-        public Frame ButtonFrame { get; private set; }
+        public Frame ButtonFrame { get; private set; }//add hidden scroll/slider when wider than control width
+
+        public Frame PageFrame { get; private set; }
 
         /// <summary>
         /// Gets the tab pages.
@@ -46,7 +48,8 @@ namespace Squid
                 if (_selectedTab != null)
                 {
                     _selectedTab.Button.Checked = false;
-                    Elements.Remove(_selectedTab);
+                    _selectedTab.IsVisible = false;
+                    PageFrame.Controls.Remove(_selectedTab);
                 }
 
                 if (value != null && !TabPages.Contains(value))
@@ -60,7 +63,8 @@ namespace Squid
                 if (_selectedTab != null)
                 {
                     _selectedTab.Button.Checked = true;
-                    Elements.Add(_selectedTab);
+                    _selectedTab.IsVisible = true;
+                    PageFrame.Controls.Add(_selectedTab);
                 }
 
                 //if (OnSelectedTabChanged != null)
@@ -84,10 +88,16 @@ namespace Squid
             ButtonFrame.Size = new Point(100, 35);
             ButtonFrame.Dock = DockStyle.Top;
             ButtonFrame.Scissor = true;
-            Elements.Add(ButtonFrame);
+            Childs.Add(ButtonFrame);
+
+            PageFrame = new Frame();
+            PageFrame.Size = new Point(100, 35);
+            PageFrame.Dock = DockStyle.Fill;
+            PageFrame.Scissor = true;
+            Childs.Add(PageFrame);
         }
 
-        void TabPages_BeforeItemsCleared(object sender, EventArgs e)
+        private void TabPages_BeforeItemsCleared(object sender, EventArgs e)
         {
             foreach (TabPage page in TabPages)
             {
@@ -96,13 +106,13 @@ namespace Squid
             }
         }
 
-        void TabPages_ItemRemoved(object sender, ListEventArgs<TabPage> e)
+        private void TabPages_ItemRemoved(object sender, ListEventArgs<TabPage> e)
         {
             e.Item.Button.MouseClick -= Button_MouseClick;
             e.Item.Button.Parent = null;
         }
 
-        void TabPages_ItemAdded(object sender, ListEventArgs<TabPage> e)
+        private void TabPages_ItemAdded(object sender, ListEventArgs<TabPage> e)
         {
             ButtonFrame.Controls.Clear();
 
@@ -116,7 +126,7 @@ namespace Squid
             SelectedTab = e.Item;
         }
 
-        void Button_MouseClick(Control sender, MouseEventArgs args)
+        private void Button_MouseClick(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 
@@ -157,5 +167,4 @@ namespace Squid
     {
         public ControlCollection Controls { get; set; }
     }
-
 }

@@ -57,8 +57,8 @@ namespace SharpAsset.Pipeline
                 if (mesh.HasBones)
                 {
                     GetPipeline<SkeletonPipeline>().scene = scene;
-                    foreach (var tree in AssetsView.tree.Values)
-                        tree.AddNode(GetPipeline<SkeletonPipeline>().Import(""));
+                    //foreach (var tree in AssetsView.tree.Values)
+                    //tree.AddNode(GetPipeline<SkeletonPipeline>().Import(""));
                 }
                 var indices = mesh.GetUnsignedIndices();
                 internalMesh.Indices = indices.AsSpan().AsBytes().ToArray();

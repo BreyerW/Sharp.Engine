@@ -55,12 +55,12 @@ namespace Squid
             {
                 if (value == _selectedNode) return;
 
-                if (_selectedNode != null) 
+                if (_selectedNode != null)
                     _selectedNode.Selected = false;
 
                 _selectedNode = value;
 
-                if (_selectedNode != null) 
+                if (_selectedNode != null)
                     _selectedNode.Selected = true;
 
                 if (SelectedNodeChanged != null)
@@ -92,12 +92,12 @@ namespace Squid
             Scrollbar.Dock = DockStyle.Right;
             Scrollbar.Size = new Point(25, 25);
             Scrollbar.Orientation = Orientation.Vertical;
-            Elements.Add(Scrollbar);
+            Childs.Add(Scrollbar);
 
             ClipFrame = new Frame();
             ClipFrame.Dock = DockStyle.Fill;
             ClipFrame.Scissor = true;
-            Elements.Add(ClipFrame);
+            Childs.Add(ClipFrame);
 
             ItemContainer = new Frame();
             ItemContainer.AutoSize = AutoSize.Vertical;
@@ -106,7 +106,7 @@ namespace Squid
             MouseWheel += TreeView_MouseWheel;
         }
 
-        void TreeView_MouseWheel(Control sender, MouseEventArgs args)
+        private void TreeView_MouseWheel(Control sender, MouseEventArgs args)
         {
             Scrollbar.Scroll(Gui.MouseScroll);
             args.Cancel = true;
@@ -120,30 +120,30 @@ namespace Squid
             // move the label up/down using the scrollbar value
             if (ItemContainer.Size.y < ClipFrame.Size.y) // no need to scroll
             {
-                Scrollbar.Visible = false; // hide scrollbar
+                Scrollbar.IsVisible = false; // hide scrollbar
                 ItemContainer.Position = new Point(0, 0); // set fixed position
             }
             else
             {
                 Scrollbar.Scale = Math.Min(1, (float)Size.y / (float)ItemContainer.Size.y);
-                Scrollbar.Visible = true; // show scrollbar
+                Scrollbar.IsVisible = true; // show scrollbar
                 ItemContainer.Position = new Point(0, (int)((ClipFrame.Size.y - ItemContainer.Size.y) * Scrollbar.EasedValue));
             }
 
             if (Scrollbar.ShowAlways)
-                Scrollbar.Visible = true;
+                Scrollbar.IsVisible = true;
         }
 
-        void Nodes_BeforeItemsCleared(object sender, EventArgs e)
+        private void Nodes_BeforeItemsCleared(object sender, EventArgs e)
         {
             foreach (TreeNode node in Nodes)
                 Nodes_ItemRemoved(sender, new ListEventArgs<TreeNode>(node));
         }
 
-        void Nodes_ItemRemoved(object sender, ListEventArgs<TreeNode> e)
+        private void Nodes_ItemRemoved(object sender, ListEventArgs<TreeNode> e)
         {
-            e.Item.ExpandedChanged -=Item_ExpandedChanged;
-            e.Item.SelectedChanged -=Item_SelectedChanged;
+            e.Item.ExpandedChanged -= Item_ExpandedChanged;
+            e.Item.SelectedChanged -= Item_SelectedChanged;
             e.Item.treeview = null;
 
             ItemContainer.Controls.Remove(e.Item);
@@ -152,7 +152,7 @@ namespace Squid
                 Nodes_ItemRemoved(sender, new ListEventArgs<TreeNode>(child));
         }
 
-        void Item_SelectedChanged(Control sender)
+        private void Item_SelectedChanged(Control sender)
         {
             TreeNode node = sender as TreeNode;
             if (node == null) return;
@@ -163,10 +163,10 @@ namespace Squid
                 SelectedNode = null;
         }
 
-        void Item_ExpandedChanged(Control sender)
+        private void Item_ExpandedChanged(Control sender)
         {
             TreeNode node = sender as TreeNode;
-           
+
             if (!node.Expanded)
             {
                 List<TreeNode> nodes = FindExpandedNodes(node);
@@ -195,7 +195,7 @@ namespace Squid
             }
         }
 
-        void Nodes_ItemAdded(object sender, ListEventArgs<TreeNode> e)
+        private void Nodes_ItemAdded(object sender, ListEventArgs<TreeNode> e)
         {
             e.Item.NodeDepth = 0;
             e.Item.ExpandedChanged += Item_ExpandedChanged;
@@ -205,7 +205,7 @@ namespace Squid
             ItemContainer.Controls.Add(e.Item);
         }
 
-        void item_OnSelect(object sender, EventArgs e)
+        private void item_OnSelect(object sender, EventArgs e)
         {
             TreeNode node = sender as TreeNode;
 
@@ -355,7 +355,7 @@ namespace Squid
             }
         }
 
-        void Nodes_BeforeItemsCleared(object sender, EventArgs e)
+        private void Nodes_BeforeItemsCleared(object sender, EventArgs e)
         {
             foreach (TreeNode node in Nodes)
             {
@@ -366,7 +366,7 @@ namespace Squid
             }
         }
 
-        void Nodes_ItemRemoved(object sender, ListEventArgs<TreeNode> e)
+        private void Nodes_ItemRemoved(object sender, ListEventArgs<TreeNode> e)
         {
             if (treeview != null)
                 treeview.RemoveNode(e.Item);
@@ -374,7 +374,7 @@ namespace Squid
             e.Item.Parent = null;
         }
 
-        void Nodes_ItemAdded(object sender, ListEventArgs<TreeNode> e)
+        private void Nodes_ItemAdded(object sender, ListEventArgs<TreeNode> e)
         {
             e.Item.NodeDepth = NodeDepth + 1;
             e.Item.Parent = this;
@@ -409,6 +409,7 @@ namespace Squid
         /// </summary>
         /// <value>The button.</value>
         public Button Button { get; private set; }
+
         /// <summary>
         /// Gets the drop down button.
         /// </summary>
@@ -425,12 +426,12 @@ namespace Squid
             Button.Margin = new Margin(6);
             Button.Dock = DockStyle.Left;
             Button.MouseClick += Button_MouseClick;
-            Elements.Add(Button);
+            Childs.Add(Button);
 
             DropDownButton = new DropDownButton();
             DropDownButton.Size = new Point(20, 20);
             DropDownButton.Dock = DockStyle.Fill;
-            Elements.Add(DropDownButton);
+            Childs.Add(DropDownButton);
         }
 
         /// <summary>
@@ -438,7 +439,7 @@ namespace Squid
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The <see cref="MouseEventArgs"/> instance containing the event data.</param>
-        void Button_MouseClick(Control sender, MouseEventArgs args)
+        private void Button_MouseClick(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 
@@ -456,6 +457,7 @@ namespace Squid
         /// </summary>
         /// <value>The button.</value>
         public Button Button { get; private set; }
+
         /// <summary>
         /// Gets the label.
         /// </summary>
@@ -472,14 +474,14 @@ namespace Squid
             Button.Margin = new Margin(6);
             Button.Dock = DockStyle.Left;
             Button.MouseClick += Button_MouseClick;
-            Elements.Add(Button);
+            Childs.Add(Button);
 
             Label = new Button();
             Label.Size = new Point(20, 20);
             Label.Dock = DockStyle.Fill;
             Label.MouseClick += Label_MouseClick;
             Label.NoEvents = true;
-            Elements.Add(Label);
+            Childs.Add(Label);
 
             MouseClick += Label_MouseClick;
         }
@@ -489,14 +491,14 @@ namespace Squid
         //    Label.State = State;
         //}
 
-        void Label_MouseClick(Control sender, MouseEventArgs args)
+        private void Label_MouseClick(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 
             Selected = true;
         }
 
-        void Button_MouseClick(Control sender, MouseEventArgs args)
+        private void Button_MouseClick(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 

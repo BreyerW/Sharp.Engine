@@ -288,7 +288,7 @@ namespace Squid
             _objects = new List<object>();
 
             Header = new Frame { Size = new Point(32, 32), Dock = DockStyle.Top };
-            Elements.Add(Header);
+            Childs.Add(Header);
 
             _headers = new Frame();
             _headers.AutoSize = AutoSize.Horizontal;
@@ -299,21 +299,21 @@ namespace Squid
             Panel.Content.AutoSize = Squid.AutoSize.Vertical;
             Panel.Content.Update += Content_OnUpdate;
 
-            Panel.VScroll.ButtonUp.Visible = false;
-            Panel.VScroll.ButtonDown.Visible = false;
+            Panel.VScroll.ButtonUp.IsVisible = false;
+            Panel.VScroll.ButtonDown.IsVisible = false;
             Panel.VScroll.Size = new Point(13, 12);
             Panel.VScroll.Slider.Style = "vscrollTrack";
             Panel.VScroll.Slider.Button.Style = "vscrollButton";
             Panel.VScroll.Dock = DockStyle.Right;
             Panel.VScroll.Margin = new Margin(4, 0, 0, 0);
 
-            Panel.HScroll.ButtonUp.Visible = false;
-            Panel.HScroll.ButtonDown.Visible = false;
+            Panel.HScroll.ButtonUp.IsVisible = false;
+            Panel.HScroll.ButtonDown.IsVisible = false;
             Panel.HScroll.Size = new Point(13, 12);
             Panel.HScroll.Slider.Style = "vscrollTrack";
             Panel.HScroll.Slider.Button.Style = "vscrollButton";
             Panel.HScroll.Margin = new Margin(0, 4, 0, 0);
-            Elements.Add(Panel);
+            Childs.Add(Panel);
 
             Columns = new ActiveList<Column>();
             Columns.ItemAdded += Columns_ItemAdded;

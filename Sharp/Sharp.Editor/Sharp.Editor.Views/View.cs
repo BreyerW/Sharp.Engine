@@ -1,5 +1,5 @@
 ﻿using System;
-using Gwen.Control;
+using Squid;
 using OpenTK.Input;
 using System.Collections.Generic;
 
@@ -9,7 +9,7 @@ namespace Sharp.Editor.Views
     {
         public static Dictionary<uint, HashSet<View>> views = new Dictionary<uint, HashSet<View>>();
         public static Dictionary<uint, MainEditorView> mainViews = new Dictionary<uint, MainEditorView>();
-        public Base panel;
+        public Squid.Control panel;
 
         protected uint attachedToWindow;//detach view from window and just use attachedToWindow?
 
@@ -58,11 +58,11 @@ namespace Sharp.Editor.Views
         {
         }
 
-        public virtual void OnMouseUp(MouseButtonEventArgs evnt)
+        public virtual void OnMouseUp(int buttonId)
         {
         }
 
-        public virtual void OnMouseDown(MouseButtonEventArgs evnt)
+        public virtual void OnMouseDown(int buttonId)
         {
         }
 

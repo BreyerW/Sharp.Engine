@@ -285,7 +285,7 @@ namespace Squid.Xml
                 //            sub.Nodes.Add(child);
                 //        }
 
-                ElementCollection elements = ((Control)data).GetElements();
+                ElementCollection elements = ((Control)data).GetChilds();
 
                 if (elements.Count > 0)
                 {
@@ -507,7 +507,7 @@ namespace Squid.Xml
                     }
                 }
 
-                ElementCollection elements = ((Control)result).GetElements();
+                ElementCollection elements = ((Control)result).GetChilds();
                 child = node.Nodes.Find(x => x.Name.Equals("Elements"));
 
                 if (child != null)
@@ -670,7 +670,7 @@ namespace Squid.Xml
                     }
                 }
 
-                ElementCollection elements = ((Control)result).GetElements();
+                ElementCollection elements = ((Control)result).GetChilds();
                 child = node.Nodes.Find(x => x.Name.Equals("Elements"));
 
                 if (child != null)

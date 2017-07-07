@@ -250,10 +250,7 @@ namespace Squid
         {
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
-                Window w = Controls[i] as Window;
-                if (w == null) continue;
-
-                if (w.Enabled && w.Visible && w.Hit(Gui.MousePosition.x, Gui.MousePosition.y))
+                if (Controls[i] is Window w && w.Enabled && w.IsVisible && w.Hit(Gui.MousePosition.x, Gui.MousePosition.y))
                     return w;
             }
 
@@ -292,20 +289,20 @@ namespace Squid
             if (context != currentContext)
             {
                 currentContext = context;
-                Elements.Add(TooltipControl);
+                Childs.Add(TooltipControl);
                 TooltipControl.SetContext(context);
             }
 
             if (TooltipControl.Parent != null)
             {
-                if (!TooltipControl.Visible)
-                    Elements.Remove(TooltipControl);
+                if (!TooltipControl.IsVisible)
+                    Childs.Remove(TooltipControl);
                 else// if (TooltipControl.AutoLayout)
                     TooltipControl.LayoutTooltip();
             }
-            else if (TooltipControl.Visible)
+            else if (TooltipControl.IsVisible)
             {
-                Elements.Add(TooltipControl);
+                Childs.Add(TooltipControl);
             }
         }
 
@@ -396,9 +393,9 @@ namespace Squid
 
             if (pressed == -1)
             {
-                if (TooltipControl != null) TooltipControl.Visible = false;
+                if (TooltipControl != null) TooltipControl.IsVisible = false;
                 hot = GetControlAt(Gui.MousePosition.x, Gui.MousePosition.y);
-                if (TooltipControl != null) TooltipControl.Visible = true;
+                if (TooltipControl != null) TooltipControl.IsVisible = true;
 
                 if (!DesignMode && hot != null && ModalQueue.Count > 0)
                 {
@@ -670,9 +667,9 @@ namespace Squid
                 DragData.Position = DragDropOffset + Gui.MousePosition;
                 DragData.Position = Snap(DragData.Position);
 
-                DragData.Visible = false;
+                DragData.IsVisible = false;
                 Control drop = GetDropTarget(DragDropSender);
-                DragData.Visible = true;
+                DragData.IsVisible = true;
 
                 if (drop != dropTarget)
                 {

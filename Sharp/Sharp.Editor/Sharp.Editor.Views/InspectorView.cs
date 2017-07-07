@@ -21,39 +21,39 @@ namespace Sharp.Editor.Views
 
         public override void Initialize()
         {
-            tagStrip = new MenuStrip(panel);
-            ptree = new PropertyTree(panel);
-            tagStrip.Dock = Gwen.Pos.Top;
-            tagStrip.Margin = new Gwen.Margin(0, 1, 0, 0);
-            var root = tagStrip.AddItem("Add tag");
-            root.Dock = Gwen.Pos.Center;
-            root.Clicked += (sender, arguments) => { var menu = sender as MenuItem; menu.Menu.Show(); };
-            foreach (var tag in TagsContainer.allTags)
-                root.Menu.AddItem(tag);
-            root.Menu.AddDivider();
-            root.Menu.AddItem("Create new tag").SetAction((Base sender, EventArgs arguments) => Console.WriteLine());
-            //root.Menu.;
-            tagStrip.Hide();
-            ptree.ShouldDrawBackground = false;
-            ptree.Dock = Gwen.Pos.Fill;
-            Selection.OnSelectionChange += (sender, args) =>
-            {
-                Console.WriteLine("SelectionChange");
-                ptree.RemoveAll();
-                if (sender is Entity entity) RenderComponents(entity);
-                //else
-                //props=Selection.assets [0].GetType ().GetProperties ().Where (p=>p.CanRead && p.CanWrite);
+            /* tagStrip = new MenuStrip(panel);
+             ptree = new PropertyTree(panel);
+             tagStrip.Dock = Gwen.Pos.Top;
+             tagStrip.Margin = new Gwen.Margin(0, 1, 0, 0);
+             var root = tagStrip.AddItem("Add tag");
+             root.Dock = Gwen.Pos.Center;
+             root.Clicked += (sender, arguments) => { var menu = sender as MenuItem; menu.Menu.Show(); };
+             foreach (var tag in TagsContainer.allTags)
+                 root.Menu.AddItem(tag);
+             root.Menu.AddDivider();
+             root.Menu.AddItem("Create new tag").SetAction((Base sender, EventArgs arguments) => Console.WriteLine());
+             //root.Menu.;
+             tagStrip.Hide();
+             ptree.ShouldDrawBackground = false;
+             ptree.Dock = Gwen.Pos.Fill;
+             Selection.OnSelectionChange += (sender, args) =>
+             {
+                 Console.WriteLine("SelectionChange");
+                 ptree.RemoveAll();
+                 if (sender is Entity entity) RenderComponents(entity);
+                 //else
+                 //props=Selection.assets [0].GetType ().GetProperties ().Where (p=>p.CanRead && p.CanWrite);
 
-                ptree.Show();
-                ptree.SetBounds(0, 0, panel.Width, panel.Height);
-                ptree.ExpandAll();
-                tagStrip.Show();
-            };
-            Selection.OnSelectionDirty += (sender, args) =>
-            {
-                //if (sender is Entity entity) RenderComponents(entity);
-            };
-            base.Initialize();
+                 ptree.Show();
+                 ptree.SetBounds(0, 0, panel.Width, panel.Height);
+                 ptree.ExpandAll();
+                 tagStrip.Show();
+             };
+             Selection.OnSelectionDirty += (sender, args) =>
+             {
+                 //if (sender is Entity entity) RenderComponents(entity);
+             };
+             base.Initialize();*/
         }
 
         public override void Render()
@@ -115,7 +115,7 @@ namespace Sharp.Editor.Views
 
         public override void OnResize(int width, int height)
         {
-            ptree.SetBounds(0, 25, panel.Width, height);
+            //ptree.SetBounds(0, 25, panel.s, height);
         }
     }
 }

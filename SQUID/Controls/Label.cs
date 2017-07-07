@@ -115,7 +115,7 @@ namespace Squid
                 _originalText = value;
                 _text = value;
 
-                if(UseTranslation)
+                if (UseTranslation)
                     _text = TranslateText(_originalText);
                 else
                     _text = value;
@@ -154,7 +154,7 @@ namespace Squid
             MouseClick += Label_MouseClick;
         }
 
-        void Label_MouseClick(Control sender, MouseEventArgs args)
+        private void Label_MouseClick(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 
@@ -188,6 +188,7 @@ namespace Squid
             if (TextWrap)
             {
                 #region TextWrap = true
+
                 bool firstInLine = true;
 
                 foreach (TextElement element in elements)
@@ -230,10 +231,9 @@ namespace Squid
                             activeLibrary.Add(element.Control, true);
 
                             ctrl.Position = pos;
-                            ctrl.UserData = element.Control;
 
                             if (ctrl.Parent == null)
-                                Elements.Add(ctrl);
+                                Childs.Add(ctrl);
 
                             element.Size = ctrl.Size;
                             tsize = ctrl.Size;
@@ -346,7 +346,7 @@ namespace Squid
                                     firstInLine = false;
                                 }
 
-                                #endregion
+                                #endregion new
 
                                 #region old
 
@@ -398,7 +398,7 @@ namespace Squid
                                 //    //sub.Add(e);
                                 //}
 
-                                #endregion
+                                #endregion old
 
                                 //pos.x += tsize.x;
                             }
@@ -417,14 +417,14 @@ namespace Squid
                         thisLine.AddRange(sub);
                         textElements.AddRange(sub);
 
-                        #endregion
+                        #endregion wrap
                     }
                 }
 
                 foreach (TextElement el in thisLine)
                     el.Position.y += lineHeight - el.Size.y;
 
-                #endregion
+                #endregion TextWrap = true
             }
             else
             {
@@ -478,7 +478,7 @@ namespace Squid
                             ctrl.Position = pos;
 
                             if (ctrl.Parent == null)
-                                Elements.Add(ctrl);
+                                Childs.Add(ctrl);
 
                             activeLibrary.Add(element.Control, true);
 
@@ -518,7 +518,7 @@ namespace Squid
                 foreach (TextElement el in thisLine)
                     el.Position.y += lineHeight - el.Size.y;
 
-                #endregion
+                #endregion TextWrap = false
 
                 #region AutoEllipsis (...)
 
@@ -571,7 +571,6 @@ namespace Squid
 
                         if (removeAt > -1)
                             textElements.RemoveRange(removeAt, textElements.Count - removeAt);
-
                     }
                     else if (align == Alignment.TopRight || align == Alignment.MiddleRight || align == Alignment.BottomRight)
                     {
@@ -644,7 +643,7 @@ namespace Squid
                     }
                 }
 
-                #endregion
+                #endregion AutoEllipsis (...)
             }
 
             TextLine line = new TextLine();
@@ -676,7 +675,7 @@ namespace Squid
             foreach (KeyValuePair<string, Control> pair in library)
             {
                 if (!activeLibrary.ContainsKey(pair.Key))
-                    Elements.Remove(pair.Value);
+                    Childs.Remove(pair.Value);
             }
         }
 
@@ -786,7 +785,6 @@ namespace Squid
                     }
                 }
             }
-
         }
 
         protected override void DrawText(Style style, float opacity)
@@ -824,7 +822,7 @@ namespace Squid
                         Gui.Renderer.DrawBox(p2.x, p2.y + size.y, size.x - 1, 1, ColorInt.FromArgb(opacity, ColorInt.FromArgb(opacity, element.Color.HasValue ? (int)element.Color : style.TextColor)));
 
                     //if (element.IsLink && element.Href == ActiveHref)
-                    //    Gui.Renderer.DrawBox(p2.x, p2.y, size.x - 1, size.y, ColorInt.FromArgb(opacity, LinkColor));
+                    //  Gui.Renderer.DrawBox(p2.x, p2.y, size.x - 1, size.y, ColorInt.FromArgb(opacity, LinkColor));
 
                     if (UseTextColor)
                         Gui.Renderer.DrawText(element.Text, p2.x, p2.y, font, ColorInt.FromArgb(opacity, TextColor));

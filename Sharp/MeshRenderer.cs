@@ -56,11 +56,6 @@ namespace Sharp
 
         public override void SetupMatrices()
         {
-            //int current = GL.GetInteger(GetPName.CurrentProgram);
-            //GL.ValidateProgram (material.shaderId);
-            //will return -1 without useprogram
-            //if (current != material.shaderId)
-            //	GL.UseProgram(material.shaderId);
         }
     }
 }

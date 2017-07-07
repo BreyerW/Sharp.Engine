@@ -125,13 +125,13 @@ namespace Squid
             ButtonUp.Size = new Point(25, 26);
             ButtonUp.MouseDown += Btn1_MousePress;
             ButtonUp.Style = "scrollUp";
-            Elements.Add(ButtonUp);
+            Childs.Add(ButtonUp);
 
             ButtonDown = new Button();
             ButtonDown.Size = new Point(25, 26);
             ButtonDown.MouseDown += Btn2_MousePress;
             ButtonDown.Style = "scrollDown";
-            Elements.Add(ButtonDown);
+            Childs.Add(ButtonDown);
 
             Slider = new Slider();
             Slider.Dock = DockStyle.Fill;
@@ -143,7 +143,7 @@ namespace Squid
             Slider.Style = "scrollSlider";
             Slider.Button.Style = "scrollSliderButton";
             Slider.MinHandleSize = 32;
-            Elements.Add(Slider);
+            Childs.Add(Slider);
 
             Orientation = Orientation.Vertical;
         }

@@ -74,7 +74,7 @@ namespace Squid
                 Label.Position = new Point(8, 8);
 
                 // make the control visible
-                Visible = true;
+                IsVisible = true;
                 PerformLayout();
                 PerformUpdate();
 
@@ -223,7 +223,7 @@ namespace Squid
             // make the control invisible when completely faded out
             if (FadeDirection < 0 && Opacity == 0)
             {
-                Visible = false;
+                IsVisible = false;
                 DelayTimer = 0;
             }
         }

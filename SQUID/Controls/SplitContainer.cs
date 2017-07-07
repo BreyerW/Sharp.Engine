@@ -73,7 +73,7 @@ namespace Squid
             SplitFrame1.Size = new Point();
             SplitFrame1.Dock = DockStyle.Left;
             SplitFrame1.Size = new Point(40, 40);
-            Elements.Add(SplitFrame1);
+            Childs.Add(SplitFrame1);
 
             SplitButton = new Button();
             SplitButton.Dock = DockStyle.Left;
@@ -81,13 +81,13 @@ namespace Squid
             SplitButton.MousePress += SplitButton_MousePress;
             SplitButton.MouseDown += SplitButton_MouseDown;
             SplitButton.Cursor = CursorNames.VSplit;
-            Elements.Add(SplitButton);
+            Childs.Add(SplitButton);
 
             SplitFrame2 = new Frame();
             SplitFrame2.Size = new Point();
             SplitFrame2.Dock = DockStyle.Fill;
             SplitFrame2.Size = new Point(50, 50);
-            Elements.Add(SplitFrame2);
+            Childs.Add(SplitFrame2);
 
             RetainAspect = true;
             AspectRatio = (float)SplitFrame1.Size.x / (float)Size.x;
@@ -98,14 +98,14 @@ namespace Squid
             if (Orientation == Orientation.Horizontal)
             {
                 SplitFrame1.Dock = DockStyle.Left;
-                SplitButton.Size = new Point(SplitButton.Size.y, 10);
+                //SplitButton.Size = new Point(SplitButton.Size.y, 10);
                 SplitButton.Dock = DockStyle.Left;
                 SplitButton.Cursor = CursorNames.VSplit;
             }
             else
             {
                 SplitFrame1.Dock = DockStyle.Top;
-                SplitButton.Size = new Point(10, SplitButton.Size.x);
+                //SplitButton.Size = new Point(10, SplitButton.Size.x);
                 SplitButton.Dock = DockStyle.Top;
                 SplitButton.Cursor = CursorNames.HSplit;
             }
@@ -133,9 +133,8 @@ namespace Squid
             }
             else
             {
-                if (SplitFrame2.Size.y > SplitFrame2.MinSize.y)
+                if (Size.y - (OldSize + p).y > SplitFrame2.MinSize.y)
                     SplitFrame1.ResizeTo(OldSize + p, AnchorStyles.Bottom);
-
                 AspectRatio = (float)SplitFrame1.Size.y / (float)Size.y;
             }
         }

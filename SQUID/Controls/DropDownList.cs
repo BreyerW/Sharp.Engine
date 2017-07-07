@@ -107,13 +107,13 @@ namespace Squid
             Button.Dock = DockStyle.Right;
             Button.MouseClick += Button_MouseClick;
             Button.Style = "dropdownButton";
-            Elements.Add(Button);
+            Childs.Add(Button);
 
             Label = new Label();
             Label.Dock = DockStyle.Fill;
             Label.MouseClick += Button_MouseClick;
             Label.Style = "dropdownLabel";
-            Elements.Add(Label);
+            Childs.Add(Label);
 
             Dropdown = new Window();
             Dropdown.Resizable = true;

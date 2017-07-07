@@ -114,7 +114,7 @@ namespace Squid
             Button.Size = new Point(20, 20);
             Button.MouseDown += Button_MouseDown;
             Button.Style = "sliderButton";
-            Elements.Add(Button);
+            Childs.Add(Button);
 
             MouseDown += Slider_MouseDown;
         }

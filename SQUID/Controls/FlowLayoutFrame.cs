@@ -71,7 +71,7 @@ namespace Squid
 
             foreach (Control control in Controls)
             {
-                if (!control.Visible) continue;
+                if (!control.IsVisible) continue;
 
                 if (x + control.Size.x + HSpacing <= Size.x)
                 {
@@ -110,7 +110,7 @@ namespace Squid
 
             foreach (Control control in Controls)
             {
-                if (!control.Visible) continue;
+                if (!control.IsVisible) continue;
 
                 if (x - control.Size.x - HSpacing >= HSpacing)
                 {
@@ -149,7 +149,7 @@ namespace Squid
 
             foreach (Control control in Controls)
             {
-                if (!control.Visible) continue;
+                if (!control.IsVisible) continue;
 
                 if (y + control.Size.y + VSpacing <= Size.y)
                 {
@@ -188,7 +188,7 @@ namespace Squid
 
             foreach (Control control in Controls)
             {
-                if (!control.Visible) continue;
+                if (!control.IsVisible) continue;
 
                 if (y - control.Size.y - VSpacing >= VSpacing)
                 {

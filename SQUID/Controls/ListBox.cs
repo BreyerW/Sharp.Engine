@@ -153,12 +153,12 @@ namespace Squid
             Scrollbar = new ScrollBar();
             Scrollbar.Dock = DockStyle.Right;
             Scrollbar.Size = new Point(25, 25);
-            Elements.Add(Scrollbar);
+            Childs.Add(Scrollbar);
 
             ClipFrame = new Frame();
             ClipFrame.Dock = DockStyle.Fill;
             ClipFrame.Scissor = true;
-            Elements.Add(ClipFrame);
+            Childs.Add(ClipFrame);
 
             ItemContainer = new Frame();
             ItemContainer.AutoSize = AutoSize.Vertical;
@@ -231,18 +231,18 @@ namespace Squid
             // move the label up/down using the scrollbar value
             if (ItemContainer.Size.y < ClipFrame.Size.y) // no need to scroll
             {
-                Scrollbar.Visible = false; // hide scrollbar
+                Scrollbar.IsVisible = false; // hide scrollbar
                 ItemContainer.Position = new Point(0, 0); // set fixed position
             }
             else
             {
                 Scrollbar.Scale = Math.Min(1, (float)Size.y / (float)ItemContainer.Size.y);
-                Scrollbar.Visible = true; // show scrollbar
+                Scrollbar.IsVisible = true; // show scrollbar
                 ItemContainer.Position = new Point(0, (int)((ClipFrame.Size.y - ItemContainer.Size.y) * Scrollbar.EasedValue));
             }
 
             if (Scrollbar.ShowAlways)
-                Scrollbar.Visible = true;
+                Scrollbar.IsVisible = true;
         }
 
         void Items_BeforeItemAdded(object sender, ListEventArgs<ListBoxItem> e)

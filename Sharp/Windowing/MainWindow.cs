@@ -5,6 +5,8 @@ using Sharp.Editor.Views;
 using OpenTK;
 using SharpSL.BackendRenderers;
 using Sharp.Windowing;
+using Squid;
+using TupleExtensions;
 
 namespace Sharp
 {
@@ -22,11 +24,29 @@ namespace Sharp
         {
             backendRenderer.SetupGraphic();
             View.mainViews[windowId].Initialize();
-            int id = 0;
-            foreach (var view in viewsToOpen)
+            Squid.Control parent = View.mainViews[windowId].desktop;
+            var margin = new Margin(0, 50, 0, 30);
+            foreach (var (id, view) in viewsToOpen.WithIndexes())
             {
-                OpenView(view, id);
-                ++id;
+                var splitter = new SplitContainer();
+                splitter.SplitFrame1.MinSize = new Point(100, 100);
+                splitter.SplitFrame2.MinSize = new Point(100, 100);
+                splitter.Parent = parent;
+                splitter.Margin = margin;
+                splitter.Dock = DockStyle.Fill;
+                splitter.SplitButton.Style = "";
+                if (id == viewsToOpen.Length - 1)
+                {
+                    splitter.SplitButton.Size = new Point(3, 0);//bug
+                    splitter.Orientation = Orientation.Vertical;
+                }
+                else
+                    splitter.SplitButton.Size = new Point(3, 0);
+
+                OpenView(view, splitter.SplitFrame1);
+
+                parent = splitter.SplitFrame2;
+                margin = default(Margin);
             }
         }
 

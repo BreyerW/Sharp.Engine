@@ -41,9 +41,10 @@ namespace SharpSL.BackendRenderers.OpenGL
         public void SetStandardState()
         {
             GL.CullFace(CullFaceMode.Back);
-            //GL.Disable (EnableCap.Blend);
-            GL.Enable(EnableCap.DepthTest);
+            //GL.Disable(EnableCap.Blend);
+            //GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Less);
+            GL.Disable(EnableCap.Texture2D);
             //GL.Enable(EnableCap.DebugOutput);
             //GL.Enable(EnableCap.DebugOutputSynchronous);
         }
@@ -226,7 +227,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
         public void ClearColor()
         {
-            ClearColor(0.21f, 0.21f, 0.21f, 0f);//use 0.12f for background 0.25f use for ui elem
+            ClearColor(0.15f, 0.15f, 0.15f, 0f);//use 0.12f for background 0.25f use for ui elem
             //ClearColor(1f, 1f, 1f, 0f);
         }
 

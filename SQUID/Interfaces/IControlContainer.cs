@@ -14,6 +14,6 @@ namespace Squid
         /// </summary>
         /// <value>The controls.</value>
         [Hidden]
-        ControlCollection Controls { get; set; }
+        ControlCollection Controls { get; set; }//check if couldnt be merged with elemts
     }
 }

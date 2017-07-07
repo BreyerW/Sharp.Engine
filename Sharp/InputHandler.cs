@@ -36,7 +36,7 @@ namespace Sharp
         public static Action<MouseButtonEventArgs> OnMouseDown;
         public static Action<MouseButtonEventArgs> OnMouseUp;
         public static Action<MouseMoveEventArgs> OnMouseMove;
-        public static Gwen.Input.OpenTK input = new Gwen.Input.OpenTK();
+        //public static Gwen.Input.OpenTK input = new Gwen.Input.OpenTK();
 
         private static readonly uint[] mouseCodes = new uint[] { SDL.SDL_BUTTON_LMASK, SDL.SDL_BUTTON_RMASK, SDL.SDL_BUTTON_MMASK, SDL.SDL_BUTTON_X1MASK, SDL.SDL_BUTTON_X2MASK };
         private static readonly SDL.SDL_Scancode[] keyboardCodes = (SDL.SDL_Scancode[])Enum.GetValues(typeof(SDL.SDL_Scancode));
@@ -61,29 +61,29 @@ namespace Sharp
             EventArgs evnt = null;
             var button = SDL.SDL_GetGlobalMouseState(out globalMousePosition.x, out globalMousePosition.y);
             var winPos = Window.windows[Window.UnderMouseWindowId].Position;
-            Gwen.Input.InputHandler.HoveredControl = input.m_Canvas.GetControlAt(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y);
             evnt = new MouseButtonEventArgs(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y, ConvertMaskToEnum(button), true);//last param bugged
-            Gwen.Input.InputHandler.MouseFocus = Gwen.Input.InputHandler.HoveredControl;
-            Gwen.Input.InputHandler.KeyboardFocus = Gwen.Input.InputHandler.HoveredControl as Gwen.Control.TextBox;
-
+            curMouseState = new bool[5];
+            foreach (var (key, val) in mouseCodes.WithIndexes())
+            {
+                curMouseState[key] = (button & val) == val;
+                //Console.WriteLine(curMouseState[key]);
+            }
             foreach (var view in View.views[Window.UnderMouseWindowId])
             {
-                if (view.panel != null && view.panel.IsChild(Gwen.Input.InputHandler.HoveredControl, true))
+                /*if (view.panel != null /*&& view.panel.IsChild(Gwen.Input.InputHandler.HoveredControl, true)*)
                 {
-                    if (pressed)
-                        view.OnMouseDown((MouseButtonEventArgs)evnt);
-                    else
-                        view.OnMouseUp((MouseButtonEventArgs)evnt);
+                    Console.WriteLine("buu");
+                    //if (pressed)
+                    view.OnMouseDown(curMouseState);
+                    //else
+                    view.OnMouseUp(curMouseState);
                     break;
-                }
+                }*/
             }
             if (pressed) OnMouseDown?.Invoke((MouseButtonEventArgs)evnt);
             else OnMouseUp?.Invoke((MouseButtonEventArgs)evnt);
-            curMouseState = new bool[5];
-            foreach (var (key, val) in mouseCodes.WithIndexes())
-                curMouseState[key] = (button & val) == val;
 
-            input.ProcessMouseMessage(evnt, pressed);
+            //input.ProcessMouseMessage(evnt, pressed);
         }
 
         public static void ProcessMouseMove()
@@ -97,13 +97,13 @@ namespace Sharp
                 var evnt = new MouseMoveEventArgs(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y, Gui.MouseDelta.x, Gui.MouseDelta.y);
                 foreach (var view in View.views[Window.UnderMouseWindowId])
                 {
-                    if (view.panel != null && view.panel.IsChild(Gwen.Input.InputHandler.HoveredControl, true))
+                    if (view.panel != null/* && view.panel.IsChild(Gwen.Input.InputHandler.HoveredControl, true)*/)
                     {
                         view.OnMouseMove(evnt);
                         break;
                     }
                 }
-                input.ProcessMouseMessage(evnt, pressed);
+                //input.ProcessMouseMessage(evnt, pressed);
                 evnt = new MouseMoveEventArgs(globalMousePosition.x, globalMousePosition.y, Gui.MouseDelta.x, Gui.MouseDelta.y);
                 OnMouseMove?.Invoke(evnt);
             }
@@ -117,7 +117,7 @@ namespace Sharp
         public static void ProcessMouseWheel(int delta)
         {
             var wheelEvent = new MouseWheelEventArgs(0, 0, 0, delta);
-            input.ProcessMouseMessage(wheelEvent);
+            //input.ProcessMouseMessage(wheelEvent);
             wheelState = delta;
         }
 
@@ -146,12 +146,12 @@ namespace Sharp
                     if (curKeyState[key] is 1)
                     {
                         OnKeyDown?.Invoke(null);
-                        input.ProcessKeyDown(keyCode);
+                        //input.ProcessKeyDown(keyCode);
                     }
                     else
                     {
                         OnKeyUp?.Invoke(null);
-                        input.ProcessKeyUp(keyCode);
+                        //input.ProcessKeyUp(keyCode);
                     }
                 }
                 if (keyState[key].Char is null)
@@ -183,6 +183,8 @@ namespace Sharp
 
         public static void Update()
         {
+            if (!Window.windows.Contains(Window.UnderMouseWindowId)) return;
+
             var winPos = Window.windows[Window.UnderMouseWindowId].Position;
             Gui.SetMouse(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y);
             Gui.SetButtons(curMouseState);

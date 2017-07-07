@@ -35,6 +35,7 @@ namespace SharpAsset.Pipeline
             if (nameToKey.Contains(name))
                 return this[nameToKey.IndexOf(name)];
             var texture = new Texture();
+            Console.WriteLine(pathToFile);
             var dib = FreeImage.ConvertTo32Bits(FreeImage.LoadEx(pathToFile));
             var scanwidth = FreeImage.GetPitch(dib);
             texture.width = (int)FreeImage.GetWidth(dib);

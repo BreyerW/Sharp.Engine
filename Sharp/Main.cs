@@ -25,9 +25,16 @@ namespace Sharp
 
             Window.context = SDL.SDL_GL_CreateContext(dummy);
             MainWindow.backendRenderer.CreateContext(SDL.SDL_GL_GetProcAddress, SDL.SDL_GL_GetCurrentContext);
-
+            var e = new Entity();
+            e.Rotation = new OpenTK.Vector3((float)Math.PI, 0f, 0f);
+            var cam = e.AddComponent<Camera>();
+            cam.SetModelviewMatrix();
+            cam.SetProjectionMatrix();
+            e.name = "Main Camera";
+            e.OnTransformChanged += ((sender, evnt) => cam.SetModelviewMatrix());
+            Camera.main = cam;
             var mWin = new MainWindow("test"); //Console.WriteLine("alpha: " + graphic.GraphicsMode.ColorFormat.Alpha);
-            mWin.Initialize(new AssetsView(mWin.windowId), new SceneView(mWin.windowId), new SceneStructureView(mWin.windowId), new InspectorView(mWin.windowId));
+            mWin.Initialize(new AssetsView(mWin.windowId), new SceneView(mWin.windowId), new SceneStructureView(mWin.windowId)/*, new InspectorView(mWin.windowId)*/);
             SDL.SDL_DestroyWindow(dummy);
             //new FloatingWindow("", handle.t);
             //var mWin2 = new MainWindow("test2");

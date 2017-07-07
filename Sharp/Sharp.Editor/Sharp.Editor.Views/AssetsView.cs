@@ -5,7 +5,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using SharpAsset.Pipeline;
-using Gwen.Control;
+using Squid;
 using OpenTK.Input;
 using TupleExtensions;
 
@@ -18,7 +18,7 @@ namespace Sharp.Editor.Views
         private static readonly FileSystemWatcher dirWatcher = new FileSystemWatcher(root.FullName);
         private static HashSet<string> eventsOnceFired = new HashSet<string>();
 
-        public static Dictionary<uint, TreeControl> tree = new Dictionary<uint, TreeControl>();
+        public static Dictionary<uint, TreeView> tree = new Dictionary<uint, TreeView>();
         public static bool isDragging = false;
         public static uint whereDragStarted;
         public static bool rebuildDirTree = false;
@@ -40,9 +40,10 @@ namespace Sharp.Editor.Views
         public override void Initialize()
         {
             base.Initialize();
-            tree.Add(attachedToWindow, new TreeControl(panel));
-            tree[attachedToWindow].SetSize(panel.Width, panel.Height);
-            tree[attachedToWindow].ShouldDrawBackground = false;
+            tree.Add(attachedToWindow, new TreeView());
+            tree[attachedToWindow].Dock = DockStyle.Fill;
+            tree[attachedToWindow].Parent = panel;
+            tree[attachedToWindow].Indent = 10;
             /*var type = typeof(GenericPipeline<>);
             var subclasses = type.Assembly.GetTypes().Where(t => t.IsSubclassOf(type));
 
@@ -53,8 +54,9 @@ namespace Sharp.Editor.Views
             if (directories.Count == 0)
                 ConstructFlatDirectoryTree(root);
             BuildAssetViewTree();
-            tree[attachedToWindow].Show();
-            tree[attachedToWindow].Selected += OnSelected;
+            tree[attachedToWindow].IsVisible = true;
+            tree[attachedToWindow].SelectedNodeChanged += T_SelectedNodeChanged;
+            //tree[attachedToWindow].Selected += OnSelected;
         }
 
         /*  private void OnFileOrDirDeleted(object sender, FileSystemEventArgs e)
@@ -113,19 +115,19 @@ namespace Sharp.Editor.Views
             }
         }
 
-        private void OnSelected(Base sender, EventArgs arguments)
+        private void OnSelected(Squid.Control sender, EventArgs arguments)
         {
             Console.WriteLine("clicked" + sender);
             isDragging = true;
             whereDragStarted = attachedToWindow;
         }
 
-        public override void OnMouseDown(MouseButtonEventArgs evnt)
+        public override void OnMouseDown(int buttonId)
         {
             //canvas.NeedsRedraw = true;
         }
 
-        public override void OnMouseUp(MouseButtonEventArgs evnt)
+        public override void OnMouseUp(int buttonId)
         {
             isDragging = false;
             //canvas.NeedsRedraw = true;
@@ -143,7 +145,7 @@ namespace Sharp.Editor.Views
 
         public override void OnResize(int width, int height)
         {
-            tree[attachedToWindow].SetSize(panel.Width, panel.Height);
+            //tree[attachedToWindow].SetSize(panel.Width, panel.Height);
         }
 
         public static void CheckIfDirTreeChanged()
@@ -186,19 +188,49 @@ namespace Sharp.Editor.Views
 
         private void BuildAssetViewTree()//rebuild on focusgained
         {
+            var t = tree[attachedToWindow];
+            t.Style = "treeview";
+
             foreach (var (key, files) in directories)
             {
-                TreeNode node = tree[attachedToWindow];
+                TreeNodeLabel node = new TreeNodeLabel();
                 foreach (var folder in key.Split(new string[] { root.Parent.FullName + @"\", @"\" }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (folder != @"Content")
-                        node = (TreeNode)node.FindChildByName(folder) ?? node.AddNode(folder);
+                    {
+                        node = t.Nodes.Find((n) => n.Name == folder) as TreeNodeLabel;
+
+                        if (node is null)
+                        {
+                            node = new TreeNodeLabel();
+                            node.Style = "label";
+                            node.Label.Text = folder;
+                            node.Label.Style = "label";
+                            node.Name = folder;
+                            node.Label.TextAlign = Alignment.MiddleLeft;
+                            t.Nodes.Add(node);
+                        }
+                    }
+                    //node = (TreeNode)node.FindChildByName(folder) ?? node.AddNode(folder);
                 }
+
                 foreach (var asset in files.Values.OrderBy(item => item, new CompareByName()))
                 {
-                    node.AddNode(asset.Name.Remove(asset.Name.Length - asset.Extension.Length)).Content = (asset.FullName, asset.Extension);
+                    var assetNode = new TreeNodeLabel();
+                    assetNode.Name = asset.Name.Remove(asset.Name.Length - asset.Extension.Length);
+                    assetNode.Label.Text = assetNode.Name;
+                    assetNode.Label.TextAlign = Alignment.MiddleLeft;
+                    assetNode.Style = "label";
+                    assetNode.Label.Style = "label";
+                    node.Nodes.Add(assetNode);//.Content = (asset.FullName, asset.Extension);
                 }
             }
+        }
+
+        private void T_SelectedNodeChanged(Squid.Control sender, TreeNode value)
+        {
+            if (value is null) return;
+            value.Selected = true;
         }
     }
 

@@ -20,7 +20,7 @@ namespace SharpSL.BackendRenderers
         public void DrawBox(int x, int y, int width, int height, int color)//DrawMesh?
         {
             var col = new Color((uint)color);
-            var mat = Matrix4.CreateTranslation(x, y, 0) * Camera.main.OrthoMatrix;
+            var mat = Matrix4.CreateTranslation(x, y, 0) * Camera.main.OrthoLeftBottomMatrix;
             OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
             OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Blend);
             OpenTK.Graphics.OpenGL.GL.BlendFunc(OpenTK.Graphics.OpenGL.BlendingFactorSrc.SrcAlpha, OpenTK.Graphics.OpenGL.BlendingFactorDest.OneMinusSrcAlpha);
@@ -62,7 +62,7 @@ namespace SharpSL.BackendRenderers
             OpenTK.Graphics.OpenGL.GL.BlendFunc(OpenTK.Graphics.OpenGL.BlendingFactorSrc.SrcAlpha, OpenTK.Graphics.OpenGL.BlendingFactorDest.OneMinusSrcAlpha);
             int penX = 0, penY = face.MaxAdvanceHeight >> 6;
 
-            var mat = Matrix4.CreateTranslation(x, y, 0) * Camera.main.OrthoMatrix;
+            var mat = Matrix4.CreateTranslation(x, y, 0) * Camera.main.OrthoLeftBottomMatrix;
 
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
             for (int i = 0; i < chars.Length; ++i)
@@ -115,8 +115,10 @@ namespace SharpSL.BackendRenderers
             ref var texture2d = ref Pipeline.GetPipeline<TexturePipeline>().GetAsset(texture);
             var col = new Color((uint)color);
 
-            var mat = Matrix4.CreateTranslation(x, y, 0) * Camera.main.OrthoMatrix;
+            var mat = Matrix4.CreateTranslation(x, y, 0) * Camera.main.OrthoLeftBottomMatrix;
             OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
+            OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Blend);
+            OpenTK.Graphics.OpenGL.GL.BlendFunc(OpenTK.Graphics.OpenGL.BlendingFactorSrc.SrcAlpha, OpenTK.Graphics.OpenGL.BlendingFactorDest.OneMinusSrcAlpha);
 
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
             MainWindow.backendRenderer.Allocate(ref texture2d.bitmap[0], texture2d.width, texture2d.height);

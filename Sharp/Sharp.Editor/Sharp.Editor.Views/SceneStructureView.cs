@@ -1,11 +1,11 @@
 ﻿using System;
-using Gwen.Control;
+using Squid;
 
 namespace Sharp.Editor.Views
 {
     public class SceneStructureView : View
     {
-        public static TreeControl tree;
+        public static TreeView tree;
 
         public SceneStructureView(uint attachToWindow) : base(attachToWindow)
         {
@@ -16,10 +16,11 @@ namespace Sharp.Editor.Views
             base.Initialize();
 
             if (tree == null)
-                tree = new Gwen.Control.TreeControl(panel);
-            tree.SetSize(panel.Width, panel.Height);
-            tree.ShouldDrawBackground = false;
-            tree.SelectionChanged += (sender, args) => Selection.Asset = (sender as TreeNode).Content;
+                tree = new TreeView();
+            tree.Parent = panel;
+            //tree.SetSize(panel.Width, panel.Height);
+            tree.Dock = DockStyle.Fill;
+            //tree.SelectionChanged += (sender, args) => Selection.Asset = (sender as TreeNode).Content;
 
             //var node = sender as TreeNode; if ( Selection.Asset ==node.Content) tree.UnselectAll(); else
             SceneView.OnAddedEntity += ReconstructTree;
@@ -29,7 +30,7 @@ namespace Sharp.Editor.Views
 
         private void ReconstructTree()
         {
-            tree.RemoveAll();
+            //tree.RemoveAll();
             RegisterEntity(Camera.main.entityObject);
             foreach (var entity in SceneView.entities)
                 RegisterEntity(entity);
@@ -43,7 +44,12 @@ namespace Sharp.Editor.Views
         private static void RegisterEntity(Entity ent)
         {
             //var id=SceneView.entities.IndexOf (ent);
-            tree.AddNode(ent);
+            var node = new TreeNodeLabel();
+            node.Label.Text = ent.name;
+            node.Label.TextAlign = Alignment.MiddleLeft;
+            node.Style = "label";
+            node.Label.Style = "label";
+            tree.Nodes.Add(node);
         }
 
         public override void OnMouseMove(OpenTK.Input.MouseMoveEventArgs evnt)
@@ -53,7 +59,7 @@ namespace Sharp.Editor.Views
 
         public override void OnResize(int width, int height)
         {
-            tree.SetSize(panel.Width, panel.Height);
+            //tree.SetSize(panel.Width, panel.Height);
         }
     }
 }

@@ -228,14 +228,14 @@ namespace Squid
             ControlStyle baseStyle = new ControlStyle();
             baseStyle.Tiling = TextureMode.Grid;
             baseStyle.Grid = new Margin(3);
-            baseStyle.Texture = "button_hot.dds";
-            baseStyle.Default.Texture = "button_default.dds";
-            baseStyle.Pressed.Texture = "button_down.dds";
-            baseStyle.SelectedPressed.Texture = "button_down.dds";
-            baseStyle.Focused.Texture = "button_down.dds";
-            baseStyle.SelectedFocused.Texture = "button_down.dds";
-            baseStyle.Selected.Texture = "button_down.dds";
-            baseStyle.SelectedHot.Texture = "button_down.dds";
+            baseStyle.Texture = "button_hot.png";
+            baseStyle.Default.Texture = "button_default.png";
+            baseStyle.Pressed.Texture = "button_down.png";
+            baseStyle.SelectedPressed.Texture = "button_down.png";
+            baseStyle.Focused.Texture = "button_down.png";
+            baseStyle.SelectedFocused.Texture = "button_down.png";
+            baseStyle.Selected.Texture = "button_down.png";
+            baseStyle.SelectedHot.Texture = "button_down.png";
 
             ControlStyle itemStyle = new ControlStyle(baseStyle);
             itemStyle.TextPadding = new Margin(10, 0, 0, 0);
@@ -250,9 +250,9 @@ namespace Squid
             tooltipStyle.TextAlign = Alignment.TopLeft;
 
             ControlStyle inputStyle = new ControlStyle();
-            inputStyle.Texture = "input_default.dds";
-            inputStyle.Hot.Texture = "input_focused.dds";
-            inputStyle.Focused.Texture = "input_focused.dds";
+            inputStyle.Texture = "input_default.png";
+            inputStyle.Hot.Texture = "input_focused.png";
+            inputStyle.Focused.Texture = "input_focused.png";
             inputStyle.TextPadding = new Margin(8);
             inputStyle.Tiling = TextureMode.Grid;
             inputStyle.Focused.Tint = ColorInt.ARGB(1, 0, 0, 1);
@@ -261,78 +261,84 @@ namespace Squid
             ControlStyle windowStyle = new ControlStyle();
             windowStyle.Tiling = TextureMode.Grid;
             windowStyle.Grid = new Margin(9);
-            windowStyle.Texture = "window.dds";
+            windowStyle.Texture = "window.png";
 
             ControlStyle frameStyle = new ControlStyle();
             frameStyle.Tiling = TextureMode.Grid;
             frameStyle.Grid = new Margin(4);
-            frameStyle.Texture = "frame.dds";
+            frameStyle.Texture = "frame.png";
             frameStyle.TextPadding = new Margin(8);
 
             ControlStyle vscrollTrackStyle = new ControlStyle();
             vscrollTrackStyle.Tiling = TextureMode.Grid;
             vscrollTrackStyle.Grid = new Margin(3);
-            vscrollTrackStyle.Texture = "vscroll_track.dds";
+            vscrollTrackStyle.Texture = "vscroll_track.png";
 
             ControlStyle vscrollButtonStyle = new ControlStyle();
             vscrollButtonStyle.Tiling = TextureMode.Grid;
             vscrollButtonStyle.Grid = new Margin(3);
-            vscrollButtonStyle.Texture = "vscroll_button.dds";
-            vscrollButtonStyle.Hot.Texture = "vscroll_button_hot.dds";
-            vscrollButtonStyle.Pressed.Texture = "vscroll_button_down.dds";
+            vscrollButtonStyle.Texture = "vscroll_button.png";
+            vscrollButtonStyle.Hot.Texture = "vscroll_button_hot.png";
+            vscrollButtonStyle.Pressed.Texture = "vscroll_button_down.png";
 
             ControlStyle vscrollUp = new ControlStyle();
-            vscrollUp.Default.Texture = "vscrollUp_default.dds";
-            vscrollUp.Hot.Texture = "vscrollUp_hot.dds";
-            vscrollUp.Pressed.Texture = "vscrollUp_down.dds";
-            vscrollUp.Focused.Texture = "vscrollUp_hot.dds";
+            vscrollUp.Default.Texture = "vscrollUp_default.png";
+            vscrollUp.Hot.Texture = "vscrollUp_hot.png";
+            vscrollUp.Pressed.Texture = "vscrollUp_down.png";
+            vscrollUp.Focused.Texture = "vscrollUp_hot.png";
 
             ControlStyle hscrollTrackStyle = new ControlStyle();
             hscrollTrackStyle.Tiling = TextureMode.Grid;
             hscrollTrackStyle.Grid = new Margin(3);
-            hscrollTrackStyle.Texture = "hscroll_track.dds";
+            hscrollTrackStyle.Texture = "hscroll_track.png";
 
             ControlStyle hscrollButtonStyle = new ControlStyle();
             hscrollButtonStyle.Tiling = TextureMode.Grid;
             hscrollButtonStyle.Grid = new Margin(3);
-            hscrollButtonStyle.Texture = "hscroll_button.dds";
-            hscrollButtonStyle.Hot.Texture = "hscroll_button_hot.dds";
-            hscrollButtonStyle.Pressed.Texture = "hscroll_button_down.dds";
+            hscrollButtonStyle.Texture = "hscroll_button.png";
+            hscrollButtonStyle.Hot.Texture = "hscroll_button_hot.png";
+            hscrollButtonStyle.Pressed.Texture = "hscroll_button_down.png";
 
             ControlStyle hscrollUp = new ControlStyle();
-            hscrollUp.Default.Texture = "hscrollUp_default.dds";
-            hscrollUp.Hot.Texture = "hscrollUp_hot.dds";
-            hscrollUp.Pressed.Texture = "hscrollUp_down.dds";
-            hscrollUp.Focused.Texture = "hscrollUp_hot.dds";
+            hscrollUp.Default.Texture = "hscrollUp_default.png";
+            hscrollUp.Hot.Texture = "hscrollUp_hot.png";
+            hscrollUp.Pressed.Texture = "hscrollUp_down.png";
+            hscrollUp.Focused.Texture = "hscrollUp_hot.png";
 
             ControlStyle checkButtonStyle = new ControlStyle();
-            checkButtonStyle.Default.Texture = "checkbox_default.dds";
-            checkButtonStyle.Hot.Texture = "checkbox_hot.dds";
-            checkButtonStyle.Pressed.Texture = "checkbox_down.dds";
-            checkButtonStyle.Checked.Texture = "checkbox_checked.dds";
-            checkButtonStyle.CheckedFocused.Texture = "checkbox_checked_hot.dds";
-            checkButtonStyle.CheckedHot.Texture = "checkbox_checked_hot.dds";
-            checkButtonStyle.CheckedPressed.Texture = "checkbox_down.dds";
+            checkButtonStyle.Default.Texture = "checkbox_default.png";
+            checkButtonStyle.Hot.Texture = "checkbox_hot.png";
+            checkButtonStyle.Pressed.Texture = "checkbox_down.png";
+            checkButtonStyle.Checked.Texture = "checkbox_checked.png";
+            checkButtonStyle.CheckedFocused.Texture = "checkbox_checked_hot.png";
+            checkButtonStyle.CheckedHot.Texture = "checkbox_checked_hot.png";
+            checkButtonStyle.CheckedPressed.Texture = "checkbox_down.png";
 
             ControlStyle comboLabelStyle = new ControlStyle();
             comboLabelStyle.TextPadding = new Margin(10, 0, 0, 0);
-            comboLabelStyle.Default.Texture = "combo_default.dds";
-            comboLabelStyle.Hot.Texture = "combo_hot.dds";
-            comboLabelStyle.Pressed.Texture = "combo_down.dds";
-            comboLabelStyle.Focused.Texture = "combo_hot.dds";
+            comboLabelStyle.Default.Texture = "combo_default.png";
+            comboLabelStyle.Hot.Texture = "combo_hot.png";
+            comboLabelStyle.Pressed.Texture = "combo_down.png";
+            comboLabelStyle.Focused.Texture = "combo_hot.png";
             comboLabelStyle.Tiling = TextureMode.Grid;
             comboLabelStyle.Grid = new Margin(3, 0, 0, 0);
 
             ControlStyle comboButtonStyle = new ControlStyle();
-            comboButtonStyle.Default.Texture = "combo_button_default.dds";
-            comboButtonStyle.Hot.Texture = "combo_button_hot.dds";
-            comboButtonStyle.Pressed.Texture = "combo_button_down.dds";
-            comboButtonStyle.Focused.Texture = "combo_button_hot.dds";
+            comboButtonStyle.Default.Texture = "combo_button_default.png";
+            comboButtonStyle.Hot.Texture = "combo_button_hot.png";
+            comboButtonStyle.Pressed.Texture = "combo_button_down.png";
+            comboButtonStyle.Focused.Texture = "combo_button_hot.png";
 
             ControlStyle labelStyle = new ControlStyle();
             labelStyle.TextAlign = Alignment.TopLeft;
             labelStyle.TextPadding = new Margin(8);
 
+            ControlStyle Style = new ControlStyle();
+            Style.TextPadding = new Margin(8, 0, 8, 0);
+            Style.TextAlign = Alignment.MiddleLeft;
+            Style.TextColor = ColorInt.ARGB(1, .8f, .8f, .8f);
+            Style.BackColor = ColorInt.ARGB(.125f, 1, 1, 1);
+            Style.Default.BackColor = 0;
             Skin skin = new Skin();
 
             skin.Add("item", itemStyle);
@@ -351,7 +357,7 @@ namespace Squid
             skin.Add("hscrollUp", hscrollUp);
             skin.Add("multiline", labelStyle);
             skin.Add("tooltip", tooltipStyle);
-
+            skin.Add("label", Style);
             return skin;
         }
     }

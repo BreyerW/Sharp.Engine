@@ -217,15 +217,15 @@ namespace Squid
         /// <summary>
         /// The elements
         /// </summary>
-        protected ElementCollection Elements;
+        public ElementCollection Childs;
 
         /// <summary>
         /// Returns all child elements
         /// </summary>
         /// <returns></returns>
-        public ElementCollection GetElements()
+        public ElementCollection GetChilds()
         {
-            return Elements;
+            return Childs;
         }
 
         private bool _useTranslation = false;
@@ -255,8 +255,8 @@ namespace Squid
                 TranslationChanged(false, true);
             }
 
-            for (int i = 0; i < Elements.Count; i++)
-                Elements[i].UpdateTranslation();
+            for (int i = 0; i < Childs.Count; i++)
+                Childs[i].UpdateTranslation();
 
             if (this is IControlContainer)
             {
@@ -444,7 +444,7 @@ namespace Squid
         /// </summary>
         [DefaultValue(true)]
         [Category("Base")]
-        public bool Visible { get { return _visible; } set { _visible = value; } }
+        public bool IsVisible { get { return _visible; } set { _visible = value; } }
 
         /// <summary>
         /// Returns the parent of the control as IControlContainer
@@ -525,7 +525,7 @@ namespace Squid
                         control.SetEnabled(value);
                 }
 
-                foreach (Control control in Elements)
+                foreach (Control control in Childs)
                     control.SetEnabled(value);
             }
         }
@@ -748,7 +748,7 @@ namespace Squid
             Tint = -1;
             Opacity = 1;
             Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            Elements = new ElementCollection(this);
+            Childs = new ElementCollection(this);
             Actions = new GuiActionList(this);
             //Animation = new ControlAnimation(this);
 
@@ -823,7 +823,7 @@ namespace Squid
                 }
             }
 
-            foreach (Control child in Elements)
+            foreach (Control child in Childs)
             {
                 result = child.GetControl(name);
                 if (result != null)
@@ -850,7 +850,7 @@ namespace Squid
                 }
             }
 
-            foreach (Control child in Elements)
+            foreach (Control child in Childs)
             {
                 if (child is T)
                     result.Add(child as T);
@@ -869,7 +869,7 @@ namespace Squid
         public Control GetControlAt(int x, int y, bool elements)
         {
             if (!Enabled) return null;
-            if (!Visible) return null;
+            if (!IsVisible) return null;
             if (!Hit(x, y)) return null;
 
             Control found = NoEvents ? null : this;
@@ -883,7 +883,7 @@ namespace Squid
                 {
                     Control child = container.Controls[i].GetControlAt(x, y, elements);
 
-                    if (child != null && child.Enabled && child.Visible && !child.NoEvents)
+                    if (child != null && child.Enabled && child.IsVisible && !child.NoEvents)
                     {
                         found = child;
                         break;
@@ -891,11 +891,11 @@ namespace Squid
                 }
             }
 
-            for (int i = Elements.Count - 1; i >= 0; i--)
+            for (int i = Childs.Count - 1; i >= 0; i--)
             {
-                Control child = Elements[i].GetControlAt(x, y, elements);
+                Control child = Childs[i].GetControlAt(x, y, elements);
 
-                if (child != null && child.Enabled && child.Visible && !child.NoEvents)
+                if (child != null && child.Enabled && child.IsVisible && !child.NoEvents)
                 {
                     found = child;
                     break;
@@ -923,9 +923,9 @@ namespace Squid
         /// <returns></returns>
         public bool IsChildOf(Control control)
         {
-            if (control.Elements.Contains(this)) return true;
+            if (control.Childs.Contains(this)) return true;
 
-            foreach (Control child in control.Elements)
+            foreach (Control child in control.Childs)
             {
                 if (IsChildOf(child))
                     return true;
@@ -1234,7 +1234,7 @@ namespace Squid
                 FadeOut = FadeOut < 0 ? 0 : (FadeOut > 1 ? 1 : FadeOut);
             }
 
-            int elementCount = Elements.Count;
+            int elementCount = Childs.Count;
             int controlCount = 0;
 
             IControlContainer iContainer = this as IControlContainer;
@@ -1244,7 +1244,7 @@ namespace Squid
                 iContainer.Controls.IsLocked = true;
             }
 
-            Elements.IsLocked = true;
+            Childs.IsLocked = true;
 
             Actions.Update(Gui.TimeElapsed);
 
@@ -1259,14 +1259,14 @@ namespace Squid
                 OnUpdate();
 
                 for (int i = 0; i < elementCount; i++)
-                    Elements[i].PerformUpdate();
+                    Childs[i].PerformUpdate();
 
                 for (int i = 0; i < controlCount; i++)
                     iContainer.Controls[i].PerformUpdate();
             }
 
-            Elements.IsLocked = false;
-            Elements.Cleanup();
+            Childs.IsLocked = false;
+            Childs.Cleanup();
 
             if (iContainer != null)
             {
@@ -1283,20 +1283,20 @@ namespace Squid
         /// </summary>
         public void PerformLayout()
         {
-            if (!Visible && !Desktop.DesignMode) return;
+            if (!IsVisible && !Desktop.DesignMode) return;
 
             PerformLayoutAndClip();
 
             Point auto = Point.Zero;
             Control child = null;
-            int count = Elements.Count;
+            int count = Childs.Count;
 
             for (int i = 0; i < count; i++)
             {
-                child = Elements[i];
+                child = Childs[i];
                 child.PerformLayout();
 
-                if (AutoSize != AutoSize.None && !child.IsRemoved && child.Visible)
+                if (AutoSize != AutoSize.None && !child.IsRemoved && child.IsVisible)
                 {
                     auto.x = Math.Max(auto.x, child.Position.x + child.Size.x + child.Margin.Right);
                     auto.y = Math.Max(auto.y, child.Position.y + child.Size.y + child.Margin.Bottom);
@@ -1325,7 +1325,7 @@ namespace Squid
                     child = controls[i];
                     child.PerformLayout();
 
-                    if (AutoSize != AutoSize.None && !child.IsRemoved && child.Visible)
+                    if (AutoSize != AutoSize.None && !child.IsRemoved && child.IsVisible)
                     {
                         auto.x = Math.Max(auto.x, child.Position.x + child.Size.x + child.Margin.Right);
                         auto.y = Math.Max(auto.y, child.Position.y + child.Size.y + child.Margin.Bottom);
@@ -2066,8 +2066,8 @@ namespace Squid
         {
             //Elements.Cleanup();
 
-            for (int i = 0; i < Elements.Count; i++)
-                Elements[i].Draw();
+            for (int i = 0; i < Childs.Count; i++)
+                Childs[i].Draw();
         }
 
         protected void RepeatTexture(int texture, Point loc, Rectangle rect, TextureMode mode, float opacity, int color)
@@ -2370,7 +2370,7 @@ namespace Squid
                     control.SetEnabled(value);
             }
 
-            foreach (Control control in Elements)
+            foreach (Control control in Childs)
                 control.SetEnabled(value);
         }
 
@@ -2382,8 +2382,8 @@ namespace Squid
 
             OnLateUpdate();
 
-            for (int i = 0; i < Elements.Count; i++)
-                Elements[i].PerformLateUpdate();
+            for (int i = 0; i < Childs.Count; i++)
+                Childs[i].PerformLateUpdate();
 
             if (this is IControlContainer)
             {
@@ -2560,7 +2560,7 @@ namespace Squid
 
         internal Control PickDeep(int x, int y)
         {
-            if (!Visible) return null;
+            if (!IsVisible) return null;
             if (!Hit(x, y)) return null;
 
             Control found = null;
@@ -2574,7 +2574,7 @@ namespace Squid
                 {
                     Control child = container.Controls[i].PickDeep(x, y);
 
-                    if (child != null && child.Visible)
+                    if (child != null && child.IsVisible)
                     {
                         found = child;
                         break;
@@ -2582,11 +2582,11 @@ namespace Squid
                 }
             }
 
-            for (int i = Elements.Count - 1; i >= 0; i--)
+            for (int i = Childs.Count - 1; i >= 0; i--)
             {
-                Control child = Elements[i].PickDeep(x, y);
+                Control child = Childs[i].PickDeep(x, y);
 
-                if (child != null && child.Visible)
+                if (child != null && child.IsVisible)
                 {
                     found = child;
                     break;
@@ -2598,7 +2598,7 @@ namespace Squid
 
         internal Control PickFirst(int x, int y)
         {
-            if (!Visible) return null;
+            if (!IsVisible) return null;
             if (!Hit(x, y)) return null;
 
             Control found = _isElement ? null : this;
@@ -2610,7 +2610,7 @@ namespace Squid
                 {
                     Control child = container.Controls[i].PickFirst(x, y);
 
-                    if (child != null && child.Visible && !child._isElement)
+                    if (child != null && child.IsVisible && !child._isElement)
                     {
                         found = child;
                         break;
@@ -2618,11 +2618,11 @@ namespace Squid
                 }
             }
 
-            for (int i = Elements.Count - 1; i >= 0; i--)
+            for (int i = Childs.Count - 1; i >= 0; i--)
             {
-                Control child = Elements[i].PickFirst(x, y);
+                Control child = Childs[i].PickFirst(x, y);
 
-                if (child != null && child.Visible && !(child is IControlContainer))
+                if (child != null && child.IsVisible && !(child is IControlContainer))
                 {
                     found = child;
                     break;
@@ -2634,14 +2634,14 @@ namespace Squid
 
         internal Control GetDropTarget(Control sender)
         {
-            if (!Visible) return null;
+            if (!IsVisible) return null;
 
             int x = Gui.MousePosition.x;
             int y = Gui.MousePosition.y;
 
             if (!Hit(x, y)) return null;
 
-            Control found = Enabled && Visible && AllowDrop ? this : null;
+            Control found = Enabled && IsVisible && AllowDrop ? this : null;
 
             if (this is IControlContainer)
             {
@@ -2650,7 +2650,7 @@ namespace Squid
                 {
                     Control child = container.Controls[i].GetDropTarget(sender);
 
-                    if (child != null && sender != child && child.Enabled && child.Visible && !child.NoEvents && child.AllowDrop)
+                    if (child != null && sender != child && child.Enabled && child.IsVisible && !child.NoEvents && child.AllowDrop)
                     {
                         found = child;
                         break;
@@ -2658,11 +2658,11 @@ namespace Squid
                 }
             }
 
-            for (int i = Elements.Count - 1; i >= 0; i--)
+            for (int i = Childs.Count - 1; i >= 0; i--)
             {
-                Control child = Elements[i].GetDropTarget(sender);
+                Control child = Childs[i].GetDropTarget(sender);
 
-                if (child != null && sender != child && child.Enabled && child.Visible && !child.NoEvents && child.AllowDrop)
+                if (child != null && sender != child && child.Enabled && child.IsVisible && !child.NoEvents && child.AllowDrop)
                 {
                     found = child;
                     break;
@@ -2675,9 +2675,9 @@ namespace Squid
         internal Control FindTabIndex(int index)
         {
             Control control = null;
-            IList<Control> controls = Elements;
+            IList<Control> controls = Childs;
 
-            if (!Visible || Desktop.CheckModalLock(this))
+            if (!IsVisible || Desktop.CheckModalLock(this))
                 return null;
 
             if (!NoEvents && Enabled && TabIndex == index)
@@ -2687,7 +2687,7 @@ namespace Squid
             {
                 Control child = controls[i].FindTabIndex(index);
 
-                if (child != null && !child.NoEvents && child.Visible && child.Enabled && child.TabIndex == index)
+                if (child != null && !child.NoEvents && child.IsVisible && child.Enabled && child.TabIndex == index)
                 {
                     control = child;
                     break;
@@ -2702,7 +2702,7 @@ namespace Squid
                 {
                     Control child = controls[i].FindTabIndex(index);
 
-                    if (child != null && !child.NoEvents && child.Visible && child.Enabled && child.TabIndex == index)
+                    if (child != null && !child.NoEvents && child.IsVisible && child.Enabled && child.TabIndex == index)
                     {
                         control = child;
                         break;
@@ -2716,9 +2716,9 @@ namespace Squid
         internal int FindHighestTabIndex(int max)
         {
             int index = max;
-            IList<Control> all = Elements;
+            IList<Control> all = Childs;
 
-            if (!Visible)
+            if (!IsVisible)
                 return index;
 
             if (!NoEvents && Enabled && TabIndex == index)
@@ -2885,7 +2885,6 @@ namespace Squid
             TimeSpan delta = now.Subtract(TimeClicked);
             TimeClicked = now;
             IsDoubleClick = delta.TotalMilliseconds < Gui.DoubleClickSpeed;
-
             if (MouseDown != null)
                 MouseDown(this, new MouseEventArgs { Button = button });
         }

@@ -4,7 +4,7 @@ using Sharp.Editor.Views;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Sharp.Editor;
+using Squid;
 
 namespace Sharp
 {
@@ -61,7 +61,6 @@ namespace Sharp
             {
                 if (windows.Contains(value) && View.mainViews[value] != null)
                 {
-                    InputHandler.input.Initialize(View.mainViews[value].canvas);
                     underMouseWindowId = value;
                 }
             }
@@ -122,6 +121,7 @@ namespace Sharp
         public static void PollWindows()
         {
             SDL.SDL_Event sdlEvent;
+
             while (!quit)
             {
                 while (SDL.SDL_PollEvent(out sdlEvent) != 0)
@@ -135,10 +135,10 @@ namespace Sharp
                       InputHandler.ProcessKeyboard();
                       InputHandler.mustHandleKeyboard = false;
                   }*/
-
+                InputHandler.Update();
                 InputHandler.ProcessKeyboardPresses();
                 InputHandler.ProcessMousePresses();
-                InputHandler.Update();
+
                 Squid.Gui.TimeElapsed = Time.deltaTime;
                 onRenderFrame?.Invoke();
                 if (Gwen.Control.Base.isDirty)
@@ -156,7 +156,7 @@ namespace Sharp
 
             OnRenderFrame();
             var mainView = View.mainViews[windowId];
-            if (mainView.canvas is null) return;
+            if (mainView.desktop is null) return;
             mainView.Render();
             foreach (var view in View.views[windowId])
                 if (view.panel != null && view.panel.IsVisible)
@@ -226,7 +226,7 @@ namespace Sharp
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
                     View.mainViews[evt.windowID].OnResize(evt.data1, evt.data2);
-                    //onRenderFrame?.Invoke();
+                    onRenderFrame?.Invoke();
                     break;
 
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_TAKE_FOCUS: AssetsView.CheckIfDirTreeChanged(); break;
@@ -248,16 +248,28 @@ namespace Sharp
             return SDL.SDL_HitTestResult.SDL_HITTEST_NORMAL;
         }
 
-        public static void OpenView(View view, int index)
+        public static void OpenView(View view, Squid.Control frame)
         {
-            var tab = new Gwen.Control.TabControl(view.mainView.splitter);
-            var btn = tab.AddPage(view.GetType().ToString());
-            var page = btn.Page;
-            page.Margin = new Gwen.Margin(3, 3, 3, 3);
-            view.panel = page; //make GLControl for gwen
+            TabControl tabcontrol = new TabControl();
+            tabcontrol.ButtonFrame.Style = "";
+            tabcontrol.Dock = DockStyle.Fill;
+            tabcontrol.Parent = frame;
+            tabcontrol.PageFrame.Style = "frame";
+            tabcontrol.PageFrame.Padding = new Margin(3, 3, 3, 3);
+            tabcontrol.PageFrame.Margin = new Margin(0, -2, 0, 0);
+            var tab = new TabPage();
+            tab.Button.Text = view.GetType().ToString();
+            tab.Button.AutoSize = AutoSize.Horizontal;
+            tabcontrol.TabPages.Add(tab);
+            tab.NoEvents = false;
+            var tab1 = new TabPage();
+            tab1.Button.Text = "test";// view.GetType().ToString();
+            tabcontrol.TabPages.Add(tab1);
+            tabcontrol.SelectedTab = tab;
+            //tab.Style = "window";
+            view.panel = tab; //make GLControl for gwen
             view.Initialize();
-            view.panel.BoundsChanged += (obj, args) => view.OnResize(view.panel.Width, view.panel.Height);
-            view.mainView.splitter.SetPanel(index, tab);
+            //view.panel.BoundsChanged += (obj, args) => view.OnResize(view.panel.Width, view.panel.Height);
         }
 
         public static int OnResize(IntPtr data, IntPtr e)

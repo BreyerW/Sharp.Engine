@@ -81,8 +81,9 @@ namespace SharpSL.BackendRenderers.OpenGL
 
         public void DrawSlicedQuad(float x1, float y1, float x2, float y2, float left, float right, float top, float bottom, ref byte unColor)
         {
+            GL.Color4(ref unColor);
             GL.Begin(BeginMode.Quads);
-            //GL.Color4(ref unColor);
+
             GL.TexCoord2(left, top);
             GL.Vertex3(x1, y1, 0);
 
@@ -94,9 +95,8 @@ namespace SharpSL.BackendRenderers.OpenGL
 
             GL.TexCoord2(right, top);
             GL.Vertex3(x2, y1, 0);
-
             GL.End();
-            //GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
+            GL.Color4((byte)0, (byte)0, (byte)0, (byte)255);
             /*
             *+---+----------------------+---+
             *| 3 |          4           | 7 |
@@ -299,8 +299,8 @@ namespace SharpSL.BackendRenderers.OpenGL
 
             GL.TexCoord2(1, 0);
             GL.Vertex3(x2, y1, 0);
-            GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
-            GL.End();
+
+            GL.End(); GL.Color4((byte)0, (byte)0, (byte)0, (byte)255);
         }
 
         public void DrawQuad(float x1, float y1, float x2, float y2, ref byte unColor)
@@ -604,11 +604,13 @@ namespace SharpSL.BackendRenderers.OpenGL
             int num = (int)Math.Round((double)(pos.X / (float)cell_size)) * cell_size;
             int num2 = (int)Math.Round((double)(pos.Y / (float)cell_size)) * cell_size;
             int num3 = grid_size / cell_size;
+
             GL.LoadMatrix(ref projMat);
             GL.PushMatrix();
             GL.Translate((float)num - (float)grid_size / 2f, 0f, (float)num2 - (float)grid_size / 2f);
-            GL.Color4(ref color);
+
             GL.Begin(PrimitiveType.Lines);
+            GL.Color4(ref color);
             int num5;
             for (int i = 0; i < num3 + 1; i = num5 + 1)
             {
@@ -619,6 +621,7 @@ namespace SharpSL.BackendRenderers.OpenGL
                 GL.Vertex3(grid_size, 0, num4);
                 num5 = i;
             }
+            GL.Color4(0, 0, 0, 0);
             GL.End();
             GL.PopMatrix();
         }

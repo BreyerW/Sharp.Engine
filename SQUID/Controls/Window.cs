@@ -52,11 +52,11 @@ namespace Squid
                 if (value)
                 {
                     if (Sizer.ParentControl != this)
-                        Elements.Add(Sizer);
+                        Childs.Add(Sizer);
                 }
                 else
                 {
-                    Elements.Remove(Sizer);
+                    Childs.Remove(Sizer);
                 }
             }
         }
@@ -200,7 +200,7 @@ namespace Squid
             if (Modal)
                 target.RegisterModal(this);
 
-            Visible = true;
+            IsVisible = true;
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace Squid
 
             Desktop.Controls.Remove(this);
 
-            Visible = false;
+            IsVisible = false;
         }
     }
 }
