@@ -52,7 +52,6 @@ namespace Sharp.Editor.Views
             //physEngine= new Physics(foundation, checkRuntimeFiles: true);
             //var sceneDesc = new SceneDesc (){Gravity = new System.Numerics.Vector3(0, -9.81f, 0) };
             //physScene = physEngine.CreateScene ();
-            //panel.Scissor = true;
 
             var eLight = new Entity();
             eLight.name = "Directional Light";
@@ -62,9 +61,29 @@ namespace Sharp.Editor.Views
             panel.AllowDrop = true;
             panel.DragDrop += Panel_Drop;
             panel.SizeChanged += (sender) => OnResize(sender.Size.x, sender.Size.y);
-            panel.MouseDown += (sender, args) => OnMouseDown(args.Button);
+            panel.MouseDown += Panel_MouseDown;
+            panel.MouseUp += Panel_MouseUp;
             OnSetupMatrices?.Invoke();
             base.Initialize();
+        }
+
+        private void Panel_MouseUp(Squid.Control sender, Squid.MouseEventArgs args)
+        {
+            Manipulators.Reset();
+        }
+
+        private void Panel_MouseDown(Squid.Control sender, Squid.MouseEventArgs args)
+        {
+            if (args.Button is 1)
+            {
+                mouseLocked = true;
+                Manipulators.selectedAxisId = 0;
+            }
+            else if (args.Button is 0)
+            {
+                mouseLocked = false;
+                locPos = new Point(Gui.MousePosition.x - panel.Location.x, Gui.MousePosition.y - panel.Location.y);
+            }
         }
 
         private void Panel_Drop(Squid.Control sender, DragDropEventArgs e)
@@ -193,7 +212,7 @@ namespace Sharp.Editor.Views
                 MainWindow.backendRenderer.FinishCommands();
                 if (locPos.HasValue)
                 {
-                    var pixel = MainWindow.backendRenderer.ReadPixels(locPos.Value.x, locPos.Value.y, 1, 1);
+                    var pixel = MainWindow.backendRenderer.ReadPixels(Gui.MousePosition.x, Camera.main.height - Gui.MousePosition.y - 1 /*locPos.Value.y - 64*/, 1, 1);
                     int index = ((pixel[0]) << 00) + ((pixel[1]) << 08) + (((pixel[2]) << 16));
                     Console.WriteLine("encoded index=" + index);
                     if (index > 0 && index < 10)
@@ -273,26 +292,6 @@ namespace Sharp.Editor.Views
         private int oldX;
         private int oldY;
 
-        public override void OnMouseDown(int buttonId)
-        {
-            if (buttonId is 1)
-            {
-                mouseLocked = true;
-                Manipulators.selectedAxisId = 0;
-            }
-            else if (buttonId is 0)
-            {
-                mouseLocked = false;
-                locPos = new Point(Gui.MousePosition.x - panel.Location.x, Gui.MousePosition.y - panel.Location.y);
-            }
-            //	Console.WriteLine ("down");
-        }
-
-        public override void OnMouseUp(int buttonId)
-        {
-            Manipulators.Reset();
-        }
-
         public override void OnGlobalMouseMove(MouseMoveEventArgs evnt)
         {
             //Console.WriteLine("global mouse move " + mouseLocked);
@@ -311,28 +310,26 @@ namespace Sharp.Editor.Views
                         var orig = Camera.main.entityObject.Position;
                         var winPos = Window.windows[attachedToWindow].Position;
                         var canvasPos = new System.Drawing.Point(evnt.Position.X - winPos.x, evnt.Position.Y - winPos.y);
-                        var localMouse = new Point(Gui.MousePosition.x - panel.Location.x, Gui.MousePosition.y - panel.Location.y); ;
-                        localMouse = new Point(localMouse.x, localMouse.y - 29);
+                        var localMouse = new Point(Gui.MousePosition.x - panel.Location.x, Gui.MousePosition.y - panel.Location.y);
                         var start = Camera.main.ScreenToWorld(localMouse.x, localMouse.y, panel.Size.x, panel.Size.y, 1);
                         var ray = new Ray(orig, (start - orig).Normalized());
 
-                        /* foreach (var selected in SceneStructureView.tree.SelectedChildren)
-                         {
-                             var entity = selected.Content as Entity;
-
-                             if (Manipulators.selectedAxisId < 4)
-                             {
-                                 Manipulators.HandleTranslation(entity, ref ray);
-                             }
-                             else if (Manipulators.selectedAxisId < 7)
-                             {
-                                 Manipulators.HandleRotation(entity, ref ray);
-                             }
-                             else
-                             {
-                                 Manipulators.HandleScale(entity, ref ray);
-                             }
-                         }*/
+                        //foreach (var selected in SceneStructureView.tree.SelectedChildren)
+                        if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
+                        {
+                            if (Manipulators.selectedAxisId < 4)
+                            {
+                                Manipulators.HandleTranslation(entity, ref ray);
+                            }
+                            else if (Manipulators.selectedAxisId < 7)
+                            {
+                                Manipulators.HandleRotation(entity, ref ray);
+                            }
+                            else
+                            {
+                                Manipulators.HandleScale(entity, ref ray);
+                            }
+                        }
                     }
                 }
             }

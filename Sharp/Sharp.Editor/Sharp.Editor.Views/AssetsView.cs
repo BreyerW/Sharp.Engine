@@ -19,8 +19,6 @@ namespace Sharp.Editor.Views
         private static HashSet<string> eventsOnceFired = new HashSet<string>();
 
         public static Dictionary<uint, TreeView> tree = new Dictionary<uint, TreeView>();
-        public static bool isDragging = false;
-        public static uint whereDragStarted;
         public static bool rebuildDirTree = false;
 
         static AssetsView()
@@ -115,23 +113,12 @@ namespace Sharp.Editor.Views
             }
         }
 
-        private void OnSelected(Squid.Control sender, EventArgs arguments)
-        {
-            Console.WriteLine("clicked" + sender);
-            isDragging = true;
-            whereDragStarted = attachedToWindow;
-        }
-
         public override void OnMouseDown(int buttonId)
         {
-            //canvas.NeedsRedraw = true;
         }
 
         public override void OnMouseUp(int buttonId)
         {
-            isDragging = false;
-            //canvas.NeedsRedraw = true;
-            //Console.WriteLine ("up");
         }
 
         public override void OnMouseMove(MouseMoveEventArgs evnt)
@@ -145,7 +132,6 @@ namespace Sharp.Editor.Views
 
         public override void OnResize(int width, int height)
         {
-            //tree[attachedToWindow].SetSize(panel.Width, panel.Height);
         }
 
         public static void CheckIfDirTreeChanged()
@@ -233,7 +219,7 @@ namespace Sharp.Editor.Views
 
         private void AssetNode_MouseDrag(Squid.Control sender, Squid.MouseEventArgs args)
         {
-            Console.WriteLine(sender);
+            Console.WriteLine("start drag" + sender);
             var node = sender as TreeNodeLabel;
             var draggedNode = new Label();
             draggedNode.Tag = node.UserData;

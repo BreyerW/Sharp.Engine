@@ -316,7 +316,6 @@ namespace Squid
             }
 
             Style style = Desktop.GetStyle(Style).Styles[State];
-            Console.WriteLine(SavedText);
             string masked = Text;
             if (IsPassword)
                 masked = new string(PasswordChar, masked.Length);

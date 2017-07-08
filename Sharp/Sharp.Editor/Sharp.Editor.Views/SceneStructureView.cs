@@ -28,7 +28,6 @@ namespace Sharp.Editor.Views
 
         private void Tree_SelectedNodeChanged(Squid.Control sender, TreeNode value)
         {
-            Console.WriteLine(value);
             if (value is null) return;
             Selection.Asset = value.UserData;
 
