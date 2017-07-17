@@ -1,6 +1,7 @@
 ﻿using System;
+using Squid;
 
-namespace Gwen.Control.Property
+namespace Sharp.Editor.UI.Property
 {
     /// <summary>
     /// Text property.
@@ -9,16 +10,12 @@ namespace Gwen.Control.Property
     {
         protected readonly TextBox m_TextBox;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Text"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public Text(Control.Base parent) : base(parent)
+        public Text(string name) : base(name)
         {
-            m_TextBox = new TextBox(this);
-            m_TextBox.Dock = Pos.Fill;
-            m_TextBox.ShouldDrawBackground = false;
-            m_TextBox.TextChanged += OnValueChanged;
+            m_TextBox = new TextBox();
+            //m_TextBox.TextChanged += OnValueChanged;
+            m_TextBox.Position = new Point(label.Size.x, 0);
+            Childs.Add(m_TextBox);
         }
 
         /// <summary>
@@ -27,23 +24,7 @@ namespace Gwen.Control.Property
         public override string Value
         {
             get { return m_TextBox.Text; }
-            set { m_TextBox.SetText(value); }
-        }
-
-        /// <summary>
-        /// Indicates whether the property value is being edited.
-        /// </summary>
-        public override bool IsEditing
-        {
-            get { return m_TextBox.HasFocus; }
-        }
-
-        /// <summary>
-        /// Indicates whether the control is hovered by mouse pointer.
-        /// </summary>
-        public override bool IsHovered
-        {
-            get { return base.IsHovered | m_TextBox.IsHovered; }
+            set { m_TextBox.Text = value; }
         }
     }
 }

@@ -7,6 +7,8 @@ namespace Sharp.Editor.Views
 {
     public abstract class View //sceneview, editorview, assetview, inspectorview
     {
+        protected abstract string Name { get; }
+
         public static Dictionary<uint, HashSet<View>> views = new Dictionary<uint, HashSet<View>>();
         public static Dictionary<uint, MainEditorView> mainViews = new Dictionary<uint, MainEditorView>();
         public Squid.Control panel;
@@ -31,12 +33,11 @@ namespace Sharp.Editor.Views
             InputHandler.OnMouseMove += OnGlobalMouseMove;
             InputHandler.OnMouseUp += OnGlobalMouseUp;
             InputHandler.OnMouseDown += OnGlobalMouseDown;
-        }
-
-        public virtual void Initialize()
-        {
-            //canvas.ShouldDrawBackground = true;
-            //canvas.BackgroundColor = Color.FromArgb(255, 150, 170, 170);
+            var tab = new TabPage();
+            tab.Button.Text = Name;
+            tab.Button.AutoSize = AutoSize.Horizontal;
+            tab.NoEvents = false;
+            panel = tab;
         }
 
         public virtual void Render()

@@ -27,16 +27,19 @@ namespace Squid
         /// <value>The texture.</value>
         [Texture]
         public string Texture { get; set; }
+
         /// <summary>
         /// Gets or sets the hot spot.
         /// </summary>
         /// <value>The hot spot.</value>
         public Point HotSpot { get; set; }
+
         /// <summary>
         /// Gets or sets the size.
         /// </summary>
         /// <value>The size.</value>
         public Point Size { get; set; }
+
         /// <summary>
         /// Gets or sets the texture rect.
         /// </summary>
@@ -58,17 +61,17 @@ namespace Squid
         /// <param name="y">The y.</param>
         public virtual void Draw(int x, int y)
         {
-            int texture = Gui.Renderer.GetTexture(Texture);
+            int texture = UI.Renderer.GetTexture(Texture);
             if (texture < 0) return;
 
             if (TextureRect.IsEmpty())
             {
-                Point texsize = Gui.Renderer.GetTextureSize(texture);
+                Point texsize = UI.Renderer.GetTextureSize(texture);
                 TextureRect = new Rectangle(Point.Zero, texsize);
             }
 
             Point p = new Point(x, y) - HotSpot;
-            Gui.Renderer.DrawTexture(texture, p.x, p.y, Size.x, Size.y, TextureRect, Color);
+            UI.Renderer.DrawTexture(texture, p.x, p.y, Size.x, Size.y, TextureRect, Color);
         }
     }
 
@@ -82,11 +85,13 @@ namespace Squid
         /// </summary>
         /// <value>The rows.</value>
         public int Rows { get; set; }
+
         /// <summary>
         /// Gets or sets the columns.
         /// </summary>
         /// <value>The columns.</value>
         public int Columns { get; set; }
+
         /// <summary>
         /// Gets or sets the speed.
         /// </summary>
@@ -116,7 +121,7 @@ namespace Squid
         /// <param name="y">The y.</param>
         public override void Draw(int x, int y)
         {
-            int index = Gui.Renderer.GetTexture(Texture);
+            int index = UI.Renderer.GetTexture(Texture);
             if (index < 0) return;
 
             Point p = new Point(x, y) - HotSpot;
@@ -124,7 +129,7 @@ namespace Squid
             flip.Speed = Speed;
             flip.Rows = Rows;
             flip.Columns = Columns;
-            flip.Draw(index, p.x, p.y, Size.x, Size.y, Color);       
+            flip.Draw(index, p.x, p.y, Size.x, Size.y, Color);
         }
     }
 }

@@ -101,7 +101,7 @@ namespace Sharp.Editor
             {
                 planeOrigin = ray.origin + ray.direction * len;
                 relativeOrigin = (planeOrigin - entity.Position) * (1f / (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
-                newCommand = new ChangeValueCommand((o) => { Gwen.Control.Base.isDirty = true; entity.Position = (Vector3)o; }, entity.position);
+                newCommand = new ChangeValueCommand((o) => { Squid.UI.isDirty = true; entity.Position = (Vector3)o; }, entity.position);
             }
             var newPos = ray.origin + ray.direction * len;
             var newOrigin = newPos - relativeOrigin.Value * (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
@@ -129,7 +129,7 @@ namespace Sharp.Editor
             {
                 rotVectSource = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
                 rotAngleOrigin = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
-                newCommand = new ChangeValueCommand((o) => { Gwen.Control.Base.isDirty = true; entity.Rotation = (Vector3)o; }, entity.rotation);
+                newCommand = new ChangeValueCommand((o) => { Squid.UI.isDirty = true; entity.Rotation = (Vector3)o; }, entity.rotation);
                 startMat = entity.ModelMatrix;
                 startAxis = (ray.origin + ray.direction * len - entity.Position).Normalized();
             }
@@ -160,7 +160,7 @@ namespace Sharp.Editor
             {
                 planeOrigin = ray.origin + ray.direction * len;
                 scaleOrigin = entity.Scale;
-                newCommand = new ChangeValueCommand((o) => { Gwen.Control.Base.isDirty = true; entity.Scale = (Vector3)o; }, entity.scale);
+                newCommand = new ChangeValueCommand((o) => { Squid.UI.isDirty = true; entity.Scale = (Vector3)o; }, entity.scale);
             }
             var newPos = ray.origin + ray.direction * len;
             var delta = (newPos - entity.Position).Length / (planeOrigin.Value - entity.Position).Length;

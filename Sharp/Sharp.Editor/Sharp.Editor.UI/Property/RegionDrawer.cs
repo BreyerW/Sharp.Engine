@@ -1,29 +1,28 @@
 ﻿using System;
-using Gwen.Control;
-using Gwen.Control.Property;
 using OpenTK;
 using System.Collections.Generic;
 using System.Linq;
 using Sharp.Editor.Attribs;
 using Sharp.Editor.Views;
 using Sharp.Windowing;
+using Squid;
 
 namespace Sharp.Editor.UI.Property
 {
-    public class SLDrawer : Gwen.Control.Base
-    {
-        public Action render;
+    /* public class SLDrawer : Gwen.Control.Base
+     {
+         public Action render;
 
-        public SLDrawer(Gwen.Control.Base parent) : base(parent)
-        {
-        }
+         public SLDrawer(Gwen.Control.Base parent) : base(parent)
+         {
+         }
 
-        protected override void Render(Gwen.Skin.Base skin)
-        {
-            base.Render(skin);
-            render();
-        }
-    }
+         protected override void Render(Gwen.Skin.Base skin)
+         {
+             base.Render(skin);
+             render();
+         }
+     }*/
 
     public class RegionDrawer : PropertyDrawer<Curve[]>//or IList<Curve>?
     {
@@ -36,6 +35,8 @@ namespace Sharp.Editor.UI.Property
 
         private uint curvesEditor;
 
+        public Frame curveFrame = new Frame();
+
         public override Curve[] Value
         {
             get => getter(); set//fix undo system
@@ -46,27 +47,32 @@ namespace Sharp.Editor.UI.Property
             }
         }
 
-        public RegionDrawer(Gwen.Control.Base parent) : base(parent)
+        public RegionDrawer(string name) : base(name)
         {
             var range = attributes?.OfType<CurveRangeAttribute>();
             if (range != null && range.Any())
                 curvesRange = range.GetEnumerator().Current.curvesRange;
-            Clicked += OnMouseClick;
+            curveFrame.Style = "textbox";
+            curveFrame.NoEvents = false;
+            curveFrame.Position = new Point(label.Size.x, 0);
+            Childs.Add(curveFrame);
+            MouseUp += RegionDrawer_MouseDown;
         }
 
-        internal void OnMouseClick(Gwen.Control.Base sender, EventArgs arguments)
+        private void RegionDrawer_MouseDown(Squid.Control sender, Squid.MouseEventArgs args)
         {
+            Console.WriteLine(!Window.windows.Contains(curvesEditor));
+            return;
             if (!Window.windows.Contains(curvesEditor))
             {
                 var win = new FloatingWindow("");
                 curvesEditor = win.windowId;
                 var curvesView = new CurvesView(curvesEditor);
                 CurvesView.drawer = this;
-                View.mainViews[curvesEditor].Initialize();
                 //Window.OpenView(curvesView, 0);
                 win.Size = (700, 500);
             }
-            //Window.windows[curvesEditor].OnFocus();
+            Window.windows[curvesEditor].OnFocus();
         }
 
         private void CreateRegion(Curve minCurve, Curve maxCurve)
@@ -266,29 +272,27 @@ namespace Sharp.Editor.UI.Property
             return new Vector2((pointInViewSpace.X - translation.X) / scale.X, (pointInViewSpace.Y - translation.Y) / scale.Y);
         }
 
-        public override void DoRender(Gwen.Skin.Base skin)
+        protected override void OnAutoSize()
         {
-            base.DoRender(skin);
+            //base.OnAutoSize();
+            Size = new Squid.Point(Parent.Size.x, 20);
         }
 
-        protected override void Render(Gwen.Skin.Base skin)
+        protected override void DrawCustom()
         {
-            base.Render(skin);
-            skin.Renderer.End();
-            MainWindow.backendRenderer.ChangeShader();
-            var p = LocalPosToCanvas(Parent.Bounds.Location);
+            OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
+
+            var p = curveFrame.Location;
 
             var max = curvesRange.height + (curvesRange.y < 0 ? curvesRange.y : 0);
             //var maxY = curvesRange.width + (curvesRange.x < 0 ? curvesRange.x : 0);
-            scale = new Vector2((Width) / (curvesRange.width), -(Height - 2) / (curvesRange.height));//remember abount - on y
-            translation = new Vector2(-curvesRange.x * scale.X + p.X + 15, Height - curvesRange.y * scale.Y + p.Y + 10);
+            scale = new Vector2((curveFrame.Size.x) / (curvesRange.width), -(curveFrame.Size.y - 2) / (curvesRange.height));//remember abount - on y
+            translation = new Vector2(-curvesRange.x * scale.X + p.x, curveFrame.Size.y - curvesRange.y * scale.Y + p.y);
             var color = PrepareColorForRegion(curveColor);
 
-            var canvas = GetCanvas();
+            var canvas = Desktop;
 
-            MainWindow.backendRenderer.Clip(p.X + 15, canvas.Height - p.Y - Height - 10, Width, Height);
-
-            var mat = Matrix4.CreateOrthographicOffCenter(0, canvas.Width, canvas.Height, 0, -1, 1);
+            var mat = Matrix4.CreateOrthographicOffCenter(0, canvas.Size.x, canvas.Size.y, 0, -1, 1);
             var array = new Vector3[region.Length];
             for (int i = 0; i < region.Length; i++)
                 array[i] = new Vector3(CurveToViewSpace(region[i], scale, translation));
@@ -307,8 +311,7 @@ namespace Sharp.Editor.UI.Property
                     MainEditorView.editorBackendRenderer.DrawLine(start.X, start.Y, 0, end.X, end.Y, 0, ref c.R);
                 }
             }
-            MainWindow.backendRenderer.Clip(0, 0, canvas.Width, canvas.Height);
-            skin.Renderer.Begin();
+            OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
         }
     }
 

@@ -4,6 +4,14 @@ using System.Collections.Generic;
 
 namespace Sharp
 {
+    [Flags]
+    internal enum NumericMode
+    {//for width/height
+        Prectange,
+        Fill,//?
+        Number
+    }
+
     public static class NumericsExtensions
     {
         //public static Matrix4x4 ClearRotation(this Matrix4x4 m) {

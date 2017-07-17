@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Reflection;
 using fastBinaryJSON;
+using Squid;
 
 //using UniversalSerializerLib3;
 
@@ -69,7 +70,7 @@ namespace Sharp
             }
             var currentHash = sb.ToString();
             if (currentHash != lastHash)
-                Gwen.Control.Base.isDirty = true;
+                UI.isDirty = true;
             lastHash = currentHash;
         }
 

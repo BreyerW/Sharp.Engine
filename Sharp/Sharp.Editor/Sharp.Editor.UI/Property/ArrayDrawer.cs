@@ -1,53 +1,57 @@
 ﻿using System;
 using System.Collections;
-using Gwen.Control;
-using Gwen.Control.Property;
+using Squid;
 
 namespace Sharp.Editor.UI.Property
 {
     internal class ArrayDrawer : PropertyDrawer<IList>
     {
-        public TreeControl arrayTree;
+        public TreeView arrayTree;
 
         public override IList Value
         {
             get => null;
             set
             {
-                arrayTree.DeleteAllChildren();
-                var node = arrayTree.AddNode("0");
+                arrayTree.Nodes.Clear();
+
+                var node = new TreeNodeLabel();
+                node.Label.Text = "0";
+                arrayTree.Nodes.Add(node);
                 foreach (var val in value)
                 {
-                    if (val is IList list) IterateRecursively(list, node.AddNode("1"), 1);
+                    if (val is IList list) IterateRecursively(list, node, 1);
                     else
-                        node.AddNode(val);
+                    {
+                        var tmpNode = new TreeNodeLabel();
+                        tmpNode.Label.Text = val.ToString();
+                        node.Nodes.Add(tmpNode);
+                    }
                 }
             }
         }
 
-        public ArrayDrawer(Base parent) : base(parent)
+        public ArrayDrawer(string name) : base(name)
         {
             //Array.Resize(ref Value,)
-            arrayTree = new TreeControl(this);
-            arrayTree.Dock = Gwen.Pos.Fill;
-            arrayTree.BoundsChanged += OnSizeChanged;
-            arrayTree.ShouldDrawBackground = false;
+            arrayTree = new TreeView();
+            arrayTree.Dock = DockStyle.Fill;
         }
 
-        private void OnSizeChanged(object sender, EventArgs args)
-        {
-            this.Height = arrayTree.GetChildrenSize().Y;
-            Parent.Invalidate();
-        }
-
-        private void IterateRecursively(IList list, TreeNode node, int depth)//SharpSerializer?
+        private void IterateRecursively(IList list, TreeNode node, int depth)
         {
             if (depth is 8) return;
             foreach (var val in list)
             {
-                if (val is IList tmpList) IterateRecursively(tmpList, node.AddNode(depth + 1), depth + 1);
+                var tmpNode = new TreeNodeLabel();
+                tmpNode.Label.Text = depth.ToString();
+                if (val is IList tmpList) IterateRecursively(tmpList, node, depth + 1);
                 else
-                    node.AddNode(val);
+                {
+                    tmpNode = new TreeNodeLabel();
+                    tmpNode.Label.Text = val.ToString();
+                    node.Nodes.Add(tmpNode);
+                }
             }
         }
     }

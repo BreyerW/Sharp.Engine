@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Sharp.Control;
-using Sharp.Editor.Views;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using Sharp.Editor;
+﻿using System.Linq;
 
 namespace Sharp.Editor.UI
 {

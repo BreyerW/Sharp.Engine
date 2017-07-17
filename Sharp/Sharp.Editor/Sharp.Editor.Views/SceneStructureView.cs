@@ -5,16 +5,11 @@ namespace Sharp.Editor.Views
 {
     public class SceneStructureView : View
     {
+        protected override string Name => "Scene Structure";
         public static TreeView tree;
 
         public SceneStructureView(uint attachToWindow) : base(attachToWindow)
         {
-        }
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
             if (tree == null)
                 tree = new TreeView();
             tree.Parent = panel;

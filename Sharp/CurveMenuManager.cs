@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using OpenTK;
-using Gwen.Control;
+using Squid;
 
 namespace Sharp
 {
@@ -82,20 +82,21 @@ namespace Sharp
             }
             if (flag)
             {
-                menu.AddRow("Auto", "", keyList).Clicked += SetSmooth;// on
-                menu.AddRow("FreeSmooth", "", keyList).Clicked += SetEditable;//, on2
-                menu.AddRow("Flat", "", keyList).Clicked += SetFlat;//, on3
-                menu.AddRow("Broken", "", keyList).Clicked += SetBroken;//on4
-                //menu.AddSeparator(string.Empty);
-                menu.AddRow("Left Tangent/Free", "", keyList).Clicked += SetLeftEditable;//flag2
-                menu.AddRow("Left Tangent/Linear", "", keyList).Clicked += SetLeftLinear;//flag3,
-                menu.AddRow("Left Tangent/Constant", "", keyList).Clicked += SetLeftConstant;//flag4,
-                menu.AddRow("Right Tangent/Free", "", keyList).Clicked += SetRightEditable; //flag5,
-                menu.AddRow("Right Tangent/Linear", "", keyList).Clicked += SetRightLinear;//flag6,
-                menu.AddRow("Right Tangent/Constant", "", keyList).Clicked += SetRightConstant; //flag7,
-                menu.AddRow("Both Tangents/Free", "", keyList).Clicked += SetBothEditable;//flag5 && flag2,
-                menu.AddRow("Both Tangents/Linear", "", keyList).Clicked += SetBothLinear;//flag6 && flag3,
-                menu.AddRow("Both Tangents/Constant", "", keyList).Clicked += SetBothConstant;//flag7 && flag4,
+                /*  menu.Childs.Add("Auto", "", keyList).Clicked += SetSmooth;// on
+                  menu.AddRow("FreeSmooth", "", keyList).Clicked += SetEditable;//, on2
+                  menu.AddRow("Flat", "", keyList).Clicked += SetFlat;//, on3
+                  menu.AddRow("Broken", "", keyList).Clicked += SetBroken;//on4
+                  //menu.AddSeparator(string.Empty);
+                  menu.AddRow("Left Tangent/Free", "", keyList).Clicked += SetLeftEditable;//flag2
+                  menu.AddRow("Left Tangent/Linear", "", keyList).Clicked += SetLeftLinear;//flag3,
+                  menu.AddRow("Left Tangent/Constant", "", keyList).Clicked += SetLeftConstant;//flag4,
+                  menu.AddRow("Right Tangent/Free", "", keyList).Clicked += SetRightEditable; //flag5,
+                  menu.AddRow("Right Tangent/Linear", "", keyList).Clicked += SetRightLinear;//flag6,
+                  menu.AddRow("Right Tangent/Constant", "", keyList).Clicked += SetRightConstant; //flag7,
+                  menu.AddRow("Both Tangents/Free", "", keyList).Clicked += SetBothEditable;//flag5 && flag2,
+                  menu.AddRow("Both Tangents/Linear", "", keyList).Clicked += SetBothLinear;//flag6 && flag3,
+                  menu.AddRow("Both Tangents/Constant", "", keyList).Clicked += SetBothConstant;//flag7 && flag4,
+                  */
             }
             else
             {
@@ -174,26 +175,26 @@ namespace Sharp
             updateSelected(newSelectedKeyfr);
         }
 
-        public static void SetBothConstant(Base sender, EventArgs args)
+        public static void SetBothConstant(Control sender, EventArgs args)
         {
-            SetTangent(2, TangentMode.Stepped, (Curve[])(sender as ListBoxRow).UserData);
+            SetTangent(2, TangentMode.Stepped, (Curve[])sender.UserData);
         }
 
-        public static void SetBothEditable(Base sender, EventArgs args)
+        public static void SetBothEditable(Control sender, EventArgs args)
         {
-            SetTangent(2, TangentMode.Editable, (Curve[])(sender as ListBoxRow).UserData);
+            SetTangent(2, TangentMode.Editable, (Curve[])sender.UserData);
         }
 
-        public static void SetBothLinear(Base sender, EventArgs args)
+        public static void SetBothLinear(Control sender, EventArgs args)
         {
-            SetTangent(2, TangentMode.Linear, (Curve[])(sender as ListBoxRow).UserData);
+            SetTangent(2, TangentMode.Linear, (Curve[])sender.UserData);
         }
 
-        public static void SetBroken(Base sender, EventArgs args)
+        public static void SetBroken(Control sender, EventArgs args)
         {
             var newSelectedKeyfr = new Dictionary<Vector2, Keyframe>[] { new Dictionary<Vector2, Keyframe>(), new Dictionary<Vector2, Keyframe>() };
 
-            Curve[] list = (Curve[])(sender as ListBoxRow).UserData;
+            Curve[] list = (Curve[])sender.UserData;
             var l = 0;
             while (l < 2)
             {
@@ -224,50 +225,50 @@ namespace Sharp
             updateSelected(newSelectedKeyfr);
         }
 
-        public static void SetEditable(Base sender, EventArgs args)
+        public static void SetEditable(Control sender, EventArgs args)
         {
-            SetBoth(TangentMode.Editable, (Curve[])(sender as ListBoxRow).UserData);
+            SetBoth(TangentMode.Editable, (Curve[])sender.UserData);
         }
 
-        public static void SetFlat(Base sender, EventArgs args)
+        public static void SetFlat(Control sender, EventArgs args)
         {
-            SetBoth(TangentMode.Editable, (Curve[])(sender as ListBoxRow).UserData);
-            Flatten((Curve[])(sender as ListBoxRow).UserData);
+            SetBoth(TangentMode.Editable, (Curve[])sender.UserData);
+            Flatten((Curve[])sender.UserData);
         }
 
-        public static void SetLeftConstant(Base sender, EventArgs args)
+        public static void SetLeftConstant(Control sender, EventArgs args)
         {
-            SetTangent(0, TangentMode.Stepped, (Curve[])(sender as ListBoxRow).UserData);
+            SetTangent(0, TangentMode.Stepped, (Curve[])sender.UserData);
         }
 
-        public static void SetLeftEditable(Base sender, EventArgs args)
+        public static void SetLeftEditable(Control sender, EventArgs args)
         {
-            SetTangent(0, TangentMode.Editable, (Curve[])(sender as ListBoxRow).UserData);
+            SetTangent(0, TangentMode.Editable, (Curve[])sender.UserData);
         }
 
-        public static void SetLeftLinear(Base sender, EventArgs args)
+        public static void SetLeftLinear(Control sender, EventArgs args)
         {
-            SetTangent(0, TangentMode.Linear, (Curve[])(sender as ListBoxRow).UserData);
+            SetTangent(0, TangentMode.Linear, (Curve[])sender.UserData);
         }
 
-        public static void SetRightConstant(Base sender, EventArgs args)
+        public static void SetRightConstant(Control sender, EventArgs args)
         {
-            SetTangent(1, TangentMode.Stepped, (Curve[])(sender as ListBoxRow).UserData);
+            SetTangent(1, TangentMode.Stepped, (Curve[])sender.UserData);
         }
 
-        public static void SetRightEditable(Base sender, EventArgs args)
+        public static void SetRightEditable(Control sender, EventArgs args)
         {
-            SetTangent(1, TangentMode.Editable, (Curve[])(sender as ListBoxRow).UserData);
+            SetTangent(1, TangentMode.Editable, (Curve[])sender.UserData);
         }
 
-        public static void SetRightLinear(Base sender, EventArgs args)
+        public static void SetRightLinear(Control sender, EventArgs args)
         {
-            SetTangent(1, TangentMode.Linear, (Curve[])(sender as ListBoxRow).UserData);
+            SetTangent(1, TangentMode.Linear, (Curve[])sender.UserData);
         }
 
-        public static void SetSmooth(Base sender, EventArgs args)
+        public static void SetSmooth(Control sender, EventArgs args)
         {
-            SetBoth(TangentMode.Smooth, (Curve[])(sender as ListBoxRow).UserData);
+            SetBoth(TangentMode.Smooth, (Curve[])sender.UserData);
         }
 
         public static void SetTangent(int leftRight, TangentMode mode, Curve[] keysToSet)

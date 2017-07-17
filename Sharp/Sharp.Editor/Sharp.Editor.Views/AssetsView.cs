@@ -18,6 +18,8 @@ namespace Sharp.Editor.Views
         private static readonly FileSystemWatcher dirWatcher = new FileSystemWatcher(root.FullName);
         private static HashSet<string> eventsOnceFired = new HashSet<string>();
 
+        protected override string Name => "Assets";
+
         public static Dictionary<uint, TreeView> tree = new Dictionary<uint, TreeView>();
         public static bool rebuildDirTree = false;
 
@@ -33,11 +35,6 @@ namespace Sharp.Editor.Views
             //dirWatcher.Created += OnFileOrDirChanged;
             //dirWatcher.Changed += OnFileOrDirChanged;
             //dirWatcher.Deleted += OnFileOrDirDeleted;
-        }
-
-        public override void Initialize()
-        {
-            base.Initialize();
             tree.Add(attachedToWindow, new TreeView());
             tree[attachedToWindow].Dock = DockStyle.Fill;
             tree[attachedToWindow].Parent = panel;

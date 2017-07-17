@@ -1,6 +1,5 @@
 ﻿using System;
-using Gwen.Control;
-using Gwen.Control.Property;
+using Squid;
 using System.Linq;
 using Sharp.Editor.Attribs;
 
@@ -8,14 +7,14 @@ namespace Sharp.Editor.UI.Property
 {
     public class RangeDrawer : PropertyDrawer<object>//valuetuple jako odpowiednik union?
     {
-        private HorizontalSlider slider;
+        private Slider slider;
 
-        public RangeDrawer(Base parent) : base(parent)
+        public RangeDrawer(string name) : base(name)
         {
-            slider = new HorizontalSlider(this);
+            slider = new Slider();
             var range = attributes?.OfType<RangeAttribute>();
-            if (range != null && range.Any())
-                slider.SetRange(range.GetEnumerator().Current.min, range.GetEnumerator().Current.max);
+            //if (range != null && range.Any())
+            //  slider.SetRange(range.GetEnumerator().Current.min, range.GetEnumerator().Current.max);
         }
 
         public override object Value

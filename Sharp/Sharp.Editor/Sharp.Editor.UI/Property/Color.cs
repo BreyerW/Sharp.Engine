@@ -1,8 +1,6 @@
 ﻿using System;
-using Gwen.ControlInternal;
-using Gwen.Input;
 
-namespace Gwen.Control.Property
+namespace Sharp.Editor.UI.Property
 {
     /// <summary>
     /// Color property.

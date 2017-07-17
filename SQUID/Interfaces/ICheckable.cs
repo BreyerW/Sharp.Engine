@@ -15,6 +15,6 @@ namespace Squid
         /// </summary>
         /// <value><c>true</c> if checked; otherwise, <c>false</c>.</value>
         [DefaultValue(false)]
-        bool Checked { get; set; }
+        bool IsChecked { get; set; }
     }
 }

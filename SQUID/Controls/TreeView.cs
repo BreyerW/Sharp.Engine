@@ -30,7 +30,7 @@ namespace Squid
         /// Gets the scrollbar.
         /// </summary>
         /// <value>The scrollbar.</value>
-        public ScrollBar Scrollbar { get; private set; }
+        public ScrollBar Scrollbar { get; private set; }//find a way to hide scrollbar
 
         /// <summary>
         /// Gets the clip frame.
@@ -108,7 +108,7 @@ namespace Squid
 
         private void TreeView_MouseWheel(Control sender, MouseEventArgs args)
         {
-            Scrollbar.Scroll(Gui.MouseScroll);
+            Scrollbar.Scroll(UI.MouseScroll);
             args.Cancel = true;
         }
 
@@ -256,10 +256,11 @@ namespace Squid
     /// </summary>
     public class TreeNode : Control, ISelectable
     {
-        internal TreeView treeview;
         private bool _selected;
         private bool _expanded;
         private bool _suspendEvents;
+
+        public TreeView treeview;
 
         /// <summary>
         /// Raised when [on selected changed].

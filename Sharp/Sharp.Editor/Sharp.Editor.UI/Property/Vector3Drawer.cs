@@ -1,77 +1,74 @@
 ﻿using System;
+using Squid;
 
-namespace Gwen.Control.Property
+namespace Sharp.Editor.UI.Property
 {
     public class Vector3Drawer : PropertyDrawer<OpenTK.Vector3>
     {
-        private TextBoxNumeric posX;
-        private TextBoxNumeric posY;
-        private TextBoxNumeric posZ;
+        private FlowLayoutFrame layout = new FlowLayoutFrame();
+        private TextBox posX;
+        private TextBox posY;
+        private TextBox posZ;
 
-        public Vector3Drawer(Control.Base parent)
-            : base(parent)
+        public Vector3Drawer(string name)
+            : base(name)
         {
-            posZ = new TextBoxNumeric(this);
-            posZ.Dock = Pos.Right;
-            posZ.Width = 50;
+            layout.FlowDirection = FlowDirection.LeftToRight;
+            layout.Position = new Point(label.Size.x, 0);
+            layout.HSpacing = 1;
+            layout.AutoSize = AutoSize.HorizontalVertical;
+            //AutoSize = AutoSize.HorizontalVertical;
+            //layout.Scissor = false;
+
+            posX = new TextBox();
+            //posX.MaximumSize=new System.Drawing.Point(70,17);
+            var tmpLabel = new Label();
+            tmpLabel.Text = "X";
+            tmpLabel.Size = new Point(0, Size.y);
+            tmpLabel.AutoSize = AutoSize.Horizontal;
+
+            layout.Controls.Add(tmpLabel);
+            layout.Controls.Add(posX);
             //posZ.MaximumSize=new System.Drawing.Point(70,17);
 
-            var label = new Label(this);
-            label.Text = "Z ";
-            label.Dock = Pos.Right;
-
-            posY = new TextBoxNumeric(this);
-            posY.Dock = Pos.Right;
-            posY.Width = 50;
+            posY = new TextBox();
             //posY.MaximumSize=new System.Drawing.Point(70,17);
+            tmpLabel = new Label();
+            tmpLabel.Text = "Y";
+            tmpLabel.Size = new Point(0, Size.y);
+            tmpLabel.AutoSize = AutoSize.Horizontal;
 
-            label = new Label(this);
-            label.Text = "Y ";
-            label.Dock = Pos.Right;
+            layout.Controls.Add(tmpLabel);
+            layout.Controls.Add(posY);
 
-            posX = new TextBoxNumeric(this);
-            posX.Dock = Pos.Right;
-            posX.Width = 50;
-            //posX.MaximumSize=new System.Drawing.Point(70,17);
+            posZ = new TextBox();
+            tmpLabel = new Label();
+            tmpLabel.Text = "Z";
+            tmpLabel.Size = new Point(0, Size.y);
+            tmpLabel.AutoSize = AutoSize.Horizontal;
 
-            label = new Label(this);
-            label.Text = "X ";
-            label.Font.Size = 7;
-            label.Dock = Pos.Right;
-            posZ.TextChanged += OnValueChanged;
-            posX.TextChanged += OnValueChanged;
-            posY.TextChanged += OnValueChanged;
+            layout.Controls.Add(tmpLabel);
+            layout.Controls.Add(posZ);
+
+            Childs.Add(layout);
+            //posZ.TextChanged += OnValueChanged;
+            //posX.TextChanged += OnValueChanged;
+            //posY.TextChanged += OnValueChanged;
         }
 
         public override OpenTK.Vector3 Value
         {
             get
             {
-                return new OpenTK.Vector3(posX.Value, posY.Value, posZ.Value);
+                return new OpenTK.Vector3(float.Parse(posX.Text), float.Parse(posY.Text), float.Parse(posZ.Text));
             }
             set
             {
                 //Console.WriteLine("buu");
-                posX.SetText(value.X);
-                posY.SetText(value.Y);
-                posZ.SetText(value.Z);
+                posX.Text = value.X.ToString();
+                posY.Text = value.Y.ToString();
+                posZ.Text = value.Z.ToString();
             }
-        }
-
-        /// <summary>
-        /// Indicates whether the property value is being edited.
-        /// </summary>
-        public override bool IsEditing
-        {
-            get { return base.HasFocus | posX.HasFocus | posY.HasFocus | posZ.HasFocus; }
-        }
-
-        /// <summary>
-        /// Indicates whether the control is hovered by mouse pointer.
-        /// </summary>
-        public override bool IsHovered
-        {
-            get { return base.IsHovered | posX.IsHovered | posY.IsHovered | posZ.IsHovered; }
         }
     }
 }

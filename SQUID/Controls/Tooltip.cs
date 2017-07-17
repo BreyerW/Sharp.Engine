@@ -42,36 +42,36 @@ namespace Squid
 
         public virtual void LayoutTooltip()
         {
-            Point p = Gui.MousePosition;
+            Point p = UI.MousePosition;
 
             switch (Alignment)
             {
                 case Alignment.TopLeft:
-                    p = Gui.MousePosition;
+                    p = UI.MousePosition;
                     break;
                 case Alignment.TopRight:
-                    p = Gui.MousePosition - new Point(Size.x, 0);
+                    p = UI.MousePosition - new Point(Size.x, 0);
                     break;
                 case Alignment.TopCenter:
-                    p = Gui.MousePosition - new Point(Size.x / 2, 0);
+                    p = UI.MousePosition - new Point(Size.x / 2, 0);
                     break;
                 case Alignment.MiddleLeft:
-                    p = Gui.MousePosition - new Point(0, Size.y / 2);
+                    p = UI.MousePosition - new Point(0, Size.y / 2);
                     break;
                 case Alignment.MiddleRight:
-                    p = Gui.MousePosition - new Point(Size.x, Size.y / 2);
+                    p = UI.MousePosition - new Point(Size.x, Size.y / 2);
                     break;
                 case Alignment.MiddleCenter:
-                    p = Gui.MousePosition - new Point(Size.x / 2, Size.y / 2);
+                    p = UI.MousePosition - new Point(Size.x / 2, Size.y / 2);
                     break;
                 case Alignment.BottomRight:
-                    p = Gui.MousePosition - new Point(Size.x, Size.y);
+                    p = UI.MousePosition - new Point(Size.x, Size.y);
                     break;
                 case Alignment.BottomLeft:
-                    p = Gui.MousePosition - new Point(0, Size.y);
+                    p = UI.MousePosition - new Point(0, Size.y);
                     break;
                 case Alignment.BottomCenter:
-                    p = Gui.MousePosition - new Point(Size.x / 2, Size.y);
+                    p = UI.MousePosition - new Point(Size.x / 2, Size.y);
                     break;
             }
 

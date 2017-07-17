@@ -176,7 +176,7 @@ namespace Squid
         {
             if (MouseScroll)
             {
-                Scrollbar.Scroll(Gui.MouseScroll);
+                Scrollbar.Scroll(UI.MouseScroll);
                 args.Cancel = true;
             }
         }

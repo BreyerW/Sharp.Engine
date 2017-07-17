@@ -216,6 +216,7 @@
     <Compile Include="Sharp.Editor\RedoCommand.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CurveRangeAttribute.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\DrawAsRegionAttribute.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\ComponentNode.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\CurveDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\RegionDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Views\CurvesView.cs" />
@@ -235,10 +236,6 @@
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\BooleanDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Color.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CustomPropertyDrawerAttribute.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Properties.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\PropertyRow.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\PropertyRowLabel.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\PropertyTree.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\RangeAttribute.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\RangeDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Text.cs" />
@@ -317,14 +314,6 @@
     <ProjectReference Include="..\fastJSON-master\fastJSON\fastJSON.csproj">
       <Project>{207e91b1-c9f8-4913-88e1-3549ef5f3273}</Project>
       <Name>fastJSON</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Gwen.Renderer.OpenTK\Gwen.Renderer.OpenTK.csproj">
-      <Project>{41650C82-D630-4E5C-845A-F1513C8FDC99}</Project>
-      <Name>Gwen.Renderer.OpenTK</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Gwen\Gwen.csproj">
-      <Project>{ADDA2F43-96C0-497F-8216-29C67ABC9806}</Project>
-      <Name>Gwen</Name>
     </ProjectReference>
     <ProjectReference Include="..\SDL2-CS-master\SDL2-CS.csproj">
       <Project>{85480198-8711-4355-830e-72fd794ad3f6}</Project>

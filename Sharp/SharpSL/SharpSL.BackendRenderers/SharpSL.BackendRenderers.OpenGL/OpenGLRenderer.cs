@@ -15,7 +15,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
         public void CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext)
         {
-            new GraphicsContext(ContextHandle.Zero, (function) => GetProcAddress(function),
+            var context = new GraphicsContext(ContextHandle.Zero, (function) => GetProcAddress(function),
                                                                     () => new ContextHandle(GetCurrentContext()));
         }
 

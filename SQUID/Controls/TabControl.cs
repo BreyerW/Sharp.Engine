@@ -47,7 +47,7 @@ namespace Squid
 
                 if (_selectedTab != null)
                 {
-                    _selectedTab.Button.Checked = false;
+                    _selectedTab.Button.IsChecked = false;
                     _selectedTab.IsVisible = false;
                     PageFrame.Controls.Remove(_selectedTab);
                 }
@@ -62,7 +62,7 @@ namespace Squid
 
                 if (_selectedTab != null)
                 {
-                    _selectedTab.Button.Checked = true;
+                    _selectedTab.Button.IsChecked = true;
                     _selectedTab.IsVisible = true;
                     PageFrame.Controls.Add(_selectedTab);
                 }

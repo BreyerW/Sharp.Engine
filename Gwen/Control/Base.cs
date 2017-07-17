@@ -29,7 +29,6 @@ namespace Gwen.Control
         /// <param name="args" >Additional arguments. May be empty (EventArgs.Empty).</param>
 		public delegate void GwenEventHandler<in T>(Base sender, T arguments) where T : System.EventArgs;
 
-        public static bool isDirty = false;
         private bool m_Disposed;
 
         private Base m_Parent;

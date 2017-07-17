@@ -27,6 +27,12 @@ namespace Sharp
             set;
         } = 1;
 
+        public string testStr
+        {
+            get;
+            set;
+        } = "test";
+
         // public float[,,] testArray
         // {
         //    get;

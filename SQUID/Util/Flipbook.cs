@@ -23,7 +23,7 @@ namespace Squid
         {
             if (texture < 0) return;
 
-            Timer += Gui.TimeElapsed;
+            Timer += UI.TimeElapsed;
             
             if (Timer >= Speed)
             {
@@ -31,7 +31,7 @@ namespace Squid
                 Advance();
             }
 
-            Point size = Gui.Renderer.GetTextureSize(texture);
+            Point size = UI.Renderer.GetTextureSize(texture);
             
             int w = (int)((float)size.x / (float)Columns);
             int h = (int)((float)size.y / (float)Rows);
@@ -42,7 +42,7 @@ namespace Squid
             rect.Top = h * row;
             rect.Bottom = (h * (row + 1));
 
-            Gui.Renderer.DrawTexture(texture, x, y, width, height, rect, color);
+            UI.Renderer.DrawTexture(texture, x, y, width, height, rect, color);
         }
 
         private void Advance()

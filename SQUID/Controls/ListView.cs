@@ -202,7 +202,7 @@ namespace Squid
             {
                 if (args.Button > 0) return;
 
-                _clickedPos = Gui.MousePosition;
+                _clickedPos = UI.MousePosition;
                 _oldSize = sender.Parent.Size;
             }
 
@@ -210,7 +210,7 @@ namespace Squid
             {
                 if (args.Button > 0) return;
 
-                Point p = Gui.MousePosition - _clickedPos;
+                Point p = UI.MousePosition - _clickedPos;
                 sender.Parent.ResizeTo(_oldSize + p, AnchorStyles.Right);
                 Width = sender.Parent.Size.x;
             }

@@ -15,6 +15,8 @@ namespace Sharp.Editor.Views
         private int cell_size = 32;
         private int grid_size = 4096;
 
+        protected override string Name => "Scene";
+
         public static HashSet<Entity> entities = new HashSet<Entity>();
         public static Action OnAddedEntity;
         public static Action OnRemovedEntity;
@@ -42,17 +44,6 @@ namespace Sharp.Editor.Views
 
         public SceneView(uint attachToWindow) : base(attachToWindow)
         {
-        }
-
-        public override void Initialize()
-        {
-            //ErrorOutput errorOutput = new ErrorOutput();
-
-            //Foundation foundation = new Foundation(errorOutput);
-            //physEngine= new Physics(foundation, checkRuntimeFiles: true);
-            //var sceneDesc = new SceneDesc (){Gravity = new System.Numerics.Vector3(0, -9.81f, 0) };
-            //physScene = physEngine.CreateScene ();
-
             var eLight = new Entity();
             eLight.name = "Directional Light";
             eLight.Position = Camera.main.entityObject.Position;
@@ -64,9 +55,14 @@ namespace Sharp.Editor.Views
             panel.MouseDown += Panel_MouseDown;
             panel.MouseUp += Panel_MouseUp;
             OnSetupMatrices?.Invoke();
-            base.Initialize();
         }
 
+        //ErrorOutput errorOutput = new ErrorOutput();
+
+        //Foundation foundation = new Foundation(errorOutput);
+        //physEngine= new Physics(foundation, checkRuntimeFiles: true);
+        //var sceneDesc = new SceneDesc (){Gravity = new System.Numerics.Vector3(0, -9.81f, 0) };
+        //physScene = physEngine.CreateScene ();
         private void Panel_MouseUp(Squid.Control sender, Squid.MouseEventArgs args)
         {
             Manipulators.Reset();
@@ -82,13 +78,13 @@ namespace Sharp.Editor.Views
             else if (args.Button is 0)
             {
                 mouseLocked = false;
-                locPos = new Point(Gui.MousePosition.x - panel.Location.x, Gui.MousePosition.y - panel.Location.y);
+                locPos = new Point(Squid.UI.MousePosition.x - panel.Location.x, Squid.UI.MousePosition.y - panel.Location.y);
             }
         }
 
         private void Panel_Drop(Squid.Control sender, DragDropEventArgs e)
         {
-            var locPos = new Point(Gui.MousePosition.x - panel.Location.x, Gui.MousePosition.y - panel.Location.y);
+            var locPos = new Point(Squid.UI.MousePosition.x - panel.Location.x, Squid.UI.MousePosition.y - panel.Location.y);
             Camera.main.SetModelviewMatrix();
             var orig = Camera.main.entityObject.Position;
             var dir = (Camera.main.ScreenToWorld(locPos.x, locPos.y, panel.Size.x, panel.Size.y) - orig).Normalized();
@@ -111,7 +107,7 @@ namespace Sharp.Editor.Views
                     PickTestForObject();
                 locPos = null;
             }
-            MainWindow.backendRenderer.ClearBuffer();
+            //MainWindow.backendRenderer.ClearBuffer();
 
             MainWindow.backendRenderer.SetStandardState();
             var projMat = Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
@@ -146,7 +142,7 @@ namespace Sharp.Editor.Views
 
         private bool PickTestForGizmo()
         {
-            MainWindow.backendRenderer.ClearBuffer();
+            //MainWindow.backendRenderer.ClearBuffer();
             MainWindow.backendRenderer.SetFlatColorState();
             MainWindow.backendRenderer.ChangeShader();
             if (SceneStructureView.tree.SelectedNode != null)
@@ -212,7 +208,7 @@ namespace Sharp.Editor.Views
                 MainWindow.backendRenderer.FinishCommands();
                 if (locPos.HasValue)
                 {
-                    var pixel = MainWindow.backendRenderer.ReadPixels(Gui.MousePosition.x, Camera.main.height - Gui.MousePosition.y - 1 /*locPos.Value.y - 64*/, 1, 1);
+                    var pixel = MainWindow.backendRenderer.ReadPixels(Squid.UI.MousePosition.x, Camera.main.height - Squid.UI.MousePosition.y - 1 /*locPos.Value.y - 64*/, 1, 1);
                     int index = ((pixel[0]) << 00) + ((pixel[1]) << 08) + (((pixel[2]) << 16));
                     Console.WriteLine("encoded index=" + index);
                     if (index > 0 && index < 10)
@@ -310,7 +306,7 @@ namespace Sharp.Editor.Views
                         var orig = Camera.main.entityObject.Position;
                         var winPos = Window.windows[attachedToWindow].Position;
                         var canvasPos = new System.Drawing.Point(evnt.Position.X - winPos.x, evnt.Position.Y - winPos.y);
-                        var localMouse = new Point(Gui.MousePosition.x - panel.Location.x, Gui.MousePosition.y - panel.Location.y);
+                        var localMouse = new Point(Squid.UI.MousePosition.x - panel.Location.x, Squid.UI.MousePosition.y - panel.Location.y);
                         var start = Camera.main.ScreenToWorld(localMouse.x, localMouse.y, panel.Size.x, panel.Size.y, 1);
                         var ray = new Ray(orig, (start - orig).Normalized());
 

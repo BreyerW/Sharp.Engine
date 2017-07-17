@@ -49,15 +49,15 @@ namespace Squid
         /// Gets or sets a value indicating whether this <see cref="CheckBox"/> is checked.
         /// </summary>
         /// <value><c>true</c> if checked; otherwise, <c>false</c>.</value>
-        public bool Checked
+        public bool IsChecked
         {
-            get { return Button.Checked; }
+            get { return Button.IsChecked; }
             set
             {
                 _checked = value;
 
                 if(Button != null)
-                    Button.Checked = value;
+                    Button.IsChecked = value;
             }
         }
 

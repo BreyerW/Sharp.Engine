@@ -56,15 +56,15 @@ namespace Squid
         /// Gets or sets a value indicating whether this <see cref="RadioButton"/> is checked.
         /// </summary>
         /// <value><c>true</c> if checked; otherwise, <c>false</c>.</value>
-        public bool Checked
+        public bool IsChecked
         {
-            get { return Button.Checked; }
+            get { return Button.IsChecked; }
             set
             {
                 _checked = value;
 
                 if (Button != null)
-                    Button.Checked = value;
+                    Button.IsChecked = value;
             }
         }
 
@@ -102,7 +102,7 @@ namespace Squid
 
         void Button_BeforeCheckedChanged(Control sender, SquidEventArgs args)
         {
-            if (Button.Checked && Parent != null)
+            if (Button.IsChecked && Parent != null)
             {
                 bool valid = false;
 
@@ -110,7 +110,7 @@ namespace Squid
                 {
                     if (btn != this && btn.Group == Group)
                     {
-                        if (btn.Checked)
+                        if (btn.IsChecked)
                         {
                             valid = true;
                             break;
@@ -132,12 +132,12 @@ namespace Squid
 
         void Button_CheckedChanged(Control sender)
         {
-            if (Button.Checked && Parent != null)
+            if (Button.IsChecked && Parent != null)
             {
                 foreach (RadioButton btn in Parent.GetControls<RadioButton>())
                 {
                     if (btn != this && btn.Group == Group)
-                        btn.Checked = false;
+                        btn.IsChecked = false;
                 }
             }
 

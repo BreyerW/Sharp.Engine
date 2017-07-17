@@ -34,7 +34,7 @@ namespace Squid
         /// </summary>
         /// <value><c>true</c> if checked; otherwise, <c>false</c>.</value>
         [DefaultValue(false)]
-        public bool Checked
+        public bool IsChecked
         {
             get { return _checked; }
             set
@@ -70,7 +70,7 @@ namespace Squid
             if (args.Button > 0) return;
 
             if (CheckOnClick)
-                Checked = !Checked;
+                IsChecked = !IsChecked;
         }
     }
 }

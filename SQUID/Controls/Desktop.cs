@@ -177,15 +177,15 @@ namespace Squid
         /// </summary>
         public new void Draw()
         {
-            Gui.Renderer.Scissor(ClipRect.Left, ClipRect.Top, ClipRect.Width, ClipRect.Height);
-            Gui.Renderer.StartBatch();
+            UI.Renderer.Scissor(ClipRect.Left, ClipRect.Top, ClipRect.Width, ClipRect.Height);
+            UI.Renderer.StartBatch();
 
             base.Draw();
 
             if (ShowCursor)
-                DrawCursor(Gui.MousePosition.x, Gui.MousePosition.y);
+                DrawCursor(UI.MousePosition.x, UI.MousePosition.y);
 
-            Gui.Renderer.EndBatch(true);
+            UI.Renderer.EndBatch(true);
         }
 
         /// <summary>
@@ -250,7 +250,7 @@ namespace Squid
         {
             for (int i = Controls.Count - 1; i >= 0; i--)
             {
-                if (Controls[i] is Window w && w.Enabled && w.IsVisible && w.Hit(Gui.MousePosition.x, Gui.MousePosition.y))
+                if (Controls[i] is Window w && w.Enabled && w.IsVisible && w.Hit(UI.MousePosition.x, UI.MousePosition.y))
                     return w;
             }
 
@@ -375,26 +375,26 @@ namespace Squid
             {
                 ProcessDragDrop();
 
-                if (Gui.GetButton(0) == ButtonState.Up)
+                if (UI.GetButton(0) == ButtonState.Up)
                     EndDragDrop();
             }
 
             int pressed = -1;
             int down = -1;
 
-            for (int i = 0; i < Gui.Buttons.Length; i++)
+            for (int i = 0; i < UI.Buttons.Length; i++)
             {
-                if (Gui.GetButton(i) == ButtonState.Press)
+                if (UI.GetButton(i) == ButtonState.Press)
                     pressed = i;
 
-                if (Gui.GetButton(i) == ButtonState.Down)
+                if (UI.GetButton(i) == ButtonState.Down)
                     down = i;
             }
 
             if (pressed == -1)
             {
                 if (TooltipControl != null) TooltipControl.IsVisible = false;
-                hot = GetControlAt(Gui.MousePosition.x, Gui.MousePosition.y);
+                hot = GetControlAt(UI.MousePosition.x, UI.MousePosition.y);
                 if (TooltipControl != null) TooltipControl.IsVisible = true;
 
                 if (!DesignMode && hot != null && ModalQueue.Count > 0)
@@ -440,9 +440,9 @@ namespace Squid
                 hot = null;
             }
 
-            for (int i = 0; i < Gui.Buttons.Length; i++)
+            for (int i = 0; i < UI.Buttons.Length; i++)
             {
-                if (Gui.GetButton(i) == ButtonState.Up)
+                if (UI.GetButton(i) == ButtonState.Up)
                 {
                     if (MouseDownControl != null)
                     {
@@ -456,7 +456,7 @@ namespace Squid
             {
                 if (ModalQueue.Count == 0)
                 {
-                    Window w = GetWindowAt(Gui.MousePosition.x, Gui.MousePosition.y);
+                    Window w = GetWindowAt(UI.MousePosition.x, UI.MousePosition.y);
                     if (w != null && w != window && w.Dock == DockStyle.None)
                     {
                         w.BringToFront();
@@ -524,11 +524,11 @@ namespace Squid
             PerformUpdate();
             PerformLayout();
             PerformLateUpdate();
-            foreach (KeyData data in Gui.KeyBuffer)
+            foreach (KeyData data in UI.KeyBuffer)
             {
                 if (data.Pressed && data.Key == Keys.TAB)
                 {
-                    if (Gui.ShiftPressed)
+                    if (UI.ShiftPressed)
                         TabPrevious();
                     else
                         TabNext();
@@ -562,7 +562,7 @@ namespace Squid
             DragDropArgs.DraggedControl = data;
             DragDropArgs.Source = sender;
 
-            DragDropOffset = data.Location - Gui.MousePosition;
+            DragDropOffset = data.Location - UI.MousePosition;
 
             DragData = data;
             DragDropSender = sender;
@@ -664,7 +664,7 @@ namespace Squid
 
             if (IsDragging)
             {
-                DragData.Position = DragDropOffset + Gui.MousePosition;
+                DragData.Position = DragDropOffset + UI.MousePosition;
                 DragData.Position = Snap(DragData.Position);
 
                 DragData.IsVisible = false;

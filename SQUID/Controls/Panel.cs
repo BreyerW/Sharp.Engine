@@ -71,9 +71,9 @@ namespace Squid
             // scroll
 
             if (UseWheelForHScroll)
-                HScroll.Scroll(Gui.MouseScroll);
+                HScroll.Scroll(UI.MouseScroll);
             else
-                VScroll.Scroll(Gui.MouseScroll);
+                VScroll.Scroll(UI.MouseScroll);
 
             // consume the mouse event
             args.Cancel = true;

@@ -1,29 +1,24 @@
 ﻿using System;
+using Squid;
 
-namespace Gwen.Control.Property
+namespace Sharp.Editor.UI.Property
 {
     /// <summary>
     /// Checkable property.
     /// </summary>
-    public class BooleanDrawer : Control.Property.PropertyDrawer<bool>
+    public class BooleanDrawer : PropertyDrawer<bool>
     {
-        protected readonly Control.CheckBox m_CheckBox;
+        private Button m_CheckBox;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BooleanDrawer"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public BooleanDrawer(Control.Base parent)
-            : base(parent)
+        public BooleanDrawer(string name)
+             : base(name)
         {
-            m_CheckBox = new Control.CheckBox(this);
-            m_CheckBox.ShouldDrawBackground = false;
-            m_CheckBox.CheckChanged += OnValueChanged;
-            m_CheckBox.IsTabable = true;
-            m_CheckBox.KeyboardInputEnabled = true;
-            m_CheckBox.SetPosition(2, 1);
-
-            Height = 18;
+            m_CheckBox = new Button();
+            m_CheckBox.Size = new Point(15, 15);
+            m_CheckBox.Position = new Point(label.Size.x + 1, 0);
+            Childs.Add(label);
+            Childs.Add(m_CheckBox);
+            m_CheckBox.Style = "checkBox";
         }
 
         /// <summary>
@@ -33,22 +28,6 @@ namespace Gwen.Control.Property
         {
             get { return m_CheckBox.IsChecked; }
             set { m_CheckBox.IsChecked = value; }
-        }
-
-        /// <summary>
-        /// Indicates whether the property value is being edited.
-        /// </summary>
-        public override bool IsEditing
-        {
-            get { return m_CheckBox.HasFocus; }
-        }
-
-        /// <summary>
-        /// Indicates whether the control is hovered by mouse pointer.
-        /// </summary>
-        public override bool IsHovered
-        {
-            get { return base.IsHovered || m_CheckBox.IsHovered; }
         }
     }
 }

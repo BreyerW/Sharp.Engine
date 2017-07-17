@@ -47,17 +47,17 @@ namespace Squid
             Controls.ItemsSorted += Controls_ItemsSorted;
         }
 
-        void Controls_ItemsSorted(object sender, EventArgs e)
+        private void Controls_ItemsSorted(object sender, EventArgs e)
         {
             Refresh();
         }
 
-        void Controls_ItemRemoved(object sender, ListEventArgs<Control> e)
+        private void Controls_ItemRemoved(object sender, ListEventArgs<Control> e)
         {
             Refresh();
         }
 
-        void Controls_ItemAdded(object sender, ListEventArgs<Control> e)
+        private void Controls_ItemAdded(object sender, ListEventArgs<Control> e)
         {
             Refresh();
         }
@@ -73,27 +73,27 @@ namespace Squid
             {
                 if (!control.IsVisible) continue;
 
-                if (x + control.Size.x + HSpacing <= Size.x)
+                //if (x + control.Size.x + HSpacing <= Size.x)
                 {
                     control.Position = new Point(x, y);
 
                     x = x + control.Size.x + HSpacing;
                 }
-                else
-                {
-                    x = HSpacing;
+                /* else
+                 {
+                     x = HSpacing;
 
-                    if (c > 0)
-                    {
-                        y += max + VSpacing;
-                        max = 0;
-                        c = 0;
-                    }
+                     if (c > 0)
+                     {
+                         y += max + VSpacing;
+                         max = 0;
+                         c = 0;
+                     }
 
-                    control.Position = new Point(x, y);
+                     control.Position = new Point(x, y);
 
-                    x = x + control.Size.x + HSpacing;
-                }
+                     x = x + control.Size.x + HSpacing;
+                 }*/
 
                 max = Math.Max(max, control.Size.y);
 
@@ -150,28 +150,27 @@ namespace Squid
             foreach (Control control in Controls)
             {
                 if (!control.IsVisible) continue;
-
-                if (y + control.Size.y + VSpacing <= Size.y)
+                //if (y + control.Size.y + VSpacing <= Size.y)
                 {
                     control.Position = new Point(x, y);
 
                     y = y + control.Size.y + VSpacing;
                 }
-                else
-                {
-                    y = VSpacing;
+                /* else
+                 {
+                     y = VSpacing;
 
-                    if (c > 0)
-                    {
-                        x += max + HSpacing;
-                        max = 0;
-                        c = 0;
-                    }
+                     if (c > 0)
+                     {
+                         x += max + HSpacing;
+                         max = 0;
+                         c = 0;
+                     }
 
-                    control.Position = new Point(x, y);
+                     control.Position = new Point(x, y);
 
-                    y = y + control.Size.y + VSpacing;
-                }
+                     y = y + control.Size.y + VSpacing;
+                 }*/
 
                 max = Math.Max(max, control.Size.x);
 
@@ -241,15 +240,19 @@ namespace Squid
             {
                 case FlowDirection.None:
                     return;
+
                 case FlowDirection.LeftToRight:
                     LayoutLeftToRight();
                     break;
+
                 case FlowDirection.TopToBottom:
                     LayoutTopToBottom();
                     break;
+
                 case FlowDirection.RightToLeft:
                     LayoutRightToLeft();
                     break;
+
                 case FlowDirection.BottomToTop:
                     LayoutBottomToTop();
                     break;

@@ -10,10 +10,11 @@ namespace Squid
     /// <summary>
     /// Thiy is the main entry of Squid.
     /// </summary>
-    public static class Gui
+    public static class UI
     {
         private static string Clipboard;
 
+        public static bool isDirty = false;
         public static TranslateStringHandler TranslateHandler;
         public static int Language { get; private set; }
 
@@ -192,7 +193,7 @@ namespace Squid
                 MouseDown(null, null);
         }
 
-        static Gui()
+        static UI()
         {
             Renderer = new NoRenderer();
             DoubleClickSpeed = 250;

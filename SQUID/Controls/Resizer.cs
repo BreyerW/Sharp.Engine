@@ -163,7 +163,7 @@ namespace Squid
         {
             if (args.Button > 0) return;
 
-            ClickedPos = Gui.MousePosition;
+            ClickedPos = UI.MousePosition;
             OldSize = Parent.Size;
 
             if (GripDown != null)
@@ -182,7 +182,7 @@ namespace Squid
         {
             if (args.Button > 0) return;
 
-            Point p = Gui.MousePosition - ClickedPos;
+            Point p = UI.MousePosition - ClickedPos;
 
             Point position = Parent.Position;
             Point size = Parent.Size;
@@ -190,10 +190,10 @@ namespace Squid
             AnchorStyles anchor = (AnchorStyles) sender.Tag;
 
             if ((anchor & AnchorStyles.Left) == AnchorStyles.Left)
-                p.x = ClickedPos.x - Gui.MousePosition.x;
+                p.x = ClickedPos.x - UI.MousePosition.x;
             
             if ((anchor & AnchorStyles.Top) == AnchorStyles.Top)
-                p.y = ClickedPos.y - Gui.MousePosition.y;
+                p.y = ClickedPos.y - UI.MousePosition.y;
 
             Parent.ResizeTo(OldSize + p, anchor);
 

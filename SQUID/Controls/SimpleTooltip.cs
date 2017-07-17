@@ -207,14 +207,14 @@ namespace Squid
         protected override void OnUpdate()
         {
             // increment timer if delay isnt reached
-            if (DelayTimer < Delay) DelayTimer += Gui.TimeElapsed;
+            if (DelayTimer < Delay) DelayTimer += UI.TimeElapsed;
 
             // if delay is reached
             if (DelayTimer >= Delay)
             {
                 // fade Opacity in/out over Duration depending on FadeDirection
                 // (FPS independent linear interpolation) 
-                Opacity += (Gui.TimeElapsed / FadeDuration) * FadeDirection;
+                Opacity += (UI.TimeElapsed / FadeDuration) * FadeDirection;
 
                 // clamp between 0 and 1
                 Opacity = Opacity < 0 ? 0 : (Opacity > 1 ? 1 : Opacity);

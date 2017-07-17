@@ -4,13 +4,15 @@ using System.Linq;
 using OpenTK;
 using OpenTK.Input;
 using Sharp.Editor.UI.Property;
-using Gwen.Control;
 using TupleExtensions;
+using Squid;
 
 namespace Sharp.Editor.Views
 {
     public class CurvesView/*<T> where T:PropertyDrawer<Curve or Curve[]>*/ : View
     {
+        protected override string Name => "Curves Inspector";
+
         public CurvesView(uint attachToWindow) : base(attachToWindow)
         {
             float[] tickModulos = new float[]
@@ -55,6 +57,11 @@ namespace Sharp.Editor.Views
             curveSettings.hTickStyle.labelColor = new Color(0, 0, 0, 0.32f);
             curveSettings.hTickStyle.distLabel = 30;
             curveSettings.hTickStyle.centerLabel = true;
+            // menu = new ListBox(panel);
+            //menu.RowSelected += (sender, args) => { menu.Hide(); menu.RemoveAllRows(); showDrag = -1; };
+            //menu.Hide();
+            // badge = new Label(panel);
+            //badge.Hide();
         }
 
         private static Color kGridMinorColorDark = new Color(0f, 0f, 0f, 0.1f);
@@ -107,16 +114,6 @@ namespace Sharp.Editor.Views
 
         private ListBox menu;
         private Label badge;
-
-        public override void Initialize()
-        {
-            base.Initialize();
-            // menu = new ListBox(panel);
-            menu.RowSelected += (sender, args) => { menu.Hide(); menu.RemoveAllRows(); showDrag = -1; };
-            menu.Hide();
-            // badge = new Label(panel);
-            badge.Hide();
-        }
 
         private void OnGUI()
         {
@@ -291,7 +288,7 @@ namespace Sharp.Editor.Views
 
         public override void OnMouseDown(int buttonId)//convert curve keys to basic gui? then use clicked/rightclicked etc events on them
         {
-            var mousePos = new Vector2(Squid.Gui.MousePosition.x, Squid.Gui.MousePosition.y);
+            var mousePos = new Vector2(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y);
             var pos = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);
             var rightClick = buttonId is 1;
             if (clickedKeyframe[0].Count + clickedKeyframe[1].Count == 1)
@@ -347,18 +344,18 @@ namespace Sharp.Editor.Views
                         }
                         if (rightClick)
                         {
-                            menu.RemoveAllRows();
+                            //menu.RemoveAllRows();
                             CurveMenuManager.selectedKeyfr = clickedKeyframe;
                             CurveMenuManager.updateSelected = UpdateClickedKeyfr;
-                            menu.AddRow("Edit key");
-                            menu.AddRow("Edit tangents");
+                            //menu.AddRow("Edit key");
+                            //menu.AddRow("Edit tangents");
 
-                            menu.AddRow("Delete Key" + (clickedKeyframe[0].Count + clickedKeyframe[1].Count > 1 ? "s" : ""), "", data).Clicked += DeleteKey;
-                            CurveMenuManager.AddTangentMenuItems(menu, drawer.Value);
-                            menu.SizeToContents();
-                            menu.SetPosition(mousePos.X, mousePos.Y - 29);
+                            //menu.AddRow("Delete Key" + (clickedKeyframe[0].Count + clickedKeyframe[1].Count > 1 ? "s" : ""), "", data).Clicked += DeleteKey;
+                            //CurveMenuManager.AddTangentMenuItems(menu, drawer.Value);
+                            //menu.SizeToContents();
+                            //menu.SetPosition(mousePos.X, mousePos.Y - 29);
                             delayClear = true;
-                            menu.Show();
+                            //menu.Show();
                             return;
                         }
                         else
@@ -390,17 +387,17 @@ namespace Sharp.Editor.Views
             }
             if ((checkMousePos || checkMousePos1) && rightClick)
             {
-                menu.RemoveAllRows();
-                menu.AddRow("Add key", "Add key", new object[]
-                {
-                checkMousePos ? 0 : 1,
-                pos.X,
-                }).Clicked += AddKey;
-                menu.AddRow("Track curve", "Track curve", checkMousePos ? 0 : 1).Clicked += TrackSelectedCurve;
-                menu.SizeToContents();
-                menu.SetPosition(mousePos.X, mousePos.Y - 29);
+                /* menu.RemoveAllRows();
+                 menu.AddRow("Add key", "Add key", new object[]
+                 {
+                 checkMousePos ? 0 : 1,
+                 pos.X,
+                 }).Clicked += AddKey;
+                 menu.AddRow("Track curve", "Track curve", checkMousePos ? 0 : 1).Clicked += TrackSelectedCurve;
+                 menu.SizeToContents();
+                 menu.SetPosition(mousePos.X, mousePos.Y - 29);*/
                 delayClear = true;
-                menu.Show();
+                //menu.Show();
                 return;
             }
             else if (showDrag != 0)
@@ -452,10 +449,10 @@ namespace Sharp.Editor.Views
                 CheckIfOutsideArea(ref keyInCV);
                 var keyInVS = RegionDrawer.CurveToViewSpace(keyInCV, scale, translation);
 
-                badge.SetPosition(keyInVS.X, keyInVS.Y - 29);
-                badge.Text = $"{x:F3}, {drawer.Value[tracking].Evaluate(x):F3}";
-                badge.SizeToContents();
-                badge.Show();
+                //badge.SetPosition(keyInVS.X, keyInVS.Y - 29);
+                // badge.Text = $"{x:F3}, {drawer.Value[tracking].Evaluate(x):F3}";
+                // badge.SizeToContents();
+                //badge.Show();
                 return;
             }
             if (showDrag is -1) return;
@@ -507,10 +504,10 @@ namespace Sharp.Editor.Views
                         if (!isDraggingRegion)
                         {
                             var keyInVS = RegionDrawer.CurveToViewSpace(newPos, scale, translation);
-                            badge.SetPosition(keyInVS.X + 5f, keyInVS.Y - 15f);
-                            badge.Text = $"{selectedTan.time:F3}, {selectedTan.value:F3}";
-                            badge.SizeToContents();
-                            badge.Show();
+                            /*   badge.SetPosition(keyInVS.X + 5f, keyInVS.Y - 15f);
+                               badge.Text = $"{selectedTan.time:F3}, {selectedTan.value:F3}";
+                               badge.SizeToContents();
+                               badge.Show();*/
                         }
                     }
                     if (selectedTan.Equals(value) && tangentSide != TangentDirection.None)
@@ -566,7 +563,7 @@ namespace Sharp.Editor.Views
                 }
                 l++;
             }
-            Base.isDirty = true;
+            Squid.UI.isDirty = true;
             //showDrag = -1;
             editAxis = -1;
         }
@@ -575,14 +572,14 @@ namespace Sharp.Editor.Views
         {
             showDrag = -1;
             tangentSide = TangentDirection.None;
-            badge.Hide();
+            badge.IsVisible = false;
             isDraggingRegion = false;
             if (clickedKeyframe[0].Count + clickedKeyframe[1].Count > 1)
             {
                 clickedKeyframe[0].Clear();
                 clickedKeyframe[1].Clear();
             }
-            if (!delayClear) menu.Hide();
+            if (!delayClear) menu.IsVisible = false;
         }
 
         public override void OnKeyPressEvent(ref byte[] keyboardState)
@@ -590,23 +587,23 @@ namespace Sharp.Editor.Views
             if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_ESCAPE] is 1)
             {
                 tracking = -1;
-                badge.Hide();
+                badge.IsVisible = false;
             }
         }
 
         //void TraverseKeyframes(Rect swatchArea, Rect curvesRange)
-        private void TrackSelectedCurve(Base sender, EventArgs args)
-        {
-            tracking = (int)(sender as ListBoxRow).UserData;
-        }
+        /*  private void TrackSelectedCurve(Base sender, EventArgs args)
+          {
+              tracking = (int)(sender as ListBoxRow).UserData;
+          }
 
-        private void DeleteKey(Base sender, EventArgs args)
-        {
-            (int curveId, int keyId)[] data = (sender as ListBoxRow).UserData as (int, int)[];
-            foreach (var toDelete in data)
-                drawer.Value[toDelete.curveId].RemoveKey(toDelete.keyId);
-            Base.isDirty = true;
-        }
+          private void DeleteKey(Base sender, EventArgs args)
+          {
+              (int curveId, int keyId)[] data = (sender as ListBoxRow).UserData as (int, int)[];
+              foreach (var toDelete in data)
+                  drawer.Value[toDelete.curveId].RemoveKey(toDelete.keyId);
+              Squid.UI.isDirty = true;
+          }*/
 
         private Label[] vLabels = Array.Empty<Label>();
         private Label[] hLabels = Array.Empty<Label>();
@@ -723,15 +720,15 @@ namespace Sharp.Editor.Views
                             vector = new Vector2((float)Math.Floor(vector.X), y);
                             float num3 = ticksAtLevel3[m];
                             (float x, float y, float width, float height) position;
-                            Gwen.Pos textAnchor;
+                            Alignment textAnchor;
                             if (curveSettings.hTickStyle.centerLabel)
                             {
-                                textAnchor = Gwen.Pos.Center;
+                                textAnchor = Alignment.MiddleCenter;
                                 position = (vector.X - 8, vector.Y - 16 - curveSettings.hTickLabelOffset - 29, 1, 16);
                             }
                             else
                             {
-                                textAnchor = Gwen.Pos.Left;
+                                textAnchor = Alignment.MiddleLeft;
                                 position = (vector.X, vector.Y - 16 - curveSettings.hTickLabelOffset, 50, 16);
                             }
                             if (hLabels[m] is null)
@@ -740,10 +737,10 @@ namespace Sharp.Editor.Views
                                 // hLabels[m].AutoSizeToContents = true;
                             }
                             hLabels[m].Text = num3.ToString("n" + numberOfDecimalsForMinimumDifference) + curveSettings.hTickStyle.unit;
-                            hLabels[m].SetPosition(position.x, position.y);
-                            hLabels[m].SetSize((int)position.width, (int)position.height);
-                            hLabels[m].Alignment = textAnchor;
-                            hLabels[m].Show();
+                            // hLabels[m].SetPosition(position.x, position.y);
+                            // hLabels[m].SetSize((int)position.width, (int)position.height);
+                            // hLabels[m].Alignment = textAnchor;
+                            // hLabels[m].Show();
                         }
                     }
                 }
@@ -797,31 +794,31 @@ namespace Sharp.Editor.Views
                                 //vLabels[n].AutoSizeToContents = true;
                             }
                             vLabels[n].Text = num6.ToString(text) + curveSettings.vTickStyle.unit;
-                            vLabels[n].SetPosition(position2.x, position2.y);
-                            vLabels[n].SetSize((int)position2.width, (int)position2.height);
+                            //vLabels[n].SetPosition(position2.x, position2.y);
+                            //vLabels[n].SetSize((int)position2.width, (int)position2.height);
                             //vLabels[n].Alignment = Gwen.Pos.Center;
-                            vLabels[n].Show();
+                            //vLabels[n].Show();
                         }
                     }
                 }
             }
         }
 
-        private void AddKey(Base sender, EventArgs args)
-        {
-            object[] data = (sender as ListBoxRow).UserData as object[];
-            int curveId = (int)data[0];
-            float time = (float)data[1];
-            var startAngle = EvaluateCurveDeltaSlow(time, curveId);
-            var newPoint = new Vector2(time, drawer.Value[curveId].Evaluate(time));
-            CheckIfOutsideArea(ref newPoint);
-            var newkeyfr = new Keyframe(newPoint.X, newPoint.Y, startAngle, startAngle);
-            var keyId = drawer.Value[curveId].AddKey(ref newkeyfr);
-            clickedKeyframe[0].Clear();
-            clickedKeyframe[1].Clear();
-            clickedKeyframe[curveId].Add(Vector2.Zero, drawer.Value[curveId].keys[keyId]);
-            Base.isDirty = true;
-        }
+        /* private void AddKey(Base sender, EventArgs args)
+         {
+             object[] data = (sender as ListBoxRow).UserData as object[];
+             int curveId = (int)data[0];
+             float time = (float)data[1];
+             var startAngle = EvaluateCurveDeltaSlow(time, curveId);
+             var newPoint = new Vector2(time, drawer.Value[curveId].Evaluate(time));
+             CheckIfOutsideArea(ref newPoint);
+             var newkeyfr = new Keyframe(newPoint.X, newPoint.Y, startAngle, startAngle);
+             var keyId = drawer.Value[curveId].AddKey(ref newkeyfr);
+             clickedKeyframe[0].Clear();
+             clickedKeyframe[1].Clear();
+             clickedKeyframe[curveId].Add(Vector2.Zero, drawer.Value[curveId].keys[keyId]);
+             Squid.UI.isDirty = true;
+         }*/
 
         public float EvaluateCurveDeltaSlow(float time, int curveId)
         {

@@ -23,7 +23,6 @@ namespace Sharp
         public void Initialize(params View[] viewsToOpen)
         {
             backendRenderer.SetupGraphic();
-            View.mainViews[windowId].Initialize();
             Squid.Control parent = View.mainViews[windowId].desktop;
             var margin = new Margin(0, 50, 0, 30);
             foreach (var (id, view) in viewsToOpen.WithIndexes())

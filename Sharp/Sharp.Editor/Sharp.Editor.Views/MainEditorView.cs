@@ -7,6 +7,8 @@ namespace Sharp.Editor.Views
 {
     public class MainEditorView : View
     {
+        protected override string Name => "Main View";
+
         public Desktop desktop;
 
         //public SplitContainer splitter = new SplitContainer();
@@ -22,18 +24,13 @@ namespace Sharp.Editor.Views
         {
             desktop = new Desktop();
             desktop.ShowCursor = false;
-            desktop.Skin = Gui.GenerateStandardSkin();
-            Gui.Renderer = new SharpSL.BackendRenderers.UIRenderer();
+            desktop.Skin = Squid.UI.GenerateStandardSkin();
+            Squid.UI.Renderer = new SharpSL.BackendRenderers.UIRenderer();
         }
 
-        public override void Initialize()
-        {
-            base.Initialize();
-            //button powodowal problemy z memory. moze to znow problem z render textem
+        //button powodowal problemy z memory. moze to znow problem z render textem
 
-            //split.Depth = 1;//depth conflict when two controls overlap with same parent - fix it
-        }
-
+        //split.Depth = 1;//depth conflict when two controls overlap with same parent - fix it
         public int nextUpdate;
 
         public override void Render()
@@ -54,7 +51,9 @@ namespace Sharp.Editor.Views
         public override void OnResize(int width, int height)
         {
             Camera.main?.SetOrthoMatrix(width, height);
-            desktop.Size = new Point(width, height);
+            //desktop.Size = ;
+            desktop.ResizeTo(new Point(width, height), AnchorStyles.Right | AnchorStyles.Bottom);
+            MainWindow.backendRenderer.Viewport(0, 0, desktop.Size.x, desktop.Size.y);
         }
     }
 }

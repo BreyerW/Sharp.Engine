@@ -70,22 +70,22 @@ namespace Squid
         {
             base.DrawStyle(style, opacity);
 
-            int texture = Gui.Renderer.GetTexture(Texture);
+            int texture = UI.Renderer.GetTexture(Texture);
             if (texture < 0) return;
 
-            if(ColorByTint)
+            if (ColorByTint)
                 Color = style.Tint;
 
             int color = Color;
 
-            if(Tint != -1)
+            if (Tint != -1)
                 color = ColorInt.Blend(Tint, color);
 
             color = ColorInt.FromArgb(opacity, color);
 
             if (TextureRect.IsEmpty())
             {
-                Point texsize = Gui.Renderer.GetTextureSize(texture);
+                Point texsize = UI.Renderer.GetTextureSize(texture);
                 TextureRect = new Rectangle(Point.Zero, texsize);
             }
 
@@ -100,7 +100,7 @@ namespace Squid
             }
             else if (Tiling == TextureMode.Stretch)
             {
-                Gui.Renderer.DrawTexture(texture, Location.x + Inset.Left, Location.y + Inset.Top, Size.x - (Inset.Left + Inset.Right), Size.y - (Inset.Top + Inset.Bottom), TextureRect, color);
+                UI.Renderer.DrawTexture(texture, Location.x + Inset.Left, Location.y + Inset.Top, Size.x - (Inset.Left + Inset.Right), Size.y - (Inset.Top + Inset.Bottom), TextureRect, color);
             }
             else if (Tiling == TextureMode.Center)
             {
@@ -108,7 +108,7 @@ namespace Squid
                 Point rectsize = new Point(TextureRect.Width, TextureRect.Height);
                 Point pos = center - rectsize / 2;
 
-                Gui.Renderer.DrawTexture(texture, pos.x, pos.y, rectsize.x, rectsize.y, TextureRect, color);
+                UI.Renderer.DrawTexture(texture, pos.x, pos.y, rectsize.x, rectsize.y, TextureRect, color);
             }
             else
             {

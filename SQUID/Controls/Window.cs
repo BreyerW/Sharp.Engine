@@ -103,7 +103,7 @@ namespace Squid
             if (Modal)
             {
                 SetScissor(0, 0, Desktop.Size.x, Desktop.Size.y);
-                Gui.Renderer.DrawBox(0, 0, Desktop.Size.x, Desktop.Size.y, ColorInt.FromArgb(GetOpacity(1), Desktop.ModalColor));
+                UI.Renderer.DrawBox(0, 0, Desktop.Size.x, Desktop.Size.y, ColorInt.FromArgb(GetOpacity(1), Desktop.ModalColor));
                 ResetScissor();
             }
 
@@ -115,7 +115,7 @@ namespace Squid
         /// </summary>
         public void StartDrag()
         {
-            ClickedPos = Gui.MousePosition - Position;
+            ClickedPos = UI.MousePosition - Position;
             IsDragging = true;
         }
 
@@ -129,7 +129,7 @@ namespace Squid
 
         private void Drag()
         {
-            Point p = Gui.MousePosition - ClickedPos;
+            Point p = UI.MousePosition - ClickedPos;
 
             if (!Modal)
             {

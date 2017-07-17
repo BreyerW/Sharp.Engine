@@ -296,12 +296,12 @@ namespace Squid
             foreach (string token in tokens)
             {
                 key = token.Substring(4, token.Length - 5);
-                translated = Gui.Translate(key);
+                translated = UI.Translate(key);
                 result = result.Replace(token, translated);
             }
 
             if (tokens.Count == 0)
-                result = Gui.Translate(text);
+                result = UI.Translate(text);
 
             return result;
         }
@@ -1223,10 +1223,10 @@ namespace Squid
 
             if (!_visible) return;
 
-            if (FadeSpeed > 0 || Gui.GlobalFadeSpeed > 0)
+            if (FadeSpeed > 0 || UI.GlobalFadeSpeed > 0)
             {
-                float speed = FadeSpeed > 0 ? FadeSpeed : Gui.GlobalFadeSpeed;
-                float delta = Gui.TimeElapsed / speed;
+                float speed = FadeSpeed > 0 ? FadeSpeed : UI.GlobalFadeSpeed;
+                float delta = UI.TimeElapsed / speed;
 
                 FadeOut -= delta; FadeIn += delta;
 
@@ -1246,14 +1246,14 @@ namespace Squid
 
             Childs.IsLocked = true;
 
-            Actions.Update(Gui.TimeElapsed);
+            Actions.Update(UI.TimeElapsed);
 
             if (!IsRemoved)
             {
-                if (localLanguage != Gui.Language)
+                if (localLanguage != UI.Language)
                 {
                     UpdateTranslation();
-                    localLanguage = Gui.Language;
+                    localLanguage = UI.Language;
                 }
 
                 OnUpdate();
@@ -1410,7 +1410,7 @@ namespace Squid
         /// <returns>Point.</returns>
         protected Point AlignText(string text, Alignment align, Margin padding, int font)
         {
-            Point tsize = Gui.Renderer.GetTextSize(text, font);
+            Point tsize = UI.Renderer.GetTextSize(text, font);
 
             switch (align)
             {
@@ -1457,7 +1457,7 @@ namespace Squid
         /// <returns>Point.</returns>
         protected Point AlignText(string text, Alignment align, Margin padding, int font, out Point tsize)
         {
-            tsize = Gui.Renderer.GetTextSize(text, font);
+            tsize = UI.Renderer.GetTextSize(text, font);
 
             switch (align)
             {
@@ -1580,11 +1580,11 @@ namespace Squid
             }
 
             if (blend != 0)
-                Gui.Renderer.DrawBox(loc.x, loc.y, _size.x, _size.y, ColorInt.FromArgb(opacity, blend));
+                UI.Renderer.DrawBox(loc.x, loc.y, _size.x, _size.y, ColorInt.FromArgb(opacity, blend));
 
             if (!string.IsNullOrEmpty(style.Texture))
             {
-                int texture = Gui.Renderer.GetTexture(style.Texture);
+                int texture = UI.Renderer.GetTexture(style.Texture);
 
                 if (texture > -1)
                 {
@@ -1600,7 +1600,7 @@ namespace Squid
 
                     if (style.TextureRect.IsEmpty())
                     {
-                        Point texsize = Gui.Renderer.GetTextureSize(texture);
+                        Point texsize = UI.Renderer.GetTextureSize(texture);
                         style.TextureRect = new Rectangle(Point.Zero, texsize);
                     }
 
@@ -1612,7 +1612,7 @@ namespace Squid
                     }
                     else if (style.Tiling == TextureMode.Stretch)
                     {
-                        Gui.Renderer.DrawTexture(texture, loc.x, loc.y, _size.x, _size.y, style.TextureRect, color);
+                        UI.Renderer.DrawTexture(texture, loc.x, loc.y, _size.x, _size.y, style.TextureRect, color);
                     }
                     else if (style.Tiling == TextureMode.Center)
                     {
@@ -1620,7 +1620,7 @@ namespace Squid
                         Point rectsize = new Point(style.TextureRect.Width, style.TextureRect.Height);
                         Point pos = center - rectsize / 2;
 
-                        Gui.Renderer.DrawTexture(texture, pos.x, pos.y, rectsize.x, rectsize.y, style.TextureRect, color);
+                        UI.Renderer.DrawTexture(texture, pos.x, pos.y, rectsize.x, rectsize.y, style.TextureRect, color);
                     }
                     else
                     {
@@ -1646,9 +1646,9 @@ namespace Squid
             else
                 ScissorStack.Add(Depth, new KeyValuePair<Control, Rectangle>(this, r));
 
-            Gui.Renderer.EndBatch(false);
-            Gui.Renderer.Scissor(x, y, r.Width, r.Height);
-            Gui.Renderer.StartBatch();
+            UI.Renderer.EndBatch(false);
+            UI.Renderer.Scissor(x, y, r.Width, r.Height);
+            UI.Renderer.StartBatch();
         }
 
         /// <summary>
@@ -1671,9 +1671,9 @@ namespace Squid
                 }
             }
 
-            Gui.Renderer.EndBatch(false);
-            Gui.Renderer.Scissor(r.Left, r.Top, r.Width, r.Height);
-            Gui.Renderer.StartBatch();
+            UI.Renderer.EndBatch(false);
+            UI.Renderer.Scissor(r.Left, r.Top, r.Width, r.Height);
+            UI.Renderer.StartBatch();
         }
 
         /// <summary>
@@ -2010,7 +2010,7 @@ namespace Squid
 
             // if (root.DesignMode) return;
 
-            if (this is ICheckable && (this as ICheckable).Checked)
+            if (this is ICheckable && (this as ICheckable).IsChecked)
             {
                 if (!Enabled)
                     State = ControlState.CheckedDisabled;
@@ -2072,7 +2072,7 @@ namespace Squid
 
         protected void RepeatTexture(int texture, Point loc, Rectangle rect, TextureMode mode, float opacity, int color)
         {
-            Point texsize = Gui.Renderer.GetTextureSize(texture);
+            Point texsize = UI.Renderer.GetTextureSize(texture);
 
             int width = rect.Width != 0 ? rect.Width : texsize.x;
             int height = rect.Height != 0 ? rect.Height : texsize.y;
@@ -2107,7 +2107,7 @@ namespace Squid
                         clippedy = height - deltay;
                     }
 
-                    Gui.Renderer.DrawTexture(texture, loc.x + width * i, loc.y + height * j, clippedx, clippedy, newrect, color);
+                    UI.Renderer.DrawTexture(texture, loc.x + width * i, loc.y + height * j, clippedx, clippedy, newrect, color);
                 }
             }
         }
@@ -2132,7 +2132,7 @@ namespace Squid
                 slice.Top = rect.Top;
                 slice.Right = x1;
                 slice.Bottom = y1;
-                Gui.Renderer.DrawTexture(texture, outside.Left, outside.Top, grid.Left, grid.Top, slice, color);
+                UI.Renderer.DrawTexture(texture, outside.Left, outside.Top, grid.Left, grid.Top, slice, color);
             }
 
             if (grid.Top > 0 && grid.Right > 0)
@@ -2143,7 +2143,7 @@ namespace Squid
                 slice.Right = rect.Right;
                 slice.Bottom = y1;
 
-                Gui.Renderer.DrawTexture(texture, inside.Right, outside.Top, grid.Right, grid.Top, slice, color);
+                UI.Renderer.DrawTexture(texture, inside.Right, outside.Top, grid.Right, grid.Top, slice, color);
             }
 
             if (grid.Bottom > 0 && grid.Left > 0)
@@ -2154,7 +2154,7 @@ namespace Squid
                 slice.Right = x1;
                 slice.Bottom = rect.Bottom;
 
-                Gui.Renderer.DrawTexture(texture, outside.Left, inside.Bottom, grid.Left, grid.Bottom, slice, color);
+                UI.Renderer.DrawTexture(texture, outside.Left, inside.Bottom, grid.Left, grid.Bottom, slice, color);
             }
 
             if (grid.Bottom > 0 && grid.Right > 0)
@@ -2165,7 +2165,7 @@ namespace Squid
                 slice.Right = rect.Right;
                 slice.Bottom = rect.Bottom;
 
-                Gui.Renderer.DrawTexture(texture, inside.Right, inside.Bottom, grid.Right, grid.Bottom, slice, color);
+                UI.Renderer.DrawTexture(texture, inside.Right, inside.Bottom, grid.Right, grid.Bottom, slice, color);
             }
 
             if (grid.Left > 0)
@@ -2178,7 +2178,7 @@ namespace Squid
 
                 if (!repeat)
                 {
-                    Gui.Renderer.DrawTexture(texture, outside.Left, inside.Top, grid.Left, inside.Height, slice, color);
+                    UI.Renderer.DrawTexture(texture, outside.Left, inside.Top, grid.Left, inside.Height, slice, color);
                 }
                 else
                 {
@@ -2203,11 +2203,11 @@ namespace Squid
                             slice.Bottom = y2 - delta;
                             int clipped = sliceSize - delta;
 
-                            Gui.Renderer.DrawTexture(texture, outside.Left, inside.Top + sliceSize * i, grid.Left, clipped, slice, color);
+                            UI.Renderer.DrawTexture(texture, outside.Left, inside.Top + sliceSize * i, grid.Left, clipped, slice, color);
                         }
                         else
                         {
-                            Gui.Renderer.DrawTexture(texture, outside.Left, inside.Top + sliceSize * i, grid.Left, sliceSize, slice, color);
+                            UI.Renderer.DrawTexture(texture, outside.Left, inside.Top + sliceSize * i, grid.Left, sliceSize, slice, color);
                         }
                     }
                 }
@@ -2223,7 +2223,7 @@ namespace Squid
 
                 if (!repeat)
                 {
-                    Gui.Renderer.DrawTexture(texture, inside.Left, outside.Top, inside.Width, grid.Top, slice, color);
+                    UI.Renderer.DrawTexture(texture, inside.Left, outside.Top, inside.Width, grid.Top, slice, color);
                 }
                 else
                 {
@@ -2248,11 +2248,11 @@ namespace Squid
                             slice.Right = x2 - delta;
                             int clipped = sliceSize - delta;
 
-                            Gui.Renderer.DrawTexture(texture, inside.Left + sliceSize * i, outside.Top, clipped, grid.Top, slice, color);
+                            UI.Renderer.DrawTexture(texture, inside.Left + sliceSize * i, outside.Top, clipped, grid.Top, slice, color);
                         }
                         else
                         {
-                            Gui.Renderer.DrawTexture(texture, inside.Left + sliceSize * i, outside.Top, sliceSize, grid.Top, slice, color);
+                            UI.Renderer.DrawTexture(texture, inside.Left + sliceSize * i, outside.Top, sliceSize, grid.Top, slice, color);
                         }
                     }
                 }
@@ -2268,7 +2268,7 @@ namespace Squid
 
                 if (!repeat)
                 {
-                    Gui.Renderer.DrawTexture(texture, inside.Right, inside.Top, grid.Right, inside.Height, slice, color);
+                    UI.Renderer.DrawTexture(texture, inside.Right, inside.Top, grid.Right, inside.Height, slice, color);
                 }
                 else
                 {
@@ -2293,11 +2293,11 @@ namespace Squid
                             slice.Bottom = y2 - delta;
                             int clipped = sliceSize - delta;
 
-                            Gui.Renderer.DrawTexture(texture, inside.Right, inside.Top + sliceSize * i, grid.Right, clipped, slice, color);
+                            UI.Renderer.DrawTexture(texture, inside.Right, inside.Top + sliceSize * i, grid.Right, clipped, slice, color);
                         }
                         else
                         {
-                            Gui.Renderer.DrawTexture(texture, inside.Right, inside.Top + sliceSize * i, grid.Right, sliceSize, slice, color);
+                            UI.Renderer.DrawTexture(texture, inside.Right, inside.Top + sliceSize * i, grid.Right, sliceSize, slice, color);
                         }
                     }
                 }
@@ -2313,7 +2313,7 @@ namespace Squid
 
                 if (!repeat)
                 {
-                    Gui.Renderer.DrawTexture(texture, inside.Left, inside.Bottom, inside.Width, grid.Bottom, slice, color);
+                    UI.Renderer.DrawTexture(texture, inside.Left, inside.Bottom, inside.Width, grid.Bottom, slice, color);
                 }
                 else
                 {
@@ -2338,11 +2338,11 @@ namespace Squid
                             slice.Right = x2 - delta;
                             int clipped = sliceSize - delta;
 
-                            Gui.Renderer.DrawTexture(texture, inside.Left + sliceSize * i, inside.Bottom, clipped, grid.Bottom, slice, color);
+                            UI.Renderer.DrawTexture(texture, inside.Left + sliceSize * i, inside.Bottom, clipped, grid.Bottom, slice, color);
                         }
                         else
                         {
-                            Gui.Renderer.DrawTexture(texture, inside.Left + sliceSize * i, inside.Bottom, sliceSize, grid.Bottom, slice, color);
+                            UI.Renderer.DrawTexture(texture, inside.Left + sliceSize * i, inside.Bottom, sliceSize, grid.Bottom, slice, color);
                         }
                     }
                 }
@@ -2354,7 +2354,7 @@ namespace Squid
             slice.Right = x2;
             slice.Bottom = y2;
 
-            Gui.Renderer.DrawTexture(texture, inside.Left, inside.Top, inside.Width, inside.Height, slice, color);
+            UI.Renderer.DrawTexture(texture, inside.Left, inside.Top, inside.Width, inside.Height, slice, color);
         }
 
         private void SetEnabled(bool value)
@@ -2411,10 +2411,10 @@ namespace Squid
 
                 DrawBefore();
 
-                if (Scissor || Gui.AlwaysScissor)
+                if (Scissor || UI.AlwaysScissor)
                     SetScissor(Math.Max(0, ClipRect.Left), Math.Max(0, ClipRect.Top), ClipRect.Width, ClipRect.Height);
 
-                if (FadeSpeed > 0 || Gui.GlobalFadeSpeed > 0)
+                if (FadeSpeed > 0 || UI.GlobalFadeSpeed > 0)
                 {
                     Style next = Desktop.GetStyle(Style).Styles[_state];
                     float opacity = GetOpacity(next.Opacity);
@@ -2460,7 +2460,7 @@ namespace Squid
                 DrawChildren();
                 DrawElements();
 
-                if (Scissor || Gui.AlwaysScissor)
+                if (Scissor || UI.AlwaysScissor)
                     ResetScissor();
 
                 DrawCustom();
@@ -2474,9 +2474,9 @@ namespace Squid
         {
             if (NoEvents) return;
 
-            if (Gui.NumKeyEvents > 0)
+            if (UI.NumKeyEvents > 0)
             {
-                foreach (KeyData data in Gui.KeyBuffer)
+                foreach (KeyData data in UI.KeyBuffer)
                 {
                     KeyEventArgs args = new KeyEventArgs(data);
 
@@ -2513,22 +2513,22 @@ namespace Squid
             if (NoEvents) return;
             if (Desktop == null) return;
 
-            if (Gui.MouseScroll != 0)
+            if (UI.MouseScroll != 0)
                 OnMouseWheel();
 
-            for (int i = 0; i < Gui.Buttons.Length; i++)
+            for (int i = 0; i < UI.Buttons.Length; i++)
             {
-                if (Gui.GetButton(i) == ButtonState.Down)
+                if (UI.GetButton(i) == ButtonState.Down)
                 {
                     _isMouseDrag = false;
                     OnMouseDown(i);
                     return;
                 }
-                else if (Gui.GetButton(i) == ButtonState.Press)
+                else if (UI.GetButton(i) == ButtonState.Press)
                 {
                     OnMousePress(i);
 
-                    if (!Gui.MouseDelta.IsEmpty && !_isMouseDrag)
+                    if (!UI.MouseDelta.IsEmpty && !_isMouseDrag)
                     {
                         _isMouseDrag = true;
                         OnMouseDrag(i);
@@ -2536,7 +2536,7 @@ namespace Squid
 
                     return;
                 }
-                else if (Gui.GetButton(i) == ButtonState.Up)
+                else if (UI.GetButton(i) == ButtonState.Up)
                 {
                     OnMouseRelease(i);
                     return;
@@ -2636,8 +2636,8 @@ namespace Squid
         {
             if (!IsVisible) return null;
 
-            int x = Gui.MousePosition.x;
-            int y = Gui.MousePosition.y;
+            int x = UI.MousePosition.x;
+            int y = UI.MousePosition.y;
 
             if (!Hit(x, y)) return null;
 
@@ -2884,7 +2884,7 @@ namespace Squid
             DateTime now = DateTime.Now;
             TimeSpan delta = now.Subtract(TimeClicked);
             TimeClicked = now;
-            IsDoubleClick = delta.TotalMilliseconds < Gui.DoubleClickSpeed;
+            IsDoubleClick = delta.TotalMilliseconds < UI.DoubleClickSpeed;
             if (MouseDown != null)
                 MouseDown(this, new MouseEventArgs { Button = button });
         }

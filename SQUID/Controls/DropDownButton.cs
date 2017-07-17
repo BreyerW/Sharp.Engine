@@ -14,11 +14,13 @@ namespace Squid
         /// </summary>
         /// <value>The dropdown.</value>
         public Window Dropdown { get; private set; }
+
         /// <summary>
         /// Gets or sets the align.
         /// </summary>
         /// <value>The align.</value>
         public Alignment Align { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [hot drop].
         /// </summary>
@@ -35,14 +37,17 @@ namespace Squid
         /// Raised when [on closed].
         /// </summary>
         public event EventWithArgs OnClosed;
+
         /// <summary>
         /// Raised when [on opened].
         /// </summary>
         public event EventWithArgs OnOpened;
+
         /// <summary>
         /// Raised when [on opening].
         /// </summary>
         public event EventWithArgs OnOpening;
+
         /// <summary>
         /// Raised when [on closing].
         /// </summary>
@@ -54,10 +59,9 @@ namespace Squid
         public DropDownButton()
         {
             Dropdown = new Window();
-            Dropdown.Size = new Point(100, 200);
-            Dropdown.Resizable = true;
+            //Dropdown.Size = new Point(100, 200);
             Dropdown.Scissor = false;
-
+            Dropdown.AutoSize = AutoSize.Horizontal;
             Align = Alignment.BottomLeft;
 
             MouseClick += Button_MouseClick;
@@ -86,9 +90,11 @@ namespace Squid
                 case Alignment.BottomLeft:
                     Dropdown.Position = Location + new Point(0, Size.y);
                     break;
+
                 case Alignment.TopRight:
                     Dropdown.Position = Location + new Point(Size.x, 0);
                     break;
+
                 case Alignment.TopLeft:
                     Dropdown.Position = Location - new Point(Dropdown.Size.x, 0);
                     break;
@@ -127,17 +133,17 @@ namespace Squid
             return control.IsChildOf(Dropdown);
         }
 
-        void Button_MouseEnter(Control sender)
+        private void Button_MouseEnter(Control sender)
         {
             if (HotDrop) Open();
         }
 
-        void Button_MouseDown(Control sender, MouseEventArgs args)
+        private void Button_MouseDown(Control sender, MouseEventArgs args)
         {
             if (Dropdown.Parent == null) IsOpen = false;
         }
 
-        void Button_MouseClick(Control sender, MouseEventArgs args)
+        private void Button_MouseClick(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 

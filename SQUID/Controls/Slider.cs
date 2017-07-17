@@ -129,7 +129,7 @@ namespace Squid
         {
             if (args.Button > 0) return;
 
-            Point position = Gui.MousePosition - Location - Button.Size / 2;
+            Point position = UI.MousePosition - Location - Button.Size / 2;
 
             if (Orientation == Orientation.Vertical)
                 Value = Minimum + (Maximum - Minimum) * position.y / (Size.y - Button.Size.y);
@@ -152,7 +152,7 @@ namespace Squid
         {
             if (args.Button > 0) return;
 
-            Offset = Gui.MousePosition - sender.Location;
+            Offset = UI.MousePosition - sender.Location;
         }
 
         protected override void OnUpdate()
@@ -194,7 +194,7 @@ namespace Squid
             {
                 if (!(Scale >= 1 && AutoScale))
                 {
-                    Point position = Gui.MousePosition - Location;
+                    Point position = UI.MousePosition - Location;
 
                     if (Orientation == Orientation.Vertical)
                     {
@@ -230,7 +230,7 @@ namespace Squid
 
                 if (Ease)
                 {
-                    _easeScroll += ((_value - _easeScroll) / 8f) * Math.Min(8, Gui.TimeElapsed * 0.1f);
+                    _easeScroll += ((_value - _easeScroll) / 8f) * Math.Min(8, UI.TimeElapsed * 0.1f);
                     m = (_easeScroll - Minimum) / (Maximum - Minimum);
                 }
                 else
@@ -258,7 +258,7 @@ namespace Squid
             }
 
             if (Ease)
-                EasedValue += ((_value - EasedValue) / 8f) * Math.Min(8, Gui.TimeElapsed * 0.1f);
+                EasedValue += ((_value - EasedValue) / 8f) * Math.Min(8, UI.TimeElapsed * 0.1f);
             else
                 EasedValue = _value;
         }

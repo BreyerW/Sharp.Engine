@@ -115,7 +115,7 @@ namespace Squid
         {
             if (args.Button > 0) return;
 
-            ClickedPos = Gui.MousePosition;
+            ClickedPos = UI.MousePosition;
             OldSize = SplitFrame1.Size;
         }
 
@@ -123,7 +123,7 @@ namespace Squid
         {
             if (args.Button > 0) return;
 
-            Point p = Gui.MousePosition - ClickedPos;
+            Point p = UI.MousePosition - ClickedPos;
 
             if (Orientation == Orientation.Horizontal)
             {

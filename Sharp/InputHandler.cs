@@ -36,7 +36,6 @@ namespace Sharp
         public static Action<MouseButtonEventArgs> OnMouseDown;
         public static Action<MouseButtonEventArgs> OnMouseUp;
         public static Action<MouseMoveEventArgs> OnMouseMove;
-        //public static Gwen.Input.OpenTK input = new Gwen.Input.OpenTK();
 
         private static readonly uint[] mouseCodes = new uint[] { SDL.SDL_BUTTON_LMASK, SDL.SDL_BUTTON_RMASK, SDL.SDL_BUTTON_MMASK, SDL.SDL_BUTTON_X1MASK, SDL.SDL_BUTTON_X2MASK };
         private static readonly SDL.SDL_Scancode[] keyboardCodes = (SDL.SDL_Scancode[])Enum.GetValues(typeof(SDL.SDL_Scancode));
@@ -82,8 +81,6 @@ namespace Sharp
             }
             if (pressed) OnMouseDown?.Invoke((MouseButtonEventArgs)evnt);
             else OnMouseUp?.Invoke((MouseButtonEventArgs)evnt);
-
-            //input.ProcessMouseMessage(evnt, pressed);
         }
 
         public static void ProcessMouseMove()
@@ -91,10 +88,10 @@ namespace Sharp
             if (!Window.windows.Contains(Window.UnderMouseWindowId)) return;
             var winPos = Window.windows[Window.UnderMouseWindowId].Position;
             var button = SDL.SDL_GetGlobalMouseState(out globalMousePosition.x, out globalMousePosition.y);
-            //Gwen.Input.InputHandler.HoveredControl = input.m_Canvas.GetControlAt(x - winPos.x, y - winPos.y); //change ori to current mouseover window
-            if (Math.Abs(Gui.MouseDelta.x) > 0 || Math.Abs(Gui.MouseDelta.y) > 0)
+
+            if (Math.Abs(UI.MouseDelta.x) > 0 || Math.Abs(UI.MouseDelta.y) > 0)
             {
-                var evnt = new MouseMoveEventArgs(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y, Gui.MouseDelta.x, Gui.MouseDelta.y);
+                var evnt = new MouseMoveEventArgs(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y, UI.MouseDelta.x, UI.MouseDelta.y);
                 foreach (var view in View.views[Window.UnderMouseWindowId])
                 {
                     if (view.panel != null/* && view.panel.IsChild(Gwen.Input.InputHandler.HoveredControl, true)*/)
@@ -103,8 +100,7 @@ namespace Sharp
                         break;
                     }
                 }
-                //input.ProcessMouseMessage(evnt, pressed);
-                evnt = new MouseMoveEventArgs(globalMousePosition.x, globalMousePosition.y, Gui.MouseDelta.x, Gui.MouseDelta.y);
+                evnt = new MouseMoveEventArgs(globalMousePosition.x, globalMousePosition.y, UI.MouseDelta.x, UI.MouseDelta.y);
                 OnMouseMove?.Invoke(evnt);
             }
         }
@@ -117,8 +113,7 @@ namespace Sharp
         public static void ProcessMouseWheel(int delta)
         {
             var wheelEvent = new MouseWheelEventArgs(0, 0, 0, delta);
-            //input.ProcessMouseMessage(wheelEvent);
-            wheelState = delta;
+            wheelState = -delta;
         }
 
         private static MouseButton ConvertMaskToEnum(uint mask)
@@ -146,12 +141,10 @@ namespace Sharp
                     if (curKeyState[key] is 1)
                     {
                         OnKeyDown?.Invoke(null);
-                        //input.ProcessKeyDown(keyCode);
                     }
                     else
                     {
                         OnKeyUp?.Invoke(null);
-                        //input.ProcessKeyUp(keyCode);
                     }
                 }
                 if (keyState[key].Char is null)
@@ -186,15 +179,15 @@ namespace Sharp
             if (!Window.windows.Contains(Window.UnderMouseWindowId)) return;
 
             var winPos = Window.windows[Window.UnderMouseWindowId].Position;
-            Gui.SetMouse(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y);
-            Gui.SetButtons(curMouseState);
+            UI.SetMouse(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y);
+            UI.SetButtons(curMouseState);
             List<KeyData> data = new List<KeyData>();
 
             foreach (var key in keyState)
                 data.Add(key);
-            Gui.SetKeyboard(data.ToArray());
+            UI.SetKeyboard(data.ToArray());
             keyState = new KeyData[numKeys];
-            Gui.SetMouseWheel(wheelState);
+            UI.SetMouseWheel(wheelState);
         }
 
         private static Keys ScancodeToKeyData(SDL.SDL_Scancode scancode)
@@ -929,7 +922,6 @@ namespace Sharp
 
         public static void ProcessKeyboardPresses()
         {
-            //if (!(Gwen.Input.InputHandler.KeyboardFocus is null)) return;
             if (View.views.TryGetValue(SDL.SDL_GetWindowID(SDL.SDL_GetKeyboardFocus()), out var views))
                 foreach (var view in views)
                     if (view.panel != null && view.panel.IsVisible)

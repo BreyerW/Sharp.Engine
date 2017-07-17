@@ -138,12 +138,12 @@ namespace Sharp
                 InputHandler.ProcessKeyboardPresses();
                 InputHandler.ProcessMousePresses();
 
-                Squid.Gui.TimeElapsed = Time.deltaTime;
+                UI.TimeElapsed = Time.deltaTime;
                 onRenderFrame?.Invoke();
-                if (Gwen.Control.Base.isDirty)
+                if (UI.isDirty)
                 {
                     Selection.OnSelectionDirty?.Invoke(Selection.Asset, EventArgs.Empty);
-                    Gwen.Control.Base.isDirty = false;
+                    UI.isDirty = false;
                 }
                 Time.SetTime();
             }
@@ -154,6 +154,7 @@ namespace Sharp
             SDL.SDL_GL_MakeCurrent(handle, context);
 
             OnRenderFrame();
+
             var mainView = View.mainViews[windowId];
             if (mainView.desktop is null) return;
 
@@ -224,9 +225,19 @@ namespace Sharp
             {
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE: if (evt.windowID == MainWindowId) quit = true; else windows[evt.windowID].Close(); break;
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
-                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
+                    //case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
                     View.mainViews[evt.windowID].OnResize(evt.data1, evt.data2);
+                    break;
 
+                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_EXPOSED:
+                    MainWindow.backendRenderer.EnableScissor();
+                    onRenderFrame?.Invoke();
+
+                    //if (windows.Contains(evt.windowID))
+                    {
+                        //    windows[evt.windowID].OnInternalRenderFrame();
+                        //SDL.SDL_GL_SwapWindow(windows[evt.windowID].handle);
+                    }
                     break;
 
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_TAKE_FOCUS: AssetsView.CheckIfDirTreeChanged(); break;
@@ -255,20 +266,18 @@ namespace Sharp
             tabcontrol.Dock = DockStyle.Fill;
             tabcontrol.Parent = frame;
             tabcontrol.PageFrame.Style = "frame";
+            tabcontrol.Scissor = true;
             tabcontrol.PageFrame.Padding = new Margin(3, 3, 3, 3);
             tabcontrol.PageFrame.Margin = new Margin(0, -2, 0, 0);
-            var tab = new TabPage();
-            tab.Button.Text = view.GetType().ToString();
-            tab.Button.AutoSize = AutoSize.Horizontal;
-            tabcontrol.TabPages.Add(tab);
-            tab.NoEvents = false;
+
             var tab1 = new TabPage();
             tab1.Button.Text = "test";// view.GetType().ToString();
             tabcontrol.TabPages.Add(tab1);
-            tabcontrol.SelectedTab = tab;
+            tab1.Scissor = true;
             //tab.Style = "window";
-            view.panel = tab; //make GLControl for gwen
-            view.Initialize();
+            var tab = view.panel as TabPage;
+            tabcontrol.TabPages.Add(tab); //make GLControl for gwen
+            tabcontrol.SelectedTab = tab;
             //view.panel.BoundsChanged += (obj, args) => view.OnResize(view.panel.Width, view.panel.Height);
         }
 
@@ -283,7 +292,7 @@ namespace Sharp
                     InputHandler.ProcessMouse();
                     break;
 
-                case SDL.SDL_EventType.SDL_WINDOWEVENT: OnWindowEvent(ref evt.window); onRenderFrame?.Invoke(); break;
+                case SDL.SDL_EventType.SDL_WINDOWEVENT: OnWindowEvent(ref evt.window); break;
             }
 
             return 1;

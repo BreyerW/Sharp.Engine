@@ -57,8 +57,6 @@ B:\Sharp.Engine3\Sharp\bin\Debug\EditableStream.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\fastBinaryJSON.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\fastJSON.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\FreeImageNET.dll
-B:\Sharp.Engine3\Sharp\bin\Debug\Gwen.dll
-B:\Sharp.Engine3\Sharp\bin\Debug\Gwen.Renderer.OpenTK.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\Microsoft.IO.RecyclableMemoryStream.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\Microsoft.Win32.Primitives.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\Mono.Posix.dll
@@ -99,8 +97,6 @@ B:\Sharp.Engine3\Sharp\bin\Debug\System.Xml.ReaderWriter.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\TupleExtensions.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\fastBinaryJSON.pdb
 B:\Sharp.Engine3\Sharp\bin\Debug\fastJSON.pdb
-B:\Sharp.Engine3\Sharp\bin\Debug\Gwen.Renderer.OpenTK.pdb
-B:\Sharp.Engine3\Sharp\bin\Debug\Gwen.pdb
 B:\Sharp.Engine3\Sharp\bin\Debug\SDL2-CS.pdb
 B:\Sharp.Engine3\Sharp\bin\Debug\AssimpNet.xml
 B:\Sharp.Engine3\Sharp\bin\Debug\BEPUik.xml
