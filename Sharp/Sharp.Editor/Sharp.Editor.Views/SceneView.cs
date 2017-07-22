@@ -254,11 +254,9 @@ namespace Sharp.Editor.Views
         public override void OnResize(int width, int height)
         {
             OnSetupMatrices?.Invoke();
-            if (Camera.main != null)
-            {
-                Camera.main.AspectRatio = (float)panel.Size.x / panel.Size.y;
-                Camera.main.SetProjectionMatrix();
-            }
+            Camera.main.AspectRatio = (float)panel.Size.x / panel.Size.y;
+            Camera.main.SetProjectionMatrix();
+            Camera.main.SetOrthoMatrix(panel.Desktop.Size.x, panel.Desktop.Size.y);
             Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
         }
 

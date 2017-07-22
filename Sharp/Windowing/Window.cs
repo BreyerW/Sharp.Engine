@@ -14,7 +14,9 @@ namespace Sharp
         private static SDL.SDL_EventFilter filter = OnResize;
 
         public static Action onRenderFrame;
-        public static IntPtr context;
+
+        public static List<IntPtr> contexts = new List<IntPtr>();
+
         public static OrderedDictionary<uint, Window> windows = new OrderedDictionary<uint, Window>((win) => win.windowId);
 
         public static uint MainWindowId
@@ -151,8 +153,7 @@ namespace Sharp
 
         private void OnInternalRenderFrame()
         {
-            SDL.SDL_GL_MakeCurrent(handle, context);
-
+            MainWindow.backendRenderer.MakeCurrent(handle, contexts[0]);
             OnRenderFrame();
 
             var mainView = View.mainViews[windowId];
@@ -162,7 +163,8 @@ namespace Sharp
             foreach (var view in View.views[windowId])
                 if (view.panel != null && view.panel.IsVisible)
                     view.Render();
-            SDL.SDL_GL_SwapWindow(handle);
+            MainWindow.backendRenderer.FinishCommands();
+            MainWindow.backendRenderer.SwapBuffers(handle);
         }
 
         public abstract void OnRenderFrame();

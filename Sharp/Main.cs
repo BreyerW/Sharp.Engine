@@ -22,10 +22,14 @@ namespace Sharp
             //SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
             //SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, (int)SDL.SDL_GLcontext.);
             OpenTK.Toolkit.Init();
-            var dummy = SDL.SDL_CreateWindow("", 0, 0, 1, 1, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL); //convert dummy to splash screen?
+            var dummy = SDL.SDL_CreateWindow("", 0, 0, 1, 1, SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN | SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL); //convert dummy to splash screen?
+                                                                                                                                             //
+            SDL.SDL_GL_CreateContext(dummy);
+            var id = MainWindow.backendRenderer.CreateContext(SDL.SDL_GL_GetProcAddress, SDL.SDL_GL_GetCurrentContext);
+            MainWindow.contexts.Add(id);
+            MainWindow.backendRenderer.MakeCurrent += SDL.SDL_GL_MakeCurrent;
+            MainWindow.backendRenderer.SwapBuffers += SDL.SDL_GL_SwapWindow;
 
-            Window.context = SDL.SDL_GL_CreateContext(dummy);
-            MainWindow.backendRenderer.CreateContext(SDL.SDL_GL_GetProcAddress, SDL.SDL_GL_GetCurrentContext);
             var e = new Entity();
             e.Rotation = new OpenTK.Vector3((float)Math.PI, 0f, 0f);
             var cam = e.AddComponent<Camera>();
@@ -41,6 +45,7 @@ namespace Sharp
             //var mWin2 = new MainWindow("test2");
             //mWin2.Initialize(new AssetsView(mWin2.windowId));
             MainWindow.backendRenderer.EnableScissor();
+            Console.WriteLine("startpoll");
             Window.PollWindows();
             SDL.SDL_Quit();
         }

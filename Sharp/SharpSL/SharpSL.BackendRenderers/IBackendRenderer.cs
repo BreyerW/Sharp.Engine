@@ -6,7 +6,10 @@ namespace SharpSL.BackendRenderers
 {
     public interface IBackendRenderer
     {
-        void CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext);
+        IntPtr CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext);
+
+        Func<IntPtr, IntPtr, int> MakeCurrent { get; set; }
+        Action<IntPtr> SwapBuffers { get; set; }
 
         //void Do(Work whatToDo, ref Shader shader);
         //void Do<IndexType> (Work whatToDo,ref Mesh<IndexType> mesh) where IndexType: struct, IConvertible;

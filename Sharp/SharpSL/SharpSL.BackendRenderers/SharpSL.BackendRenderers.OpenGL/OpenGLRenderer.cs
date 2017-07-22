@@ -13,17 +13,21 @@ namespace SharpSL.BackendRenderers.OpenGL
     {
         #region IBackendRenderer implementation
 
-        public void CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext)
+        public Func<IntPtr, IntPtr, int> MakeCurrent { get; set; }
+        public Action<IntPtr> SwapBuffers { get; set; }
+
+        public IntPtr CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext)//add createConext func?
         {
-            var context = new GraphicsContext(ContextHandle.Zero, (function) => GetProcAddress(function),
+            new GraphicsContext(ContextHandle.Zero, (function) => GetProcAddress(function),
                                                                     () => new ContextHandle(GetCurrentContext()));
+            return GetCurrentContext();
         }
 
         public void FinishCommands()
         {
             GL.Flush();
-            GL.Finish();
-            GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
+            //GL.Finish();
+            // GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
         }
 
         public byte[] ReadPixels(int x, int y, int width, int height)

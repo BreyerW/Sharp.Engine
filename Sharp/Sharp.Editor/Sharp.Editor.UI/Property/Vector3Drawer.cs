@@ -51,20 +51,22 @@ namespace Sharp.Editor.UI.Property
             layout.Controls.Add(posZ);
 
             Childs.Add(layout);
-            //posZ.TextChanged += OnValueChanged;
-            //posX.TextChanged += OnValueChanged;
-            //posY.TextChanged += OnValueChanged;
+            posX.TextChanged += (sender) => isDirty = true;
+            posY.TextChanged += (sender) => isDirty = true;
+            posZ.TextChanged += (sender) => isDirty = true;
         }
 
         public override OpenTK.Vector3 Value
         {
             get
             {
-                return new OpenTK.Vector3(float.Parse(posX.Text), float.Parse(posY.Text), float.Parse(posZ.Text));
+                var xIsEmpty = !float.TryParse(posX.Text, out var x);
+                var yIsEmpty = !float.TryParse(posY.Text, out var y);
+                var zIsEmpty = !float.TryParse(posZ.Text, out var z);
+                return new OpenTK.Vector3(xIsEmpty ? 0 : x, yIsEmpty ? 0 : y, zIsEmpty ? 0 : z);
             }
             set
             {
-                //Console.WriteLine("buu");
                 posX.Text = value.X.ToString();
                 posY.Text = value.Y.ToString();
                 posZ.Text = value.Z.ToString();

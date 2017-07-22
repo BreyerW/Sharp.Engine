@@ -8,17 +8,23 @@ namespace Sharp.Editor.UI.Property
     /// </summary>
     public class BooleanDrawer : PropertyDrawer<bool>
     {
-        private Button m_CheckBox;
+        private CheckBox m_CheckBox;
 
         public BooleanDrawer(string name)
              : base(name)
         {
-            m_CheckBox = new Button();
+            m_CheckBox = new CheckBox();
             m_CheckBox.Size = new Point(15, 15);
             m_CheckBox.Position = new Point(label.Size.x + 1, 0);
             Childs.Add(label);
             Childs.Add(m_CheckBox);
             m_CheckBox.Style = "checkBox";
+            m_CheckBox.CheckedChanged += M_CheckBox_CheckedChanged; ;
+        }
+
+        private void M_CheckBox_CheckedChanged(Control sender)
+        {
+            isDirty = true;
         }
 
         /// <summary>
@@ -26,7 +32,7 @@ namespace Sharp.Editor.UI.Property
         /// </summary>
         public override bool Value
         {
-            get { return m_CheckBox.IsChecked; }
+            get => m_CheckBox.IsChecked;
             set { m_CheckBox.IsChecked = value; }
         }
     }

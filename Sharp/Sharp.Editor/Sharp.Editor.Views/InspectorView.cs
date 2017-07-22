@@ -63,6 +63,7 @@ namespace Sharp.Editor.Views
             ptree.Margin = new Margin(0, 25, 0, 0);
             ptree.Parent = panel;
             ptree.Scrollbar.Size = new Point(0, 0);
+            ptree.Scissor = false;
             Selection.OnSelectionChange += (sender, args) =>
             {
                 Console.WriteLine("SelectionChange");

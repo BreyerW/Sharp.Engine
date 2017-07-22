@@ -173,16 +173,15 @@ namespace Sharp.Editor.Views
         {
             var t = tree[attachedToWindow];
             t.Style = "treeview";
-
             foreach (var (key, files) in directories)
             {
+                var nodes = t.Nodes;
                 TreeNodeLabel node = new TreeNodeLabel();
                 foreach (var folder in key.Split(new string[] { root.Parent.FullName + @"\", @"\" }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (folder != @"Content")
                     {
-                        node = t.Nodes.Find((n) => n.Name == folder) as TreeNodeLabel;
-
+                        node = nodes.Find((n) => n.Name == folder) as TreeNodeLabel;
                         if (node is null)
                         {
                             node = new TreeNodeLabel();
@@ -192,10 +191,10 @@ namespace Sharp.Editor.Views
                             node.Button.Size = new Point(10, 10);
                             node.Name = folder;
                             node.Label.TextAlign = Alignment.MiddleLeft;
-                            t.Nodes.Add(node);
+                            nodes.Add(node);
                         }
+                        nodes = node.Nodes;
                     }
-                    //node = (TreeNode)node.FindChildByName(folder) ?? node.AddNode(folder);
                 }
                 foreach (var asset in files.Values.OrderBy(item => item, new CompareByName()))
                 {
@@ -209,12 +208,12 @@ namespace Sharp.Editor.Views
                     assetNode.Style = "label";
                     assetNode.UserData = new(string, string)[] { (asset.FullName, asset.Extension) };
                     assetNode.Label.Style = "label";
-                    node.Nodes.Add(assetNode);
+                    nodes.Add(assetNode);
                 }
             }
         }
 
-        private void AssetNode_MouseDrag(Squid.Control sender, Squid.MouseEventArgs args)
+        private void AssetNode_MouseDrag(Control sender, Squid.MouseEventArgs args)
         {
             Console.WriteLine("start drag" + sender);
             var node = sender as TreeNodeLabel;
@@ -226,7 +225,7 @@ namespace Sharp.Editor.Views
             sender.DoDragDrop(draggedNode);
         }
 
-        private void T_SelectedNodeChanged(Squid.Control sender, TreeNode value)
+        private void T_SelectedNodeChanged(Control sender, TreeNode value)
         {
             if (value is null) return;
             value.IsSelected = true;

@@ -13,6 +13,47 @@ namespace Sharp.Editor.Views
     {
         protected override string Name => "Curves Inspector";
 
+        private static Color kGridMinorColorDark = new Color(0f, 0f, 0f, 0.1f);
+        private static Color kGridMajorColorDark = new Color(73, 73, 73, 120);
+        private Dictionary<Vector2, Keyframe>[] clickedKeyframe = new Dictionary<Vector2, Keyframe>[] { new Dictionary<Vector2, Keyframe>(), new Dictionary<Vector2, Keyframe>() };
+
+        private TangentDirection tangentSide = TangentDirection.None;
+        private int showDrag = -1;
+        private int editAxis = -1;
+        private string typedNumber = string.Empty;
+        public static RegionDrawer drawer;
+
+        private static HashSet<Keyframe>[] tmpSavedKeyfr = new HashSet<Keyframe>[]
+        {
+        new HashSet<Keyframe>(),new HashSet<Keyframe>()
+        };
+
+        private (float x, float y, float width, float height) swatchArea;
+        private Keyframe selectedTan;
+        private bool isDraggingRegion = false;
+        private Vector2 scale = Vector2.One;
+        private Vector2 translation;
+
+        private CurveSettings curveSettings = new CurveSettings();
+        private static TickHandler hTicks = new TickHandler();
+        private static TickHandler vTicks = new TickHandler();
+        private (float x, float y, float width, float height) mainArea;
+
+        private int tracking = -1;
+        private Menu editMenu;
+        private Menu menu;
+        private Label badge;
+        private Label[] vLabels = Array.Empty<Label>();
+        private Label[] hLabels = Array.Empty<Label>();
+
+        public (float x, float y, float width, float height) shownArea
+        {
+            get
+            {
+                return (-translation.X / scale.X, -(translation.Y - mainArea.height) / scale.Y, mainArea.width / scale.X, mainArea.height / -scale.Y);
+            }
+        }
+
         public CurvesView(uint attachToWindow) : base(attachToWindow)
         {
             float[] tickModulos = new float[]
@@ -57,47 +98,240 @@ namespace Sharp.Editor.Views
             curveSettings.hTickStyle.labelColor = new Color(0, 0, 0, 0.32f);
             curveSettings.hTickStyle.distLabel = 30;
             curveSettings.hTickStyle.centerLabel = true;
-            // menu = new ListBox(panel);
-            //menu.RowSelected += (sender, args) => { menu.Hide(); menu.RemoveAllRows(); showDrag = -1; };
-            //menu.Hide();
-            // badge = new Label(panel);
-            //badge.Hide();
+
+            panel.MouseDown += Panel_MouseDown;
+
+            menu = new Menu();
+            menu.Style = "";
+            menu.Align = Alignment.TopRight;
+            menu.Size = new Point(0, 0);
+            var addButton = menu.AddItem("Add key");
+            addButton.Name = "add";
+            addButton.MouseClick += AddButton_MouseClick;
+
+            var trackButton = menu.AddItem("Track curve");
+            trackButton.Name = "track";
+            trackButton.MouseClick += TrackButton_MouseClick;
+
+            editMenu = new Menu();
+            editMenu.Style = "";
+            editMenu.Align = Alignment.TopRight;
+            editMenu.Size = new Point(0, 0);
+
+            badge = new Label();
+            badge.AutoEllipsis = false;
+            badge.AutoSize = AutoSize.Horizontal;
+            badge.NoEvents = true;
+            badge.IsVisible = false;
+
+            panel.Childs.Add(badge);
+            panel.Childs.Add(menu);
+            panel.Childs.Add(editMenu);
+            badge.BringToFront();
         }
 
-        private static Color kGridMinorColorDark = new Color(0f, 0f, 0f, 0.1f);
-        private static Color kGridMajorColorDark = new Color(73, 73, 73, 120);
-        private Dictionary<Vector2, Keyframe>[] clickedKeyframe = new Dictionary<Vector2, Keyframe>[] { new Dictionary<Vector2, Keyframe>(), new Dictionary<Vector2, Keyframe>() };
-
-        private TangentDirection tangentSide = TangentDirection.None;
-        private int showDrag = -1;
-        private int editAxis = -1;
-        private string typedNumber = string.Empty;
-        public static RegionDrawer drawer;
-
-        private static HashSet<Keyframe>[] tmpSavedKeyfr = new HashSet<Keyframe>[]
+        private void TrackButton_MouseClick(Control sender, Squid.MouseEventArgs args)
         {
-        new HashSet<Keyframe>(),new HashSet<Keyframe>()
-        };
+            tracking = (int)sender.UserData;
+        }
 
-        private (float x, float y, float width, float height) swatchArea;
-        private Keyframe selectedTan;
-        private bool isDraggingRegion = false;
-        private Vector2 scale = Vector2.One;
-        private Vector2 translation;
-
-        private CurveSettings curveSettings = new CurveSettings();
-        private static TickHandler hTicks = new TickHandler();
-        private static TickHandler vTicks = new TickHandler();
-        private (float x, float y, float width, float height) mainArea;
-
-        private int tracking = -1;
-
-        public (float x, float y, float width, float height) shownArea
+        private void AddButton_MouseClick(Control sender, Squid.MouseEventArgs args)
         {
-            get
+            object[] data = sender.UserData as object[];
+            int curveId = (int)data[0];
+            float time = (float)data[1];
+            var startAngle = EvaluateCurveDeltaSlow(time, curveId);
+            var newPoint = new Vector2(time, drawer.Value[curveId].Evaluate(time));
+            CheckIfOutsideArea(ref newPoint);
+            var newkeyfr = new Keyframe(newPoint.X, newPoint.Y, startAngle, startAngle);
+            var keyId = drawer.Value[curveId].AddKey(ref newkeyfr);
+            clickedKeyframe[0].Clear();
+            clickedKeyframe[1].Clear();
+            clickedKeyframe[curveId].Add(Vector2.Zero, drawer.Value[curveId].keys[keyId]);
+            Squid.UI.isDirty = true;
+        }
+
+        private void Childs_BeforeItemAdded(object sender, ListEventArgs<Control> e)
+        {
+            e.Item.MouseClick += Dropdown_MouseClick;
+        }
+
+        private void Dropdown_MouseClick(Control sender, Squid.MouseEventArgs args)
+        {
+            editMenu.Close();
+            menu.Close();
+            showDrag = -1;
+        }
+
+        private void DelButton_MouseClick(Control sender, Squid.MouseEventArgs args)
+        {
+            (int curveId, int keyId)[] data = sender.UserData as (int, int)[];
+            foreach (var toDelete in data)
+                drawer.Value[toDelete.curveId].RemoveKey(toDelete.keyId);
+            Squid.UI.isDirty = true;
+        }
+
+        private void Panel_MouseDown(Control sender, Squid.MouseEventArgs args)
+        {
+            var mousePos = new Vector2(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y);
+            var pos = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);
+            var rightClick = args.Button is 1;
+            if (clickedKeyframe[0].Count + clickedKeyframe[1].Count == 1)
             {
-                return (-translation.X / scale.X, -(translation.Y - mainArea.height) / scale.Y, mainArea.width / scale.X, mainArea.height / -scale.Y);
+                clickedKeyframe[0].Clear();
+                clickedKeyframe[1].Clear();
             }
+            bool checkMousePos = Math.Abs(drawer.Value[0].Evaluate(pos.X) - pos.Y) < 0.25f;
+            bool checkMousePos1 = Math.Abs(drawer.Value[1].Evaluate(pos.X) - pos.Y) < 0.25f;
+            var l = 0;
+            var point = new Vector2[2];
+
+            while (l < 2)
+            {
+                foreach (var item in drawer.Value[l].keys)
+                {
+                    var keyfrPos = new Vector2(item.time, item.value);
+                    var keyfrPosSP = RegionDrawer.CurveToViewSpace(keyfrPos, scale, translation);
+
+                    point[0] = RegionDrawer.CurveToViewSpace(keyfrPos.RotateAroundPivot(keyfrPos + new Vector2(1, 0), new Vector3((float)Math.Atan(item.outTangent), 0, 0)), scale, translation);
+                    point[1] = RegionDrawer.CurveToViewSpace(keyfrPos.RotateAroundPivot(keyfrPos + new Vector2(-1, 0), new Vector3((float)Math.Atan(item.inTangent), 0, 0)), scale, translation);
+
+                    var dir = point[0] - keyfrPosSP;
+                    point[0] = keyfrPosSP + dir.Normalized() * 50;
+                    dir = point[1] - keyfrPosSP;
+                    point[1] = keyfrPosSP + dir.Normalized() * 50;
+
+                    if (Math.Abs((keyfrPosSP - mousePos).LengthSquared) < 11)
+                    {
+                        (int, int)[] data;
+                        selectedTan = item;
+                        if (clickedKeyframe[l].Count == 0)
+                        {
+                            clickedKeyframe[l].Add(keyfrPos - pos, item);
+                            data = new(int, int)[] { (l, Array.IndexOf(drawer.Value[l].keys, item)) };
+                        }
+                        else
+                        {
+                            data = new(int, int)[clickedKeyframe[0].Count + clickedKeyframe[1].Count];
+                            var tmpl = 0;
+                            while (tmpl < 2)
+                            {
+                                var tmpList = clickedKeyframe[tmpl].Values.ToList();
+                                clickedKeyframe[tmpl].Clear();
+                                foreach (var (key, selectedKeyfr) in tmpList.WithIndexes())
+                                {
+                                    var tmpkeyfrPos = new Vector2(selectedKeyfr.time, selectedKeyfr.value);
+                                    data[key] = (tmpl, Array.IndexOf(drawer.Value[l].keys, selectedKeyfr));
+                                    clickedKeyframe[tmpl][tmpkeyfrPos - pos] = selectedKeyfr;
+                                }
+                                tmpl++;
+                            }
+                        }
+                        if (rightClick)
+                        {
+                            CurveMenuManager.selectedKeyfr = clickedKeyframe;
+                            CurveMenuManager.updateSelected = UpdateClickedKeyfr;
+                            editMenu.Frame.Controls.Clear();
+
+                            editMenu.AddItem("Edit key");//edit with keyboard
+                            editMenu.AddItem("Edit tangents");
+                            var delButton = editMenu.AddItem("Delete Key");
+                            delButton.Name = "delete";
+                            delButton.MouseClick += DelButton_MouseClick;
+                            delButton.Text = "Delete Key" + (clickedKeyframe[0].Count + clickedKeyframe[1].Count > 1 ? "s" : "");
+                            delButton.UserData = data;
+                            //var delButton = editMenu.Dropdown.GetControl("delete") as Button;
+
+                            CurveMenuManager.AddTangentMenuItems(editMenu, drawer.Value);
+
+                            editMenu.Position = new Point((int)mousePos.X - panel.Location.x, (int)mousePos.Y - panel.Location.y);
+                            editMenu.IsVisible = true;
+                            editMenu.Open();
+                            delayClear = true;
+
+                            return;
+                        }
+                        else
+                        {
+                            badge.IsVisible = true;
+                            badge.Position = new Point((int)(keyfrPosSP.X + 5f), (int)(keyfrPosSP.Y - 15f));
+                            showDrag = Array.IndexOf(drawer.Value[l].keys, item);
+                            return;
+                        }
+                    }
+                    else if (Math.Abs((point[0] - mousePos).LengthSquared) < 11 && !rightClick)
+                    {
+                        tangentSide = TangentDirection.Left;
+                        selectedTan = item;
+                        clickedKeyframe[l][keyfrPos - pos] = item;
+                        showDrag = Array.IndexOf(drawer.Value[l].keys, item);
+                        return;
+                    }
+                    else if (Math.Abs((point[1] - mousePos).LengthSquared) < 11 && !rightClick)
+                    {
+                        tangentSide = TangentDirection.Right;
+                        selectedTan = item;
+                        clickedKeyframe[l][keyfrPos - pos] = item;
+                        showDrag = Array.IndexOf(drawer.Value[l].keys, item);
+                        return;
+                    }
+                }
+                l++;
+            }
+            if ((checkMousePos || checkMousePos1) && rightClick)
+            {
+                var addButton = menu.Dropdown.GetControl("add");
+                addButton.UserData = new object[]
+                 {
+                 checkMousePos ? 0 : 1,
+                 pos.X,
+                 };
+                var trackButton = menu.Dropdown.GetControl("track");
+                trackButton.UserData = checkMousePos ? 0 : 1;
+
+                menu.Position = new Point((int)mousePos.X - panel.Location.x, (int)mousePos.Y - panel.Location.y);
+                menu.IsVisible = true;
+                menu.Open();
+
+                delayClear = true;
+                return;
+            }
+            else if (showDrag != 0)
+            {// clickedKeyframe[0].Clear();
+             //clickedKeyframe[1].Clear();
+                Vector2 keyfrPos;
+                l = 0;
+                var rounds = 2;
+                isDraggingRegion = true;
+                showDrag = 0;
+                if (checkMousePos)
+                {
+                    rounds = 1;
+                }
+                else if (checkMousePos1)
+                {
+                    l = 1;
+                }
+                else if ((drawer.Value[0].Evaluate(pos.X) < pos.Y && drawer.Value[1].Evaluate(pos.X) < pos.Y) || (drawer.Value[0].Evaluate(pos.X) > pos.Y && drawer.Value[1].Evaluate(pos.X) > pos.Y))
+                {
+                    isDraggingRegion = false;
+                    rounds = 0;
+                }
+                while (l < rounds)
+                {
+                    foreach (var selectedKeyfr in drawer.Value[l].keys)
+                    {
+                        keyfrPos = new Vector2(selectedKeyfr.time, selectedKeyfr.value);
+                        clickedKeyframe[l][keyfrPos - pos] = selectedKeyfr;
+                    }
+                    l++;
+                }
+                return;
+            }
+            //showDrag = 0;
+            isDraggingRegion = false;
+            showDrag = -1;
+            delayClear = false;
         }
 
         private void OnFocus()
@@ -112,11 +346,9 @@ namespace Sharp.Editor.Views
             //minSize = new Vector2(minSize.x, 200);
         }
 
-        private ListBox menu;
-        private Label badge;
-
         private void OnGUI()
         {
+            OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
             var size = Window.windows[attachedToWindow].Size;
             mainArea = (0, 29, size.width, size.height);
 
@@ -125,9 +357,8 @@ namespace Sharp.Editor.Views
             var maxY = drawer.curvesRange.width + (drawer.curvesRange.x < 0 ? drawer.curvesRange.x : 0);
             scale = new Vector2(swatchArea.width / (drawer.curvesRange.width), -swatchArea.height / (drawer.curvesRange.height));//max-drawer.curvesRange.y
             translation = new Vector2(-drawer.curvesRange.x * scale.X + swatchArea.x, swatchArea.height - drawer.curvesRange.y * scale.Y + swatchArea.y);
-
             Color c = new Color(drawer.curveColor.R, drawer.curveColor.G, drawer.curveColor.B, (byte)(drawer.curveColor.A * 0.75f));
-            var mat = Matrix4.CreateOrthographicOffCenter(0, size.width, size.height, 0, -1, 1);
+            var mat = mainView.camera.OrthoLeftBottomMatrix;
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
 
             var direction = new Vector2(5, 5);
@@ -194,6 +425,7 @@ namespace Sharp.Editor.Views
             MainEditorView.editorBackendRenderer.DrawFilledPolyline(3, 3, ref c.R, ref mat, ref array, false);
             MainWindow.backendRenderer.WriteDepth();
             MainEditorView.editorBackendRenderer.UnloadMatrix();
+            OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
         }
 
         private void UpdateClickedKeyfr(Dictionary<Vector2, Keyframe>[] newSelected)
@@ -253,7 +485,6 @@ namespace Sharp.Editor.Views
                     color = new Color(color.R, color.G, color.B, (byte)(255 * 0.4f));
                 }
             }
-            Console.WriteLine(color);
             return color;
         }
 
@@ -279,163 +510,15 @@ namespace Sharp.Editor.Views
 
         public override void Render()
         {
-            // MainWindow.backendRenderer.ChangeShader();
-            //MainWindow.backendRenderer.Clip(panel.X, panel.Y, panel.Width, panel.Height);
-            //OnGUI();
+            MainWindow.backendRenderer.ChangeShader();
+            // MainWindow.backendRenderer.Clip(panel.Location.x, panel.Location.y, panel.Size.x, panel.Size.y);
+            OnGUI();
         }
 
         private bool delayClear = true;
 
         public override void OnMouseDown(int buttonId)//convert curve keys to basic gui? then use clicked/rightclicked etc events on them
         {
-            var mousePos = new Vector2(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y);
-            var pos = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);
-            var rightClick = buttonId is 1;
-            if (clickedKeyframe[0].Count + clickedKeyframe[1].Count == 1)
-            {
-                clickedKeyframe[0].Clear();
-                clickedKeyframe[1].Clear();
-            }
-            bool checkMousePos = Math.Abs(drawer.Value[0].Evaluate(pos.X) - pos.Y) < 0.25f;
-            bool checkMousePos1 = Math.Abs(drawer.Value[1].Evaluate(pos.X) - pos.Y) < 0.25f;
-            var l = 0;
-            var point = new Vector2[2];
-
-            while (l < 2)
-            {
-                foreach (var item in drawer.Value[l].keys)
-                {
-                    var keyfrPos = new Vector2(item.time, item.value);
-                    var keyfrPosSP = RegionDrawer.CurveToViewSpace(keyfrPos, scale, translation);
-
-                    point[0] = RegionDrawer.CurveToViewSpace(keyfrPos.RotateAroundPivot(keyfrPos + new Vector2(1, 0), new Vector3((float)Math.Atan(item.outTangent), 0, 0)), scale, translation);
-                    point[1] = RegionDrawer.CurveToViewSpace(keyfrPos.RotateAroundPivot(keyfrPos + new Vector2(-1, 0), new Vector3((float)Math.Atan(item.inTangent), 0, 0)), scale, translation);
-
-                    var dir = point[0] - keyfrPosSP;
-                    point[0] = keyfrPosSP + dir.Normalized() * 50;
-                    dir = point[1] - keyfrPosSP;
-                    point[1] = keyfrPosSP + dir.Normalized() * 50;
-
-                    if (Math.Abs((keyfrPosSP - mousePos).LengthSquared) < 11)
-                    {
-                        (int, int)[] data;
-                        selectedTan = item;
-                        if (clickedKeyframe[l].Count == 0)
-                        {
-                            clickedKeyframe[l].Add(keyfrPos - pos, item);
-                            data = new(int, int)[] { (l, Array.IndexOf(drawer.Value[l].keys, item)) };
-                        }
-                        else
-                        {
-                            data = new(int, int)[clickedKeyframe[0].Count + clickedKeyframe[1].Count];
-                            var tmpl = 0;
-                            while (tmpl < 2)
-                            {
-                                var tmpList = clickedKeyframe[tmpl].Values.ToList();
-                                clickedKeyframe[tmpl].Clear();
-                                foreach (var (key, selectedKeyfr) in tmpList.WithIndexes())
-                                {
-                                    var tmpkeyfrPos = new Vector2(selectedKeyfr.time, selectedKeyfr.value);
-                                    data[key] = (tmpl, Array.IndexOf(drawer.Value[l].keys, selectedKeyfr));
-                                    clickedKeyframe[tmpl][tmpkeyfrPos - pos] = selectedKeyfr;
-                                }
-                                tmpl++;
-                            }
-                        }
-                        if (rightClick)
-                        {
-                            //menu.RemoveAllRows();
-                            CurveMenuManager.selectedKeyfr = clickedKeyframe;
-                            CurveMenuManager.updateSelected = UpdateClickedKeyfr;
-                            //menu.AddRow("Edit key");
-                            //menu.AddRow("Edit tangents");
-
-                            //menu.AddRow("Delete Key" + (clickedKeyframe[0].Count + clickedKeyframe[1].Count > 1 ? "s" : ""), "", data).Clicked += DeleteKey;
-                            //CurveMenuManager.AddTangentMenuItems(menu, drawer.Value);
-                            //menu.SizeToContents();
-                            //menu.SetPosition(mousePos.X, mousePos.Y - 29);
-                            delayClear = true;
-                            //menu.Show();
-                            return;
-                        }
-                        else
-                        {
-                            //  badge.Show();
-                            // badge.SetPosition(keyfrPosSP.X + 5f, keyfrPosSP.Y - 15f);
-                            showDrag = Array.IndexOf(drawer.Value[l].keys, item);
-                            return;
-                        }
-                    }
-                    else if (Math.Abs((point[0] - mousePos).LengthSquared) < 11 && !rightClick)
-                    {
-                        tangentSide = TangentDirection.Left;
-                        selectedTan = item;
-                        clickedKeyframe[l][keyfrPos - pos] = item;
-                        showDrag = Array.IndexOf(drawer.Value[l].keys, item);
-                        return;
-                    }
-                    else if (Math.Abs((point[1] - mousePos).LengthSquared) < 11 && !rightClick)
-                    {
-                        tangentSide = TangentDirection.Right;
-                        selectedTan = item;
-                        clickedKeyframe[l][keyfrPos - pos] = item;
-                        showDrag = Array.IndexOf(drawer.Value[l].keys, item);
-                        return;
-                    }
-                }
-                l++;
-            }
-            if ((checkMousePos || checkMousePos1) && rightClick)
-            {
-                /* menu.RemoveAllRows();
-                 menu.AddRow("Add key", "Add key", new object[]
-                 {
-                 checkMousePos ? 0 : 1,
-                 pos.X,
-                 }).Clicked += AddKey;
-                 menu.AddRow("Track curve", "Track curve", checkMousePos ? 0 : 1).Clicked += TrackSelectedCurve;
-                 menu.SizeToContents();
-                 menu.SetPosition(mousePos.X, mousePos.Y - 29);*/
-                delayClear = true;
-                //menu.Show();
-                return;
-            }
-            else if (showDrag != 0)
-            {// clickedKeyframe[0].Clear();
-             //clickedKeyframe[1].Clear();
-                Vector2 keyfrPos;
-                l = 0;
-                var rounds = 2;
-                isDraggingRegion = true;
-                showDrag = 0;
-                if (checkMousePos)
-                {
-                    rounds = 1;
-                }
-                else if (checkMousePos1)
-                {
-                    l = 1;
-                }
-                else if ((drawer.Value[0].Evaluate(pos.X) < pos.Y && drawer.Value[1].Evaluate(pos.X) < pos.Y) || (drawer.Value[0].Evaluate(pos.X) > pos.Y && drawer.Value[1].Evaluate(pos.X) > pos.Y))
-                {
-                    isDraggingRegion = false;
-                    rounds = 0;
-                }
-                while (l < rounds)
-                {
-                    foreach (var selectedKeyfr in drawer.Value[l].keys)
-                    {
-                        keyfrPos = new Vector2(selectedKeyfr.time, selectedKeyfr.value);
-                        clickedKeyframe[l][keyfrPos - pos] = selectedKeyfr;
-                    }
-                    l++;
-                }
-                return;
-            }
-            //showDrag = 0;
-            isDraggingRegion = false;
-            showDrag = -1;
-            delayClear = false;
         }
 
         public override void OnGlobalMouseMove(MouseMoveEventArgs evnt)
@@ -449,10 +532,10 @@ namespace Sharp.Editor.Views
                 CheckIfOutsideArea(ref keyInCV);
                 var keyInVS = RegionDrawer.CurveToViewSpace(keyInCV, scale, translation);
 
-                //badge.SetPosition(keyInVS.X, keyInVS.Y - 29);
-                // badge.Text = $"{x:F3}, {drawer.Value[tracking].Evaluate(x):F3}";
+                badge.Position = new Point((int)keyInVS.X, (int)keyInVS.Y);
+                badge.Text = $"{x:F3}, {drawer.Value[tracking].Evaluate(x):F3}";
                 // badge.SizeToContents();
-                //badge.Show();
+                badge.IsVisible = true;
                 return;
             }
             if (showDrag is -1) return;
@@ -504,10 +587,10 @@ namespace Sharp.Editor.Views
                         if (!isDraggingRegion)
                         {
                             var keyInVS = RegionDrawer.CurveToViewSpace(newPos, scale, translation);
-                            /*   badge.SetPosition(keyInVS.X + 5f, keyInVS.Y - 15f);
-                               badge.Text = $"{selectedTan.time:F3}, {selectedTan.value:F3}";
-                               badge.SizeToContents();
-                               badge.Show();*/
+                            badge.Position = new Point((int)(keyInVS.X + 5f), (int)(keyInVS.Y - 15f));
+                            badge.Text = $"{selectedTan.time:F3}, {selectedTan.value:F3}";
+                            /*  badge.SizeToContents();*/
+                            badge.IsVisible = true;
                         }
                     }
                     if (selectedTan.Equals(value) && tangentSide != TangentDirection.None)
@@ -592,21 +675,6 @@ namespace Sharp.Editor.Views
         }
 
         //void TraverseKeyframes(Rect swatchArea, Rect curvesRange)
-        /*  private void TrackSelectedCurve(Base sender, EventArgs args)
-          {
-              tracking = (int)(sender as ListBoxRow).UserData;
-          }
-
-          private void DeleteKey(Base sender, EventArgs args)
-          {
-              (int curveId, int keyId)[] data = (sender as ListBoxRow).UserData as (int, int)[];
-              foreach (var toDelete in data)
-                  drawer.Value[toDelete.curveId].RemoveKey(toDelete.keyId);
-              Squid.UI.isDirty = true;
-          }*/
-
-        private Label[] vLabels = Array.Empty<Label>();
-        private Label[] hLabels = Array.Empty<Label>();
 
         public void GridGUI()
         {
@@ -705,9 +773,9 @@ namespace Sharp.Editor.Views
 
                     if (array.Length != hLabels.Length)
                     {
-                        /*foreach (var label in hLabels)
+                        foreach (var label in hLabels)
                             if (label != null)
-                                panel.RemoveChild(label, true);*/
+                                panel.Childs.Remove(label);
                         hLabels = new Label[array.Length];
                     }
                     float y = (float)Math.Floor(mainArea.height);
@@ -733,14 +801,14 @@ namespace Sharp.Editor.Views
                             }
                             if (hLabels[m] is null)
                             {
-                                //hLabels[m] = new Label(panel);
-                                // hLabels[m].AutoSizeToContents = true;
+                                hLabels[m] = new Label();
+                                panel.Childs.Add(hLabels[m]);
                             }
                             hLabels[m].Text = num3.ToString("n" + numberOfDecimalsForMinimumDifference) + curveSettings.hTickStyle.unit;
-                            // hLabels[m].SetPosition(position.x, position.y);
-                            // hLabels[m].SetSize((int)position.width, (int)position.height);
-                            // hLabels[m].Alignment = textAnchor;
-                            // hLabels[m].Show();
+                            hLabels[m].Position = new Point((int)position.x, (int)position.y);
+                            hLabels[m].Size = new Point((int)position.width, (int)position.height);
+                            hLabels[m].TextAlign = textAnchor;
+                            hLabels[m].NoEvents = true;
                         }
                     }
                 }
@@ -753,9 +821,9 @@ namespace Sharp.Editor.Views
 
                     if (array2.Length != vLabels.Length)
                     {
-                        /*foreach (var label in vLabels)
+                        foreach (var label in vLabels)
                             if (label != null)
-                                panel.RemoveChild(label, true);*/
+                                panel.Childs.Remove(label);
                         vLabels = new Label[array2.Length];
                     }
 
@@ -778,47 +846,31 @@ namespace Sharp.Editor.Views
                             vector2 = new Vector2(vector2.X, (float)Math.Floor(vector2.Y));
                             float num6 = ticksAtLevel4[n];
                             (float x, float y, float width, float height) position2;
-                            //Gwen.Pos textAnchor;
+                            Alignment textAnchor = Alignment.MiddleRight;
                             if (curveSettings.vTickStyle.centerLabel)
                             {
                                 position2 = (0, vector2.Y - 8 - 29, swatchArea.x - 4, 16);
                             }
                             else
                             {
-                                //textAnchor = Gwen.Pos.Left;
+                                textAnchor = Alignment.MiddleLeft;
                                 position2 = (0, vector2.Y - 13, width, 16);
                             }
                             if (vLabels[n] is null)
                             {
-                                //vLabels[n] = new Label(panel);
-                                //vLabels[n].AutoSizeToContents = true;
+                                vLabels[n] = new Label();
+                                panel.Childs.Add(vLabels[n]);
                             }
                             vLabels[n].Text = num6.ToString(text) + curveSettings.vTickStyle.unit;
-                            //vLabels[n].SetPosition(position2.x, position2.y);
-                            //vLabels[n].SetSize((int)position2.width, (int)position2.height);
-                            //vLabels[n].Alignment = Gwen.Pos.Center;
-                            //vLabels[n].Show();
+                            vLabels[n].Position = new Point((int)position2.x, (int)position2.y);
+                            vLabels[n].Size = new Point((int)position2.width, (int)position2.height);
+                            vLabels[n].TextAlign = textAnchor;
+                            vLabels[n].NoEvents = true;
                         }
                     }
                 }
             }
         }
-
-        /* private void AddKey(Base sender, EventArgs args)
-         {
-             object[] data = (sender as ListBoxRow).UserData as object[];
-             int curveId = (int)data[0];
-             float time = (float)data[1];
-             var startAngle = EvaluateCurveDeltaSlow(time, curveId);
-             var newPoint = new Vector2(time, drawer.Value[curveId].Evaluate(time));
-             CheckIfOutsideArea(ref newPoint);
-             var newkeyfr = new Keyframe(newPoint.X, newPoint.Y, startAngle, startAngle);
-             var keyId = drawer.Value[curveId].AddKey(ref newkeyfr);
-             clickedKeyframe[0].Clear();
-             clickedKeyframe[1].Clear();
-             clickedKeyframe[curveId].Add(Vector2.Zero, drawer.Value[curveId].keys[keyId]);
-             Squid.UI.isDirty = true;
-         }*/
 
         public float EvaluateCurveDeltaSlow(float time, int curveId)
         {

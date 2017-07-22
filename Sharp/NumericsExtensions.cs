@@ -9,7 +9,8 @@ namespace Sharp
     {//for width/height
         Prectange,
         Fill,//?
-        Number
+        Number,
+        Auto
     }
 
     public static class NumericsExtensions

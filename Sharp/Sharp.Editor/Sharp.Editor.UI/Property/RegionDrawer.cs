@@ -34,16 +34,17 @@ namespace Sharp.Editor.UI.Property
         internal Vector2[] region;
 
         private uint curvesEditor;
-
+        private Curve[] curves;
         public Frame curveFrame = new Frame();
 
         public override Curve[] Value
         {
-            get => getter(); set//fix undo system
+            get => curves;
+            set//fix undo system
             {
+                curves = value;
                 for (int i = 0; i < value.Length; i += 2)
                     CreateRegion(value[i], value[i + 1]);
-                setter(value);
             }
         }
 
@@ -55,21 +56,20 @@ namespace Sharp.Editor.UI.Property
             curveFrame.Style = "textbox";
             curveFrame.NoEvents = false;
             curveFrame.Position = new Point(label.Size.x, 0);
+            Scissor = true;
             Childs.Add(curveFrame);
-            MouseUp += RegionDrawer_MouseDown;
+            curveFrame.MouseUp += RegionDrawer_MouseDown;
         }
 
-        private void RegionDrawer_MouseDown(Squid.Control sender, Squid.MouseEventArgs args)
+        private void RegionDrawer_MouseDown(Control sender, MouseEventArgs args)
         {
-            Console.WriteLine(!Window.windows.Contains(curvesEditor));
-            return;
             if (!Window.windows.Contains(curvesEditor))
             {
                 var win = new FloatingWindow("");
                 curvesEditor = win.windowId;
                 var curvesView = new CurvesView(curvesEditor);
                 CurvesView.drawer = this;
-                //Window.OpenView(curvesView, 0);
+                Window.OpenView(curvesView, View.mainViews[curvesEditor].desktop);
                 win.Size = (700, 500);
             }
             Window.windows[curvesEditor].OnFocus();
@@ -275,19 +275,18 @@ namespace Sharp.Editor.UI.Property
         protected override void OnAutoSize()
         {
             //base.OnAutoSize();
-            Size = new Squid.Point(Parent.Size.x, 20);
+            //Size = new Squid.Point(Parent.Size.x, 20);
         }
 
-        protected override void DrawCustom()
+        protected override void DrawAfter()
         {
             OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
-
             var p = curveFrame.Location;
 
             var max = curvesRange.height + (curvesRange.y < 0 ? curvesRange.y : 0);
             //var maxY = curvesRange.width + (curvesRange.x < 0 ? curvesRange.x : 0);
-            scale = new Vector2((curveFrame.Size.x) / (curvesRange.width), -(curveFrame.Size.y - 2) / (curvesRange.height));//remember abount - on y
-            translation = new Vector2(-curvesRange.x * scale.X + p.x, curveFrame.Size.y - curvesRange.y * scale.Y + p.y);
+            scale = new Vector2((curveFrame.Size.x - 2) / (curvesRange.width), -(curveFrame.Size.y - 2) / (curvesRange.height));//remember abount - on y
+            translation = new Vector2(-curvesRange.x * scale.X + 1 + p.x, curveFrame.Size.y - 1 - curvesRange.y * scale.Y + p.y);
             var color = PrepareColorForRegion(curveColor);
 
             var canvas = Desktop;

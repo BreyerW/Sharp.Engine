@@ -13,7 +13,7 @@ namespace Sharp
         //
         // Methods
         //
-        public static void AddTangentMenuItems(ListBox menu, Curve[] keyList)
+        public static void AddTangentMenuItems(Menu menu, Curve[] keyList)
         {
             bool flag = keyList.Length > 0;
             bool on = flag;
@@ -82,21 +82,47 @@ namespace Sharp
             }
             if (flag)
             {
-                /*  menu.Childs.Add("Auto", "", keyList).Clicked += SetSmooth;// on
-                  menu.AddRow("FreeSmooth", "", keyList).Clicked += SetEditable;//, on2
-                  menu.AddRow("Flat", "", keyList).Clicked += SetFlat;//, on3
-                  menu.AddRow("Broken", "", keyList).Clicked += SetBroken;//on4
-                  //menu.AddSeparator(string.Empty);
-                  menu.AddRow("Left Tangent/Free", "", keyList).Clicked += SetLeftEditable;//flag2
-                  menu.AddRow("Left Tangent/Linear", "", keyList).Clicked += SetLeftLinear;//flag3,
-                  menu.AddRow("Left Tangent/Constant", "", keyList).Clicked += SetLeftConstant;//flag4,
-                  menu.AddRow("Right Tangent/Free", "", keyList).Clicked += SetRightEditable; //flag5,
-                  menu.AddRow("Right Tangent/Linear", "", keyList).Clicked += SetRightLinear;//flag6,
-                  menu.AddRow("Right Tangent/Constant", "", keyList).Clicked += SetRightConstant; //flag7,
-                  menu.AddRow("Both Tangents/Free", "", keyList).Clicked += SetBothEditable;//flag5 && flag2,
-                  menu.AddRow("Both Tangents/Linear", "", keyList).Clicked += SetBothLinear;//flag6 && flag3,
-                  menu.AddRow("Both Tangents/Constant", "", keyList).Clicked += SetBothConstant;//flag7 && flag4,
-                  */
+                var auto = menu.AddItem("Auto");// on
+                auto.MouseClick += SetSmooth;
+                auto.UserData = keyList;
+
+                var free = menu.AddItem("FreeSmooth");//, on2
+                free.MouseClick += SetEditable;
+                free.UserData = keyList;
+                var flat = menu.AddItem("Flat");//, on3
+                flat.UserData = keyList;
+                flat.MouseClick += SetFlat;
+                var broken = menu.AddItem("Broken");//on4
+                broken.UserData = keyList;
+                broken.MouseClick += SetBroken;
+                //menu.AddSeparator(string.Empty);
+                var leftFree = menu.AddItem("Left Tangent/Free");//flag2
+                leftFree.UserData = keyList;
+                leftFree.MouseClick += SetLeftEditable;
+                var leftLinear = menu.AddItem("Left Tangent/Linear");//flag3,
+                leftLinear.UserData = keyList;
+                leftLinear.MouseClick += SetLeftLinear;
+                var leftConstant = menu.AddItem("Left Tangent/Constant");//flag4,
+                leftConstant.UserData = keyList;
+                leftConstant.MouseClick += SetLeftConstant;
+                var rightFree = menu.AddItem("Right Tangent/Free"); //flag5,
+                rightFree.UserData = keyList;
+                rightFree.MouseClick += SetRightEditable;
+                var rightLinear = menu.AddItem("Right Tangent/Linear");//flag6,
+                rightLinear.UserData = keyList;
+                rightLinear.MouseClick += SetRightLinear;
+                var rightConstant = menu.AddItem("Right Tangent/Constant"); //flag7,
+                rightConstant.UserData = keyList;
+                rightConstant.MouseClick += SetRightConstant;
+                var bothFree = menu.AddItem("Both Tangents/Free");//flag5 && flag2,
+                bothFree.UserData = keyList;
+                bothFree.MouseClick += SetBothEditable;
+                var bothLinear = menu.AddItem("Both Tangents/Linear");//flag6 && flag3,
+                bothLinear.UserData = keyList;
+                bothLinear.MouseClick += SetBothLinear;
+                var bothConstant = menu.AddItem("Both Tangents/Constant");//flag7 && flag4,
+                bothConstant.UserData = keyList;
+                bothConstant.MouseClick += SetBothConstant;
             }
             else
             {
@@ -140,6 +166,7 @@ namespace Sharp
                 l++;
             }
             updateSelected(newSelectedKeyfr);
+            UI.isDirty = true;
         }
 
         public static void SetBoth(TangentMode mode, Curve[] keysToSet)
@@ -173,24 +200,25 @@ namespace Sharp
                 l++;
             }
             updateSelected(newSelectedKeyfr);
+            UI.isDirty = true;
         }
 
-        public static void SetBothConstant(Control sender, EventArgs args)
+        public static void SetBothConstant(Control sender, MouseEventArgs args)
         {
             SetTangent(2, TangentMode.Stepped, (Curve[])sender.UserData);
         }
 
-        public static void SetBothEditable(Control sender, EventArgs args)
+        public static void SetBothEditable(Control sender, MouseEventArgs args)
         {
             SetTangent(2, TangentMode.Editable, (Curve[])sender.UserData);
         }
 
-        public static void SetBothLinear(Control sender, EventArgs args)
+        public static void SetBothLinear(Control sender, MouseEventArgs args)
         {
             SetTangent(2, TangentMode.Linear, (Curve[])sender.UserData);
         }
 
-        public static void SetBroken(Control sender, EventArgs args)
+        public static void SetBroken(Control sender, MouseEventArgs args)
         {
             var newSelectedKeyfr = new Dictionary<Vector2, Keyframe>[] { new Dictionary<Vector2, Keyframe>(), new Dictionary<Vector2, Keyframe>() };
 
@@ -225,48 +253,48 @@ namespace Sharp
             updateSelected(newSelectedKeyfr);
         }
 
-        public static void SetEditable(Control sender, EventArgs args)
+        public static void SetEditable(Control sender, MouseEventArgs args)
         {
             SetBoth(TangentMode.Editable, (Curve[])sender.UserData);
         }
 
-        public static void SetFlat(Control sender, EventArgs args)
+        public static void SetFlat(Control sender, MouseEventArgs args)
         {
             SetBoth(TangentMode.Editable, (Curve[])sender.UserData);
             Flatten((Curve[])sender.UserData);
         }
 
-        public static void SetLeftConstant(Control sender, EventArgs args)
+        public static void SetLeftConstant(Control sender, MouseEventArgs args)
         {
             SetTangent(0, TangentMode.Stepped, (Curve[])sender.UserData);
         }
 
-        public static void SetLeftEditable(Control sender, EventArgs args)
+        public static void SetLeftEditable(Control sender, MouseEventArgs args)
         {
             SetTangent(0, TangentMode.Editable, (Curve[])sender.UserData);
         }
 
-        public static void SetLeftLinear(Control sender, EventArgs args)
+        public static void SetLeftLinear(Control sender, MouseEventArgs args)
         {
             SetTangent(0, TangentMode.Linear, (Curve[])sender.UserData);
         }
 
-        public static void SetRightConstant(Control sender, EventArgs args)
+        public static void SetRightConstant(Control sender, MouseEventArgs args)
         {
             SetTangent(1, TangentMode.Stepped, (Curve[])sender.UserData);
         }
 
-        public static void SetRightEditable(Control sender, EventArgs args)
+        public static void SetRightEditable(Control sender, MouseEventArgs args)
         {
             SetTangent(1, TangentMode.Editable, (Curve[])sender.UserData);
         }
 
-        public static void SetRightLinear(Control sender, EventArgs args)
+        public static void SetRightLinear(Control sender, MouseEventArgs args)
         {
             SetTangent(1, TangentMode.Linear, (Curve[])sender.UserData);
         }
 
-        public static void SetSmooth(Control sender, EventArgs args)
+        public static void SetSmooth(Control sender, MouseEventArgs args)
         {
             SetBoth(TangentMode.Smooth, (Curve[])sender.UserData);
         }
@@ -315,6 +343,7 @@ namespace Sharp
                 l++;
             }
             updateSelected(newSelectedKeyfr);
+            UI.isDirty = true;
         }
     }
 }

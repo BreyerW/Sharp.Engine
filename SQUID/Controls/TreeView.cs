@@ -21,6 +21,8 @@ namespace Squid
         private Frame ItemContainer;
         private TreeNode _selectedNode;
 
+        //public bool autoHideButton = true;
+
         /// <summary>
         /// Raised when [selected node changed].
         /// </summary>
@@ -379,7 +381,6 @@ namespace Squid
         {
             e.Item.NodeDepth = NodeDepth + 1;
             e.Item.Parent = this;
-
             if (treeview != null && Expanded)
             {
                 _suspendEvents = true;

@@ -68,6 +68,7 @@
     <Compile Include="Controls\Label.cs" />
     <Compile Include="Controls\ListBox.cs" />
     <Compile Include="Controls\ListView.cs" />
+    <Compile Include="Controls\Menu.cs" />
     <Compile Include="Controls\Panel.cs" />
     <Compile Include="Controls\RadioButton.cs" />
     <Compile Include="Controls\Resizer.cs" />

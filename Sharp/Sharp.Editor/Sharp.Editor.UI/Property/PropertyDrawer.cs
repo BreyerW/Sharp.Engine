@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Linq;
+using Sharp.Commands;
 using Sharp.Editor.Attribs;
 using Squid;
 
@@ -13,9 +11,11 @@ namespace Sharp.Editor.UI.Property
     public abstract class PropertyDrawer<T> : Control//if u want support multiple types with same drawer use object, object have least priority compared to same attrib but specialized drawer
     {
         protected Label label = new Label();
+        protected bool isDirty = false;
 
         public Action<T> setter;
         public Func<T> getter;
+
         public CustomPropertyDrawerAttribute[] attributes;
 
         /// <summary>
@@ -27,11 +27,6 @@ namespace Sharp.Editor.UI.Property
             set;
         }
 
-        /// <summary>
-        /// Indicates whether the property value is being edited.
-        /// </summary>
-        public virtual bool IsEditing { get { return false; } }
-
         public PropertyDrawer(string name) : base()
         {
             //Scissor = true;
@@ -40,18 +35,26 @@ namespace Sharp.Editor.UI.Property
             label.Size = new Point(75, Size.y);
             label.AutoEllipsis = false;
             Childs.Add(label);
+            Selection.OnSelectionDirty += (sender, args) => Value = getter();
         }
 
         //public abstract bool IsValid(CustomPropertyDrawerAttribute[] attributes);
-        /*   protected void OnValueChanged(Control.Base control, EventArgs args)
-           {
-               if (!Value.Equals(getter()) && !isDirty)
-                   new ChangeValueCommand((o) => { isDirty = true; setter((T)o); }, getter(), Value).StoreCommand();
-               setter(Value);
-           }*/
-        /*
-         if (isDirty)
-                Value = m_Property.getter();*/
+        private void OnValueChanged()
+        {
+            // if (!Value.Equals(getter()) && !Squid.UI.isDirty)
+            //  new ChangeValueCommand((o) => { setter((T)o); Squid.UI.isDirty = true; }, getter(), Value).StoreCommand();
+            setter(Value);
+        }
+
+        protected override void DrawBefore()
+        {
+            if (isDirty)
+            {
+                OnValueChanged();
+                isDirty = false;
+            }
+            base.DrawBefore();
+        }
     }
 
     public static class TypeExtensions

@@ -7,9 +7,12 @@ namespace Sharp.Editor.Views
 {
     public class MainEditorView : View
     {
+        public static MainEditorView currentMainView;
+
         protected override string Name => "Main View";
 
         public Desktop desktop;
+        public Camera camera = new Camera();
 
         //public SplitContainer splitter = new SplitContainer();
         public bool needRedraw = false;
@@ -35,10 +38,12 @@ namespace Sharp.Editor.Views
 
         public override void Render()
         {
+            currentMainView = this;
             MainWindow.backendRenderer.Viewport(0, 0, desktop.Size.x, desktop.Size.y);
 
             MainWindow.backendRenderer.ClearBuffer();
             MainWindow.backendRenderer.ClearColor();
+            desktop.NoEvents = Window.UnderMouseWindowId == attachedToWindow;
             OnInternalUpdate();
             desktop.Draw();
         }
@@ -50,7 +55,7 @@ namespace Sharp.Editor.Views
 
         public override void OnResize(int width, int height)
         {
-            Camera.main?.SetOrthoMatrix(width, height);
+            camera.SetOrthoMatrix(width, height);
             //desktop.Size = ;
             desktop.ResizeTo(new Point(width, height), AnchorStyles.Right | AnchorStyles.Bottom);
             MainWindow.backendRenderer.Viewport(0, 0, desktop.Size.x, desktop.Size.y);

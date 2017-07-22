@@ -21,7 +21,7 @@ namespace SharpSL.BackendRenderers
         {
             OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
             var col = new Color((uint)color);
-            var mat = Matrix4.CreateTranslation(x, y, 0) * Camera.main.OrthoLeftBottomMatrix;
+            var mat = Matrix4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
             MainEditorView.editorBackendRenderer.DrawQuad(0, 0, width, height, ref col.R);
             MainEditorView.editorBackendRenderer.UnloadMatrix();
@@ -58,7 +58,7 @@ namespace SharpSL.BackendRenderers
             MainWindow.backendRenderer.WriteDepth(false);
             int penX = 0, penY = face.MaxAdvanceHeight >> 6;
 
-            var mat = Matrix4.CreateTranslation(x, y, 0) * Camera.main.OrthoLeftBottomMatrix;
+            var mat = Matrix4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
 
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
             for (int i = 0; i < chars.Length; ++i)
@@ -111,7 +111,7 @@ namespace SharpSL.BackendRenderers
             ref var texture2d = ref Pipeline.GetPipeline<TexturePipeline>().GetAsset(texture);
             var col = new Color((uint)color);
 
-            var mat = Matrix4.CreateTranslation(x, y, 0) * Camera.main.OrthoLeftBottomMatrix;
+            var mat = Matrix4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
 
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
             MainWindow.backendRenderer.Allocate(ref texture2d.bitmap[0], texture2d.width, texture2d.height);
@@ -163,8 +163,7 @@ namespace SharpSL.BackendRenderers
 
         public void Scissor(int x, int y, int width, int height)
         {
-            if (Camera.main is null) return;
-            MainWindow.backendRenderer.Clip(x, Camera.main.height - (y + height), width, height);
+            MainWindow.backendRenderer.Clip(x, MainEditorView.currentMainView.camera.height - (y + height), width, height);
         }
 
         #region IDisposable Support

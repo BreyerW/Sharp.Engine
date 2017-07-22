@@ -4,7 +4,7 @@ using Sharp.Editor;
 
 namespace Sharp.Commands
 {
-    internal class ChangeValueCommand : ICommand
+    public class ChangeValueCommand : ICommand
     {
         private readonly Action<object> _setValueAction;
         private readonly object _originalValue;

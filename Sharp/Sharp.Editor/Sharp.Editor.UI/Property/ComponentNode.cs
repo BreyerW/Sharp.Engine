@@ -25,7 +25,8 @@ namespace Sharp.Editor.UI.Property
         /// </summary>
         public ComponentNode()
         {
-            Scissor = true;
+            AutoSize = AutoSize.HorizontalVertical;
+            //Scissor = true;
             Button = new Button();
             Button.Size = new Point(10, 10);
             Button.Margin = new Margin(3, 3, 3, 3);
@@ -43,13 +44,13 @@ namespace Sharp.Editor.UI.Property
             Childs.Add(Label);
             var margin = Label.Size.y;
             Frame = new FlowLayoutFrame();
-            Frame.Margin = new Margin(10, margin, 0, 0);
+            Frame.Position = new Point(10, Label.Size.y);
+            //Frame.Margin = new Margin(10, 0, 0, margin);
+            Frame.AutoSize = AutoSize.HorizontalVertical;
             Frame.FlowDirection = FlowDirection.TopToBottom;
-            //Frame.AutoSize = AutoSize.Horizontal;
-            Frame.Dock = DockStyle.Fill;
             Frame.IsVisible = false;
             Frame.VSpacing = 1;
-            //Frame.Scissor = true;
+            Frame.Scissor = true;
             Childs.Add(Frame);
 
             MouseClick += Label_MouseClick;
@@ -74,7 +75,7 @@ namespace Sharp.Editor.UI.Property
 
             Expanded = !Expanded;
             Frame.IsVisible = Expanded;
-            Size = new Point(0, Expanded ? Frame.Size.y + Label.Size.y * 2 : Label.Size.y);
+            //this.ResizeTo(new Point(Size.x, Expanded ? (Frame.Size.y + Label.Size.y) : Label.Size.y), AnchorStyles.Bottom | AnchorStyles.Right);
         }
     }
 }

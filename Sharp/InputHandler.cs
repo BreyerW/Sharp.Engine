@@ -65,19 +65,6 @@ namespace Sharp
             foreach (var (key, val) in mouseCodes.WithIndexes())
             {
                 curMouseState[key] = (button & val) == val;
-                //Console.WriteLine(curMouseState[key]);
-            }
-            foreach (var view in View.views[Window.UnderMouseWindowId])
-            {
-                /*if (view.panel != null /*&& view.panel.IsChild(Gwen.Input.InputHandler.HoveredControl, true)*)
-                {
-                    Console.WriteLine("buu");
-                    //if (pressed)
-                    view.OnMouseDown(curMouseState);
-                    //else
-                    view.OnMouseUp(curMouseState);
-                    break;
-                }*/
             }
             if (pressed) OnMouseDown?.Invoke((MouseButtonEventArgs)evnt);
             else OnMouseUp?.Invoke((MouseButtonEventArgs)evnt);
@@ -132,6 +119,26 @@ namespace Sharp
             modState = SDL.SDL_GetModState();
             Unsafe.CopyBlock(ref prevKeyState[0], ref curKeyState[0], (uint)numKeys);
             Marshal.Copy(memAddrToKeyboard, curKeyState, 0, numKeys);
+
+            bool combinationMet = true;
+            foreach (var command in menuCommands)
+            {
+                combinationMet = true;
+                foreach (var key in command.keyCombination)
+                {
+                    switch (key)
+                    {
+                        case "CTRL": combinationMet = modState.HasFlag(SDL.SDL_Keymod.KMOD_LCTRL); break;
+                        case "SHIFT": combinationMet = modState.HasFlag(SDL.SDL_Keymod.KMOD_LSHIFT) || modState.HasFlag(SDL.SDL_Keymod.KMOD_RSHIFT); break;
+                        default:
+                            var keyCode = (int)SDL.SDL_GetScancodeFromKey((SDL.SDL_Keycode)key.ToCharArray()[0]);
+                            combinationMet = curKeyState[keyCode] is 1; break;
+                    }
+                    if (!combinationMet) break;
+                }
+                if (combinationMet) { command.Execute(); break; }
+            }
+
             foreach (var keyCode in keyboardCodes)
             {
                 if (keyCode == SDL.SDL_Scancode.SDL_NUM_SCANCODES) continue;
@@ -152,25 +159,7 @@ namespace Sharp
                     keyState[key].Scancode = (int)ScancodeToKeyData(keyCode);
                     keyState[key].Char = (char)SDL.SDL_GetKeyFromScancode(keyCode);
                 }
-                keyState[key].Pressed = curKeyState[key] is 1;
-            }
-
-            foreach (var command in menuCommands)
-            {
-                var combinationMet = true;
-                foreach (var key in command.keyCombination)
-                {
-                    switch (key)
-                    {
-                        case "CTRL": combinationMet = modState.HasFlag(SDL.SDL_Keymod.KMOD_LCTRL); break;
-                        case "SHIFT": combinationMet = modState.HasFlag(SDL.SDL_Keymod.KMOD_LSHIFT) || modState.HasFlag(SDL.SDL_Keymod.KMOD_RSHIFT); break;
-                        default:
-                            var keyCode = (int)SDL.SDL_GetScancodeFromKey((SDL.SDL_Keycode)key.ToCharArray()[0]);
-                            combinationMet = curKeyState[keyCode] is 1; break;
-                    }
-                    if (!combinationMet) break;
-                }
-                if (combinationMet) { command.Execute(); break; }
+                keyState[key].Pressed = !combinationMet && curKeyState[key] is 1;
             }
         }
 

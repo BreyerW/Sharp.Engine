@@ -61,13 +61,13 @@ namespace Squid
             BeforeItemsCleared += Items_BeforeItemsCleared;
         }
 
-        void Items_BeforeItemsCleared(object sender, EventArgs e)
+        private void Items_BeforeItemsCleared(object sender, EventArgs e)
         {
             foreach (Control control in this)
                 control.ParentControl = null;
         }
 
-        void Items_BeforeItemRemoved(object sender, ListEventArgs<Control> e)
+        private void Items_BeforeItemRemoved(object sender, ListEventArgs<Control> e)
         {
             // item is Null or item is our parent
             if (e.Item == null || e.Item == Parent)
@@ -92,7 +92,7 @@ namespace Squid
                 e.Item.ParentControl = null;
         }
 
-        void Items_BeforeItemAdded(object sender, ListEventArgs<Control> e)
+        private void Items_BeforeItemAdded(object sender, ListEventArgs<Control> e)
         {
             // item is Null or item is our parent
             if (e.Item == null || e.Item == Parent)
@@ -189,13 +189,13 @@ namespace Squid
             BeforeItemsCleared += Items_BeforeItemsCleared;
         }
 
-        void Items_BeforeItemsCleared(object sender, EventArgs e)
+        private void Items_BeforeItemsCleared(object sender, EventArgs e)
         {
             foreach (Control control in this)
                 control.ParentControl = null;
         }
 
-        void Items_BeforeItemRemoved(object sender, ListEventArgs<Control> e)
+        private void Items_BeforeItemRemoved(object sender, ListEventArgs<Control> e)
         {
             // item is Null or item is our parent
             if (e.Item == null || e.Item == Parent)
@@ -220,7 +220,7 @@ namespace Squid
                 e.Item.ParentControl = null;
         }
 
-        void Items_BeforeItemAdded(object sender, ListEventArgs<Control> e)
+        private void Items_BeforeItemAdded(object sender, ListEventArgs<Control> e)
         {
             // item is Null or item is our parent
             if (e.Item == null || e.Item == Parent)
@@ -256,5 +256,4 @@ namespace Squid
             e.Item.ParentControl = Parent;
         }
     }
-
 }

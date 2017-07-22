@@ -212,7 +212,7 @@ namespace Squid
         /// <summary>
         /// The area
         /// </summary>
-        protected Rectangle ClipRect;
+        public Rectangle ClipRect;
 
         /// <summary>
         /// The elements
@@ -1553,7 +1553,7 @@ namespace Squid
         /// <summary>
         /// Override this to do additional drawing after the control has been drawn
         /// </summary>
-        protected virtual void DrawCustom() { }
+        protected virtual void DrawAfter() { }
 
         /// <summary>
         /// Override this to handle state changes.
@@ -2409,10 +2409,10 @@ namespace Squid
                 if (ClipRect.Width <= 0 || ClipRect.Height <= 0)
                     return;
 
-                DrawBefore();
-
                 if (Scissor || UI.AlwaysScissor)
                     SetScissor(Math.Max(0, ClipRect.Left), Math.Max(0, ClipRect.Top), ClipRect.Width, ClipRect.Height);
+
+                DrawBefore();
 
                 if (FadeSpeed > 0 || UI.GlobalFadeSpeed > 0)
                 {
@@ -2460,10 +2460,10 @@ namespace Squid
                 DrawChildren();
                 DrawElements();
 
+                DrawAfter();
+
                 if (Scissor || UI.AlwaysScissor)
                     ResetScissor();
-
-                DrawCustom();
             }
 
             if (Depth == 1 && ScissorStack.Count > 0)
