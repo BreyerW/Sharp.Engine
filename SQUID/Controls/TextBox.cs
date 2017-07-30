@@ -275,7 +275,7 @@ namespace Squid
             if (font < 0) return;
 
             Point p = UI.MousePosition - Location;
-            Point s1 = UI.Renderer.GetTextSize(masked, font);
+            Point s1 = UI.Renderer.GetTextSize(masked, font, 0);
             int carex = p.x + Offset + s1.x;
             int x = 0;
 
@@ -285,7 +285,7 @@ namespace Squid
             for (int i = 1; i <= masked.Length; i++)
             {
                 text = masked.Substring(0, i);
-                x = Offset + UI.Renderer.GetTextSize(text, font).x;
+                x = Offset + UI.Renderer.GetTextSize(text, font, 0).x;
                 if (x > p.x)
                 {
                     SelectEnd = i - 1;
@@ -326,7 +326,7 @@ namespace Squid
             if (font < 0) return;
 
             Point p = UI.MousePosition - Location;
-            Point s1 = UI.Renderer.GetTextSize(masked, font);
+            Point s1 = UI.Renderer.GetTextSize(masked, font, 0);
             int carex = p.x + Offset + s1.x;
             int x = 0;
 
@@ -335,7 +335,7 @@ namespace Squid
             for (int i = 1; i <= masked.Length; i++)
             {
                 text = masked.Substring(0, i);
-                x = Offset + UI.Renderer.GetTextSize(text, font).x;
+                x = Offset + UI.Renderer.GetTextSize(text, font, 0).x;
                 if (x > p.x)
                 {
                     Caret = i - 1;
@@ -645,7 +645,7 @@ namespace Squid
             {
                 LostFocus -= TextBox_LostFocus;
 
-                root.FocusedControl = null;
+                Desktop.FocusedControl = null;
                 Caret = 0;
 
                 SelectStart = SelectEnd = Caret;
@@ -660,7 +660,7 @@ namespace Squid
                 LostFocus -= TextBox_LostFocus;
 
                 Text = SavedText;
-                root.FocusedControl = null;
+                Desktop.FocusedControl = null;
                 Caret = 0;
                 HasFocus = false;
                 SelectStart = SelectEnd = Caret;
@@ -743,7 +743,6 @@ namespace Squid
                                     Text = Text.Remove(start, end - start);
                                     Caret = start;
                                 }
-
                                 Text = Text.Insert(Caret, c.ToString());
                                 if (Caret < Text.Length)
                                     Caret++;
@@ -782,8 +781,8 @@ namespace Squid
             Point p = AlignText(masked, Alignment.MiddleLeft, style.TextPadding, font);
 
             Rectangle clip = new Rectangle(Location, Size);
-            clip.Left += style.TextPadding.Left;
-            clip.Right -= style.TextPadding.Right - 1;
+            //clip.Left += style.TextPadding.Left - 1;
+            //clip.Right -= style.TextPadding.Right - 1;
             clip = Clip(clip);
 
             if (clip.Width < 1 || clip.Height < 1) return;
@@ -796,17 +795,17 @@ namespace Squid
             {
                 Rectangle rect = new Rectangle(Location, Size);
 
-                Point s1 = UI.Renderer.GetTextSize(masked, font);
-                Point s2 = UI.Renderer.GetTextSize(masked.Substring(0, Caret), font);
+                Point s1 = UI.Renderer.GetTextSize(masked, font, 0);
+                Point s2 = UI.Renderer.GetTextSize(masked.Substring(0, Caret), font, 0);
 
                 if (string.IsNullOrEmpty(masked))
                 {
-                    s2.y = UI.Renderer.GetTextSize(" ", font).y;
+                    s2.y = UI.Renderer.GetTextSize(" ", font, 0).y;
                     p = AlignText(" ", Alignment.MiddleLeft, style.TextPadding, font);
                 }
                 else if (s2.y == 0)
                 {
-                    s2.y = UI.Renderer.GetTextSize(" ", font).y;
+                    s2.y = UI.Renderer.GetTextSize(" ", font, 0).y;
                 }
 
                 int carex = p.x + Offset + s2.x;
@@ -828,11 +827,11 @@ namespace Squid
 
                 p.x += Offset;
 
-                UI.Renderer.DrawText(masked, p.x, p.y, font, ColorInt.FromArgb(opacity, UseTextColor ? TextColor : style.TextColor));
+                UI.Renderer.DrawText(masked, p.x, p.y, Size.x, Size.y, font, ColorInt.FromArgb(opacity, UseTextColor ? TextColor : style.TextColor), 0);
 
                 if (!ReadOnly && DoBlink > 0)
                 {
-                    UI.Renderer.DrawBox(p.x + s2.x, p.y, 1, s2.y, ColorInt.FromArgb(opacity, BlinkColor));
+                    UI.Renderer.DrawBox(p.x + s2.x, p.y, 1, Size.y, ColorInt.FromArgb(opacity, BlinkColor));
                 }
                 if (IsSelection)
                 {
@@ -842,17 +841,17 @@ namespace Squid
                     string text = masked.Substring(0, start);
                     string text2 = masked.Substring(start, end - start);
 
-                    Point size1 = UI.Renderer.GetTextSize(text, font);
-                    Point size2 = UI.Renderer.GetTextSize(text2, font);
+                    Point size1 = UI.Renderer.GetTextSize(text, font, 0);
+                    Point size2 = UI.Renderer.GetTextSize(text2, font, 0);
 
-                    UI.Renderer.DrawBox(p.x + size1.x, p.y, size2.x, size2.y, ColorInt.FromArgb(opacity, color));
+                    UI.Renderer.DrawBox(p.x + size1.x, p.y, size2.x, Size.y, ColorInt.FromArgb(opacity, color));
                 }
             }
             else
             {
                 HasFocus = false;
                 Offset = 0;
-                UI.Renderer.DrawText(masked, p.x, p.y, font, ColorInt.FromArgb(opacity, style.TextColor));
+                UI.Renderer.DrawText(masked, p.x, p.y, Size.x, Size.y, font, ColorInt.FromArgb(opacity, style.TextColor), 0);
             }
 
             ResetScissor();

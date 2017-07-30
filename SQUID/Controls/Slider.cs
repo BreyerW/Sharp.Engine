@@ -55,6 +55,7 @@ namespace Squid
         /// </summary>
         /// <value>The button.</value>
         public Button Button { get; private set; }
+
         /// <summary>
         /// Gets or sets the orientation.
         /// </summary>
@@ -125,7 +126,7 @@ namespace Squid
             _easeScroll = value;
         }
 
-        void Slider_MouseDown(Control sender, MouseEventArgs args)
+        private void Slider_MouseDown(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 
@@ -148,7 +149,7 @@ namespace Squid
             }
         }
 
-        void Button_MouseDown(Control sender, MouseEventArgs args)
+        private void Button_MouseDown(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 
@@ -173,7 +174,7 @@ namespace Squid
 
                     if (MinHandleSize > 0 && actualSize < MinHandleSize)
                         Scale = (float)MinHandleSize / (float)size;
-                    
+
                     Button.Size = new Point(Button.Size.x, (int)(size * Scale));
                 }
                 else
@@ -190,7 +191,7 @@ namespace Squid
 
             Button.Dock = Orientation == Orientation.Vertical ? DockStyle.FillX : DockStyle.FillY;
 
-            if (root.PressedControl == Button)
+            if (Desktop.PressedControl == Button)
             {
                 if (!(Scale >= 1 && AutoScale))
                 {

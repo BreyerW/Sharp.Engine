@@ -198,7 +198,7 @@ namespace Squid
                     if (element.Linebreak)
                     {
                         if (firstInLine)
-                            lineHeight = UI.Renderer.GetTextSize(" ", font).y;
+                            lineHeight = UI.Renderer.GetTextSize(" ", font, 0).y;
 
                         pos.x = 0;
                         pos.y += lineHeight + Leading;
@@ -292,7 +292,7 @@ namespace Squid
                             // remove leading whitespaces
                             if (firstInLine) temp = word.TrimStart();
 
-                            tsize = UI.Renderer.GetTextSize(e.Text + temp, font);
+                            tsize = UI.Renderer.GetTextSize(e.Text + temp, font, 0);
                             lineHeight = Math.Max(lineHeight, tsize.y);
 
                             if (pos.x + tsize.x < Size.x - (style.TextPadding.Left + style.TextPadding.Right))
@@ -341,7 +341,7 @@ namespace Squid
                                     e = new TextElement(element);
                                     e.Text = temp.TrimStart();
                                     e.Position = pos;
-                                    e.Size = UI.Renderer.GetTextSize(e.Text, font);
+                                    e.Size = UI.Renderer.GetTextSize(e.Text, font, 0);
                                     lineHeight = Math.Max(lineHeight, e.Size.y);
                                     firstInLine = false;
                                 }
@@ -440,7 +440,7 @@ namespace Squid
                     if (element.Linebreak)
                     {
                         if (firstInLine)
-                            lineHeight = UI.Renderer.GetTextSize(" ", font).y;
+                            lineHeight = UI.Renderer.GetTextSize(" ", font, 0).y;
 
                         pos.x = 0;
                         pos.y += lineHeight + Leading;
@@ -501,7 +501,7 @@ namespace Squid
                             firstInLine = false;
                         }
 
-                        tsize = UI.Renderer.GetTextSize(string.IsNullOrEmpty(element.Text) ? " " : element.Text, font);
+                        tsize = UI.Renderer.GetTextSize(string.IsNullOrEmpty(element.Text) ? " " : element.Text, font, 0);
                         lineHeight = Math.Max(lineHeight, tsize.y);
 
                         element.Position = pos;
@@ -535,7 +535,7 @@ namespace Squid
                         for (int i = 0; i < textElements.Count; i++)
                         {
                             int font = UI.Renderer.GetFont(textElements[i].Font);
-                            int ellipsis = UI.Renderer.GetTextSize("...", font).x;
+                            int ellipsis = UI.Renderer.GetTextSize("...", font, 0).x;
 
                             if (width + textElements[i].Size.x + ellipsis <= limit)
                             {
@@ -552,7 +552,7 @@ namespace Squid
                                 {
                                     final = text + c + "...";
 
-                                    int w = UI.Renderer.GetTextSize(final, font).x;
+                                    int w = UI.Renderer.GetTextSize(final, font, 0).x;
 
                                     if (width + w >= limit)
                                     {
@@ -577,7 +577,7 @@ namespace Squid
                         for (int i = textElements.Count - 1; i >= 0; i--)
                         {
                             int font = UI.Renderer.GetFont(textElements[i].Font);
-                            int ellipsis = UI.Renderer.GetTextSize("...", font).x;
+                            int ellipsis = UI.Renderer.GetTextSize("...", font, 0).x;
                             int fullsize = textElements[i].Size.x;
                             Point oldpos = textElements[i].Position;
 
@@ -610,7 +610,7 @@ namespace Squid
                                     if (j == 0 && removeAt == 0)
                                         final = inc;
 
-                                    int w = UI.Renderer.GetTextSize(final, font).x;
+                                    int w = UI.Renderer.GetTextSize(final, font, 0).x;
 
                                     Point position = oldpos;
                                     position.x = oldpos.x + (fullsize - w);
@@ -825,9 +825,9 @@ namespace Squid
                     //  Gui.Renderer.DrawBox(p2.x, p2.y, size.x - 1, size.y, ColorInt.FromArgb(opacity, LinkColor));
 
                     if (UseTextColor)
-                        UI.Renderer.DrawText(element.Text, p2.x, p2.y, font, ColorInt.FromArgb(opacity, TextColor));
+                        UI.Renderer.DrawText(element.Text, p2.x, p2.y, size.x, size.y, font, ColorInt.FromArgb(opacity, TextColor), 0);
                     else
-                        UI.Renderer.DrawText(element.Text, p2.x, p2.y, font, ColorInt.FromArgb(opacity, element.Color.HasValue ? (int)element.Color : style.TextColor));
+                        UI.Renderer.DrawText(element.Text, p2.x, p2.y, size.x, size.y, font, ColorInt.FromArgb(opacity, element.Color.HasValue ? (int)element.Color : style.TextColor), 0);
                 }
             }
         }

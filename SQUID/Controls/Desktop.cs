@@ -75,14 +75,6 @@ namespace Squid
 
                 // Cursor cursor = GetCursor();
 
-                // if (cursor == null)
-                //    UnityEngine.Cursor.SetCursor(null, UnityEngine.Vector2.zero, UnityEngine.CursorMode.Auto);
-                // else
-                // {
-                //    UnityEngine.Texture2D tex = ((UnityRenderer)Gui.Renderer).FindTexture(cursor.Texture);
-                //    UnityEngine.Cursor.SetCursor(tex, new UnityEngine.Vector2(cursor.HotSpot.x, cursor.HotSpot.y), UnityEngine.CursorMode.Auto);
-                // }
-
                 // if (CursorChanged != null)
                 //    CursorChanged(cursor);
             }
@@ -110,12 +102,14 @@ namespace Squid
         /// <value>The drop target control.</value>
         public Control DropTarget { get { return dropTarget; } }
 
+        public static VoidEvent OnFocusChanged;
+
         /// <summary>
         /// Gets the focused control.
         /// </summary>
         /// <value>The focused control.</value>
         [Xml.XmlIgnore]
-        public Control FocusedControl
+        public static Control FocusedControl
         {
             get
             {
@@ -126,6 +120,8 @@ namespace Squid
                 if (_focused == value) return;
                 if (_focused != null) _focused.OnLostFocus();
                 _focused = value;
+                if (OnFocusChanged != null)
+                    OnFocusChanged(value);
                 if (_focused != null) _focused.OnGotFocus();
             }
         }
@@ -134,7 +130,7 @@ namespace Squid
         /// Gets the hot control.
         /// </summary>
         /// <value>The hot control.</value>
-        public Control HotControl { get; internal set; }
+        public static Control HotControl { get; internal set; }
 
         [IntColor]
         public int ModalColor { get; set; }
@@ -143,7 +139,7 @@ namespace Squid
         /// Gets the pressed control.
         /// </summary>
         /// <value>The pressed control.</value>
-        public Control PressedControl { get; internal set; }
+        public static Control PressedControl { get; internal set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [show cursor].
@@ -617,7 +613,7 @@ namespace Squid
         /// </summary>
         private string _cursor;
 
-        private Control _focused;
+        private static Control _focused;
         private Control currentContext;
         private ControlStyle DefaultStyle = new ControlStyle();
         private Control DragData;

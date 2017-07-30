@@ -22,7 +22,7 @@ namespace Sharp
 
         internal static byte[] prevKeyState = new byte[numKeys];
         internal static byte[] curKeyState = new byte[numKeys];
-        internal static KeyData[] keyState = new KeyData[numKeys];
+        internal static List<KeyData> keyState = new List<KeyData>();
 
         public static (int x, int y) globalMousePosition;
         public static int wheelState;
@@ -45,6 +45,7 @@ namespace Sharp
 
         static InputHandler()
         {
+            Desktop.OnFocusChanged += (sender) => { if (sender is TextArea || sender is TextBox) SDL.SDL_StartTextInput(); else SDL.SDL_StopTextInput(); };
             memAddrToKeyboard = SDL.SDL_GetKeyboardState(out int _);
             var types = Assembly.GetExecutingAssembly().GetTypes();
 
@@ -68,6 +69,14 @@ namespace Sharp
             }
             if (pressed) OnMouseDown?.Invoke((MouseButtonEventArgs)evnt);
             else OnMouseUp?.Invoke((MouseButtonEventArgs)evnt);
+        }
+
+        public static void ProcessTextInput(string text)
+        {
+            foreach (var c in text)
+            {
+                keyState.Add(new KeyData() { Char = c, Pressed = true });
+            }
         }
 
         public static void ProcessMouseMove()
@@ -115,10 +124,11 @@ namespace Sharp
 
         public static void ProcessKeyboard()
         {
-            //maybe if(desktop.hot==textbox use normal event poll if no text box use keyboard state)
             modState = SDL.SDL_GetModState();
             Unsafe.CopyBlock(ref prevKeyState[0], ref curKeyState[0], (uint)numKeys);
             Marshal.Copy(memAddrToKeyboard, curKeyState, 0, numKeys);
+            //if (Desktop.FocusedControl is TextBox || Desktop.FocusedControl is TextArea)
+            //  return;
 
             bool combinationMet = true;
             foreach (var command in menuCommands)
@@ -136,7 +146,7 @@ namespace Sharp
                     }
                     if (!combinationMet) break;
                 }
-                if (combinationMet) { command.Execute(); break; }
+                if (combinationMet) { command.Execute(); return; }
             }
 
             foreach (var keyCode in keyboardCodes)
@@ -154,12 +164,8 @@ namespace Sharp
                         OnKeyUp?.Invoke(null);
                     }
                 }
-                if (keyState[key].Char is null)
-                {
-                    keyState[key].Scancode = (int)ScancodeToKeyData(keyCode);
-                    keyState[key].Char = (char)SDL.SDL_GetKeyFromScancode(keyCode);
-                }
-                keyState[key].Pressed = !combinationMet && curKeyState[key] is 1;
+                keyState.Add(new KeyData() { Scancode = (int)ScancodeToKeyData(keyCode), Pressed = curKeyState[key] is 1 });
+                //keyState[key].Char = (char)SDL.SDL_GetKeyFromScancode(keyCode);
             }
         }
 
@@ -175,7 +181,7 @@ namespace Sharp
             foreach (var key in keyState)
                 data.Add(key);
             UI.SetKeyboard(data.ToArray());
-            keyState = new KeyData[numKeys];
+            keyState.Clear();
             UI.SetMouseWheel(wheelState);
         }
 

@@ -203,12 +203,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Application.cs" />
     <Compile Include="Commands\ChangeValueCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Curve.cs" />
     <Compile Include="CurveMenuManager.cs" />
     <Compile Include="CurveUtility.cs" />
     <Compile Include="DelegateGenerator.cs" />
+    <Compile Include="DoubleConverter.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="NumericsExtensions.cs" />
     <Compile Include="Sharp.Editor\CurveSettings.cs" />

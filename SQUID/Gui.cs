@@ -8,13 +8,14 @@ namespace Squid
     public delegate string TranslateStringHandler(string text);
 
     /// <summary>
-    /// Thiy is the main entry of Squid.
+    /// This is the main entry of Squid.
     /// </summary>
     public static class UI
     {
         private static string Clipboard;
 
         public static bool isDirty = false;
+        public static Desktop currentCanvas;
         public static TranslateStringHandler TranslateHandler;
         public static int Language { get; private set; }
 
@@ -254,7 +255,7 @@ namespace Squid
             inputStyle.Texture = "input_default.png";
             inputStyle.Hot.Texture = "input_focused.png";
             inputStyle.Focused.Texture = "input_focused.png";
-            inputStyle.TextPadding = new Margin(8);
+            inputStyle.TextPadding = new Margin(5);
             inputStyle.Tiling = TextureMode.Grid;
             inputStyle.Focused.Tint = ColorInt.ARGB(1, 0, 0, 1);
             inputStyle.Grid = new Margin(3);

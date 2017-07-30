@@ -28,62 +28,139 @@ namespace SharpSL.BackendRenderers
             OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
         }
 
-        public void DrawText(string text, int x, int y, int font, int color)//remove that replace with gettexture with special name and render as texture?
+        public void DrawText(string text, int x, int y, int width, int height, int font, int color, float fontSize)//TODO: split this to draw texture and draw mesh
         {
             var chars = text.AsSpan();
-            MainWindow.backendRenderer.ChangeShader();
-            buffer = null;
-            buffer = new SharpFont.HarfBuzz.Buffer();
             ref var realFont = ref Pipeline.GetPipeline<FontPipeline>().GetAsset(font);
             ref var face = ref realFont.face;
-            if (currentFace != font)
-            {
-                hbFont = SharpFont.HarfBuzz.Font.FromFTFace(face);
-                currentFace = font;
-            }
-            buffer.AddText(text);
-            buffer.Script = SharpFont.HarfBuzz.Script.Common;
-            buffer.Direction = Direction.LeftToRight;
+            MainWindow.backendRenderer.ChangeShader();
             var col = new Color((uint)color);
-            hbFont.Shape(buffer);
-            var glyphInfos = buffer.GlyphInfo();
-            var glyphPositions = buffer.GlyphPositions();
 
-            int height = (face.MaxAdvanceHeight - face.Descender) >> 6;
-            int width = 0;
-            for (int i = 0; i < glyphInfos.Length; ++i)
-            {
-                width += glyphPositions[i].xAdvance >> 6;
-            }
+            float penX = 0, penY = 0;
+            float stringWidth = 0; // the measured width of the string
+            float stringHeight = 0; // the measured height of the string
+            float overrun = 0;
+            float underrun = 0;
+            float kern = 0;
+
+            // Bottom and top are both positive for simplicity.
+            // Drawing in .Net has 0,0 at the top left corner, with positive X to the right
+            // and positive Y downward.
+            // Glyph metrics have an origin typically on the left side and at baseline
+            // of the visual data, but can draw parts of the glyph in any quadrant, and
+            // even move the origin (via kerning).
+            float top = 0, bottom = 0;
+
+            // Measure the size of the string before rendering it. We need to do this so
+            // we can create the proper size of bitmap (canvas) to draw the characters on.
+            var size = GetTextSize(text, font, 0);
+            stringWidth = size.x;
+            stringHeight = size.y;
+            // If any dimension is 0, we can't create a bitmap
+            if (stringWidth == 0 || stringHeight == 0)
+                return;
+
             MainWindow.backendRenderer.WriteDepth(false);
-            int penX = 0, penY = face.MaxAdvanceHeight >> 6;
 
             var mat = Matrix4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
-
+            MainEditorView.editorBackendRenderer.UnloadMatrix();
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
-            for (int i = 0; i < chars.Length; ++i)
-            {
-                if (chars[i] is ' ')
-                {
-                    penX += glyphPositions[i].xAdvance >> 6;
-                    penY -= glyphPositions[i].yAdvance >> 6;
-                    continue;
-                }
-                if (!realFont.fontAtlas.ContainsKey(chars[i]))
-                    realFont.GenerateBitmapForChar(chars[i]);
-                var texChar = realFont.fontAtlas[chars[i]];
-                //draw the string
+            // Create a new bitmap that fits the string.
+            underrun = 0;
+            overrun = 0;
+            stringWidth = 0;
 
-                MainWindow.backendRenderer.Allocate(ref texChar.texture.bitmap[0], texChar.texture.width, texChar.texture.height, true);
-                MainEditorView.editorBackendRenderer.DrawTexturedQuad(
-                      penX,
-                   penY - texChar.texture.height - texChar.bearing,
-                  penX + texChar.texture.width - 2,
-                 penY - texChar.texture.height + (texChar.texture.height - texChar.bearing), ref col.R
-                  );
-                penX += glyphPositions[i].xAdvance >> 6;
-                penY -= glyphPositions[i].yAdvance >> 6;
+            // Draw the string into the bitmap.
+            // A lot of this is a repeat of the measuring steps, but this time we have
+            // an actual bitmap to work with (both canvas and bitmaps in the glyph slot).
+            for (int i = 0; i < text.Length; i++)
+            {
+                #region Load character
+
+                char c = text[i];
+
+                // Same as when we were measuring, except RenderGlyph() causes the glyph data
+                // to be converted to a bitmap.
+                uint glyphIndex = face.GetCharIndex(c);
+                face.LoadGlyph(glyphIndex, LoadFlags.Default, LoadTarget.Normal);
+                face.Glyph.RenderGlyph(RenderMode.Normal);
+
+                float gAdvanceX = (float)face.Glyph.Advance.X;
+                float gBearingX = (float)face.Glyph.Metrics.HorizontalBearingX;
+                float gWidth = (float)face.Glyph.Metrics.Width;
+
+                #endregion Load character
+
+                #region Underrun
+
+                // Underrun
+                underrun += -gBearingX;
+                if (penX == 0)
+                    penX += -underrun;
+                if (underrun <= 0)
+                {
+                    underrun = 0;
+                }
+
+                #endregion Underrun
+
+                #region Draw glyph
+
+                //int x = ;
+                //int y = (int)Math.Round(penY + top - (float)face.Glyph.Metrics.HorizontalBearingY);
+                //Not using g.DrawImage because some characters come out blurry/clipped. (Is this still true?)
+                if (chars[i] != ' ' && !realFont.fontAtlas.ContainsKey(chars[i]))
+                    realFont.GenerateBitmapForChar(chars[i]);
+
+                // Whitespace characters sometimes have a bitmap of zero size, but a non-zero advance.
+                // We can't draw a 0-size bitmap, but the pen position will still get advanced (below).
+                //draw the string
+                if (chars[i] != ' ')
+                {
+                    var texChar = realFont.fontAtlas[chars[i]];
+                    MainWindow.backendRenderer.Allocate(ref texChar.texture.bitmap[0], texChar.texture.width, texChar.texture.height, true);
+                    MainEditorView.editorBackendRenderer.DrawTexturedQuad(
+                           penX,
+                        stringHeight + penY - (float)face.Glyph.Metrics.HorizontalBearingY,
+                      penX + texChar.texture.width,
+                      stringHeight + penY - (float)face.Glyph.Metrics.HorizontalBearingY + texChar.texture.height, ref col.R
+                      );
+                }
+
+                #endregion Draw glyph
+
+                #region Overrun
+
+                if (gBearingX + gWidth > 0 || gAdvanceX > 0)
+                {
+                    overrun -= Math.Max(gBearingX + gWidth, gAdvanceX);
+                    if (overrun <= 0) overrun = 0;
+                }
+                overrun += (float)(gBearingX == 0 && gWidth == 0 ? 0 : gBearingX + gWidth - gAdvanceX);
+                if (i == text.Length - 1)
+                    penX += overrun;
+
+                #endregion Overrun
+
+                // Advance pen positions for drawing the next character.
+                penX += gAdvanceX; // same as Metrics.HorizontalAdvance?
+                penY += (float)face.Glyph.Advance.Y;
+
+                #region Kerning (for NEXT character)
+
+                // Adjust for kerning between this character and the next.
+                if (face.HasKerning && i < text.Length - 1)
+                {
+                    char cNext = text[i + 1];
+                    kern = (float)face.GetKerning(glyphIndex, face.GetCharIndex(cNext), KerningMode.Default).X;
+                    if (kern > gAdvanceX * 5 || kern < -(gAdvanceX * 5))
+                        kern = 0;
+                    penX += (float)kern;
+                }
+
+                #endregion Kerning (for NEXT character)
             }
+
             MainEditorView.editorBackendRenderer.UnloadMatrix();
             MainWindow.backendRenderer.WriteDepth(true);
         }
@@ -142,7 +219,7 @@ namespace SharpSL.BackendRenderers
             return name == "default" ? 0 : FontPipeline.nameToKey.IndexOf(name);
         }
 
-        public Point GetTextSize(string text, int font)
+        public Point GetTextSize(string text, int font, float fontSize)
         {
             ref var f = ref Pipeline.GetPipeline<FontPipeline>().GetAsset(font);
             var textSize = f.Measure(text);

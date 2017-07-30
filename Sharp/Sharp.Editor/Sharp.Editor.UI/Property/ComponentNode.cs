@@ -27,12 +27,6 @@ namespace Sharp.Editor.UI.Property
         {
             AutoSize = AutoSize.HorizontalVertical;
             //Scissor = true;
-            Button = new Button();
-            Button.Size = new Point(10, 10);
-            Button.Margin = new Margin(3, 3, 3, 3);
-            //Button.Dock = DockStyle.Top;
-            Button.MouseClick += Button_MouseClick;
-            Childs.Add(Button);
 
             Label = new Button();
             Label.Size = new Point(20, 20);
@@ -42,6 +36,14 @@ namespace Sharp.Editor.UI.Property
             Label.NoEvents = true;
             Label.Style = "";
             Childs.Add(Label);
+
+            Button = new Button();
+            Button.Size = new Point(10, 10);
+            Button.Position = new Point(0, Label.Size.y / 2 - 5);
+            Button.Margin = new Margin(3, 3, 3, 3);
+            Button.MouseClick += Button_MouseClick;
+            Childs.Add(Button);
+
             var margin = Label.Size.y;
             Frame = new FlowLayoutFrame();
             Frame.Position = new Point(10, Label.Size.y);

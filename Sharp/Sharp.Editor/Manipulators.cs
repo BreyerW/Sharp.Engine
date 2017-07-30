@@ -62,9 +62,10 @@ namespace Sharp.Editor
 
         public static void Reset()
         {
-            if (rotVectSource.HasValue || relativeOrigin.HasValue || planeOrigin.HasValue)
-                newCommand.StoreCommand();
-
+            //if (newCommand != null)
+            //    newCommand.StoreCommand();
+            UI.Property.PropertyDrawer.StopCommandCommits = false;
+            newCommand = null;
             rotVectSource = null;
             rotAngleOrigin = null;
             planeOrigin = null;
@@ -101,7 +102,7 @@ namespace Sharp.Editor
             {
                 planeOrigin = ray.origin + ray.direction * len;
                 relativeOrigin = (planeOrigin - entity.Position) * (1f / (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
-                newCommand = new ChangeValueCommand((o) => { Squid.UI.isDirty = true; entity.Position = (Vector3)o; }, entity.position);
+                UI.Property.PropertyDrawer.StopCommandCommits = true;
             }
             var newPos = ray.origin + ray.direction * len;
             var newOrigin = newPos - relativeOrigin.Value * (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
@@ -109,7 +110,6 @@ namespace Sharp.Editor
             var lenOnAxis = Vector3.Dot(delta, v);
             delta = v * lenOnAxis;
             entity.Position += delta;
-            newCommand.newValue = entity.position;
         }
 
         //private static Quaternion startRot = Quaternion.Identity;
@@ -129,9 +129,9 @@ namespace Sharp.Editor
             {
                 rotVectSource = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
                 rotAngleOrigin = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
-                newCommand = new ChangeValueCommand((o) => { Squid.UI.isDirty = true; entity.Rotation = (Vector3)o; }, entity.rotation);
                 startMat = entity.ModelMatrix;
                 startAxis = (ray.origin + ray.direction * len - entity.Position).Normalized();
+                UI.Property.PropertyDrawer.StopCommandCommits = true;
             }
             /* var currentVect = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
              var cross = Vector3.Cross(rotVectSource.Value, currentVect);
@@ -145,7 +145,6 @@ namespace Sharp.Editor
             entity.Rotation = Entity.rotationMatrixToEulerAngles(deltaRot * entity.ModelMatrix) * (180.0f / MathHelper.Pi);
             currentAngle = (ray.origin + ray.direction * len - entity.Position).Normalized();
             rotAngleOrigin = angle;
-            newCommand.newValue = entity.rotation;
             //rotvectsource = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
             //startRot = quat * startRot;
         }
@@ -160,13 +159,12 @@ namespace Sharp.Editor
             {
                 planeOrigin = ray.origin + ray.direction * len;
                 scaleOrigin = entity.Scale;
-                newCommand = new ChangeValueCommand((o) => { Squid.UI.isDirty = true; entity.Scale = (Vector3)o; }, entity.scale);
+                UI.Property.PropertyDrawer.StopCommandCommits = true;
             }
             var newPos = ray.origin + ray.direction * len;
             var delta = (newPos - entity.Position).Length / (planeOrigin.Value - entity.Position).Length;
             scaleOffset = newPos * v;
             entity.Scale = scaleOrigin.Value + v * delta - v;
-            newCommand.newValue = entity.scale;
         }
 
         private static float GetUniform(Vector3 pos, Matrix4 mat)

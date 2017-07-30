@@ -43,14 +43,14 @@ namespace Sharp.Editor.Views
 
             MainWindow.backendRenderer.ClearBuffer();
             MainWindow.backendRenderer.ClearColor();
-            desktop.NoEvents = Window.UnderMouseWindowId == attachedToWindow;
+            //desktop.NoEvents = Window.UnderMouseWindowId == attachedToWindow;
             OnInternalUpdate();
             desktop.Draw();
         }
 
         private void OnInternalUpdate()
         {
-            desktop.Update();
+            //desktop.Update();
         }
 
         public override void OnResize(int width, int height)

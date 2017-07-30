@@ -122,11 +122,10 @@ namespace Sharp.Editor.Views
             prop.attributes = attribs.ToArray();
             prop.getter = DelegateGenerator.GenerateGetter<T>(instance, propertyInfo);
             prop.setter = DelegateGenerator.GenerateSetter<T>(instance, propertyInfo);
-            //row.ValueChanged += OnRowValueChanged;
-            //isDirty = true;
             prop.AutoSize = AutoSize.Horizontal;
             prop.Name = label;
             prop.Value = prop.getter();
+            prop.propertyIsDirty = false;
             return prop;
         }
 
@@ -137,6 +136,7 @@ namespace Sharp.Editor.Views
             {
                 var node = new ComponentNode();
                 node.Label.Text = "Transform";
+                node.Label.TextAlign = Alignment.MiddleLeft;
                 var props = entity.GetType().GetProperties().Where(p => p.CanRead && p.CanWrite);
                 ptree.Nodes.Add(node);
                 Control propDrawer;
@@ -160,6 +160,7 @@ namespace Sharp.Editor.Views
                 {
                     var node = new ComponentNode();
                     node.Label.Text = component.GetType().Name;
+                    node.Label.TextAlign = Alignment.MiddleLeft;
                     ptree.Nodes.Add(node);
                     var inspector = new DefaultComponentDrawer();
                     inspector.properties = node;

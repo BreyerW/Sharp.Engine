@@ -14,7 +14,7 @@ namespace Sharp
         private static SDL.SDL_EventFilter filter = OnResize;
 
         public static Action onRenderFrame;
-
+        public static Action onBeforeNextFrame;
         public static List<IntPtr> contexts = new List<IntPtr>();
 
         public static OrderedDictionary<uint, Window> windows = new OrderedDictionary<uint, Window>((win) => win.windowId);
@@ -141,7 +141,10 @@ namespace Sharp
                 InputHandler.ProcessMousePresses();
 
                 UI.TimeElapsed = Time.deltaTime;
+                UI.currentCanvas.Update();
+                //Console.WriteLine("enter");
                 onRenderFrame?.Invoke();
+                onBeforeNextFrame?.Invoke();
                 if (UI.isDirty)
                 {
                     Selection.OnSelectionDirty?.Invoke(Selection.Asset, EventArgs.Empty);
@@ -206,17 +209,20 @@ namespace Sharp
                 case SDL.SDL_EventType.SDL_QUIT: quit = true; break;
                 case SDL.SDL_EventType.SDL_TEXTINPUT:
                     // char types are 8-bit in C, but 16-bit in C#, so we use a byte (8-bit) here
-                    //byte[] rawBytes = new byte[SDL.SDL_TEXTINPUTEVENT_TEXT_SIZE];
-
-                    // we have a pointer to an unmanaged character array from the SDL2 lib (event.text.text),
-                    // so we need to explicitly marshal into our byte array
-                    //Marshal.Copy((IntPtr)evnt.text, rawBytes, 0, SDL.SDL_TEXTINPUTEVENT_TEXT_SIZE);
-
-                    // the character array is null terminated, so we need to find that terminator
-                    //int indexOfNullTerminator = Array.IndexOf(rawBytes, (byte)0);
+                    byte[] rawBytes = new byte[SDL.SDL_TEXTINPUTEVENT_TEXT_SIZE];
+                    unsafe
+                    {
+                        // we have a pointer to an unmanaged character array from the SDL2 lib (event.text.text),
+                        // so we need to explicitly marshal into our byte array
+                        //Marshal.Copy((IntPtr)evnt.text.text, rawBytes, 0, SDL.SDL_TEXTINPUTEVENT_TEXT_SIZE);
+                        rawBytes = new Span<byte>(evnt.text.text, SDL.SDL_TEXTINPUTEVENT_TEXT_SIZE).ToArray();
+                        // the character array is null terminated, so we need to find that terminator
+                    }
+                    int indexOfNullTerminator = Array.IndexOf(rawBytes, (byte)0);
 
                     // finally, since the character array is UTF-8 encoded, get the UTF-8 string
-                    //string text = System.Text.Encoding.UTF8.GetString(rawBytes, 0, length);
+                    string text = System.Text.Encoding.UTF8.GetString(rawBytes, 0, indexOfNullTerminator);
+                    InputHandler.ProcessTextInput(text);
                     break;
             }
         }
@@ -233,6 +239,7 @@ namespace Sharp
 
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_EXPOSED:
                     MainWindow.backendRenderer.EnableScissor();
+                    //UI.currentCanvas.Update();
                     onRenderFrame?.Invoke();
 
                     //if (windows.Contains(evt.windowID))
@@ -245,6 +252,8 @@ namespace Sharp
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_TAKE_FOCUS: AssetsView.CheckIfDirTreeChanged(); break;
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER:
                     UnderMouseWindowId = evt.windowID;
+                    if (View.mainViews.TryGetValue(evt.windowID, out var mainView))
+                        UI.currentCanvas = mainView.desktop;
                     SDL.SDL_CaptureMouse(SDL.SDL_bool.SDL_FALSE); break;//convert to use getglobalmousestate when no events caputred?
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE:
                     // Console.WriteLine("bu");
@@ -261,7 +270,7 @@ namespace Sharp
             return SDL.SDL_HitTestResult.SDL_HITTEST_NORMAL;
         }
 
-        public static void OpenView(View view, Squid.Control frame)
+        public static void OpenView(View view, Control frame)
         {
             TabControl tabcontrol = new TabControl();
             tabcontrol.ButtonFrame.Style = "";
@@ -273,14 +282,13 @@ namespace Sharp
             tabcontrol.PageFrame.Margin = new Margin(0, -2, 0, 0);
 
             var tab1 = new TabPage();
-            tab1.Button.Text = "test";// view.GetType().ToString();
+            tab1.Button.Text = "test";
             tabcontrol.TabPages.Add(tab1);
             tab1.Scissor = true;
             //tab.Style = "window";
             var tab = view.panel as TabPage;
-            tabcontrol.TabPages.Add(tab); //make GLControl for gwen
+            tabcontrol.TabPages.Add(tab);
             tabcontrol.SelectedTab = tab;
-            //view.panel.BoundsChanged += (obj, args) => view.OnResize(view.panel.Width, view.panel.Height);
         }
 
         public static int OnResize(IntPtr data, IntPtr e)
@@ -296,7 +304,6 @@ namespace Sharp
 
                 case SDL.SDL_EventType.SDL_WINDOWEVENT: OnWindowEvent(ref evt.window); break;
             }
-
             return 1;
         }
 

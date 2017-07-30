@@ -1,5 +1,6 @@
 ﻿using System;
 using Squid;
+using System.Globalization;
 
 namespace Sharp.Editor.UI.Property
 {
@@ -15,13 +16,13 @@ namespace Sharp.Editor.UI.Property
         {
             layout.FlowDirection = FlowDirection.LeftToRight;
             layout.Position = new Point(label.Size.x, 0);
-            layout.HSpacing = 1;
+            layout.HSpacing = 0;
             layout.AutoSize = AutoSize.HorizontalVertical;
             //AutoSize = AutoSize.HorizontalVertical;
             //layout.Scissor = false;
 
             posX = new TextBox();
-            //posX.MaximumSize=new System.Drawing.Point(70,17);
+            posX.Mode = TextBoxMode.Numeric;
             var tmpLabel = new Label();
             tmpLabel.Text = "X";
             tmpLabel.Size = new Point(0, Size.y);
@@ -29,10 +30,9 @@ namespace Sharp.Editor.UI.Property
 
             layout.Controls.Add(tmpLabel);
             layout.Controls.Add(posX);
-            //posZ.MaximumSize=new System.Drawing.Point(70,17);
 
             posY = new TextBox();
-            //posY.MaximumSize=new System.Drawing.Point(70,17);
+            posY.Mode = TextBoxMode.Numeric;
             tmpLabel = new Label();
             tmpLabel.Text = "Y";
             tmpLabel.Size = new Point(0, Size.y);
@@ -42,6 +42,7 @@ namespace Sharp.Editor.UI.Property
             layout.Controls.Add(posY);
 
             posZ = new TextBox();
+            posZ.Mode = TextBoxMode.Numeric;
             tmpLabel = new Label();
             tmpLabel.Text = "Z";
             tmpLabel.Size = new Point(0, Size.y);
@@ -51,9 +52,9 @@ namespace Sharp.Editor.UI.Property
             layout.Controls.Add(posZ);
 
             Childs.Add(layout);
-            posX.TextChanged += (sender) => isDirty = true;
-            posY.TextChanged += (sender) => isDirty = true;
-            posZ.TextChanged += (sender) => isDirty = true;
+            posX.TextChanged += (sender) => { propertyIsDirty = true; };
+            posY.TextChanged += (sender) => { propertyIsDirty = true; };
+            posZ.TextChanged += (sender) => { propertyIsDirty = true; };
         }
 
         public override OpenTK.Vector3 Value
@@ -67,9 +68,12 @@ namespace Sharp.Editor.UI.Property
             }
             set
             {
-                posX.Text = value.X.ToString();
-                posY.Text = value.Y.ToString();
-                posZ.Text = value.Z.ToString();
+                posX.Text = Math.Round(value.X, Application.roundingPrecision).ToString();
+                posY.Text = Math.Round(value.Y, Application.roundingPrecision).ToString();
+                posZ.Text = Math.Round(value.Z, Application.roundingPrecision).ToString();
+                /* posX.Text = value.X.ToString("0." + new string('#', Application.roundingPrecision));
+                 posY.Text = value.Y.ToString("0." + new string('#', Application.roundingPrecision));//"F"
+                 posZ.Text = value.Z.ToString("0." + new string('#', Application.roundingPrecision));*/
             }
         }
     }

@@ -13,7 +13,8 @@ namespace Sharp.Editor.UI.Property
         public Text(string name) : base(name)
         {
             m_TextBox = new TextBox();
-            //m_TextBox.TextChanged += OnValueChanged;
+
+            m_TextBox.TextChanged += (sender) => propertyIsDirty = true;
             m_TextBox.Position = new Point(label.Size.x, 0);
             Childs.Add(m_TextBox);
         }

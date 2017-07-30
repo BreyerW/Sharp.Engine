@@ -29,7 +29,7 @@ namespace Squid
         /// <param name="text">The text.</param>
         /// <param name="font">The font.</param>
         /// <returns>Point.</returns>
-        Point GetTextSize(string text, int font);
+        Point GetTextSize(string text, int font, float fontSize);
 
         /// <summary>
         /// Gets the size of the texture.
@@ -65,7 +65,7 @@ namespace Squid
         /// <param name="y">The y.</param>
         /// <param name="font">The font.</param>
         /// <param name="color">The color.</param>
-        void DrawText(string text, int x, int y, int font, int color);
+        void DrawText(string text, int x, int y, int width, int height, int font, int color, float fontSize);
 
         /// <summary>
         /// Draws the texture.
@@ -97,26 +97,52 @@ namespace Squid
     /// </summary>
     public sealed class NoRenderer : ISquidRenderer
     {
-        public void StartBatch() { }
+        public void StartBatch()
+        {
+        }
 
-        public void EndBatch(bool final) { }
+        public void EndBatch(bool final)
+        {
+        }
 
-        public int GetFont(string name) { return -1; }
+        public int GetFont(string name)
+        {
+            return -1;
+        }
 
-        public int GetTexture(string name) { return -1; }
+        public int GetTexture(string name)
+        {
+            return -1;
+        }
 
-        public Point GetTextSize(string text, int font) { return new Point(); }
+        public Point GetTextSize(string text, int font, float fontSize)
+        {
+            return new Point();
+        }
 
-        public Point GetTextureSize(int texture) { return new Point(); }
+        public Point GetTextureSize(int texture)
+        {
+            return new Point();
+        }
 
-        public void Scissor(int x, int y, int width, int height) { }
+        public void Scissor(int x, int y, int width, int height)
+        {
+        }
 
-        public void DrawBox(int x, int y, int width, int height, int color) { }
+        public void DrawBox(int x, int y, int width, int height, int color)
+        {
+        }
 
-        public void DrawTexture(int texture, int x, int y, int width, int height, Rectangle source, int color) { }
+        public void DrawTexture(int texture, int x, int y, int width, int height, Rectangle source, int color)
+        {
+        }
 
-        public void DrawText(string text, int x, int y, int font, int color) { }
+        public void DrawText(string text, int x, int y, int width, int height, int font, int color, float fontSize)
+        {
+        }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+        }
     }
 }

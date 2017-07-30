@@ -1410,7 +1410,7 @@ namespace Squid
         /// <returns>Point.</returns>
         protected Point AlignText(string text, Alignment align, Margin padding, int font)
         {
-            Point tsize = UI.Renderer.GetTextSize(text, font);
+            Point tsize = UI.Renderer.GetTextSize(text, font, 0);
 
             switch (align)
             {
@@ -1457,7 +1457,7 @@ namespace Squid
         /// <returns>Point.</returns>
         protected Point AlignText(string text, Alignment align, Margin padding, int font, out Point tsize)
         {
-            tsize = UI.Renderer.GetTextSize(text, font);
+            tsize = UI.Renderer.GetTextSize(text, font, 0);
 
             switch (align)
             {

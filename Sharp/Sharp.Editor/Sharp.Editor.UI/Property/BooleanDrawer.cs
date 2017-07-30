@@ -24,7 +24,7 @@ namespace Sharp.Editor.UI.Property
 
         private void M_CheckBox_CheckedChanged(Control sender)
         {
-            isDirty = true;
+            propertyIsDirty = true;
         }
 
         /// <summary>
