@@ -95,12 +95,12 @@ namespace SharpSL.BackendRenderers
 
                 // Underrun
                 underrun += gBearingX;
-                if (penX == 0)
-                    penX += underrun;
-                if (underrun <= 0)
-                {
-                    underrun = 0;
-                }
+                //if (penX == 0)
+                //  penX += underrun;
+                /* if (underrun <= 0)
+                 {
+                     underrun = 0;
+                 }*/
 
                 #endregion Underrun
 

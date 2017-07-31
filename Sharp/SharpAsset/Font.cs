@@ -59,12 +59,12 @@ namespace SharpAsset
                 float gBearingX = (float)face.Glyph.Metrics.HorizontalBearingX;
                 float gWidth = face.Glyph.Metrics.Width.ToSingle();
                 underrun += gBearingX;
-                if (width == 0)
-                    width += underrun;
-                if (underrun <= 0)
+                //if (width == 0)
+                //  width += underrun;
+                /*if (underrun <= 0)
                 {
                     underrun = 0;
-                }
+                }*/
 
                 // Accumulate overrun, which coould cause clipping at the right side of characters near
                 // the end of the string (typically affects fonts with slanted characters)
@@ -74,6 +74,8 @@ namespace SharpAsset
                     if (overrun <= 0) overrun = 0;
                 }
                 overrun += (float)(gBearingX == 0 && gWidth == 0 ? 0 : gBearingX + gWidth - gAdvanceX);
+                // On the last character, apply whatever overrun we have to the overall width.
+                // Positive overrun prevents clipping, negative overrun prevents extra space.
 
                 // If this character goes higher or lower than any previous character, adjust
                 // the overall height of the bitmap.
@@ -86,13 +88,10 @@ namespace SharpAsset
 
                 if (position is 0)
                     break;
-                // On the last character, apply whatever overrun we have to the overall width.
-                // Positive overrun prevents clipping, negative overrun prevents extra space.
 
+                // Accumulate the distance between the origin of each character (simple width).
                 //if (i == chars.Length - 1)
                 width += overrun;
-                // Accumulate the distance between the origin of each character (simple width).
-
                 width += gAdvanceX + 2;
                 // Calculate kern for the NEXT character (if any)
                 // The kern value adjusts the origin of the next character (positive or negative).
