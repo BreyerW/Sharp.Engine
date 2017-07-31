@@ -26,7 +26,7 @@ namespace SharpAsset
             throw new NotImplementedException();
         }
 
-        public (int width, int height) Measure(string text)
+        public (int width, int height) Measure(string text, int position = -1)
         {
             if (string.IsNullOrEmpty(text)) return (0, 0);
 
@@ -42,7 +42,12 @@ namespace SharpAsset
             // of the visual data, but can draw parts of the glyph in any quadrant, and
             // even move the origin (via kerning).
             float top = 0, bottom = 0;
-            for (var i = 0; i < chars.Length; i++)
+            var length = chars.Length;
+            if (position is 0)
+                length = 1;
+            else if (position > 0)
+                length = position;
+            for (var i = 0; i < length; i++)
             {
                 // Look up the glyph index for this character.
                 uint glyphIndex = face.GetCharIndex(chars[i]);
@@ -53,13 +58,14 @@ namespace SharpAsset
                 float gAdvanceX = (float)face.Glyph.Advance.X; // same as the advance in metrics
                 float gBearingX = (float)face.Glyph.Metrics.HorizontalBearingX;
                 float gWidth = face.Glyph.Metrics.Width.ToSingle();
-                underrun += -gBearingX;
-                //if (width == 0)
-                //  width += underrun;
+                underrun += gBearingX;
+                if (width == 0)
+                    width += underrun;
                 if (underrun <= 0)
                 {
                     underrun = 0;
                 }
+
                 // Accumulate overrun, which coould cause clipping at the right side of characters near
                 // the end of the string (typically affects fonts with slanted characters)
                 if (gBearingX + gWidth > 0 || gAdvanceX > 0)
@@ -68,10 +74,7 @@ namespace SharpAsset
                     if (overrun <= 0) overrun = 0;
                 }
                 overrun += (float)(gBearingX == 0 && gWidth == 0 ? 0 : gBearingX + gWidth - gAdvanceX);
-                // On the last character, apply whatever overrun we have to the overall width.
-                // Positive overrun prevents clipping, negative overrun prevents extra space.
-                if (i == chars.Length - 1)
-                    width += overrun;
+
                 // If this character goes higher or lower than any previous character, adjust
                 // the overall height of the bitmap.
                 float glyphTop = (float)face.Glyph.Metrics.HorizontalBearingY;
@@ -80,8 +83,17 @@ namespace SharpAsset
                     top = glyphTop;
                 if (glyphBottom > bottom)
                     bottom = glyphBottom;
+
+                if (position is 0)
+                    break;
+                // On the last character, apply whatever overrun we have to the overall width.
+                // Positive overrun prevents clipping, negative overrun prevents extra space.
+
+                //if (i == chars.Length - 1)
+                width += overrun;
                 // Accumulate the distance between the origin of each character (simple width).
-                width += gAdvanceX;
+
+                width += gAdvanceX + 2;
                 // Calculate kern for the NEXT character (if any)
                 // The kern value adjusts the origin of the next character (positive or negative).
                 if (face.HasKerning && i < chars.Length - 1)

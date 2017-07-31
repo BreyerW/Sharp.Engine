@@ -313,7 +313,7 @@ namespace Squid
 
                         while (c < line.Elements[i].Text.Length)
                         {
-                            off = UI.Renderer.GetTextSize(line.Elements[i].Text.Substring(0, c), font, 0).x;
+                            off = UI.Renderer.GetTextSize(line.Elements[i].Text, font, 0, c).x;
 
                             if (off > mb.x)
                                 break;
@@ -370,7 +370,7 @@ namespace Squid
 
                         while (c < line.Elements[i].Text.Length)
                         {
-                            off = UI.Renderer.GetTextSize(line.Elements[i].Text.Substring(0, c), font, 0).x;
+                            off = UI.Renderer.GetTextSize(line.Elements[i].Text, font, 0, c).x;
 
                             if (off > mb.x)
                                 break;

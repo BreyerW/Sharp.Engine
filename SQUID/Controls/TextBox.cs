@@ -284,8 +284,7 @@ namespace Squid
 
             for (int i = 1; i <= masked.Length; i++)
             {
-                text = masked.Substring(0, i);
-                x = Offset + UI.Renderer.GetTextSize(text, font, 0).x;
+                x = Offset + UI.Renderer.GetTextSize(masked, font, 0, i).x;
                 if (x > p.x)
                 {
                     SelectEnd = i - 1;
@@ -334,8 +333,7 @@ namespace Squid
 
             for (int i = 1; i <= masked.Length; i++)
             {
-                text = masked.Substring(0, i);
-                x = Offset + UI.Renderer.GetTextSize(text, font, 0).x;
+                x = Offset + UI.Renderer.GetTextSize(masked, font, 0, i).x;
                 if (x > p.x)
                 {
                     Caret = i - 1;
@@ -731,7 +729,7 @@ namespace Squid
                             char c = args.Char.Value;
 
                             if (Mode == TextBoxMode.Numeric)
-                                valid = char.IsNumber(c) || char.IsDigit(c) || (c.ToString() == ".") || (c.ToString() == ",");
+                                valid = char.IsNumber(c) || char.IsDigit(c) || (c == '.') || (c == ',') || (c == '-');
 
                             if (valid)
                             {
@@ -796,7 +794,7 @@ namespace Squid
                 Rectangle rect = new Rectangle(Location, Size);
 
                 Point s1 = UI.Renderer.GetTextSize(masked, font, 0);
-                Point s2 = UI.Renderer.GetTextSize(masked.Substring(0, Caret), font, 0);
+                Point s2 = UI.Renderer.GetTextSize(masked, font, 0, Caret);
 
                 if (string.IsNullOrEmpty(masked))
                 {
@@ -831,20 +829,18 @@ namespace Squid
 
                 if (!ReadOnly && DoBlink > 0)
                 {
-                    UI.Renderer.DrawBox(p.x + s2.x, p.y, 1, Size.y, ColorInt.FromArgb(opacity, BlinkColor));
+                    UI.Renderer.DrawBox(p.x + s2.x - 2, p.y, 1, Size.y, ColorInt.FromArgb(opacity, BlinkColor));
                 }
                 if (IsSelection)
                 {
                     int start = Math.Min(SelectStart, SelectEnd);
                     int end = Math.Max(SelectStart, SelectEnd);
                     int color = ColorInt.FromArgb(0.5f, SelectionColor);
-                    string text = masked.Substring(0, start);
-                    string text2 = masked.Substring(start, end - start);
 
-                    Point size1 = UI.Renderer.GetTextSize(text, font, 0);
-                    Point size2 = UI.Renderer.GetTextSize(text2, font, 0);
+                    Point size1 = UI.Renderer.GetTextSize(masked, font, 0, start);
+                    Point size2 = UI.Renderer.GetTextSize(masked, font, 0, end);
 
-                    UI.Renderer.DrawBox(p.x + size1.x, p.y, size2.x, Size.y, ColorInt.FromArgb(opacity, color));
+                    UI.Renderer.DrawBox(p.x + size1.x - 1, p.y, size2.x - size1.x - 1, Size.y, ColorInt.FromArgb(opacity, color));
                 }
             }
             else

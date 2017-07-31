@@ -94,9 +94,9 @@ namespace SharpSL.BackendRenderers
                 #region Underrun
 
                 // Underrun
-                underrun += -gBearingX;
+                underrun += gBearingX;
                 if (penX == 0)
-                    penX += -underrun;
+                    penX += underrun;
                 if (underrun <= 0)
                 {
                     underrun = 0;
@@ -137,13 +137,13 @@ namespace SharpSL.BackendRenderers
                     if (overrun <= 0) overrun = 0;
                 }
                 overrun += (float)(gBearingX == 0 && gWidth == 0 ? 0 : gBearingX + gWidth - gAdvanceX);
-                if (i == text.Length - 1)
-                    penX += overrun;
+                //if (i == text.Length - 1)
+                penX += overrun;
 
                 #endregion Overrun
 
                 // Advance pen positions for drawing the next character.
-                penX += gAdvanceX; // same as Metrics.HorizontalAdvance?
+                penX += gAdvanceX + 2; // same as Metrics.HorizontalAdvance?
                 penY += (float)face.Glyph.Advance.Y;
 
                 #region Kerning (for NEXT character)
@@ -219,10 +219,10 @@ namespace SharpSL.BackendRenderers
             return name == "default" ? 0 : FontPipeline.nameToKey.IndexOf(name);
         }
 
-        public Point GetTextSize(string text, int font, float fontSize)
+        public Point GetTextSize(string text, int font, float fontSize, int position = -1)
         {
             ref var f = ref Pipeline.GetPipeline<FontPipeline>().GetAsset(font);
-            var textSize = f.Measure(text);
+            var textSize = f.Measure(text, position);
             return new Point(textSize.width, textSize.height);
         }
 

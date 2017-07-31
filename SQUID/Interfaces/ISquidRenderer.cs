@@ -29,7 +29,7 @@ namespace Squid
         /// <param name="text">The text.</param>
         /// <param name="font">The font.</param>
         /// <returns>Point.</returns>
-        Point GetTextSize(string text, int font, float fontSize);
+        Point GetTextSize(string text, int font, float fontSize, int position = -1);
 
         /// <summary>
         /// Gets the size of the texture.
@@ -115,7 +115,7 @@ namespace Squid
             return -1;
         }
 
-        public Point GetTextSize(string text, int font, float fontSize)
+        public Point GetTextSize(string text, int font, float fontSize, int position = -1)
         {
             return new Point();
         }
