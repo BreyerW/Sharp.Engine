@@ -61,7 +61,7 @@ namespace Sharp
             }
             set
             {
-                if (windows.Contains(value) && View.mainViews[value] != null)
+                if (windows.Contains(value) && MainEditorView.mainViews[value] != null)
                 {
                     underMouseWindowId = value;
                 }
@@ -114,7 +114,6 @@ namespace Sharp
                 handle = SDL.SDL_CreateWindowFrom(existingWin);
             windowId = SDL.SDL_GetWindowID(handle);
             windows.Add(this);
-            View.views.Add(windowId, new HashSet<View>());
             new MainEditorView(windowId);
             onRenderFrame += OnInternalRenderFrame;
         }
@@ -159,13 +158,13 @@ namespace Sharp
             MainWindow.backendRenderer.MakeCurrent(handle, contexts[0]);
             OnRenderFrame();
 
-            var mainView = View.mainViews[windowId];
+            var mainView = MainEditorView.mainViews[windowId];
             if (mainView.desktop is null) return;
 
             mainView.Render();
-            foreach (var view in View.views[windowId])
-                if (view.panel != null && view.panel.IsVisible)
-                    view.Render();
+            //foreach (var view in View.views[windowId])
+            //  if (view.panel != null && view.panel.IsVisible)
+            //    view.Render();
             MainWindow.backendRenderer.FinishCommands();
             MainWindow.backendRenderer.SwapBuffers(handle);
         }
@@ -234,12 +233,12 @@ namespace Sharp
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE: if (evt.windowID == MainWindowId) quit = true; else windows[evt.windowID].Close(); break;
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
                     //case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
-                    View.mainViews[evt.windowID].OnResize(evt.data1, evt.data2);
+                    MainEditorView.mainViews[evt.windowID].OnResize(evt.data1, evt.data2);
                     break;
 
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_EXPOSED:
                     MainWindow.backendRenderer.EnableScissor();
-                    //UI.currentCanvas.Update();
+                    //UI.currentCanvas?.Update();
                     onRenderFrame?.Invoke();
 
                     //if (windows.Contains(evt.windowID))
@@ -252,7 +251,7 @@ namespace Sharp
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_TAKE_FOCUS: AssetsView.CheckIfDirTreeChanged(); break;
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER:
                     UnderMouseWindowId = evt.windowID;
-                    if (View.mainViews.TryGetValue(evt.windowID, out var mainView))
+                    if (MainEditorView.mainViews.TryGetValue(evt.windowID, out var mainView))
                         UI.currentCanvas = mainView.desktop;
                     SDL.SDL_CaptureMouse(SDL.SDL_bool.SDL_FALSE); break;//convert to use getglobalmousestate when no events caputred?
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE:
@@ -286,7 +285,7 @@ namespace Sharp
             tabcontrol.TabPages.Add(tab1);
             tab1.Scissor = true;
             //tab.Style = "window";
-            var tab = view.panel as TabPage;
+            var tab = view as TabPage;
             tabcontrol.TabPages.Add(tab);
             tabcontrol.SelectedTab = tab;
         }

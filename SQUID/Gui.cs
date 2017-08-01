@@ -35,7 +35,17 @@ namespace Squid
         /// <summary>
         /// Raised when [mouse down].
         /// </summary>
-        public static event EventHandler MouseDown;
+        public static event MouseEvent MouseDown;
+
+        /// <summary>
+        /// Raised when [mouse up].
+        /// </summary>
+        public static event MouseEvent MouseUp;
+
+        /// <summary>
+        /// Raised when [mouse move].
+        /// </summary>
+        public static event MouseEvent MouseMove;
 
         /// <summary>
         /// Gets or sets the renderer.
@@ -188,10 +198,22 @@ namespace Squid
             }
         }
 
-        internal static void OnMouseDown()
+        public static void OnGlobalMouseDown(int button)
         {
             if (MouseDown != null)
-                MouseDown(null, null);
+                MouseDown(null, new MouseEventArgs { Button = button });
+        }
+
+        public static void OnGlobalMouseUp(int button)
+        {
+            if (MouseUp != null)
+                MouseUp(null, new MouseEventArgs { Button = button });
+        }
+
+        public static void OnGlobalMouseMove(int button)
+        {
+            if (MouseMove != null)
+                MouseMove(null, new MouseEventArgs { Button = button });
         }
 
         static UI()

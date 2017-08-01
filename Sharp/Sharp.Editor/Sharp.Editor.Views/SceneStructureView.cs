@@ -5,23 +5,23 @@ namespace Sharp.Editor.Views
 {
     public class SceneStructureView : View
     {
-        protected override string Name => "Scene Structure";
         public static TreeView tree;
 
         public SceneStructureView(uint attachToWindow) : base(attachToWindow)
         {
             if (tree == null)
                 tree = new TreeView();
-            tree.Parent = panel;
+            tree.Parent = this;
             tree.Dock = DockStyle.Fill;
             tree.SelectedNodeChanged += Tree_SelectedNodeChanged;
 
             SceneView.OnAddedEntity += ReconstructTree;
             SceneView.OnRemovedEntity += ReconstructTree;
+            Name = "Scene Structure";
             ReconstructTree();
         }
 
-        private void Tree_SelectedNodeChanged(Squid.Control sender, TreeNode value)
+        private void Tree_SelectedNodeChanged(Control sender, TreeNode value)
         {
             if (value is null) return;
             Selection.Asset = value.UserData;
@@ -38,10 +38,6 @@ namespace Sharp.Editor.Views
                 RegisterEntity(entity);
         }
 
-        public override void Render()
-        {
-        }
-
         private static void RegisterEntity(Entity ent)
         {
             //var id=SceneView.entities.IndexOf (ent);
@@ -54,15 +50,6 @@ namespace Sharp.Editor.Views
             if (ent.childs.Count is 0)
                 node.Button.Style = "";
             tree.Nodes.Add(node);
-        }
-
-        public override void OnMouseMove(OpenTK.Input.MouseMoveEventArgs evnt)
-        {
-            base.OnMouseMove(evnt);
-        }
-
-        public override void OnResize(int width, int height)
-        {
         }
     }
 }

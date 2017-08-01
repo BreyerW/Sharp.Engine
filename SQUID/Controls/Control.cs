@@ -138,7 +138,7 @@ namespace Squid
         /// <summary>
         /// Raised when [drag drop].
         /// </summary>
-        public event DragDropEvent DragDrop;
+        public event DragDropEvent OnDragFinished;
 
         /// <summary>
         /// Raised during Drag&Drop, when this control becomes the active DropTarget.
@@ -2531,9 +2531,10 @@ namespace Squid
                     if (!UI.MouseDelta.IsEmpty && !_isMouseDrag)
                     {
                         _isMouseDrag = true;
-                        OnMouseDrag(i);
+                        OnDragStarted(i);
                     }
-
+                    if (!UI.MouseDelta.IsEmpty)
+                        UI.OnGlobalMouseMove(i);
                     return;
                 }
                 else if (UI.GetButton(i) == ButtonState.Up)
@@ -2790,8 +2791,8 @@ namespace Squid
         /// <param name="e">The <see cref="DragDropEventArgs"/> instance containing the event data.</param>
         internal void OnDragDrop(DragDropEventArgs e)
         {
-            if (DragDrop != null)
-                DragDrop(this, e);
+            if (OnDragFinished != null)
+                OnDragFinished(this, e);
         }
 
         /// <summary>
@@ -2818,7 +2819,7 @@ namespace Squid
         /// Raised the MouseDrag event
         /// </summary>
         /// <param name="button">The button.</param>
-        internal void OnMouseDrag(int button)
+        internal void OnDragStarted(int button)
         {
             if (MouseDrag != null)
                 MouseDrag(this, new MouseEventArgs { Button = button });
@@ -2887,6 +2888,7 @@ namespace Squid
             IsDoubleClick = delta.TotalMilliseconds < UI.DoubleClickSpeed;
             if (MouseDown != null)
                 MouseDown(this, new MouseEventArgs { Button = button });
+            UI.OnGlobalMouseDown(button);
         }
 
         /// <summary>
@@ -2915,6 +2917,7 @@ namespace Squid
         {
             if (MouseUp != null)
                 MouseUp(this, new MouseEventArgs { Button = button });
+            UI.OnGlobalMouseUp(button);
         }
 
         internal void OnMouseWheel()

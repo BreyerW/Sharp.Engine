@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using SharpAsset.Pipeline;
 using Squid;
-using OpenTK.Input;
 using TupleExtensions;
 
 namespace Sharp.Editor.Views
@@ -17,8 +16,6 @@ namespace Sharp.Editor.Views
         private static Dictionary<string, ConcurrentDictionary<string, FileInfo>> directories = new Dictionary<string, ConcurrentDictionary<string, FileInfo>>();//IAsset ordered by name
         private static readonly FileSystemWatcher dirWatcher = new FileSystemWatcher(root.FullName);
         private static HashSet<string> eventsOnceFired = new HashSet<string>();
-
-        protected override string Name => "Assets";
 
         public static Dictionary<uint, TreeView> tree = new Dictionary<uint, TreeView>();
         public static bool rebuildDirTree = false;
@@ -37,7 +34,7 @@ namespace Sharp.Editor.Views
             //dirWatcher.Deleted += OnFileOrDirDeleted;
             tree.Add(attachedToWindow, new TreeView());
             tree[attachedToWindow].Dock = DockStyle.Fill;
-            tree[attachedToWindow].Parent = panel;
+            tree[attachedToWindow].Parent = this;
             tree[attachedToWindow].Indent = 10;
             /*var type = typeof(GenericPipeline<>);
             var subclasses = type.Assembly.GetTypes().Where(t => t.IsSubclassOf(type));
@@ -51,7 +48,7 @@ namespace Sharp.Editor.Views
             BuildAssetViewTree();
             tree[attachedToWindow].IsVisible = true;
             tree[attachedToWindow].SelectedNodeChanged += T_SelectedNodeChanged;
-            //tree[attachedToWindow].Selected += OnSelected;
+            Name = "Assets";
         }
 
         /*  private void OnFileOrDirDeleted(object sender, FileSystemEventArgs e)
@@ -110,26 +107,14 @@ namespace Sharp.Editor.Views
             }
         }
 
-        public override void OnMouseDown(int buttonId)
-        {
-        }
+        //public override void OnMouseMove(MouseMoveEventArgs evnt)
+        //{
+        //if (isDragging && Selection.assets.Count==0 && tree.SelectedChildren.Any ())
+        //	foreach (var asset in tree.SelectedChildren)
+        //		Selection.assets.Add (asset.Content);
 
-        public override void OnMouseUp(int buttonId)
-        {
-        }
-
-        public override void OnMouseMove(MouseMoveEventArgs evnt)
-        {
-            //if (isDragging && Selection.assets.Count==0 && tree.SelectedChildren.Any ())
-            //	foreach (var asset in tree.SelectedChildren)
-            //		Selection.assets.Add (asset.Content);
-
-            //canvas.NeedsRedraw = true;
-        }
-
-        public override void OnResize(int width, int height)
-        {
-        }
+        //canvas.NeedsRedraw = true;
+        //}
 
         public static void CheckIfDirTreeChanged()
         {
@@ -213,13 +198,15 @@ namespace Sharp.Editor.Views
             }
         }
 
-        private void AssetNode_MouseDrag(Control sender, Squid.MouseEventArgs args)
+        private void AssetNode_MouseDrag(Control sender, MouseEventArgs args)
         {
             Console.WriteLine("start drag" + sender);
             var node = sender as TreeNodeLabel;
             var draggedNode = new Label();
             draggedNode.Tag = node.UserData;
-            //draggedNode.IsVisible = false;//for now dont show since sceneview overwrite this. convert all views to control someday with extra rendering
+            //draggedNode.Text = "test";
+            //draggedNode.AutoSize = AutoSize.HorizontalVertical;
+            //draggedNode.IsVisible = true;//for now dont show since sceneview overwrite this. convert all views to control someday with extra rendering
             draggedNode.Dock = DockStyle.None;
             draggedNode.Style = "button";
             sender.DoDragDrop(draggedNode);

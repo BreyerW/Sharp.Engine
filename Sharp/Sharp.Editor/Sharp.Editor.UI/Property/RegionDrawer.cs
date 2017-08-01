@@ -69,7 +69,7 @@ namespace Sharp.Editor.UI.Property
                 curvesEditor = win.windowId;
                 var curvesView = new CurvesView(curvesEditor);
                 CurvesView.drawer = this;
-                Window.OpenView(curvesView, View.mainViews[curvesEditor].desktop);
+                Window.OpenView(curvesView, MainEditorView.mainViews[curvesEditor].desktop);
                 win.Size = (700, 500);
             }
             Window.windows[curvesEditor].OnFocus();

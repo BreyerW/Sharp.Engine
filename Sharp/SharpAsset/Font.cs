@@ -47,6 +47,9 @@ namespace SharpAsset
                 length = 1;
             else if (position > 0)
                 length = position;
+            var metrics = face.Size;
+            (float x, float y) scale = (metrics.Metrics.ScaleX.ToSingle(), metrics.Metrics.ScaleY.ToSingle());
+            metrics.Dispose();
             for (var i = 0; i < length; i++)
             {
                 // Look up the glyph index for this character.
@@ -78,8 +81,9 @@ namespace SharpAsset
 
                 // If this character goes higher or lower than any previous character, adjust
                 // the overall height of the bitmap.
-                float glyphTop = 0;
-                float glyphBottom = texChar.texture.height - texChar.bearing;
+
+                float glyphTop = -texChar.bearing * scale.y;
+                float glyphBottom = texChar.texture.height - texChar.bearing * scale.y;
                 if (glyphTop > top)
                     top = glyphTop;
                 if (glyphBottom > bottom)
@@ -106,9 +110,7 @@ namespace SharpAsset
             }
 
             height = top + bottom;
-            var metrics = face.Size;
-            (float x, float y) scale = (metrics.Metrics.ScaleX.ToSingle(), metrics.Metrics.ScaleY.ToSingle());
-            metrics.Dispose();
+
             return ((int)(width * scale.x), (int)(height * scale.y));
         }
 

@@ -1,16 +1,14 @@
 ﻿using System;
 using SharpSL;
 using Squid;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Sharp.Editor.Views
 {
-    public class MainEditorView : View
+    public class MainEditorView
     {
+        public static Dictionary<uint, MainEditorView> mainViews = new Dictionary<uint, MainEditorView>();
         public static MainEditorView currentMainView;
-
-        protected override string Name => "Main View";
-
         public Desktop desktop;
         public Camera camera = new Camera();
 
@@ -23,8 +21,9 @@ namespace Sharp.Editor.Views
         {
         }
 
-        public MainEditorView(uint attachToWindow) : base(attachToWindow)
+        public MainEditorView(uint attachToWindow)
         {
+            MainEditorView.mainViews.Add(attachToWindow, this);
             desktop = new Desktop();
             desktop.ShowCursor = false;
             desktop.Skin = Squid.UI.GenerateStandardSkin();
@@ -36,7 +35,7 @@ namespace Sharp.Editor.Views
         //split.Depth = 1;//depth conflict when two controls overlap with same parent - fix it
         public int nextUpdate;
 
-        public override void Render()
+        public void Render()
         {
             currentMainView = this;
             MainWindow.backendRenderer.Viewport(0, 0, desktop.Size.x, desktop.Size.y);
@@ -53,7 +52,7 @@ namespace Sharp.Editor.Views
             //desktop.Update();
         }
 
-        public override void OnResize(int width, int height)
+        public void OnResize(int width, int height)
         {
             camera.SetOrthoMatrix(width, height);
             //desktop.Size = ;

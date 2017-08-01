@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using OpenTK;
-using OpenTK.Input;
 using Sharp.Editor.UI.Property;
 using TupleExtensions;
 using Squid;
@@ -11,8 +10,6 @@ namespace Sharp.Editor.Views
 {
     public class CurvesView/*<T> where T:PropertyDrawer<Curve or Curve[]>*/ : View
     {
-        protected override string Name => "Curves Inspector";
-
         private static Color kGridMinorColorDark = new Color(0f, 0f, 0f, 0.1f);
         private static Color kGridMajorColorDark = new Color(73, 73, 73, 120);
         private Dictionary<Vector2, Keyframe>[] clickedKeyframe = new Dictionary<Vector2, Keyframe>[] { new Dictionary<Vector2, Keyframe>(), new Dictionary<Vector2, Keyframe>() };
@@ -99,7 +96,7 @@ namespace Sharp.Editor.Views
             curveSettings.hTickStyle.distLabel = 30;
             curveSettings.hTickStyle.centerLabel = true;
 
-            panel.MouseDown += Panel_MouseDown;
+            MouseDown += Panel_MouseDown;
 
             menu = new Menu();
             menu.Style = "";
@@ -124,10 +121,167 @@ namespace Sharp.Editor.Views
             badge.NoEvents = true;
             badge.IsVisible = false;
 
-            panel.Childs.Add(badge);
-            panel.Childs.Add(menu);
-            panel.Childs.Add(editMenu);
+            Childs.Add(badge);
+            Childs.Add(menu);
+            Childs.Add(editMenu);
+            KeyDown += CurvesView_KeyDown;
+            Name = "Curves Inspector";
+            Squid.UI.MouseMove += UI_MouseMove;
+            Squid.UI.MouseUp += UI_MouseUp;
             badge.BringToFront();
+        }
+
+        private void UI_MouseUp(Control sender, Squid.MouseEventArgs args)
+        {
+            showDrag = -1;
+            tangentSide = TangentDirection.None;
+            badge.IsVisible = false;
+            isDraggingRegion = false;
+            if (clickedKeyframe[0].Count + clickedKeyframe[1].Count > 1)
+            {
+                clickedKeyframe[0].Clear();
+                clickedKeyframe[1].Clear();
+            }
+            if (!delayClear) menu.IsVisible = false;
+        }
+
+        private void UI_MouseMove(Control sender, Squid.MouseEventArgs args)
+        {
+            if (!Window.windows.Contains(attachedToWindow)) return;
+            var mousePos = new Vector2(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y);
+            if (tracking > -1)
+            {
+                var x = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation).X;
+                var keyInCV = new Vector2(x, drawer.Value[tracking].Evaluate(x));
+                CheckIfOutsideArea(ref keyInCV);
+                var keyInVS = RegionDrawer.CurveToViewSpace(keyInCV, scale, translation);
+
+                badge.Position = new Point((int)keyInVS.X, (int)keyInVS.Y);
+                badge.Text = $"{x:F3}, {drawer.Value[tracking].Evaluate(x):F3}";
+                // badge.SizeToContents();
+                badge.IsVisible = true;
+                return;
+            }
+            if (showDrag is -1) return;
+            int l = 0;
+
+            while (l < 2)
+            {
+                foreach (var (key, value) in clickedKeyframe[l].ToArray())
+                {
+                    var keyframePos = new Vector2(value.time, value.value);
+                    var index = Array.FindIndex(drawer.Value[l].keys, keyframe => value.Equals(keyframe));
+                    if (tangentSide == TangentDirection.None)
+                    {
+                        var newPos = !isDraggingRegion ? RegionDrawer.ViewToCurveSpace(mousePos, scale, translation) + key :
+                                 new Vector2(value.time, RegionDrawer.ViewToCurveSpace(mousePos, scale, translation).Y + key.Y);
+
+                        CheckIfOutsideArea(ref newPos);
+                        var newKeyFr = new Keyframe(newPos.X, newPos.Y, value.inTangent, value.outTangent);
+                        newKeyFr.tangentMode = value.tangentMode;
+
+                        if (index < 0)
+                        {
+                            showDrag = drawer.Value[l].AddKey(ref newKeyFr);
+                            if (showDrag < 0)
+                            {
+                                showDrag = 0;
+                                continue;
+                            }
+                        }
+                        else
+                            showDrag = drawer.Value[l].MoveKey(index, ref newKeyFr);
+
+                        while (showDrag == -1)
+                        {
+                            showDrag = Squid.UI.MouseDelta.x < 0 ? index - 1 : index;
+                            if (!clickedKeyframe[l].ContainsValue(drawer.Value[l].keys[showDrag]) && !tmpSavedKeyfr[l].Contains(drawer.Value[l].keys[showDrag]))
+                                tmpSavedKeyfr[l].Add(drawer.Value[l].keys[showDrag]);
+                            drawer.Value[l].RemoveKey(showDrag);
+                            showDrag = drawer.Value[l].AddKey(ref newKeyFr);
+                        }
+
+                        if (showDrag != -1)
+                        {
+                            CurveUtility.UpdateTangentsFromMode(drawer.Value[l], showDrag);
+                            clickedKeyframe[l][key] = drawer.Value[l].keys[showDrag];
+                        }
+                        if (value.Equals(selectedTan))
+                            selectedTan = clickedKeyframe[l][key];
+                        if (!isDraggingRegion)
+                        {
+                            var keyInVS = RegionDrawer.CurveToViewSpace(newPos, scale, translation);
+                            badge.Position = new Point((int)(keyInVS.X + 5f), (int)(keyInVS.Y - 15f));
+                            badge.Text = $"{selectedTan.time:F3}, {selectedTan.value:F3}";
+                            /*  badge.SizeToContents();*/
+                            badge.IsVisible = true;
+                        }
+                    }
+                    if (selectedTan.Equals(value) && tangentSide != TangentDirection.None)
+                    {
+                        var mousePosCS = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);
+                        var tmpKeyframe = value;
+                        var tmpId = clickedKeyframe[l].First((item) =>
+                        {
+                            return item.Value.Equals(value);
+                        }).Key;
+                        if (tangentSide == TangentDirection.Right)
+                        {
+                            Vector2 vector2 = mousePosCS - keyframePos;
+                            if (vector2.X < -0.0001f)
+                            {
+                                tmpKeyframe.inTangent = vector2.Y / vector2.X;
+                            }
+                            else
+                            {
+                                tmpKeyframe.inTangent = float.PositiveInfinity;
+                            }
+                            CurveUtility.SetKeyTangentMode(ref tmpKeyframe, 0, TangentMode.Editable);
+                            if (!CurveUtility.GetKeyBroken(tmpKeyframe))
+                            {
+                                tmpKeyframe.outTangent = tmpKeyframe.inTangent;
+                                CurveUtility.SetKeyTangentMode(ref tmpKeyframe, 1, TangentMode.Editable);
+                            }
+                        }
+                        else
+                        {
+                            Vector2 vector = mousePosCS - keyframePos;
+
+                            if (vector.X > 0.0001f)
+                            {
+                                tmpKeyframe.outTangent = vector.Y / vector.X;
+                            }
+                            else
+                            {
+                                tmpKeyframe.outTangent = float.PositiveInfinity;
+                            }
+                            CurveUtility.SetKeyTangentMode(ref tmpKeyframe, 1, TangentMode.Editable);
+                            if (!CurveUtility.GetKeyBroken(tmpKeyframe))
+                            {
+                                tmpKeyframe.inTangent = tmpKeyframe.outTangent;
+                                CurveUtility.SetKeyTangentMode(ref tmpKeyframe, 0, TangentMode.Editable);
+                            }
+                        }
+                        drawer.Value[l].MoveKey(index, ref tmpKeyframe);
+                        CurveUtility.UpdateTangentsFromModeSurrounding(drawer.Value[l], index);
+                        clickedKeyframe[l][tmpId] = drawer.Value[l].keys[index];
+                        selectedTan = drawer.Value[l].keys[index];
+                    }
+                }
+                l++;
+            }
+            Squid.UI.isDirty = true;
+            //showDrag = -1;
+            editAxis = -1;
+        }
+
+        private void CurvesView_KeyDown(Control sender, KeyEventArgs args)
+        {
+            if (args.Key == Keys.ESCAPE)
+            {
+                tracking = -1;
+                badge.IsVisible = false;
+            }
         }
 
         private void TrackButton_MouseClick(Control sender, Squid.MouseEventArgs args)
@@ -244,7 +398,7 @@ namespace Sharp.Editor.Views
 
                             CurveMenuManager.AddTangentMenuItems(editMenu, drawer.Value);
 
-                            editMenu.Position = new Point((int)mousePos.X - panel.Location.x, (int)mousePos.Y - panel.Location.y);
+                            editMenu.Position = new Point((int)mousePos.X - Location.x, (int)mousePos.Y - Location.y);
                             editMenu.IsVisible = true;
                             editMenu.Open();
                             delayClear = true;
@@ -289,7 +443,7 @@ namespace Sharp.Editor.Views
                 var trackButton = menu.Dropdown.GetControl("track");
                 trackButton.UserData = checkMousePos ? 0 : 1;
 
-                menu.Position = new Point((int)mousePos.X - panel.Location.x, (int)mousePos.Y - panel.Location.y);
+                menu.Position = new Point((int)mousePos.X - Location.x, (int)mousePos.Y - Location.y);
                 menu.IsVisible = true;
                 menu.Open();
 
@@ -352,7 +506,7 @@ namespace Sharp.Editor.Views
             var size = Window.windows[attachedToWindow].Size;
             mainArea = (0, 29, size.width, size.height);
 
-            swatchArea = (40, 40 + 29, panel.Size.x - 80, size.height - 80 - 29);
+            swatchArea = (40, 40 + 29, Size.x - 80, size.height - 80 - 29);
             var max = drawer.curvesRange.height + (drawer.curvesRange.y < 0 ? drawer.curvesRange.y : 0);
             var maxY = drawer.curvesRange.width + (drawer.curvesRange.x < 0 ? drawer.curvesRange.x : 0);
             scale = new Vector2(swatchArea.width / (drawer.curvesRange.width), -swatchArea.height / (drawer.curvesRange.height));//max-drawer.curvesRange.y
@@ -508,7 +662,7 @@ namespace Sharp.Editor.Views
             }
         }
 
-        public override void Render()
+        protected override void DrawBefore()
         {
             MainWindow.backendRenderer.ChangeShader();
             // MainWindow.backendRenderer.Clip(panel.Location.x, panel.Location.y, panel.Size.x, panel.Size.y);
@@ -517,162 +671,7 @@ namespace Sharp.Editor.Views
 
         private bool delayClear = true;
 
-        public override void OnMouseDown(int buttonId)//convert curve keys to basic gui? then use clicked/rightclicked etc events on them
-        {
-        }
-
-        public override void OnGlobalMouseMove(MouseMoveEventArgs evnt)
-        {
-            if (!Window.windows.Contains(attachedToWindow)) return;
-            var mousePos = new Vector2(evnt.X - Window.windows[attachedToWindow].Position.x, evnt.Y - Window.windows[attachedToWindow].Position.y);
-            if (tracking > -1)
-            {
-                var x = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation).X;
-                var keyInCV = new Vector2(x, drawer.Value[tracking].Evaluate(x));
-                CheckIfOutsideArea(ref keyInCV);
-                var keyInVS = RegionDrawer.CurveToViewSpace(keyInCV, scale, translation);
-
-                badge.Position = new Point((int)keyInVS.X, (int)keyInVS.Y);
-                badge.Text = $"{x:F3}, {drawer.Value[tracking].Evaluate(x):F3}";
-                // badge.SizeToContents();
-                badge.IsVisible = true;
-                return;
-            }
-            if (showDrag is -1) return;
-            int l = 0;
-
-            while (l < 2)
-            {
-                foreach (var (key, value) in clickedKeyframe[l].ToArray())
-                {
-                    var keyframePos = new Vector2(value.time, value.value);
-                    var index = Array.FindIndex(drawer.Value[l].keys, keyframe => value.Equals(keyframe));
-                    if (tangentSide == TangentDirection.None)
-                    {
-                        var newPos = !isDraggingRegion ? RegionDrawer.ViewToCurveSpace(mousePos, scale, translation) + key :
-                                 new Vector2(value.time, RegionDrawer.ViewToCurveSpace(mousePos, scale, translation).Y + key.Y);
-
-                        CheckIfOutsideArea(ref newPos);
-                        var newKeyFr = new Keyframe(newPos.X, newPos.Y, value.inTangent, value.outTangent);
-                        newKeyFr.tangentMode = value.tangentMode;
-
-                        if (index < 0)
-                        {
-                            showDrag = drawer.Value[l].AddKey(ref newKeyFr);
-                            if (showDrag < 0)
-                            {
-                                showDrag = 0;
-                                continue;
-                            }
-                        }
-                        else
-                            showDrag = drawer.Value[l].MoveKey(index, ref newKeyFr);
-
-                        while (showDrag == -1)
-                        {
-                            showDrag = evnt.XDelta < 0 ? index - 1 : index;
-                            if (!clickedKeyframe[l].ContainsValue(drawer.Value[l].keys[showDrag]) && !tmpSavedKeyfr[l].Contains(drawer.Value[l].keys[showDrag]))
-                                tmpSavedKeyfr[l].Add(drawer.Value[l].keys[showDrag]);
-                            drawer.Value[l].RemoveKey(showDrag);
-                            showDrag = drawer.Value[l].AddKey(ref newKeyFr);
-                        }
-
-                        if (showDrag != -1)
-                        {
-                            CurveUtility.UpdateTangentsFromMode(drawer.Value[l], showDrag);
-                            clickedKeyframe[l][key] = drawer.Value[l].keys[showDrag];
-                        }
-                        if (value.Equals(selectedTan))
-                            selectedTan = clickedKeyframe[l][key];
-                        if (!isDraggingRegion)
-                        {
-                            var keyInVS = RegionDrawer.CurveToViewSpace(newPos, scale, translation);
-                            badge.Position = new Point((int)(keyInVS.X + 5f), (int)(keyInVS.Y - 15f));
-                            badge.Text = $"{selectedTan.time:F3}, {selectedTan.value:F3}";
-                            /*  badge.SizeToContents();*/
-                            badge.IsVisible = true;
-                        }
-                    }
-                    if (selectedTan.Equals(value) && tangentSide != TangentDirection.None)
-                    {
-                        var mousePosCS = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);
-                        var tmpKeyframe = value;
-                        var tmpId = clickedKeyframe[l].First((item) =>
-                        {
-                            return item.Value.Equals(value);
-                        }).Key;
-                        if (tangentSide == TangentDirection.Right)
-                        {
-                            Vector2 vector2 = mousePosCS - keyframePos;
-                            if (vector2.X < -0.0001f)
-                            {
-                                tmpKeyframe.inTangent = vector2.Y / vector2.X;
-                            }
-                            else
-                            {
-                                tmpKeyframe.inTangent = float.PositiveInfinity;
-                            }
-                            CurveUtility.SetKeyTangentMode(ref tmpKeyframe, 0, TangentMode.Editable);
-                            if (!CurveUtility.GetKeyBroken(tmpKeyframe))
-                            {
-                                tmpKeyframe.outTangent = tmpKeyframe.inTangent;
-                                CurveUtility.SetKeyTangentMode(ref tmpKeyframe, 1, TangentMode.Editable);
-                            }
-                        }
-                        else
-                        {
-                            Vector2 vector = mousePosCS - keyframePos;
-
-                            if (vector.X > 0.0001f)
-                            {
-                                tmpKeyframe.outTangent = vector.Y / vector.X;
-                            }
-                            else
-                            {
-                                tmpKeyframe.outTangent = float.PositiveInfinity;
-                            }
-                            CurveUtility.SetKeyTangentMode(ref tmpKeyframe, 1, TangentMode.Editable);
-                            if (!CurveUtility.GetKeyBroken(tmpKeyframe))
-                            {
-                                tmpKeyframe.inTangent = tmpKeyframe.outTangent;
-                                CurveUtility.SetKeyTangentMode(ref tmpKeyframe, 0, TangentMode.Editable);
-                            }
-                        }
-                        drawer.Value[l].MoveKey(index, ref tmpKeyframe);
-                        CurveUtility.UpdateTangentsFromModeSurrounding(drawer.Value[l], index);
-                        clickedKeyframe[l][tmpId] = drawer.Value[l].keys[index];
-                        selectedTan = drawer.Value[l].keys[index];
-                    }
-                }
-                l++;
-            }
-            Squid.UI.isDirty = true;
-            //showDrag = -1;
-            editAxis = -1;
-        }
-
-        public override void OnGlobalMouseUp(MouseButtonEventArgs evnt)
-        {
-            showDrag = -1;
-            tangentSide = TangentDirection.None;
-            badge.IsVisible = false;
-            isDraggingRegion = false;
-            if (clickedKeyframe[0].Count + clickedKeyframe[1].Count > 1)
-            {
-                clickedKeyframe[0].Clear();
-                clickedKeyframe[1].Clear();
-            }
-            if (!delayClear) menu.IsVisible = false;
-        }
-
-        public override void OnKeyPressEvent(ref byte[] keyboardState)
-        {
-            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_ESCAPE] is 1)
-            {
-                tracking = -1;
-                badge.IsVisible = false;
-            }
-        }
+        //convert curve keys to basic gui? then use clicked/rightclicked etc events on them
 
         //void TraverseKeyframes(Rect swatchArea, Rect curvesRange)
 
@@ -775,7 +774,7 @@ namespace Sharp.Editor.Views
                     {
                         foreach (var label in hLabels)
                             if (label != null)
-                                panel.Childs.Remove(label);
+                                Childs.Remove(label);
                         hLabels = new Label[array.Length];
                     }
                     float y = (float)Math.Floor(mainArea.height);
@@ -802,9 +801,9 @@ namespace Sharp.Editor.Views
                             if (hLabels[m] is null)
                             {
                                 hLabels[m] = new Label();
-                                panel.Childs.Add(hLabels[m]);
+                                Childs.Add(hLabels[m]);
                             }
-                            hLabels[m].Text = num3.ToString("n" + numberOfDecimalsForMinimumDifference) + curveSettings.hTickStyle.unit;
+                            hLabels[m].Text = num3.ToString("n" + numberOfDecimalsForMinimumDifference) + curveSettings.hTickStyle.unit;//TODO: convert these labels to direct DrawText?
                             hLabels[m].Position = new Point((int)position.x, (int)position.y);
                             hLabels[m].Size = new Point((int)position.width, (int)position.height);
                             hLabels[m].TextAlign = textAnchor;
@@ -823,7 +822,7 @@ namespace Sharp.Editor.Views
                     {
                         foreach (var label in vLabels)
                             if (label != null)
-                                panel.Childs.Remove(label);
+                                Childs.Remove(label);
                         vLabels = new Label[array2.Length];
                     }
 
@@ -859,7 +858,7 @@ namespace Sharp.Editor.Views
                             if (vLabels[n] is null)
                             {
                                 vLabels[n] = new Label();
-                                panel.Childs.Add(vLabels[n]);
+                                Childs.Add(vLabels[n]);
                             }
                             vLabels[n].Text = num6.ToString(text) + curveSettings.vTickStyle.unit;
                             vLabels[n].Position = new Point((int)position2.x, (int)position2.y);

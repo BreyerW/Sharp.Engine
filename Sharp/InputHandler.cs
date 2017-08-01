@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
-using OpenTK.Input;
 using Sharp.Editor.Views;
 using SDL2;
 using System.Reflection;
@@ -17,7 +16,6 @@ namespace Sharp
     public static class InputHandler
     {
         private static readonly int numKeys = (int)SDL.SDL_Scancode.SDL_NUM_SCANCODES;
-        private static bool pressed = false;
         private static IntPtr memAddrToKeyboard;
 
         internal static byte[] prevKeyState = new byte[numKeys];
@@ -26,16 +24,10 @@ namespace Sharp
 
         public static (int x, int y) globalMousePosition;
         public static int wheelState;
-        public static Action<KeyboardKeyEventArgs> OnKeyDown;
-        public static Action<KeyboardKeyEventArgs> OnKeyUp;
         public static bool isMouseDragging = false;
 
         internal static bool[] prevMouseState;
         internal static bool[] curMouseState = new bool[5];
-
-        public static Action<MouseButtonEventArgs> OnMouseDown;
-        public static Action<MouseButtonEventArgs> OnMouseUp;
-        public static Action<MouseMoveEventArgs> OnMouseMove;
 
         private static readonly uint[] mouseCodes = new uint[] { SDL.SDL_BUTTON_LMASK, SDL.SDL_BUTTON_RMASK, SDL.SDL_BUTTON_MMASK, SDL.SDL_BUTTON_X1MASK, SDL.SDL_BUTTON_X2MASK };
         private static readonly SDL.SDL_Scancode[] keyboardCodes = (SDL.SDL_Scancode[])Enum.GetValues(typeof(SDL.SDL_Scancode));
@@ -58,17 +50,13 @@ namespace Sharp
 
         public static void ProcessMouse()
         {
-            EventArgs evnt = null;
             var button = SDL.SDL_GetGlobalMouseState(out globalMousePosition.x, out globalMousePosition.y);
             var winPos = Window.windows[Window.UnderMouseWindowId].Position;
-            evnt = new MouseButtonEventArgs(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y, ConvertMaskToEnum(button), true);//last param bugged
             curMouseState = new bool[5];
             foreach (var (key, val) in mouseCodes.WithIndexes())
             {
                 curMouseState[key] = (button & val) == val;
             }
-            if (pressed) OnMouseDown?.Invoke((MouseButtonEventArgs)evnt);
-            else OnMouseUp?.Invoke((MouseButtonEventArgs)evnt);
         }
 
         public static void ProcessTextInput(string text)
@@ -84,21 +72,6 @@ namespace Sharp
             if (!Window.windows.Contains(Window.UnderMouseWindowId)) return;
             var winPos = Window.windows[Window.UnderMouseWindowId].Position;
             var button = SDL.SDL_GetGlobalMouseState(out globalMousePosition.x, out globalMousePosition.y);
-
-            if (Math.Abs(UI.MouseDelta.x) > 0 || Math.Abs(UI.MouseDelta.y) > 0)
-            {
-                var evnt = new MouseMoveEventArgs(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y, UI.MouseDelta.x, UI.MouseDelta.y);
-                foreach (var view in View.views[Window.UnderMouseWindowId])
-                {
-                    if (view.panel != null/* && view.panel.IsChild(Gwen.Input.InputHandler.HoveredControl, true)*/)
-                    {
-                        view.OnMouseMove(evnt);
-                        break;
-                    }
-                }
-                evnt = new MouseMoveEventArgs(globalMousePosition.x, globalMousePosition.y, UI.MouseDelta.x, UI.MouseDelta.y);
-                OnMouseMove?.Invoke(evnt);
-            }
         }
 
         public static void ProcessMousePresses()
@@ -108,11 +81,10 @@ namespace Sharp
 
         public static void ProcessMouseWheel(int delta)
         {
-            var wheelEvent = new MouseWheelEventArgs(0, 0, 0, delta);
             wheelState = -delta;
         }
 
-        private static MouseButton ConvertMaskToEnum(uint mask)
+        /*private static MouseButton ConvertMaskToEnum(uint mask)
         {
             if ((mask & SDL.SDL_BUTTON_LMASK) == SDL.SDL_BUTTON_LEFT) return MouseButton.Left;
             else if (mask == SDL.SDL_BUTTON_MMASK) return MouseButton.Middle;
@@ -120,7 +92,7 @@ namespace Sharp
             else if (mask == SDL.SDL_BUTTON_X1MASK) return MouseButton.Button1;
             else if (mask == SDL.SDL_BUTTON_X2MASK) return MouseButton.Button2;
             else return MouseButton.LastButton;
-        }
+        }*/
 
         public static void ProcessKeyboard()
         {
@@ -153,17 +125,6 @@ namespace Sharp
             {
                 if (keyCode == SDL.SDL_Scancode.SDL_NUM_SCANCODES) continue;
                 int key = (int)keyCode;
-                if (curKeyState[key] != prevKeyState[key])
-                {
-                    if (curKeyState[key] is 1)
-                    {
-                        OnKeyDown?.Invoke(null);
-                    }
-                    else
-                    {
-                        OnKeyUp?.Invoke(null);
-                    }
-                }
                 keyState.Add(new KeyData() { Scancode = (int)ScancodeToKeyData(keyCode), Pressed = curKeyState[key] is 1 });
                 //keyState[key].Char = (char)SDL.SDL_GetKeyFromScancode(keyCode);
             }
@@ -917,10 +878,10 @@ namespace Sharp
 
         public static void ProcessKeyboardPresses()
         {
-            if (View.views.TryGetValue(SDL.SDL_GetWindowID(SDL.SDL_GetKeyboardFocus()), out var views))
-                foreach (var view in views)
-                    if (view.panel != null && view.panel.IsVisible)
-                        view.OnKeyPressEvent(ref curKeyState);
+            //if (View.views.TryGetValue(SDL.SDL_GetWindowID(SDL.SDL_GetKeyboardFocus()), out var views))
+            // foreach (var view in views)
+            //  if (view.panel != null && view.panel.IsVisible)
+            //   view.OnKeyPressEvent(ref curKeyState);
         }
     }
 }

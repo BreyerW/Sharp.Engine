@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using OpenTK;
 using System;
-using OpenTK.Input;
 using Squid;
 
 //using PhysX;
@@ -14,8 +13,6 @@ namespace Sharp.Editor.Views
     {
         private int cell_size = 32;
         private int grid_size = 4096;
-
-        protected override string Name => "Scene";
 
         public static HashSet<Entity> entities = new HashSet<Entity>();
         public static Action OnAddedEntity;
@@ -49,11 +46,94 @@ namespace Sharp.Editor.Views
             eLight.Position = Camera.main.entityObject.Position;
             var light = eLight.AddComponent<Light>();
             eLight.Instatiate();
-            panel.AllowDrop = true;
-            panel.DragDrop += Panel_Drop;
-            panel.SizeChanged += (sender) => OnResize(sender.Size.x, sender.Size.y);
-            panel.MouseDown += Panel_MouseDown;
-            panel.MouseUp += Panel_MouseUp;
+            AllowDrop = true;
+            OnDragFinished += Panel_Drop;
+            MouseDown += Panel_MouseDown;
+            MouseUp += Panel_MouseUp;
+            KeyDown += SceneView_KeyUp;
+            SizeChanged += SceneView_SizeChanged;
+            Squid.UI.MouseMove += UI_MouseMove;
+            Squid.UI.MouseUp += UI_MouseUp;
+            Name = "Scene";
+            AllowFocus = true;
+            OnSetupMatrices?.Invoke();
+        }
+
+        private void UI_MouseUp(Control sender, MouseEventArgs args)
+        {
+            Console.WriteLine("global mouse happened");
+            mouseLocked = false;
+        }
+
+        private void UI_MouseMove(Control sender, MouseEventArgs args)
+        {
+            if (mouseLocked)
+            {
+                if (Manipulators.selectedAxisId == 0)
+                {
+                    Camera.main.Rotate(-Squid.UI.MouseDelta.x, -Squid.UI.MouseDelta.y, 0.3f);//maybe divide delta by fov?
+                    OnSetupMatrices?.Invoke();
+                }
+                else//simple, precise, snapping
+                {
+                    if (Squid.UI.MouseDelta.x != 0 || Squid.UI.MouseDelta.y != 0)
+                    {
+                        var orig = Camera.main.entityObject.Position;
+                        //var winPos = Window.windows[attachedToWindow].Position;
+                        var localMouse = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
+                        var start = Camera.main.ScreenToWorld(localMouse.x, localMouse.y, Size.x, Size.y, 1);
+                        var ray = new Ray(orig, (start - orig).Normalized());
+                        //foreach (var selected in SceneStructureView.tree.SelectedChildren)
+                        if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
+                        {
+                            if (Manipulators.selectedAxisId < 4)
+                            {
+                                Manipulators.HandleTranslation(entity, ref ray);
+                            }
+                            else if (Manipulators.selectedAxisId < 7)
+                            {
+                                Manipulators.HandleRotation(entity, ref ray);
+                            }
+                            else
+                            {
+                                Manipulators.HandleScale(entity, ref ray);
+                            }
+                        }
+                    }
+                }
+            }
+            oldX = Squid.UI.MousePosition.x;
+            oldY = Squid.UI.MousePosition.y;
+        }
+
+        private void SceneView_SizeChanged(Control sender)
+        {
+            OnSetupMatrices?.Invoke();
+            Camera.main.AspectRatio = (float)Size.x / Size.y;
+            Camera.main.SetProjectionMatrix();
+            Camera.main.SetOrthoMatrix(Desktop.Size.x, Desktop.Size.y);
+            Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
+        }
+
+        private void SceneView_KeyUp(Control sender, KeyEventArgs args)
+        {
+            if (Camera.main.moved)
+            {
+                Camera.main.moved = false;
+                Camera.main.SetModelviewMatrix();
+            }
+            if (args.Key == Keys.Q)
+                Camera.main.Move(0f, 1f, 0f);
+            if (args.Key == Keys.E)
+                Camera.main.Move(0f, -1f, 0f);
+            if (args.Key == Keys.A)
+                Camera.main.Move(-1f, 0f, 0f);
+            if (args.Key == Keys.D)
+                Camera.main.Move(1f, 0f, 0f);
+            if (args.Key == Keys.W)
+                Camera.main.Move(0f, 0f, -1f);
+            if (args.Key == Keys.S)
+                Camera.main.Move(0f, 0f, 1f);
             OnSetupMatrices?.Invoke();
         }
 
@@ -63,12 +143,12 @@ namespace Sharp.Editor.Views
         //physEngine= new Physics(foundation, checkRuntimeFiles: true);
         //var sceneDesc = new SceneDesc (){Gravity = new System.Numerics.Vector3(0, -9.81f, 0) };
         //physScene = physEngine.CreateScene ();
-        private void Panel_MouseUp(Squid.Control sender, Squid.MouseEventArgs args)
+        private void Panel_MouseUp(Control sender, MouseEventArgs args)
         {
             Manipulators.Reset();
         }
 
-        private void Panel_MouseDown(Squid.Control sender, Squid.MouseEventArgs args)
+        private void Panel_MouseDown(Control sender, MouseEventArgs args)
         {
             if (args.Button is 1)
             {
@@ -78,16 +158,16 @@ namespace Sharp.Editor.Views
             else if (args.Button is 0)
             {
                 mouseLocked = false;
-                locPos = new Point(Squid.UI.MousePosition.x - panel.Location.x, Squid.UI.MousePosition.y - panel.Location.y);
+                locPos = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
             }
         }
 
-        private void Panel_Drop(Squid.Control sender, DragDropEventArgs e)
+        private void Panel_Drop(Control sender, DragDropEventArgs e)
         {
-            var locPos = new Point(Squid.UI.MousePosition.x - panel.Location.x, Squid.UI.MousePosition.y - panel.Location.y);
+            var locPos = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
             Camera.main.SetModelviewMatrix();
             var orig = Camera.main.entityObject.Position;
-            var dir = (Camera.main.ScreenToWorld(locPos.x, locPos.y, panel.Size.x, panel.Size.y) - orig).Normalized();
+            var dir = (Camera.main.ScreenToWorld(locPos.x, locPos.y, Size.x, Size.y) - orig).Normalized();
             if (e.Source.UserData is ValueTuple<string, string>[] entities)
                 foreach (var asset in entities)
                 {
@@ -96,11 +176,11 @@ namespace Sharp.Editor.Views
                 }
         }
 
-        public override void Render()
+        protected override void DrawBefore()
         {
-            if (!panel.IsVisible) return;
-            base.Render();
-            MainWindow.backendRenderer.Viewport(panel.Location.x, Camera.main.height - (panel.Location.y + panel.Size.y), panel.Size.x, panel.Size.y);
+            //if (!IsVisible) return;
+            //base.Render();
+            MainWindow.backendRenderer.Viewport(Location.x, Camera.main.height - (Location.y + Size.y), Size.x, Size.y);
             if (locPos.HasValue)
             {
                 if (!PickTestForGizmo())
@@ -137,7 +217,7 @@ namespace Sharp.Editor.Views
             }
 
             //GL.DebugMessageCallback(DebugCallbackInstance, IntPtr.Zero);
-            MainWindow.backendRenderer.Viewport(0, 0, panel.Desktop.Size.x, panel.Desktop.Size.y);
+            MainWindow.backendRenderer.Viewport(0, 0, Desktop.Size.x, Desktop.Size.y);
         }
 
         private bool PickTestForGizmo()
@@ -226,7 +306,7 @@ namespace Sharp.Editor.Views
         private void PickTestForObject()
         {
             var orig = Camera.main.entityObject.Position;
-            var end = Camera.main.ScreenToWorld(locPos.Value.x, locPos.Value.y, panel.Size.x, panel.Size.y);
+            var end = Camera.main.ScreenToWorld(locPos.Value.x, locPos.Value.y, Size.x, Size.y);
             var ray = new Ray(orig, (end - orig).Normalized());
             var hitList = new SortedList<Vector3, int>(new OrderByDistanceToCamera());
             foreach (var ent in entities)
@@ -251,91 +331,8 @@ namespace Sharp.Editor.Views
             }
         }
 
-        public override void OnResize(int width, int height)
-        {
-            OnSetupMatrices?.Invoke();
-            Camera.main.AspectRatio = (float)panel.Size.x / panel.Size.y;
-            Camera.main.SetProjectionMatrix();
-            Camera.main.SetOrthoMatrix(panel.Desktop.Size.x, panel.Desktop.Size.y);
-            Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
-        }
-
-        public override void OnKeyPressEvent(ref byte[] keyboardState)
-        {
-            if (!panel.IsVisible) return;
-            if (Camera.main.moved)
-            {
-                Camera.main.moved = false;
-                Camera.main.SetModelviewMatrix();
-            }
-            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_Q] is 1)
-                Camera.main.Move(0f, 1f, 0f);
-            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_E] is 1)
-                Camera.main.Move(0f, -1f, 0f);
-            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_A] is 1)
-                Camera.main.Move(-1f, 0f, 0f);
-            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_D] is 1)
-                Camera.main.Move(1f, 0f, 0f);
-            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_W] is 1)
-                Camera.main.Move(0f, 0f, -1f);
-            if (keyboardState[(int)SDL2.SDL.SDL_Scancode.SDL_SCANCODE_S] is 1)
-                Camera.main.Move(0f, 0f, 1f);
-            OnSetupMatrices?.Invoke();
-        }
-
         private int oldX;
         private int oldY;
-
-        public override void OnGlobalMouseMove(MouseMoveEventArgs evnt)
-        {
-            //Console.WriteLine("global mouse move " + mouseLocked);
-
-            if (mouseLocked)
-            {
-                if (Manipulators.selectedAxisId == 0)
-                {
-                    Camera.main.Rotate(-evnt.XDelta, -evnt.YDelta, 0.3f);//maybe divide delta by fov?
-                    OnSetupMatrices?.Invoke();
-                }
-                else//simple, precise, snapping
-                {
-                    if (evnt.XDelta != 0 || evnt.YDelta != 0)
-                    {
-                        var orig = Camera.main.entityObject.Position;
-                        var winPos = Window.windows[attachedToWindow].Position;
-                        var canvasPos = new System.Drawing.Point(evnt.Position.X - winPos.x, evnt.Position.Y - winPos.y);
-                        var localMouse = new Point(Squid.UI.MousePosition.x - panel.Location.x, Squid.UI.MousePosition.y - panel.Location.y);
-                        var start = Camera.main.ScreenToWorld(localMouse.x, localMouse.y, panel.Size.x, panel.Size.y, 1);
-                        var ray = new Ray(orig, (start - orig).Normalized());
-
-                        //foreach (var selected in SceneStructureView.tree.SelectedChildren)
-                        if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
-                        {
-                            if (Manipulators.selectedAxisId < 4)
-                            {
-                                Manipulators.HandleTranslation(entity, ref ray);
-                            }
-                            else if (Manipulators.selectedAxisId < 7)
-                            {
-                                Manipulators.HandleRotation(entity, ref ray);
-                            }
-                            else
-                            {
-                                Manipulators.HandleScale(entity, ref ray);
-                            }
-                        }
-                    }
-                }
-            }
-            oldX = evnt.X;
-            oldY = evnt.Y;
-        }
-
-        public override void OnGlobalMouseUp(MouseButtonEventArgs evnt)
-        {
-            Console.WriteLine("global mouse happened");
-            mouseLocked = false;
-        }
     }
 
     internal class OrderByDistanceToCamera : IComparer<Vector3>

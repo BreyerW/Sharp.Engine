@@ -219,7 +219,7 @@ namespace SharpSL.BackendRenderers.OpenGL
         public void Viewport(int x, int y, int width, int height)
         {
             GL.Viewport(x, y, width, height);
-            GL.Scissor(x, y, width, height);
+            // GL.Scissor(x, y, width, height);
         }
 
         public void Clip(int x, int y, int width, int height)

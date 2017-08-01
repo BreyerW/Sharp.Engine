@@ -12,8 +12,6 @@ namespace Sharp.Editor.Views
 {
     public class InspectorView : View
     {
-        protected override string Name => "Inspector";
-
         private TreeView ptree = new TreeView();
 
         //private ListBox tagStrip = new ListBox();
@@ -51,7 +49,7 @@ namespace Sharp.Editor.Views
             tagStrip.Text = "Tags";
             tagStrip.Style = "label";
             tagStrip.Dropdown.Style = "";
-            tagStrip.Parent = panel;
+            tagStrip.Parent = this;
 
             var button = new Button();
             button.Text = "Add tag";
@@ -61,7 +59,7 @@ namespace Sharp.Editor.Views
 
             ptree.Dock = DockStyle.Fill;
             ptree.Margin = new Margin(0, 25, 0, 0);
-            ptree.Parent = panel;
+            ptree.Parent = this;
             ptree.Scrollbar.Size = new Point(0, 0);
             ptree.Scissor = false;
             Selection.OnSelectionChange += (sender, args) =>
@@ -78,6 +76,7 @@ namespace Sharp.Editor.Views
             {
                 //if (sender is Entity entity) RenderComponents(entity);
             };
+            Name = "Inspector";
         }
 
         /* tagStrip = new MenuStrip(panel);
@@ -97,11 +96,6 @@ namespace Sharp.Editor.Views
              ptree.Dock = Gwen.Pos.Fill;
 
              base.Initialize();*/
-
-        public override void Render()
-        {
-            //base.Render();
-        }
 
         public static Control Add<T>(string label, object instance, PropertyInfo propertyInfo)
         {
@@ -190,10 +184,5 @@ namespace Sharp.Editor.Views
                   }
               }
           }*/
-
-        public override void OnResize(int width, int height)
-        {
-            //ptree.SetBounds(0, 25, panel.s, height);
-        }
     }
 }
