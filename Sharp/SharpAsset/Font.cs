@@ -17,9 +17,9 @@ namespace SharpAsset
         public string Extension { get { return Path.GetExtension(FullPath); } set { } }
         public string FullPath { get; set; }
 
-        public Dictionary<uint, (Texture texture, int bearing)> fontAtlas;
+        public Dictionary<uint, (Texture texture, int bearing, (int x, int y) advance)> fontAtlas;
         public Face face;
-        public uint Size { get => face.Size.Metrics.NominalHeight; set => face.SetPixelSizes(0, value); }
+        public int Size { get => face.Size.Metrics.NominalHeight; set => face.SetCharSize(0, value, 0, 0); }
 
         public void PlaceIntoScene(Entity context, Vector3 worldPos)
         {
@@ -53,12 +53,11 @@ namespace SharpAsset
                 uint glyphIndex = face.GetCharIndex(chars[i]);
 
                 // Load the glyph into the font's glyph slot. There is usually only one slot in the font.
-                face.LoadGlyph(glyphIndex, LoadFlags.Default, LoadTarget.Normal);
+                if (!fontAtlas.ContainsKey(chars[i]))
+                    GenerateBitmapForChar(chars[i]);
 
-                float gAdvanceX = (float)face.Glyph.Advance.X; // same as the advance in metrics
-                float gBearingX = (float)face.Glyph.Metrics.HorizontalBearingX;
-                float gWidth = face.Glyph.Metrics.Width.ToSingle();
-                underrun += gBearingX;
+                var texChar = fontAtlas[chars[i]];
+                // underrun += gBearingX;
                 //if (width == 0)
                 //  width += underrun;
                 /*if (underrun <= 0)
@@ -68,19 +67,19 @@ namespace SharpAsset
 
                 // Accumulate overrun, which coould cause clipping at the right side of characters near
                 // the end of the string (typically affects fonts with slanted characters)
-                if (gBearingX + gWidth > 0 || gAdvanceX > 0)
+                //if (gBearingX + gWidth > 0 || gAdvanceX > 0)
                 {
-                    overrun -= Math.Max(gBearingX + gWidth, gAdvanceX);
-                    if (overrun <= 0) overrun = 0;
+                    //   overrun -= Math.Max(gBearingX + gWidth, gAdvanceX);
+                    //  if (overrun <= 0) overrun = 0;
                 }
-                overrun += (float)(gBearingX == 0 && gWidth == 0 ? 0 : gBearingX + gWidth - gAdvanceX);
+                //overrun += (float)(gBearingX == 0 && gWidth == 0 ? 0 : gBearingX + gWidth - gAdvanceX);
                 // On the last character, apply whatever overrun we have to the overall width.
                 // Positive overrun prevents clipping, negative overrun prevents extra space.
 
                 // If this character goes higher or lower than any previous character, adjust
                 // the overall height of the bitmap.
-                float glyphTop = (float)face.Glyph.Metrics.HorizontalBearingY;
-                float glyphBottom = (float)(face.Glyph.Metrics.Height - face.Glyph.Metrics.HorizontalBearingY);
+                float glyphTop = 0;
+                float glyphBottom = texChar.texture.height - texChar.bearing;
                 if (glyphTop > top)
                     top = glyphTop;
                 if (glyphBottom > bottom)
@@ -91,8 +90,8 @@ namespace SharpAsset
 
                 // Accumulate the distance between the origin of each character (simple width).
                 //if (i == chars.Length - 1)
-                width += overrun;
-                width += gAdvanceX + 2;
+                //width += overrun;
+                width += texChar.advance.x + 2;
                 // Calculate kern for the NEXT character (if any)
                 // The kern value adjusts the origin of the next character (positive or negative).
                 if (face.HasKerning && i < chars.Length - 1)
@@ -100,30 +99,41 @@ namespace SharpAsset
                     char cNext = chars[i + 1];
                     kern = (float)face.GetKerning(glyphIndex, face.GetCharIndex(cNext), KerningMode.Default).X;
                     // sanity check for some fonts that have kern way out of whack
-                    if (kern > gAdvanceX * 5 || kern < -(gAdvanceX * 5))
+                    if (kern > texChar.advance.x * 5 || kern < -(texChar.advance.x * 5))
                         kern = 0;
                     width += kern;
                 }
             }
+
             height = top + bottom;
-            return ((int)width, (int)height);
+            var metrics = face.Size;
+            (float x, float y) scale = (metrics.Metrics.ScaleX.ToSingle(), metrics.Metrics.ScaleY.ToSingle());
+            metrics.Dispose();
+            return ((int)(width * scale.x), (int)(height * scale.y));
         }
 
-        public void GenerateBitmapForChar(uint charCode)
+        public void GenerateBitmapForChar(uint c)
         {
-            face.LoadChar(charCode, LoadFlags.Default, LoadTarget.Normal);
-            face.Glyph.RenderGlyph(RenderMode.Normal);
-            var bitmap = face.Glyph.Bitmap;
-            var cBmp = bitmap.BufferData;
+            uint charCode = face.GetCharIndex(c);
+            face.LoadChar(c, LoadFlags.NoScale, LoadTarget.Normal);
 
-            var width = MathHelper.NextPowerOfTwo(bitmap.Width);
-            var height = MathHelper.NextPowerOfTwo(bitmap.Rows);
-            int tbo = -1;
-            MainWindow.backendRenderer.GenerateBuffers(ref tbo);
-            MainWindow.backendRenderer.BindBuffers(ref tbo);//check all binds they may cause unnecessary memory consumption
-            fontAtlas.Add(charCode, (new Texture() { bitmap = new byte[width * height], width = width, height = height, TBO = tbo }, face.Glyph.Metrics.HorizontalBearingY.ToInt32()));//change bearing to vertical if vertical layout
-            for (int j = 0; j < bitmap.Rows; j++)
-                Unsafe.CopyBlock(ref fontAtlas[charCode].texture.bitmap[j * width], ref cBmp[j * bitmap.Width], (uint)bitmap.Width);
+            if (c != ' ')
+            {
+                face.Glyph.RenderGlyph(RenderMode.Normal);
+                var bitmap = face.Glyph.Bitmap;
+                var cBmp = bitmap.BufferData;
+
+                var width = MathHelper.NextPowerOfTwo(bitmap.Width);
+                var height = MathHelper.NextPowerOfTwo(bitmap.Rows);
+                int tbo = -1;
+                MainWindow.backendRenderer.GenerateBuffers(ref tbo);
+                MainWindow.backendRenderer.BindBuffers(ref tbo);//check all binds they may cause unnecessary memory consumption
+
+                fontAtlas.Add(c, (new Texture() { bitmap = new byte[width * height], width = width, height = height, TBO = tbo }, face.Glyph.Metrics.HorizontalBearingY.ToInt32(), (face.Glyph.Advance.X.ToInt32(), face.Glyph.Advance.Y.ToInt32())));//change bearing to vertical if vertical layout
+                for (int j = 0; j < bitmap.Rows; j++)
+                    Unsafe.CopyBlock(ref fontAtlas[c].texture.bitmap[j * width], ref cBmp[j * bitmap.Width], (uint)bitmap.Width);
+            }
+            else fontAtlas.Add(c, (new Texture() { bitmap = Array.Empty<byte>(), width = 0, height = 0 }, face.Glyph.Metrics.HorizontalBearingY.ToInt32(), (face.Glyph.Advance.X.ToInt32(), face.Glyph.Advance.Y.ToInt32())));//change bearing to vertical if vertical layout
         }
     }
 }

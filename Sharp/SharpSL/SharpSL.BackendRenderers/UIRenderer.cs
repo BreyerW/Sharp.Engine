@@ -30,19 +30,19 @@ namespace SharpSL.BackendRenderers
 
         public void DrawText(string text, int x, int y, int width, int height, int font, int color, float fontSize)//TODO: split this to draw texture and draw mesh
         {
+            //fontSize = 16;
+
             var chars = text.AsSpan();
             ref var realFont = ref Pipeline.GetPipeline<FontPipeline>().GetAsset(font);
             ref var face = ref realFont.face;
-            MainWindow.backendRenderer.ChangeShader();
+            //MainWindow.backendRenderer.ChangeShader();
             var col = new Color((uint)color);
-
             float penX = 0, penY = 0;
             float stringWidth = 0; // the measured width of the string
             float stringHeight = 0; // the measured height of the string
             float overrun = 0;
             float underrun = 0;
             float kern = 0;
-
             // Bottom and top are both positive for simplicity.
             // Drawing in .Net has 0,0 at the top left corner, with positive X to the right
             // and positive Y downward.
@@ -68,7 +68,7 @@ namespace SharpSL.BackendRenderers
             // Create a new bitmap that fits the string.
             underrun = 0;
             overrun = 0;
-            stringWidth = 0;
+            //stringWidth = 0;
 
             // Draw the string into the bitmap.
             // A lot of this is a repeat of the measuring steps, but this time we have
@@ -82,21 +82,35 @@ namespace SharpSL.BackendRenderers
                 // Same as when we were measuring, except RenderGlyph() causes the glyph data
                 // to be converted to a bitmap.
                 uint glyphIndex = face.GetCharIndex(c);
-                face.LoadGlyph(glyphIndex, LoadFlags.Default, LoadTarget.Normal);
-                face.Glyph.RenderGlyph(RenderMode.Normal);
+                //face.LoadGlyph(glyphIndex, LoadFlags.NoScale, LoadTarget.Normal);
+                //face.Glyph.RenderGlyph(RenderMode.Normal);
 
-                float gAdvanceX = (float)face.Glyph.Advance.X;
-                float gBearingX = (float)face.Glyph.Metrics.HorizontalBearingX;
-                float gWidth = (float)face.Glyph.Metrics.Width;
+                //float gAdvanceX = (float)face.Glyph.Advance.X;
+                //float gBearingX = (float)face.Glyph.Metrics.HorizontalBearingX;
+                var metrics = face.Size;
+                (float x, float y) scale = (metrics.Metrics.ScaleX.ToSingle(), metrics.Metrics.ScaleY.ToSingle());
+                metrics.Dispose();
 
                 #endregion Load character
+
+                #region Draw glyph
+
+                //int x = ;
+                //int y = (int)Math.Round(penY + top - (float)face.Glyph.Metrics.HorizontalBearingY);
+                if (!realFont.fontAtlas.ContainsKey(chars[i]))
+                    realFont.GenerateBitmapForChar(chars[i]);
+
+                // Whitespace characters sometimes have a bitmap of zero size, but a non-zero advance.
+                // We can't draw a 0-size bitmap, but the pen position will still get advanced (below).
+                //draw the string
+                var texChar = realFont.fontAtlas[chars[i]];
 
                 #region Underrun
 
                 // Underrun
-                underrun += gBearingX;
+                //underrun += texChar.bearing * scale.x;
                 //if (penX == 0)
-                //  penX += underrun;
+                //   penX += underrun;
                 /* if (underrun <= 0)
                  {
                      underrun = 0;
@@ -104,47 +118,33 @@ namespace SharpSL.BackendRenderers
 
                 #endregion Underrun
 
-                #region Draw glyph
-
-                //int x = ;
-                //int y = (int)Math.Round(penY + top - (float)face.Glyph.Metrics.HorizontalBearingY);
-                //Not using g.DrawImage because some characters come out blurry/clipped. (Is this still true?)
-                if (chars[i] != ' ' && !realFont.fontAtlas.ContainsKey(chars[i]))
-                    realFont.GenerateBitmapForChar(chars[i]);
-
-                // Whitespace characters sometimes have a bitmap of zero size, but a non-zero advance.
-                // We can't draw a 0-size bitmap, but the pen position will still get advanced (below).
-                //draw the string
                 if (chars[i] != ' ')
                 {
-                    var texChar = realFont.fontAtlas[chars[i]];
                     MainWindow.backendRenderer.Allocate(ref texChar.texture.bitmap[0], texChar.texture.width, texChar.texture.height, true);
                     MainEditorView.editorBackendRenderer.DrawTexturedQuad(
-                           penX,
-                        stringHeight + penY - (float)face.Glyph.Metrics.HorizontalBearingY,
-                      penX + texChar.texture.width,
-                      stringHeight + penY - (float)face.Glyph.Metrics.HorizontalBearingY + texChar.texture.height, ref col.R
+                           (int)(penX * scale.x),
+                        (int)(stringHeight + (penY - texChar.bearing) * scale.y),
+                      (int)((penX + texChar.texture.width) * scale.x),
+                      (int)(stringHeight + (penY - texChar.bearing + texChar.texture.height) * scale.y), ref col.R
                       );
                 }
 
-                #endregion Draw glyph
-
                 #region Overrun
 
-                if (gBearingX + gWidth > 0 || gAdvanceX > 0)
-                {
-                    overrun -= Math.Max(gBearingX + gWidth, gAdvanceX);
-                    if (overrun <= 0) overrun = 0;
-                }
-                overrun += (float)(gBearingX == 0 && gWidth == 0 ? 0 : gBearingX + gWidth - gAdvanceX);
+                // if (gBearingX + texChar.texture.width > 0 || gAdvanceX > 0)
+                //{
+                //    overrun -= Math.Max(gBearingX + texChar.texture.width, gAdvanceX);
+                //    if (overrun <= 0) overrun = 0;
+                //}
+                //  overrun += (float)(gBearingX == 0 && texChar.texture.width == 0 ? 0 : (gBearingX + texChar.texture.width - gAdvanceX));
                 //if (i == text.Length - 1)
-                penX += overrun;
+                //penX += overrun;
 
                 #endregion Overrun
 
                 // Advance pen positions for drawing the next character.
-                penX += gAdvanceX + 2; // same as Metrics.HorizontalAdvance?
-                penY += (float)face.Glyph.Advance.Y;
+                penX += texChar.advance.x + 2; // same as Metrics.HorizontalAdvance?
+                penY += texChar.advance.y;
 
                 #region Kerning (for NEXT character)
 
@@ -152,13 +152,15 @@ namespace SharpSL.BackendRenderers
                 if (face.HasKerning && i < text.Length - 1)
                 {
                     char cNext = text[i + 1];
-                    kern = (float)face.GetKerning(glyphIndex, face.GetCharIndex(cNext), KerningMode.Default).X;
-                    if (kern > gAdvanceX * 5 || kern < -(gAdvanceX * 5))
+                    kern = (float)face.GetKerning(glyphIndex, face.GetCharIndex(cNext), KerningMode.Unscaled).X;
+                    if (kern > texChar.advance.x * 5 || kern < -(texChar.advance.x * 5))
                         kern = 0;
                     penX += (float)kern;
                 }
 
                 #endregion Kerning (for NEXT character)
+
+                #endregion Draw glyph
             }
 
             MainEditorView.editorBackendRenderer.UnloadMatrix();

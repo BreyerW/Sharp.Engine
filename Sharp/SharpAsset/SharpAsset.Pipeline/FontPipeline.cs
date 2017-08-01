@@ -30,7 +30,7 @@ namespace SharpAsset.Pipeline
                 return this[nameToKey.IndexOf(name)];
             var face = new Face(lib.Value, pathToFile);
             nameToKey.Add(name);
-            var font = new Font() { face = face, fontAtlas = new Dictionary<uint, (Texture texture, int bearing)>() };
+            var font = new Font() { face = face, fontAtlas = new Dictionary<uint, (Texture, int, (int, int))>() };
             font.Size = 16;
             this[nameToKey.IndexOf(name)] = font;
             return font;

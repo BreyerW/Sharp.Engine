@@ -779,8 +779,8 @@ namespace Squid
             Point p = AlignText(masked, Alignment.MiddleLeft, style.TextPadding, font);
 
             Rectangle clip = new Rectangle(Location, Size);
-            //clip.Left += style.TextPadding.Left - 1;
-            //clip.Right -= style.TextPadding.Right - 1;
+            clip.Left += style.TextPadding.Left - 1;
+            clip.Right -= style.TextPadding.Right;
             clip = Clip(clip);
 
             if (clip.Width < 1 || clip.Height < 1) return;
@@ -829,7 +829,7 @@ namespace Squid
 
                 if (!ReadOnly && DoBlink > 0)
                 {
-                    UI.Renderer.DrawBox(p.x + s2.x - 2, p.y, 1, Size.y, ColorInt.FromArgb(opacity, BlinkColor));
+                    UI.Renderer.DrawBox(p.x + s2.x - 1, p.y, 1, Size.y, ColorInt.FromArgb(opacity, BlinkColor));
                 }
                 if (IsSelection)
                 {

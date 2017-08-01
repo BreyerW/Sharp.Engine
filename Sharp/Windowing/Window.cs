@@ -141,7 +141,7 @@ namespace Sharp
                 InputHandler.ProcessMousePresses();
 
                 UI.TimeElapsed = Time.deltaTime;
-                UI.currentCanvas.Update();
+                UI.currentCanvas?.Update();
                 //Console.WriteLine("enter");
                 onRenderFrame?.Invoke();
                 onBeforeNextFrame?.Invoke();
