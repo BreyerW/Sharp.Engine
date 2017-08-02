@@ -23,9 +23,21 @@ namespace Sharp.Editor.Views
 
         public MainEditorView(uint attachToWindow)
         {
-            MainEditorView.mainViews.Add(attachToWindow, this);
+            mainViews.Add(attachToWindow, this);
             desktop = new Desktop();
-            desktop.ShowCursor = false;
+            desktop.ShowCursor = true;
+            desktop.CursorSet.Add(CursorNames.Default, new NativeCursor(CursorNames.Default));
+            desktop.CursorSet.Add(CursorNames.Link, new NativeCursor(CursorNames.Link));
+            desktop.CursorSet.Add(CursorNames.Move, new NativeCursor(CursorNames.Move));
+            desktop.CursorSet.Add(CursorNames.HSplit, new NativeCursor(CursorNames.HSplit));
+            desktop.CursorSet.Add(CursorNames.VSplit, new NativeCursor(CursorNames.VSplit));
+            desktop.CursorSet.Add(CursorNames.SizeNS, new NativeCursor(CursorNames.SizeNS));
+            desktop.CursorSet.Add(CursorNames.SizeWE, new NativeCursor(CursorNames.SizeWE));
+            desktop.CursorSet.Add(CursorNames.SizeNWSE, new NativeCursor(CursorNames.SizeNWSE));
+            desktop.CursorSet.Add(CursorNames.SizeNESW, new NativeCursor(CursorNames.SizeNESW));
+            desktop.CursorSet.Add(CursorNames.Select, new NativeCursor(CursorNames.Select));
+            desktop.CursorSet.Add(CursorNames.Reject, new NativeCursor(CursorNames.Reject));
+            desktop.CursorSet.Add(CursorNames.Wait, new NativeCursor(CursorNames.Wait));
             desktop.Skin = Squid.UI.GenerateStandardSkin();
             Squid.UI.Renderer = new SharpSL.BackendRenderers.UIRenderer();
         }

@@ -135,7 +135,8 @@ namespace Sharp
             if (!Window.windows.Contains(Window.UnderMouseWindowId)) return;
 
             var winPos = Window.windows[Window.UnderMouseWindowId].Position;
-            UI.SetMouse(globalMousePosition.x - winPos.x, globalMousePosition.y - winPos.y);
+            UI.SetMouse(globalMousePosition.x, globalMousePosition.y, winPos.x, winPos.y);
+
             UI.SetButtons(curMouseState);
             List<KeyData> data = new List<KeyData>();
 

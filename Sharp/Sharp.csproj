@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\SharpFont.HarfBuzz.0.1.1\build\SharpFont.HarfBuzz.props" Condition="Exists('..\packages\SharpFont.HarfBuzz.0.1.1\build\SharpFont.HarfBuzz.props')" />
   <Import Project="..\packages\SharpFont.4.0.1\build\SharpFont.props" Condition="Exists('..\packages\SharpFont.4.0.1\build\SharpFont.props')" />
   <Import Project="..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props" Condition="Exists('..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props')" />
   <Import Project="..\packages\Microsoft.Net.Compilers.2.1.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.1.0\build\Microsoft.Net.Compilers.props')" />
@@ -81,9 +80,6 @@
     </Reference>
     <Reference Include="SharpFont, Version=4.0.1.200, Culture=neutral, PublicKeyToken=48add4c483071cdf, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpFont.4.0.1\lib\net45\SharpFont.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpFont.HarfBuzz, Version=0.1.0.0, Culture=neutral, PublicKeyToken=7f22260154a89e6f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpFont.HarfBuzz.0.1.1\lib\net20\SharpFont.HarfBuzz.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
@@ -215,6 +211,7 @@
     <Compile Include="NumericsExtensions.cs" />
     <Compile Include="Sharp.Editor\CurveSettings.cs" />
     <Compile Include="Sharp.Editor\MenuCommand.cs" />
+    <Compile Include="Sharp.Editor\NativeCursor.cs" />
     <Compile Include="Sharp.Editor\RedoCommand.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CurveRangeAttribute.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\DrawAsRegionAttribute.cs" />
@@ -404,7 +401,6 @@
     <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.0-preview1-25301-01\build\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.0-preview1-25301-01\build\NETStandard.Library.targets'))" />
     <Error Condition="!Exists('..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props'))" />
     <Error Condition="!Exists('..\packages\SharpFont.4.0.1\build\SharpFont.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.4.0.1\build\SharpFont.props'))" />
-    <Error Condition="!Exists('..\packages\SharpFont.HarfBuzz.0.1.1\build\SharpFont.HarfBuzz.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.HarfBuzz.0.1.1\build\SharpFont.HarfBuzz.props'))" />
   </Target>
   <Import Project="..\packages\AssimpNet.3.3.2\build\AssimpNet.targets" Condition="Exists('..\packages\AssimpNet.3.3.2\build\AssimpNet.targets')" />
   <PropertyGroup>

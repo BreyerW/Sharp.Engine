@@ -6,7 +6,6 @@ using System.IO;
 using OpenTK;
 using SharpFont;
 using Sharp;
-using HB = SharpFont.HarfBuzz;
 
 namespace SharpAsset
 {
@@ -17,7 +16,7 @@ namespace SharpAsset
         public string Extension { get { return Path.GetExtension(FullPath); } set { } }
         public string FullPath { get; set; }
 
-        public Dictionary<uint, (Texture texture, int bearing, (int x, int y) advance)> fontAtlas;
+        public Dictionary<uint, (Texture texture, (int x, int y) bearing, (int x, int y) advance)> fontAtlas;
         public Face face;
         public int Size { get => face.Size.Metrics.NominalHeight; set => face.SetCharSize(0, value, 0, 0); }
 
@@ -82,8 +81,8 @@ namespace SharpAsset
                 // If this character goes higher or lower than any previous character, adjust
                 // the overall height of the bitmap.
 
-                float glyphTop = -texChar.bearing * scale.y;
-                float glyphBottom = texChar.texture.height - texChar.bearing * scale.y;
+                float glyphTop = -texChar.bearing.y * scale.y;
+                float glyphBottom = texChar.texture.height - texChar.bearing.y * scale.y;
                 if (glyphTop > top)
                     top = glyphTop;
                 if (glyphBottom > bottom)
@@ -131,11 +130,11 @@ namespace SharpAsset
                 MainWindow.backendRenderer.GenerateBuffers(ref tbo);
                 MainWindow.backendRenderer.BindBuffers(ref tbo);//check all binds they may cause unnecessary memory consumption
 
-                fontAtlas.Add(c, (new Texture() { bitmap = new byte[width * height], width = width, height = height, TBO = tbo }, face.Glyph.Metrics.HorizontalBearingY.ToInt32(), (face.Glyph.Advance.X.ToInt32(), face.Glyph.Advance.Y.ToInt32())));//change bearing to vertical if vertical layout
+                fontAtlas.Add(c, (new Texture() { bitmap = new byte[width * height], width = width, height = height, TBO = tbo }, (face.Glyph.Metrics.HorizontalBearingX.ToInt32(), face.Glyph.Metrics.HorizontalBearingY.ToInt32()), (face.Glyph.Advance.X.ToInt32(), face.Glyph.Advance.Y.ToInt32())));//change bearing to vertical if vertical layout
                 for (int j = 0; j < bitmap.Rows; j++)
                     Unsafe.CopyBlock(ref fontAtlas[c].texture.bitmap[j * width], ref cBmp[j * bitmap.Width], (uint)bitmap.Width);
             }
-            else fontAtlas.Add(c, (new Texture() { bitmap = Array.Empty<byte>(), width = 0, height = 0 }, face.Glyph.Metrics.HorizontalBearingY.ToInt32(), (face.Glyph.Advance.X.ToInt32(), face.Glyph.Advance.Y.ToInt32())));//change bearing to vertical if vertical layout
+            else fontAtlas.Add(c, (new Texture() { bitmap = Array.Empty<byte>(), width = 0, height = 0 }, (face.Glyph.Metrics.HorizontalBearingX.ToInt32(), face.Glyph.Metrics.HorizontalBearingY.ToInt32()), (face.Glyph.Advance.X.ToInt32(), face.Glyph.Advance.Y.ToInt32())));//change bearing to vertical if vertical layout
         }
     }
 }

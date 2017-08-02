@@ -81,6 +81,8 @@ namespace Squid
         /// <value>The mouse position.</value>
         public static Point MousePosition { get; private set; }
 
+        public static Point ScreenMousePosition { get; private set; }
+
         /// <summary>
         /// Gets the mouse movement.
         /// </summary>
@@ -158,11 +160,12 @@ namespace Squid
         /// <param name="posX">x component of the position</param>
         /// <param name="posY">y component of the position</param>
         /// <param name="scroll">scrollwheel delta</param>
-        public static void SetMouse(int posX, int posY)
+        public static void SetMouse(int posX, int posY, int winX = 0, int winY = 0)
         {
-            Point m = MousePosition;
-            MousePosition = new Point(posX, posY);
-            Point move = MousePosition - m;
+            Point m = ScreenMousePosition;
+            MousePosition = new Point(posX - winX, posY - winY);
+            ScreenMousePosition = new Point(posX, posY);
+            Point move = ScreenMousePosition - m;
             MouseDelta = move;
         }
 

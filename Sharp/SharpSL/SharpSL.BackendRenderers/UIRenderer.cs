@@ -3,7 +3,6 @@ using Squid;
 using Sharp;
 using SharpAsset.Pipeline;
 using Sharp.Editor.Views;
-using SharpFont.HarfBuzz;
 using SharpFont;
 using OpenTK;
 using System.Runtime.CompilerServices;
@@ -13,8 +12,6 @@ namespace SharpSL.BackendRenderers
 {
     public class UIRenderer : ISquidRenderer
     {
-        private SharpFont.HarfBuzz.Buffer buffer = new SharpFont.HarfBuzz.Buffer();
-        private SharpFont.HarfBuzz.Font hbFont;
         private int currentFace = -1;
 
         public void DrawBox(int x, int y, int width, int height, int color)//DrawMesh?
@@ -68,7 +65,6 @@ namespace SharpSL.BackendRenderers
             // Create a new bitmap that fits the string.
             underrun = 0;
             overrun = 0;
-            //stringWidth = 0;
 
             // Draw the string into the bitmap.
             // A lot of this is a repeat of the measuring steps, but this time we have
@@ -108,9 +104,9 @@ namespace SharpSL.BackendRenderers
                 #region Underrun
 
                 // Underrun
-                //underrun += texChar.bearing * scale.x;
+                //underrun += texChar.bearing.x * scale.x;
                 //if (penX == 0)
-                //   penX += underrun;
+                //penX += underrun;
                 /* if (underrun <= 0)
                  {
                      underrun = 0;
@@ -122,21 +118,21 @@ namespace SharpSL.BackendRenderers
                 {
                     MainWindow.backendRenderer.Allocate(ref texChar.texture.bitmap[0], texChar.texture.width, texChar.texture.height, true);
                     MainEditorView.editorBackendRenderer.DrawTexturedQuad(
-                           (int)(penX * scale.x),
-                        (int)(stringHeight + (penY - texChar.bearing) * scale.y),
-                      (int)((penX + texChar.texture.width) * scale.x),
-                      (int)(stringHeight + (penY - texChar.bearing + texChar.texture.height) * scale.y), ref col.R
+                           (int)Math.Floor(penX * scale.x),
+                        (int)Math.Floor(stringHeight + (penY - texChar.bearing.y) * scale.y),
+                      (int)Math.Ceiling((penX + texChar.texture.width) * scale.x),
+                      (int)Math.Ceiling(stringHeight + (penY - texChar.bearing.y + texChar.texture.height) * scale.y), ref col.R
                       );
                 }
 
                 #region Overrun
 
-                // if (gBearingX + texChar.texture.width > 0 || gAdvanceX > 0)
+                //if (texChar.bearing.x + texChar.texture.width > 0 || texChar.advance.x > 0)
                 //{
-                //    overrun -= Math.Max(gBearingX + texChar.texture.width, gAdvanceX);
-                //    if (overrun <= 0) overrun = 0;
+                //   overrun -= Math.Max(texChar.bearing.x + texChar.texture.width, texChar.advance.x);
+                //   if (overrun <= 0) overrun = 0;
                 //}
-                //  overrun += (float)(gBearingX == 0 && texChar.texture.width == 0 ? 0 : (gBearingX + texChar.texture.width - gAdvanceX));
+                //overrun += (float)(texChar.bearing.x == 0 && texChar.texture.width == 0 ? 0 : (texChar.bearing.x + texChar.texture.width - texChar.advance.x));
                 //if (i == text.Length - 1)
                 //penX += overrun;
 
