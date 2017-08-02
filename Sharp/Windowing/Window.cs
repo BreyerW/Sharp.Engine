@@ -141,7 +141,6 @@ namespace Sharp
 
                 UI.TimeElapsed = Time.deltaTime;
                 UI.currentCanvas?.Update();
-                //Console.WriteLine("enter");
                 onRenderFrame?.Invoke();
                 onBeforeNextFrame?.Invoke();
                 if (UI.isDirty)
@@ -162,9 +161,6 @@ namespace Sharp
             if (mainView.desktop is null) return;
 
             mainView.Render();
-            //foreach (var view in View.views[windowId])
-            //  if (view.panel != null && view.panel.IsVisible)
-            //    view.Render();
             MainWindow.backendRenderer.FinishCommands();
             MainWindow.backendRenderer.SwapBuffers(handle);
         }

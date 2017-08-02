@@ -19,7 +19,6 @@ namespace Sharp.Editor.Views
         protected View(uint attachToWindow)
         {
             attachedToWindow = attachToWindow;
-            Button.Text = Name;
             Button.AutoSize = AutoSize.Horizontal;
             NoEvents = false;
         }

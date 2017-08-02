@@ -40,8 +40,6 @@ namespace Sharp.Editor.Views
         private Menu editMenu;
         private Menu menu;
         private Label badge;
-        private Label[] vLabels = Array.Empty<Label>();
-        private Label[] hLabels = Array.Empty<Label>();
 
         public (float x, float y, float width, float height) shownArea
         {
@@ -125,7 +123,7 @@ namespace Sharp.Editor.Views
             Childs.Add(menu);
             Childs.Add(editMenu);
             KeyDown += CurvesView_KeyDown;
-            Name = "Curves Inspector";
+            Button.Text = "Curves Inspector";
             Squid.UI.MouseMove += UI_MouseMove;
             Squid.UI.MouseUp += UI_MouseUp;
             badge.BringToFront();
@@ -760,6 +758,8 @@ namespace Sharp.Editor.Views
             {
                 MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num, maxY), scale, translation)), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num2, maxY), scale, translation)), ref c.R);
             }
+
+            OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
             if (curveSettings.showAxisLabels)
             {
                 if (curveSettings.hTickStyle.distLabel > 0 && axisUiScalars.X > 0)
@@ -770,13 +770,6 @@ namespace Sharp.Editor.Views
                     float[] ticksAtLevel3 = hTicks.GetTicksAtLevel(levelWithMinSeparation, false);
                     float[] array = (float[])ticksAtLevel3.Clone();
 
-                    if (array.Length != hLabels.Length)
-                    {
-                        foreach (var label in hLabels)
-                            if (label != null)
-                                Childs.Remove(label);
-                        hLabels = new Label[array.Length];
-                    }
                     float y = (float)Math.Floor(mainArea.height);
                     for (int m = 0; m < ticksAtLevel3.Length; m++)
                     {
@@ -791,23 +784,15 @@ namespace Sharp.Editor.Views
                             if (curveSettings.hTickStyle.centerLabel)
                             {
                                 textAnchor = Alignment.MiddleCenter;
-                                position = (vector.X - 8, vector.Y - 16 - curveSettings.hTickLabelOffset - 29, 1, 16);
+                                position = (vector.X, vector.Y + curveSettings.hTickLabelOffset - 29, 1, 16);
                             }
                             else
                             {
                                 textAnchor = Alignment.MiddleLeft;
-                                position = (vector.X, vector.Y - 16 - curveSettings.hTickLabelOffset, 50, 16);
+                                position = (vector.X, vector.Y + curveSettings.hTickLabelOffset, 50, 16);
                             }
-                            if (hLabels[m] is null)
-                            {
-                                hLabels[m] = new Label();
-                                Childs.Add(hLabels[m]);
-                            }
-                            hLabels[m].Text = num3.ToString("n" + numberOfDecimalsForMinimumDifference) + curveSettings.hTickStyle.unit;//TODO: convert these labels to direct DrawText?
-                            hLabels[m].Position = new Point((int)position.x, (int)position.y);
-                            hLabels[m].Size = new Point((int)position.width, (int)position.height);
-                            hLabels[m].TextAlign = textAnchor;
-                            hLabels[m].NoEvents = true;
+                            var alignment = AlignText(num3.ToString("n" + numberOfDecimalsForMinimumDifference) + curveSettings.hTickStyle.unit, new Point((int)position.x, (int)position.y), new Point((int)position.width, (int)position.height), textAnchor, Margin.Empty, 0);
+                            Squid.UI.Renderer.DrawText(num3.ToString("n" + numberOfDecimalsForMinimumDifference) + curveSettings.hTickStyle.unit, alignment.x, alignment.y, (int)position.width, (int)position.height, 0, -1, 0);
                         }
                     }
                 }
@@ -817,14 +802,6 @@ namespace Sharp.Editor.Views
                     int levelWithMinSeparation2 = vTicks.GetLevelWithMinSeparation((float)curveSettings.vTickStyle.distLabel);
                     float[] ticksAtLevel4 = vTicks.GetTicksAtLevel(levelWithMinSeparation2, false);
                     float[] array2 = (float[])ticksAtLevel4.Clone();
-
-                    if (array2.Length != vLabels.Length)
-                    {
-                        foreach (var label in vLabels)
-                            if (label != null)
-                                Childs.Remove(label);
-                        vLabels = new Label[array2.Length];
-                    }
 
                     int numberOfDecimalsForMinimumDifference2 = MathHelper.Clamp(-(int)Math.Floor(Math.Log10(hTicks.GetPeriodOfLevel(levelWithMinSeparation2))), 0, 15); ;
                     string text = "n" + numberOfDecimalsForMinimumDifference2;
@@ -848,27 +825,20 @@ namespace Sharp.Editor.Views
                             Alignment textAnchor = Alignment.MiddleRight;
                             if (curveSettings.vTickStyle.centerLabel)
                             {
-                                position2 = (0, vector2.Y - 8 - 29, swatchArea.x - 4, 16);
+                                position2 = (-5, vector2.Y - 8, swatchArea.x, 16);
                             }
                             else
                             {
                                 textAnchor = Alignment.MiddleLeft;
-                                position2 = (0, vector2.Y - 13, width, 16);
+                                position2 = (-5, vector2.Y - 8, width, 16);
                             }
-                            if (vLabels[n] is null)
-                            {
-                                vLabels[n] = new Label();
-                                Childs.Add(vLabels[n]);
-                            }
-                            vLabels[n].Text = num6.ToString(text) + curveSettings.vTickStyle.unit;
-                            vLabels[n].Position = new Point((int)position2.x, (int)position2.y);
-                            vLabels[n].Size = new Point((int)position2.width, (int)position2.height);
-                            vLabels[n].TextAlign = textAnchor;
-                            vLabels[n].NoEvents = true;
+                            var alignment = AlignText(num6.ToString(text) + curveSettings.vTickStyle.unit, new Point((int)position2.x, (int)position2.y), new Point((int)position2.width, (int)position2.height), textAnchor, Margin.Empty, 0);
+                            Squid.UI.Renderer.DrawText(num6.ToString(text) + curveSettings.vTickStyle.unit, alignment.x, alignment.y, (int)position2.width, (int)position2.height, 0, -1, 0);
                         }
                     }
                 }
             }
+            OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
         }
 
         public float EvaluateCurveDeltaSlow(float time, int curveId)

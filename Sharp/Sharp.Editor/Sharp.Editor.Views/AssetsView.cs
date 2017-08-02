@@ -48,7 +48,7 @@ namespace Sharp.Editor.Views
             BuildAssetViewTree();
             tree[attachedToWindow].IsVisible = true;
             tree[attachedToWindow].SelectedNodeChanged += T_SelectedNodeChanged;
-            Name = "Assets";
+            Button.Text = "Assets";
         }
 
         /*  private void OnFileOrDirDeleted(object sender, FileSystemEventArgs e)

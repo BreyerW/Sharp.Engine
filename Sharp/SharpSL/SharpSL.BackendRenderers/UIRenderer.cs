@@ -28,7 +28,6 @@ namespace SharpSL.BackendRenderers
         public void DrawText(string text, int x, int y, int width, int height, int font, int color, float fontSize)//TODO: split this to draw texture and draw mesh
         {
             //fontSize = 16;
-
             var chars = text.AsSpan();
             ref var realFont = ref Pipeline.GetPipeline<FontPipeline>().GetAsset(font);
             ref var face = ref realFont.face;
@@ -117,6 +116,7 @@ namespace SharpSL.BackendRenderers
                 if (chars[i] != ' ')
                 {
                     MainWindow.backendRenderer.Allocate(ref texChar.texture.bitmap[0], texChar.texture.width, texChar.texture.height, true);
+
                     MainEditorView.editorBackendRenderer.DrawTexturedQuad(
                            (int)Math.Floor(penX * scale.x),
                         (int)Math.Floor(stringHeight + (penY - texChar.bearing.y) * scale.y),

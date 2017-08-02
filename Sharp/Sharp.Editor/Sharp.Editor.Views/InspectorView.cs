@@ -38,7 +38,6 @@ namespace Sharp.Editor.Views
                 genericArgs = type.BaseType.GetGenericArguments();
                 genericMethod = method.MakeGenericMethod(new[] { genericArgs[0] });
                 mappedPropertyDrawers.Add(genericArgs[0], (type, genericMethod));
-                Console.WriteLine("GENERATE FACTORY " + genericMethod);
             }
         }
 
@@ -76,7 +75,7 @@ namespace Sharp.Editor.Views
             {
                 //if (sender is Entity entity) RenderComponents(entity);
             };
-            Name = "Inspector";
+            Button.Text = "Inspector";
         }
 
         /* tagStrip = new MenuStrip(panel);

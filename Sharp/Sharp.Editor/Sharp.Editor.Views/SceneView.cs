@@ -54,7 +54,7 @@ namespace Sharp.Editor.Views
             SizeChanged += SceneView_SizeChanged;
             Squid.UI.MouseMove += UI_MouseMove;
             Squid.UI.MouseUp += UI_MouseUp;
-            Name = "Scene";
+            Button.Text = "Scene";
             AllowFocus = true;
             OnSetupMatrices?.Invoke();
         }

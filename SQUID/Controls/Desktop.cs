@@ -13,13 +13,18 @@ namespace Squid
     /// </summary>
     public class Desktop : Control, IControlContainer
     {
+        static Desktop()
+        {
+            CursorSet = new CursorCollection();
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Desktop"/> class.
         /// </summary>
         public Desktop()
         {
             Skin = new Skin();
-            CursorSet = new CursorCollection();
+
             TooltipControl = new SimpleTooltip();
             DragDropSnap = 0;
         }
@@ -27,7 +32,7 @@ namespace Squid
         /// <summary>
         /// Raised when [cursor changed].
         /// </summary>
-        public event CursorChangedEvent CursorChanged;
+        public static event CursorChangedEvent CursorChanged;
 
         /// <summary>
         /// Enum PickMode
@@ -56,7 +61,7 @@ namespace Squid
         /// </summary>
         /// <value>The current cursor.</value>
         [Xml.XmlIgnore]
-        public string CurrentCursor
+        public static string CurrentCursor
         {
             get
             {
@@ -81,7 +86,7 @@ namespace Squid
         }
 
         [Xml.XmlIgnore]
-        public CursorCollection CursorSet { get; set; }
+        public static CursorCollection CursorSet { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [design mode].
@@ -201,7 +206,7 @@ namespace Squid
         /// Gets the cursor.
         /// </summary>
         /// <returns>Cursor.</returns>
-        public Cursor GetCursor()
+        public static Cursor GetCursor()
         {
             if (_cursor == null)
                 _cursor = string.Empty;
@@ -611,7 +616,7 @@ namespace Squid
         /// <summary>
         /// The _cursor
         /// </summary>
-        private string _cursor;
+        private static string _cursor;
 
         private static Control _focused;
         private Control currentContext;

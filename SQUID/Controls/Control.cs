@@ -1493,6 +1493,44 @@ namespace Squid
             }
         }
 
+        public static Point AlignText(string text, Point position, Point size, Alignment align, Margin padding, int font)
+        {
+            Point tsize = UI.Renderer.GetTextSize(text, font, 0);
+
+            switch (align)
+            {
+                case Alignment.BottomCenter:
+                    return position + new Point((size.x - tsize.x) / 2, size.y - tsize.y - padding.Bottom);
+
+                case Alignment.BottomLeft:
+                    return position + new Point(padding.Left, size.y - tsize.y - padding.Bottom);
+
+                case Alignment.BottomRight:
+                    return position + new Point(size.x - tsize.x - padding.Right, size.y - tsize.y - padding.Bottom);
+
+                case Alignment.MiddleCenter:
+                    return position + new Point((size.x - tsize.x) / 2, (size.y - tsize.y) / 2);
+
+                case Alignment.MiddleLeft:
+                    return position + new Point(padding.Left, (int)Math.Floor((float)(size.y - tsize.y) / 2));
+
+                case Alignment.MiddleRight:
+                    return position + new Point(size.x - tsize.x - padding.Right, (size.y - tsize.y) / 2);
+
+                case Alignment.TopCenter:
+                    return position + new Point((size.x - tsize.x) / 2, padding.Top);
+
+                case Alignment.TopLeft:
+                    return position + new Point(padding.Left, padding.Top);
+
+                case Alignment.TopRight:
+                    return position + new Point(size.x - tsize.x - padding.Right, padding.Top);
+
+                default:
+                    return position;
+            }
+        }
+
         /// <summary>
         /// Called every frame.
         /// Override this to do per-frame operations

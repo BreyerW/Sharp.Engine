@@ -17,7 +17,7 @@ namespace Sharp.Editor.Views
 
             SceneView.OnAddedEntity += ReconstructTree;
             SceneView.OnRemovedEntity += ReconstructTree;
-            Name = "Scene Structure";
+            Button.Text = "Scene Structure";
             ReconstructTree();
         }
 
