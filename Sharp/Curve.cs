@@ -173,10 +173,10 @@ namespace Sharp
         public void SmoothTangents(int index, float weight)
         {
             ref var key = ref keys[index];
-            var inTan = index == keys.Length - 1 ? key.inTangent : (keys[index].value - keys[index + 1].value) / (keys[index].time - keys[index + 1].time);
-            var outTan = index == 0 ? key.outTangent : (keys[index].value - keys[index - 1].value) / (keys[index].time - keys[index - 1].time);
-            key.inTangent = (inTan * (-(weight - 1)) + outTan * (weight + 1)) * 0.5f;
-            key.outTangent = (inTan * (-(weight - 1)) + outTan * (weight + 1)) * 0.5f;
+            var inTan = (index == 0 ? key.inTangent : CurveUtility.CalculateLinearTangent(this, index, index - 1)) * (weight + 1);
+            var outTan = (index == keys.Length - 1 ? key.outTangent : CurveUtility.CalculateLinearTangent(this, index, index + 1)) * (-weight + 1);
+            key.inTangent = (inTan + outTan) * 0.5f;
+            key.outTangent = (inTan + outTan) * 0.5f;
         }
     }
 

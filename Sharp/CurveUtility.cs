@@ -33,7 +33,7 @@ namespace Sharp
         //
         // Static Methods
         //
-        private static float CalculateLinearTangent(Curve curve, int index, int toIndex)
+        public static float CalculateLinearTangent(Curve curve, int index, int toIndex)
         {
             return (curve.keys[index].value - curve.keys[toIndex].value) / (curve.keys[index].time - curve.keys[toIndex].time);
         }
@@ -177,7 +177,7 @@ namespace Sharp
             }
             if (CurveUtility.GetKeyTangentMode(ref key, 0) == TangentMode.Smooth || CurveUtility.GetKeyTangentMode(ref key, 1) == TangentMode.Smooth)
             {
-                curve.SmoothTangents(index, 0);
+                curve.SmoothTangents(index, -1);
             }
         }
 
