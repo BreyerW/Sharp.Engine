@@ -587,7 +587,7 @@ namespace Squid
                 if (_size.x == value.x && _size.y == value.y) return;
                 _size = value;
 
-                if (SizeChanged != null) SizeChanged(this);
+                if (!NoEvents && SizeChanged != null) SizeChanged(this);
 
                 SetBounds();
             }
@@ -606,7 +606,7 @@ namespace Squid
                 if (_position.x == value.x && _position.y == value.y) return;
                 _position = value;
 
-                if (PositionChanged != null) PositionChanged(this);
+                if (!NoEvents && PositionChanged != null) PositionChanged(this);
 
                 SetBounds();
             }
@@ -694,6 +694,8 @@ namespace Squid
         {
             get
             {
+                //if(this is Desktop)//TODO: add screenPos
+                //  return
                 if (_parent != null)
                     return _parent.Location + _position;
 
@@ -776,6 +778,12 @@ namespace Squid
             if (Desktop == null) return;
 
             Desktop.FocusedControl = this;
+        }
+
+        public void Unfocus()
+        {
+            if (Desktop == null) return;
+            Desktop.FocusedControl = null;
         }
 
         /// <summary>
@@ -868,9 +876,7 @@ namespace Squid
         /// <returns></returns>
         public Control GetControlAt(int x, int y, bool elements)
         {
-            if (!Enabled) return null;
-            if (!IsVisible) return null;
-            if (!Hit(x, y)) return null;
+            if (!Enabled || !IsVisible || !Hit(x, y)) return null;
 
             Control found = NoEvents ? null : this;
             if (!elements && _isElement)
@@ -894,7 +900,6 @@ namespace Squid
             for (int i = Childs.Count - 1; i >= 0; i--)
             {
                 Control child = Childs[i].GetControlAt(x, y, elements);
-
                 if (child != null && child.Enabled && child.IsVisible && !child.NoEvents)
                 {
                     found = child;
@@ -2444,8 +2449,8 @@ namespace Squid
                 if (_size.x <= 0 || _size.y <= 0)
                     return;
 
-                if (ClipRect.Width <= 0 || ClipRect.Height <= 0)
-                    return;
+                //if (ClipRect.Width <= 0 || ClipRect.Height <= 0)
+                //    return;
 
                 if (Scissor || UI.AlwaysScissor)
                     SetScissor(Math.Max(0, ClipRect.Left), Math.Max(0, ClipRect.Top), ClipRect.Width, ClipRect.Height);
@@ -2554,6 +2559,9 @@ namespace Squid
             if (UI.MouseScroll != 0)
                 OnMouseWheel();
 
+            if (!UI.MouseDelta.IsEmpty)
+                UI.OnGlobalMouseMove(0);
+
             for (int i = 0; i < UI.Buttons.Length; i++)
             {
                 if (UI.GetButton(i) == ButtonState.Down)
@@ -2571,8 +2579,6 @@ namespace Squid
                         _isMouseDrag = true;
                         OnDragStarted(i);
                     }
-                    if (!UI.MouseDelta.IsEmpty)
-                        UI.OnGlobalMouseMove(i);
                     return;
                 }
                 else if (UI.GetButton(i) == ButtonState.Up)

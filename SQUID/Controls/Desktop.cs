@@ -506,7 +506,6 @@ namespace Squid
             {
                 if (hot != null)
                     hot.DoEvents();
-
                 DoKeyEvents();
 
                 if (FocusedControl != null)

@@ -76,6 +76,7 @@ namespace Sharp.Editor.Views
                 }
                 else//simple, precise, snapping
                 {
+                    Console.WriteLine("test");
                     if (Squid.UI.MouseDelta.x != 0 || Squid.UI.MouseDelta.y != 0)
                     {
                         var orig = Camera.main.entityObject.Position;

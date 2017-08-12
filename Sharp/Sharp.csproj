@@ -215,6 +215,7 @@
     <Compile Include="Sharp.Editor\RedoCommand.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CurveRangeAttribute.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\DrawAsRegionAttribute.cs" />
+    <Compile Include="Sharp.Editor\Sharp.Editor.UI\DraggableButton.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\ComponentNode.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\CurveDrawer.cs" />
     <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\RegionDrawer.cs" />
@@ -353,6 +354,7 @@
     <Content Include="SharpSL\SharpSL.BackendRenderers\Content\icons1.png" />
     <Content Include="SharpSL\SharpSL.BackendRenderers\Content\input_default.png" />
     <Content Include="SharpSL\SharpSL.BackendRenderers\Content\input_focused.png" />
+    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\keyframe_button.png" />
     <Content Include="SharpSL\SharpSL.BackendRenderers\Content\minimap.jpg" />
     <Content Include="SharpSL\SharpSL.BackendRenderers\Content\paperdoll.jpg" />
     <Content Include="SharpSL\SharpSL.BackendRenderers\Content\SampleMap.png" />

@@ -52,7 +52,7 @@ namespace Sharp
             return dir + pivot;
         }
 
-        public static float CalculateSmoothTangent(Keyframe key)
+        public static float CalculateSmoothTangent(ref Keyframe key)
         {
             if (key.inTangent == float.PositiveInfinity)
             {
@@ -153,9 +153,7 @@ namespace Sharp
         public static void UpdateTangentsFromMode(Curve curve, int index)
         {
             if (index < 0 || index >= curve.keys.Length)
-            {
                 return;
-            }
             Keyframe key = curve.keys[index];
             if (CurveUtility.GetKeyTangentMode(ref key, 0) == TangentMode.Linear && index >= 1)
             {

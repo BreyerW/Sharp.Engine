@@ -366,8 +366,19 @@ namespace Squid
             Style.TextColor = ColorInt.ARGB(1, .8f, .8f, .8f);
             Style.BackColor = ColorInt.ARGB(.125f, 1, 1, 1);
             Style.Default.BackColor = 0;
-            Skin skin = new Skin();
 
+            ControlStyle keyframeStyle = new ControlStyle();
+            keyframeStyle.Default.Texture = "keyframe_button.png";
+            keyframeStyle.Texture = "keyframe_button.png";
+            // baseStyle.Pressed.Texture = "button_down.png";
+            //baseStyle.SelectedPressed.Texture = "button_down.png";
+            // baseStyle.Focused.Texture = "button_down.png";
+            // baseStyle.SelectedFocused.Texture = "button_down.png";
+            //baseStyle.Selected.Texture = "button_down.png";
+            // baseStyle.SelectedHot.Texture = "button_down.png";
+
+            Skin skin = new Skin();
+            skin.Add("keyframe", keyframeStyle);
             skin.Add("item", itemStyle);
             skin.Add("textbox", inputStyle);
             skin.Add("button", buttonStyle);

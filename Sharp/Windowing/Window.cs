@@ -140,7 +140,7 @@ namespace Sharp
                 InputHandler.ProcessMousePresses();
 
                 UI.TimeElapsed = Time.deltaTime;
-                UI.currentCanvas?.Update();
+                UI.currentCanvas?.Update();//TODO: change it so that during dragging it will update both source and hovered window
                 onRenderFrame?.Invoke();
                 onBeforeNextFrame?.Invoke();
                 if (UI.isDirty)

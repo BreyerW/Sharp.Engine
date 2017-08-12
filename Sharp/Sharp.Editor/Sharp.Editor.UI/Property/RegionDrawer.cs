@@ -66,11 +66,11 @@ namespace Sharp.Editor.UI.Property
             if (!Window.windows.Contains(curvesEditor))
             {
                 var win = new FloatingWindow("");
+                win.Size = (700, 500);
                 curvesEditor = win.windowId;
-                var curvesView = new CurvesView(curvesEditor);
+                var curvesView = new CurvesView(curvesEditor, this);
                 CurvesView.drawer = this;
                 Window.OpenView(curvesView, MainEditorView.mainViews[curvesEditor].desktop);
-                win.Size = (700, 500);
             }
             Window.windows[curvesEditor].OnFocus();
         }

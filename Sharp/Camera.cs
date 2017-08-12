@@ -209,6 +209,15 @@ namespace Sharp
             return vec;
         }
 
+        public Vector2 NDCToScreen(float x, float y, int width, int height)
+        {
+            Vector2 vec;
+
+            vec.X = (x + 1) * width / 2f;
+            vec.Y = -(y + 1) * height / 2f;
+            return vec;
+        }
+
         /// <summary>
         /// Sets up this camera with the specified Camera Mode
         /// </summary>

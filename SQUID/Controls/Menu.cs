@@ -67,7 +67,7 @@ namespace Squid
             Dropdown = new Window();
             Dropdown.Scissor = false;
             Dropdown.Style = "";
-            Dropdown.AutoSize = AutoSize.HorizontalVertical;
+            Dropdown.AutoSize = AutoSize.Vertical;
             Align = Alignment.BottomLeft;
 
             Frame = new FlowLayoutFrame();

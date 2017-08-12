@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using OpenTK;
 using Squid;
+using System.Linq;
 
 namespace Sharp
 {
     public static class CurveMenuManager
     {
-        public static Dictionary<Vector2, Keyframe>[] selectedKeyfr;
-        public static Action<Dictionary<Vector2, Keyframe>[]> updateSelected;
+        //public static Dictionary<Vector2, Keyframe>[] selectedKeyfr;
+        public static Action<(int, int, Keyframe)[]> updateSelected;
+
+        public static (int, int, Keyframe)[] selected;
 
         //
         // Methods
@@ -26,59 +29,54 @@ namespace Sharp
             bool flag5 = flag;
             bool flag6 = flag;
             bool flag7 = flag;
-            var l = 0;
-            while (l < 2)
+            foreach (var (curveId, index, current) in selected)
             {
-                foreach (var current in keyList[l].keys)
+                if (!keyList[curveId].keys.Contains(current))
+                    continue;
+                Keyframe keyframe = current;
+                TangentMode keyTangentMode = CurveUtility.GetKeyTangentMode(ref keyframe, 0);
+                TangentMode keyTangentMode2 = CurveUtility.GetKeyTangentMode(ref keyframe, 1);
+                bool keyBroken = CurveUtility.GetKeyBroken(keyframe);
+                if (keyTangentMode != TangentMode.Smooth || keyTangentMode2 != TangentMode.Smooth)
                 {
-                    if (!selectedKeyfr[l].ContainsValue(current))
-                        continue;
-                    Keyframe keyframe = current;
-                    TangentMode keyTangentMode = CurveUtility.GetKeyTangentMode(ref keyframe, 0);
-                    TangentMode keyTangentMode2 = CurveUtility.GetKeyTangentMode(ref keyframe, 1);
-                    bool keyBroken = CurveUtility.GetKeyBroken(keyframe);
-                    if (keyTangentMode != TangentMode.Smooth || keyTangentMode2 != TangentMode.Smooth)
-                    {
-                        on = false;
-                    }
-                    if (keyBroken || keyTangentMode != TangentMode.Editable || keyTangentMode2 != TangentMode.Editable)
-                    {
-                        on2 = false;
-                    }
-                    if (keyBroken || keyTangentMode != TangentMode.Editable || keyframe.inTangent != 0 || keyTangentMode2 != TangentMode.Editable || keyframe.outTangent != 0)
-                    {
-                        on3 = false;
-                    }
-                    if (!keyBroken)
-                    {
-                        on4 = false;
-                    }
-                    if (!keyBroken || keyTangentMode != TangentMode.Editable)
-                    {
-                        flag2 = false;
-                    }
-                    if (!keyBroken || keyTangentMode != TangentMode.Linear)
-                    {
-                        flag3 = false;
-                    }
-                    if (!keyBroken || keyTangentMode != TangentMode.Stepped)
-                    {
-                        flag4 = false;
-                    }
-                    if (!keyBroken || keyTangentMode2 != TangentMode.Editable)
-                    {
-                        flag5 = false;
-                    }
-                    if (!keyBroken || keyTangentMode2 != TangentMode.Linear)
-                    {
-                        flag6 = false;
-                    }
-                    if (!keyBroken || keyTangentMode2 != TangentMode.Stepped)
-                    {
-                        flag7 = false;
-                    }
+                    on = false;
                 }
-                l++;
+                if (keyBroken || keyTangentMode != TangentMode.Editable || keyTangentMode2 != TangentMode.Editable)
+                {
+                    on2 = false;
+                }
+                if (keyBroken || keyTangentMode != TangentMode.Editable || keyframe.inTangent != 0 || keyTangentMode2 != TangentMode.Editable || keyframe.outTangent != 0)
+                {
+                    on3 = false;
+                }
+                if (!keyBroken)
+                {
+                    on4 = false;
+                }
+                if (!keyBroken || keyTangentMode != TangentMode.Editable)
+                {
+                    flag2 = false;
+                }
+                if (!keyBroken || keyTangentMode != TangentMode.Linear)
+                {
+                    flag3 = false;
+                }
+                if (!keyBroken || keyTangentMode != TangentMode.Stepped)
+                {
+                    flag4 = false;
+                }
+                if (!keyBroken || keyTangentMode2 != TangentMode.Editable)
+                {
+                    flag5 = false;
+                }
+                if (!keyBroken || keyTangentMode2 != TangentMode.Linear)
+                {
+                    flag6 = false;
+                }
+                if (!keyBroken || keyTangentMode2 != TangentMode.Stepped)
+                {
+                    flag7 = false;
+                }
             }
             if (flag)
             {
@@ -89,37 +87,48 @@ namespace Sharp
                 var free = menu.AddItem("FreeSmooth");//, on2
                 free.MouseClick += SetEditable;
                 free.UserData = keyList;
+
                 var flat = menu.AddItem("Flat");//, on3
                 flat.UserData = keyList;
                 flat.MouseClick += SetFlat;
+
                 var broken = menu.AddItem("Broken");//on4
                 broken.UserData = keyList;
                 broken.MouseClick += SetBroken;
                 //menu.AddSeparator(string.Empty);
+
                 var leftFree = menu.AddItem("Left Tangent/Free");//flag2
                 leftFree.UserData = keyList;
                 leftFree.MouseClick += SetLeftEditable;
+
                 var leftLinear = menu.AddItem("Left Tangent/Linear");//flag3,
                 leftLinear.UserData = keyList;
                 leftLinear.MouseClick += SetLeftLinear;
+
                 var leftConstant = menu.AddItem("Left Tangent/Constant");//flag4,
                 leftConstant.UserData = keyList;
                 leftConstant.MouseClick += SetLeftConstant;
+
                 var rightFree = menu.AddItem("Right Tangent/Free"); //flag5,
                 rightFree.UserData = keyList;
                 rightFree.MouseClick += SetRightEditable;
+
                 var rightLinear = menu.AddItem("Right Tangent/Linear");//flag6,
                 rightLinear.UserData = keyList;
                 rightLinear.MouseClick += SetRightLinear;
+
                 var rightConstant = menu.AddItem("Right Tangent/Constant"); //flag7,
                 rightConstant.UserData = keyList;
                 rightConstant.MouseClick += SetRightConstant;
+
                 var bothFree = menu.AddItem("Both Tangents/Free");//flag5 && flag2,
                 bothFree.UserData = keyList;
                 bothFree.MouseClick += SetBothEditable;
+
                 var bothLinear = menu.AddItem("Both Tangents/Linear");//flag6 && flag3,
                 bothLinear.UserData = keyList;
                 bothLinear.MouseClick += SetBothLinear;
+
                 var bothConstant = menu.AddItem("Both Tangents/Constant");//flag7 && flag4,
                 bothConstant.UserData = keyList;
                 bothConstant.MouseClick += SetBothConstant;
@@ -145,61 +154,48 @@ namespace Sharp
 
         public static void Flatten(Curve[] keysToSet)
         {
-            var newSelectedKeyfr = new Dictionary<Vector2, Keyframe>[] { new Dictionary<Vector2, Keyframe>(), new Dictionary<Vector2, Keyframe>() };
-            var l = 0;
-            while (l < 2)
+            var newSelectedKeyfr = new List<(int, int, Keyframe)>();
+            foreach (var (i, id, _) in selected)
             {
-                var id = -1;
-                foreach (var current in keysToSet[l].keys)
-                {
-                    id++;
-                    if (!selectedKeyfr[l].ContainsValue(current))
-                        continue;
-                    Curve curve = keysToSet[l];
-                    Keyframe keyframe = current;
-                    keyframe.inTangent = 0;
-                    keyframe.outTangent = 0;
-                    curve.MoveKey(id, ref keyframe);
-                    CurveUtility.UpdateTangentsFromModeSurrounding(curve, id);
-                    newSelectedKeyfr[l].Add(new Vector2(id, id), curve.keys[id]);
-                }
-                l++;
+                Curve curve = keysToSet[i];
+                if (!keysToSet[i].keys.Contains(curve.keys[id]))
+                    continue;
+
+                Keyframe keyframe = curve.keys[id];
+                keyframe.inTangent = 0;
+                keyframe.outTangent = 0;
+                var newid = curve.MoveKey(id, ref keyframe);
+                CurveUtility.UpdateTangentsFromModeSurrounding(curve, newid);
+                newSelectedKeyfr.Add((i, newid, curve.keys[newid]));
             }
-            updateSelected(newSelectedKeyfr);
+            updateSelected(newSelectedKeyfr.ToArray());
             UI.isDirty = true;
         }
 
         public static void SetBoth(TangentMode mode, Curve[] keysToSet)
         {
-            var newSelectedKeyfr = new Dictionary<Vector2, Keyframe>[] { new Dictionary<Vector2, Keyframe>(), new Dictionary<Vector2, Keyframe>() };
+            var newSelectedKeyfr = new List<(int, int, Keyframe)>();
 
-            var l = 0;
-            while (l < 2)
+            foreach (var (i, id, current) in selected)
             {
-                var id = -1;
-                foreach (var current in keysToSet[l].keys)
+                if (!keysToSet[i].keys.Contains(current))
+                    continue;
+                Curve curve = keysToSet[i];
+                Keyframe keyframe = current;
+                CurveUtility.SetKeyBroken(ref keyframe, false);
+                CurveUtility.SetKeyTangentMode(ref keyframe, 1, mode);
+                CurveUtility.SetKeyTangentMode(ref keyframe, 0, mode);
+                if (mode == TangentMode.Editable)
                 {
-                    id++;
-                    if (!selectedKeyfr[l].ContainsValue(current))
-                        continue;
-                    Curve curve = keysToSet[l];
-                    Keyframe keyframe = current;
-                    CurveUtility.SetKeyBroken(ref keyframe, false);
-                    CurveUtility.SetKeyTangentMode(ref keyframe, 1, mode);
-                    CurveUtility.SetKeyTangentMode(ref keyframe, 0, mode);
-                    if (mode == TangentMode.Editable)
-                    {
-                        float num = CurveUtility.CalculateSmoothTangent(keyframe);
-                        keyframe.inTangent = num;
-                        keyframe.outTangent = num;
-                    }
-                    curve.MoveKey(id, ref keyframe);
-                    CurveUtility.UpdateTangentsFromModeSurrounding(curve, id);
-                    newSelectedKeyfr[l].Add(new Vector2(id, id), curve.keys[id]);
+                    float num = CurveUtility.CalculateSmoothTangent(ref keyframe);
+                    keyframe.inTangent = num;
+                    keyframe.outTangent = num;
                 }
-                l++;
+                var newid = curve.MoveKey(id, ref keyframe);
+                CurveUtility.UpdateTangentsFromModeSurrounding(curve, newid);
+                newSelectedKeyfr.Add((i, newid, curve.keys[newid]));
             }
-            updateSelected(newSelectedKeyfr);
+            updateSelected(newSelectedKeyfr.ToArray());
             UI.isDirty = true;
         }
 
@@ -220,37 +216,30 @@ namespace Sharp
 
         public static void SetBroken(Control sender, MouseEventArgs args)
         {
-            var newSelectedKeyfr = new Dictionary<Vector2, Keyframe>[] { new Dictionary<Vector2, Keyframe>(), new Dictionary<Vector2, Keyframe>() };
+            var newSelectedKeyfr = new List<(int, int, Keyframe)>();
 
-            Curve[] list = (Curve[])sender.UserData;
-            var l = 0;
-            while (l < 2)
+            Curve[] list = (Curve[])sender.UserData; ;
+
+            foreach (var (i, id, current) in selected)
             {
-                var id = -1;
-
-                foreach (var current in list[l].keys)
+                if (!list[i].keys.Contains(current))
+                    continue;
+                Curve curve = list[i];
+                Keyframe keyframe = current;
+                CurveUtility.SetKeyBroken(ref keyframe, true);
+                if (CurveUtility.GetKeyTangentMode(ref keyframe, 1) == TangentMode.Smooth)
                 {
-                    id++;
-                    if (!selectedKeyfr[l].ContainsValue(current))
-                        continue;
-                    Curve curve = list[l];
-                    Keyframe keyframe = current;
-                    CurveUtility.SetKeyBroken(ref keyframe, true);
-                    if (CurveUtility.GetKeyTangentMode(ref keyframe, 1) == TangentMode.Smooth)
-                    {
-                        CurveUtility.SetKeyTangentMode(ref keyframe, 1, TangentMode.Editable);
-                    }
-                    if (CurveUtility.GetKeyTangentMode(ref keyframe, 0) == TangentMode.Smooth)
-                    {
-                        CurveUtility.SetKeyTangentMode(ref keyframe, 0, TangentMode.Editable);
-                    }
-                    curve.MoveKey(id, ref keyframe);
-                    CurveUtility.UpdateTangentsFromModeSurrounding(curve, id);
-                    newSelectedKeyfr[l].Add(new Vector2(id, id), curve.keys[id]);
+                    CurveUtility.SetKeyTangentMode(ref keyframe, 1, TangentMode.Editable);
                 }
-                l++;
+                if (CurveUtility.GetKeyTangentMode(ref keyframe, 0) == TangentMode.Smooth)
+                {
+                    CurveUtility.SetKeyTangentMode(ref keyframe, 0, TangentMode.Editable);
+                }
+                var newid = curve.MoveKey(id, ref keyframe);
+                CurveUtility.UpdateTangentsFromModeSurrounding(curve, newid);
+                newSelectedKeyfr.Add((i, newid, curve.keys[newid]));
             }
-            updateSelected(newSelectedKeyfr);
+            updateSelected(newSelectedKeyfr.ToArray());
         }
 
         public static void SetEditable(Control sender, MouseEventArgs args)
@@ -301,48 +290,41 @@ namespace Sharp
 
         public static void SetTangent(int leftRight, TangentMode mode, Curve[] keysToSet)
         {
-            var newSelectedKeyfr = new Dictionary<Vector2, Keyframe>[] { new Dictionary<Vector2, Keyframe>(), new Dictionary<Vector2, Keyframe>() };
+            var newSelectedKeyfr = new List<(int, int, Keyframe)>();
 
-            var l = 0;
-            while (l < 2)
+            foreach (var (i, id, current) in selected)
             {
-                var id = -1;
-                foreach (var current in keysToSet[l].keys)
+                if (!keysToSet[i].keys.Contains(current))
+                    continue;
+                Curve curve = keysToSet[i];
+                Keyframe keyframe = current;
+                CurveUtility.SetKeyBroken(ref keyframe, true);
+                if (leftRight == 2)
                 {
-                    id++;
-                    if (!selectedKeyfr[l].ContainsValue(current))
-                        continue;
-                    Curve curve = keysToSet[l];
-                    Keyframe keyframe = current;
-                    CurveUtility.SetKeyBroken(ref keyframe, true);
-                    if (leftRight == 2)
-                    {
-                        CurveUtility.SetKeyTangentMode(ref keyframe, 0, mode);
-                        CurveUtility.SetKeyTangentMode(ref keyframe, 1, mode);
-                    }
-                    else
-                    {
-                        CurveUtility.SetKeyTangentMode(ref keyframe, leftRight, mode);
-                        if (CurveUtility.GetKeyTangentMode(ref keyframe, 1 - leftRight) == TangentMode.Smooth)
-                        {
-                            CurveUtility.SetKeyTangentMode(ref keyframe, 1 - leftRight, TangentMode.Editable);
-                        }
-                    }
-                    if (mode == TangentMode.Stepped && (leftRight == 0 || leftRight == 2))
-                    {
-                        keyframe.inTangent = float.PositiveInfinity;
-                    }
-                    if (mode == TangentMode.Stepped && (leftRight == 1 || leftRight == 2))
-                    {
-                        keyframe.outTangent = float.PositiveInfinity;
-                    }
-                    curve.MoveKey(id, ref keyframe);
-                    CurveUtility.UpdateTangentsFromModeSurrounding(curve, id);
-                    newSelectedKeyfr[l].Add(new Vector2(id, id), curve.keys[id]);
+                    CurveUtility.SetKeyTangentMode(ref keyframe, 0, mode);
+                    CurveUtility.SetKeyTangentMode(ref keyframe, 1, mode);
                 }
-                l++;
+                else
+                {
+                    CurveUtility.SetKeyTangentMode(ref keyframe, leftRight, mode);
+                    if (CurveUtility.GetKeyTangentMode(ref keyframe, 1 - leftRight) == TangentMode.Smooth)
+                    {
+                        CurveUtility.SetKeyTangentMode(ref keyframe, 1 - leftRight, TangentMode.Editable);
+                    }
+                }
+                if (mode == TangentMode.Stepped && (leftRight == 0 || leftRight == 2))
+                {
+                    keyframe.inTangent = float.PositiveInfinity;
+                }
+                if (mode == TangentMode.Stepped && (leftRight == 1 || leftRight == 2))
+                {
+                    keyframe.outTangent = float.PositiveInfinity;
+                }
+                var newid = curve.MoveKey(id, ref keyframe);
+                CurveUtility.UpdateTangentsFromModeSurrounding(curve, newid);
+                newSelectedKeyfr.Add((i, newid, curve.keys[newid]));
             }
-            updateSelected(newSelectedKeyfr);
+            updateSelected(newSelectedKeyfr.ToArray());
             UI.isDirty = true;
         }
     }

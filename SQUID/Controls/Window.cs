@@ -37,7 +37,7 @@ namespace Squid
         /// </summary>
         /// <value><c>true</c> if [allow drag out]; otherwise, <c>false</c>.</value>
         [Category("Behavior")]
-        public bool AllowDragOut { get; set; }
+        public bool ConfineToParent { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Window"/> is resizable.
@@ -169,7 +169,7 @@ namespace Squid
                 }
             }
 
-            if (!AllowDragOut)
+            if (ConfineToParent)
             {
                 if (p.x < 0) p.x = 0;
                 if (p.y < 0) p.y = 0;

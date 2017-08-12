@@ -39,6 +39,7 @@ namespace Sharp.Editor.Views
             desktop = new Desktop();
             desktop.ShowCursor = true;
             desktop.Skin = Squid.UI.GenerateStandardSkin();
+            desktop.Name = "desktop " + attachToWindow;
             Squid.UI.Renderer = new SharpSL.BackendRenderers.UIRenderer();
         }
 
