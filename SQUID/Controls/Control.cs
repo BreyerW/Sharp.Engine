@@ -792,7 +792,7 @@ namespace Squid
         /// <param name="x">x screen coord</param>
         /// <param name="y">y screen coord</param>
         /// <returns></returns>
-        public bool Hit(int x, int y)
+        public virtual bool Hit(int x, int y)
         {
             return x >= ClipRect.Left && x <= ClipRect.Right && y >= ClipRect.Top && y <= ClipRect.Bottom;
         }

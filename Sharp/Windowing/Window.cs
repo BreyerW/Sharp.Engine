@@ -197,6 +197,7 @@ namespace Sharp
 
                 case SDL.SDL_EventType.SDL_MOUSEMOTION:
                     InputHandler.ProcessMouseMove();//evnt.motion.xrel instead of
+
                     break;
 
                 case SDL.SDL_EventType.SDL_MOUSEWHEEL: InputHandler.ProcessMouseWheel(evnt.wheel.y); break;
@@ -252,8 +253,8 @@ namespace Sharp
                     SDL.SDL_CaptureMouse(SDL.SDL_bool.SDL_FALSE); break;//convert to use getglobalmousestate when no events caputred?
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE:
                     // Console.WriteLine("bu");
-                    if (InputHandler.isMouseDragging)
-                        SDL.SDL_CaptureMouse(SDL.SDL_bool.SDL_TRUE); break;
+                    //if (InputHandler.isMouseDragging)
+                    SDL.SDL_CaptureMouse(SDL.SDL_bool.SDL_TRUE); break;
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_MOVED: break;
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED: if (windows.Contains(evt.windowID)) windows[evt.windowID].OnFocus(); break;
             }

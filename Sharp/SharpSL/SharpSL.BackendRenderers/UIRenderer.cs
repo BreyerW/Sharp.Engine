@@ -25,6 +25,19 @@ namespace SharpSL.BackendRenderers
             OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
         }
 
+        /*  public void DrawMesh(Point[] points, int color)
+          {//generalize it for UV and all kinds of meshes
+              var mat = MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
+              MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
+              var col = new Color((uint)color);
+              for (int i = 0; i < points.Length - 1; i++)
+              {
+                  var start = points[i];
+                  var end = points[i + 1];
+                  MainEditorView.editorBackendRenderer.DrawLine(start.x, start.y, 0, end.x, end.y, 0, ref col.R);
+              }
+          }*/
+
         public void DrawText(string text, int x, int y, int width, int height, int font, int color, float fontSize)//TODO: split this to draw texture and draw mesh
         {
             //fontSize = 16;

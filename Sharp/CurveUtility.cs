@@ -177,7 +177,7 @@ namespace Sharp
             }
             if (CurveUtility.GetKeyTangentMode(ref key, 0) == TangentMode.Smooth || CurveUtility.GetKeyTangentMode(ref key, 1) == TangentMode.Smooth)
             {
-                curve.SmoothTangents(index, -1);
+                curve.SmoothTangents(index, 0);
             }
         }
 

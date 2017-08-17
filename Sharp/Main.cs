@@ -42,10 +42,10 @@ namespace Sharp
             mWin.Initialize(new AssetsView(mWin.windowId), new SceneView(mWin.windowId), new SceneStructureView(mWin.windowId), new InspectorView(mWin.windowId));
             SDL.SDL_DestroyWindow(dummy);
             //new FloatingWindow("", handle.t);
-            //var mWin2 = new MainWindow("test2");
-            //mWin2.Initialize(new AssetsView(mWin2.windowId));
+            var mWin2 = new MainWindow("test2");
+            mWin2.Initialize(new AssetsView(mWin2.windowId));
+
             MainWindow.backendRenderer.EnableScissor();
-            Console.WriteLine("startpoll");
             Window.PollWindows();
             SDL.SDL_Quit();
         }

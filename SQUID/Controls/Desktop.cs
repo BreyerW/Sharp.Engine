@@ -421,7 +421,6 @@ namespace Squid
                     if (!found)
                         hot = this;
                 }
-
                 if (hot != HotControl)
                 {
                     if (HotControl != null)
@@ -620,14 +619,14 @@ namespace Squid
         private static Control _focused;
         private Control currentContext;
         private ControlStyle DefaultStyle = new ControlStyle();
-        private Control DragData;
-        private DragDropEventArgs DragDropArgs;
+        private static Control DragData;
+        private static DragDropEventArgs DragDropArgs;
         private Point DragDropOffset;
-        private Control DragDropSender;
+        private static Control DragDropSender;
         private List<Control> Dropdowns = new List<Control>();
         private Control dropTarget;
         private Control hot;
-        private bool IsDragging;
+        private static bool IsDragging;
         private bool isDropInvalid;
         private List<Window> ModalQueue = new List<Window>();
         private Window window;
@@ -668,7 +667,7 @@ namespace Squid
                 DragData.Position = Snap(DragData.Position);
 
                 DragData.IsVisible = false;
-                Control drop = GetDropTarget(DragDropSender);
+                Control drop = UI.currentCanvas.GetDropTarget(DragDropSender);
                 DragData.IsVisible = true;
 
                 if (drop != dropTarget)

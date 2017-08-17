@@ -57,6 +57,8 @@ namespace Squid
         /// <param name="color">The color.</param>
         void DrawBox(int x, int y, int width, int height, int color);
 
+        //void DrawMesh(Point[] points, int color);
+
         /// <summary>
         /// Draws the text.
         /// </summary>
@@ -100,6 +102,10 @@ namespace Squid
         public void StartBatch()
         {
         }
+
+        /* public void DrawMesh(Point[] points, int color)
+         {
+         }*/
 
         public void EndBatch(bool final)
         {

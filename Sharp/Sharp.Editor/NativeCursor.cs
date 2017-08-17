@@ -30,6 +30,8 @@ namespace Sharp.Editor
         public override void Draw(int x, int y)
         {
             var cursor = SDL.SDL_CreateSystemCursor(type);
+            //var surface = SDL.SDL_LoadBMP(@"B:\Sharp.Engine3\Sharp\SharpSL\SharpSL.BackendRenderers\Content\Cursors\aero_unavail_xl-4.bmp");
+            //cursor = SDL.SDL_CreateColorCursor(surface, 0, 0);
             SDL.SDL_SetCursor(cursor);
         }
     }

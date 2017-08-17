@@ -47,7 +47,7 @@ namespace Sharp.Editor.Views
                 ConstructFlatDirectoryTree(root);
             BuildAssetViewTree();
             tree[attachedToWindow].IsVisible = true;
-            tree[attachedToWindow].SelectedNodeChanged += T_SelectedNodeChanged;
+            tree[attachedToWindow].SelectedNodeChanged += AssetsView_SelectedNodeChanged;
             Button.Text = "Assets";
         }
 
@@ -200,7 +200,6 @@ namespace Sharp.Editor.Views
 
         private void AssetNode_MouseDrag(Control sender, MouseEventArgs args)
         {
-            Console.WriteLine("start drag" + sender);
             var node = sender as TreeNodeLabel;
             var draggedNode = new Label();
             draggedNode.Tag = node.UserData;
@@ -212,7 +211,7 @@ namespace Sharp.Editor.Views
             sender.DoDragDrop(draggedNode);
         }
 
-        private void T_SelectedNodeChanged(Control sender, TreeNode value)
+        private void AssetsView_SelectedNodeChanged(Control sender, TreeNode value)
         {
             if (value is null) return;
             value.IsSelected = true;

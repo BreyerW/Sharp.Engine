@@ -151,7 +151,6 @@ namespace Sharp.Editor.Views
             //draggableButton.AllowFocus = true;
             draggableButton.PositionChanged += DraggableButton_PositionChanged;
             draggableButton.MouseDown += DraggableButton_MouseDown;
-
             var col = new Color(190, 200, 200, 200);
             if (false/*base.settings.useFocusColors && !hasFocus*/)
             {
@@ -163,7 +162,7 @@ namespace Sharp.Editor.Views
             outTanButton.Size = new Point(11, 11);
             outTanButton.IsVisible = false;
             outTanButton.Name = "outTan";
-            CalcTangentForButton(outTanButton, draggableButton, keyframePos, ref keyframe);
+            CalcTangentForButton(outTanButton, draggableButton, ref keyframe);
             outTanButton.PositionChanged += TanButton_PositionChanged;
 
             var inTanButton = new DraggableButton();
@@ -171,7 +170,7 @@ namespace Sharp.Editor.Views
             inTanButton.Size = new Point(11, 11);
             inTanButton.IsVisible = false;
             inTanButton.Name = "inTan";
-            CalcTangentForButton(inTanButton, draggableButton, keyframePos, ref keyframe);
+            CalcTangentForButton(inTanButton, draggableButton, ref keyframe);
 
             inTanButton.PositionChanged += TanButton_PositionChanged;
             draggableButton.UserData = ((keyframe.time, curveId, outTanButton, inTanButton));
@@ -201,12 +200,12 @@ namespace Sharp.Editor.Views
                 }
 
                 CurveUtility.SetKeyTangentMode(ref value, 0, TangentMode.Editable);
-                CalcTangentForButton(inTan, selectedControl, keyframePos, ref value);
+                CalcTangentForButton(inTan, selectedControl, ref value);
                 if (!CurveUtility.GetKeyBroken(value))
                 {
                     value.outTangent = value.inTangent;
                     CurveUtility.SetKeyTangentMode(ref value, 1, TangentMode.Editable);
-                    CalcTangentForButton(outTan, selectedControl, keyframePos, ref value);
+                    CalcTangentForButton(outTan, selectedControl, ref value);
                 }
             }
             else
@@ -223,13 +222,13 @@ namespace Sharp.Editor.Views
                 }
 
                 CurveUtility.SetKeyTangentMode(ref value, 1, TangentMode.Editable);
-                CalcTangentForButton(outTan, selectedControl, keyframePos, ref value);
+                CalcTangentForButton(outTan, selectedControl, ref value);
                 if (!CurveUtility.GetKeyBroken(value))
                 {
                     value.inTangent = value.outTangent;
 
                     CurveUtility.SetKeyTangentMode(ref value, 0, TangentMode.Editable);
-                    CalcTangentForButton(inTan, selectedControl, keyframePos, ref value);
+                    CalcTangentForButton(inTan, selectedControl, ref value);
                 }
             }
             drawer.Value[l].MoveKey(key, ref value);
@@ -239,8 +238,9 @@ namespace Sharp.Editor.Views
             Squid.UI.isDirty = true;
         }
 
-        private void CalcTangentForButton(DraggableButton button, Control center, Vector2 keyframePos, ref Keyframe value)
+        private void CalcTangentForButton(DraggableButton button, Control center, ref Keyframe value)
         {
+            var keyframePos = new Vector2(value.time, value.value);
             var condition = button.Name is "outTan";
             var pointInVS = RegionDrawer.CurveToViewSpace(keyframePos, scale, translation);
             var point = RegionDrawer.CurveToViewSpace(keyframePos.RotateAroundPivot(keyframePos + new Vector2(condition ? 1 : -1, 0), new Vector3((float)Math.Atan(condition ? value.outTangent : value.inTangent), 0, 0)), scale, translation);
@@ -252,12 +252,12 @@ namespace Sharp.Editor.Views
 
         private void DraggableButton_MouseDown(Control sender, MouseEventArgs args)
         {
-            selectedControl = sender;
+            var (time, l, sentOutTan, sentInTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)sender.UserData;
+            var key = FindKeyframe(time, l);
+            ref var value = ref drawer.Value[l].keys[key];
+
             if (args.Button is 1)
             {
-                var (time, l, _, _) = (ValueTuple<float, int, DraggableButton, DraggableButton>)sender.UserData;
-                var key = FindKeyframe(time, l);
-                ref var value = ref drawer.Value[l].keys[key];
                 CurveMenuManager.selected = new(int, int, Keyframe)[] { (l, key, value) };
                 //CurveMenuManager.selectedKeyfr = clickedKeyframe;
                 CurveMenuManager.updateSelected = UpdateClickedKeyfr;
@@ -277,19 +277,27 @@ namespace Sharp.Editor.Views
                 editMenu.IsVisible = true;
                 editMenu.Open();
             }
-            else if (args.Button is 0)
+            if (selectedControl != null)
             {
-                if (selectedControl != null)
-                {
-                    var (_, _, outTan, inTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)selectedControl.UserData;
-                    inTan.IsVisible = false;
-                    outTan.IsVisible = false;
-                }
-                var (time, i, sentOutTan, sentInTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)sender.UserData;
-                var key = FindKeyframe(time, i);
-                sentOutTan.IsVisible = key < drawer.Value[i].keys.Length - 1 && CurveUtility.GetKeyTangentMode(ref drawer.Value[i].keys[key], 1) == TangentMode.Editable;
-                sentInTan.IsVisible = key > 0 && CurveUtility.GetKeyTangentMode(ref drawer.Value[i].keys[key], 0) == TangentMode.Editable;
+                var (_, _, outTan, inTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)selectedControl.UserData;
+                inTan.IsVisible = false;
+                outTan.IsVisible = false;
             }
+            sentOutTan.IsVisible = IsOutTanVisible(l, key);
+            sentInTan.IsVisible = IsInTanVisible(l, key);
+            selectedControl = sender;
+        }
+
+        private bool IsOutTanVisible(int curveId, int key)
+        {
+            var tanMode = CurveUtility.GetKeyTangentMode(ref drawer.Value[curveId].keys[key], 1);
+            return key < drawer.Value[curveId].keys.Length - 1 && (tanMode == TangentMode.Editable || tanMode == TangentMode.Smooth);
+        }
+
+        private bool IsInTanVisible(int curveId, int key)
+        {
+            var tanMode = CurveUtility.GetKeyTangentMode(ref drawer.Value[curveId].keys[key], 0);
+            return key > 0 && (tanMode == TangentMode.Editable || tanMode == TangentMode.Smooth);
         }
 
         private int FindKeyframe(float time, int curveId)
@@ -376,14 +384,14 @@ namespace Sharp.Editor.Views
             }
             else
             {
-                outTan.IsVisible = showDrag < drawer.Value[l].keys.Length - 1 && CurveUtility.GetKeyTangentMode(ref drawer.Value[l].keys[showDrag], 1) == TangentMode.Editable;
-                inTan.IsVisible = showDrag > 0 && CurveUtility.GetKeyTangentMode(ref drawer.Value[l].keys[showDrag], 0) == TangentMode.Editable;
+                outTan.IsVisible = IsOutTanVisible(l, showDrag);
+                inTan.IsVisible = IsInTanVisible(l, showDrag);
                 badge.Position = new Point((int)(sender.Position.x + 5f), (int)(sender.Position.y + 15f));
                 badge.Text = $"{value.time:F3}, {value.value:F3}";
                 badge.IsVisible = true;
             }
-            ChangePositionWithoutEvent(outTan, sender.Position + (Point)outTan.UserData);
-            ChangePositionWithoutEvent(inTan, sender.Position + (Point)inTan.UserData);
+            if (outTan.IsVisible) CalcTangentForButton(outTan, sender, ref value);
+            if (inTan.IsVisible) CalcTangentForButton(inTan, sender, ref value);
             sender.UserData = ((drawer.Value[l].keys[showDrag].time, l, outTan, inTan));
 
             Squid.UI.isDirty = true;
@@ -402,6 +410,8 @@ namespace Sharp.Editor.Views
                 }
             }
             draggingCurveId = -1;
+            var obj = Squid.UI.currentCanvas.GetControlAt(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y);
+            Desktop.CurrentCursor = obj is null ? CursorNames.Default : obj.Cursor;
         }
 
         private void UI_MouseMove(Control sender, MouseEventArgs args)
@@ -526,11 +536,13 @@ namespace Sharp.Editor.Views
                         {
                             draggingCurveId = l;
                             button.StartDrag();
+                            Desktop.CurrentCursor = CursorNames.SizeNS;
                         }
                         else if (!checkMousePos[(l & 1) is 0 ? l + 1 : l - 1])
                         {
                             draggingCurveId = -(l / 2) - 2;
                             button.StartDrag();
+                            Desktop.CurrentCursor = CursorNames.SizeNS;
                         }
                     }
                 }
@@ -612,11 +624,11 @@ namespace Sharp.Editor.Views
             foreach (var (curveId, id, keyframe) in newSelected)
             {
                 var tmpKeyframe = keyframe;
-                CalcTangentForButton(outTan, selectedControl, new Vector2(keyframe.time, keyframe.value), ref tmpKeyframe);
-                CalcTangentForButton(inTan, selectedControl, new Vector2(keyframe.time, keyframe.value), ref tmpKeyframe);
+                CalcTangentForButton(outTan, selectedControl, ref tmpKeyframe);
+                CalcTangentForButton(inTan, selectedControl, ref tmpKeyframe);
                 selectedControl.UserData = ((keyframe.time, curveId, outTan, inTan));
-                outTan.IsVisible = id < drawer.Value[curveId].keys.Length - 1 && CurveUtility.GetKeyTangentMode(ref drawer.Value[curveId].keys[id], 1) == TangentMode.Editable;
-                inTan.IsVisible = id > 0 && CurveUtility.GetKeyTangentMode(ref drawer.Value[curveId].keys[id], 0) == TangentMode.Editable;
+                outTan.IsVisible = IsOutTanVisible(curveId, id);
+                inTan.IsVisible = IsInTanVisible(curveId, id);
             }
         }
 
