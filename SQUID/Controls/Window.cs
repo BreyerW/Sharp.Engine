@@ -189,7 +189,7 @@ namespace Squid
         /// Shows this window on the specified Desktop.
         /// </summary>
         /// <param name="target">The target.</param>
-        public virtual void Show(Desktop target)
+        public virtual void Open(Desktop target)
         {
             if (Parent == target) return;
 

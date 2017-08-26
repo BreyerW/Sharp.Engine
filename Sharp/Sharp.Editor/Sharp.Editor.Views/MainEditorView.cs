@@ -132,6 +132,8 @@ namespace Sharp.Editor.Views
         {
             mainViews.Add(attachToWindow, this);
             desktop = new Desktop();
+            var winPos = Window.windows[attachToWindow].Position;
+            desktop.screenPos = new Point(winPos.x, winPos.y);
             desktop.ShowCursor = true;
             desktop.Skin = Squid.UI.GenerateStandardSkin();
             desktop.Name = "desktop " + attachToWindow;

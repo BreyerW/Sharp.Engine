@@ -44,10 +44,10 @@ namespace Squid
             }
         }
 
-        public override void Show(Desktop target)
+        public override void Open(Desktop target)
         {
             _result = DialogResult.None;
-            base.Show(target);
+            base.Open(target);
         }
     }
 }

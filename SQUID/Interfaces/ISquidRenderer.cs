@@ -9,6 +9,7 @@ namespace Squid
     /// </summary>
     public interface ISquidRenderer : IDisposable
     {
+        //void ApplyStyle(string class, Control control); //TODO: make css supported styling
         /// <summary>
         /// Returns a unique integer for the given texture name
         /// </summary>

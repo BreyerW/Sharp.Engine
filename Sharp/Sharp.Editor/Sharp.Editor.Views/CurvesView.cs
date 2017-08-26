@@ -90,12 +90,12 @@ namespace Sharp.Editor.Views
             curveSettings.hTickStyle.distLabel = 30;
             curveSettings.hTickStyle.centerLabel = true;
 
-            MouseDown += Panel_MouseDown;
+            MouseUp += Panel_MouseUp;
             SizeChanged += CurvesView_SizeChanged;
             KeyUp += CurvesView_KeyDown;
             AllowFocus = true;
 
-            menu = new Menu();
+            menu = new Menu(new NativeWindow());
             menu.Style = "";
             menu.Align = Alignment.TopRight;
             menu.Size = new Point(0, 0);
@@ -108,7 +108,7 @@ namespace Sharp.Editor.Views
             trackButton.Name = "track";
             trackButton.MouseClick += TrackButton_MouseClick;
 
-            editMenu = new Menu();
+            editMenu = new Menu(new NativeWindow());
             editMenu.Style = "";
             editMenu.Align = Alignment.TopRight;
             editMenu.Size = new Point(0, 0);
@@ -487,7 +487,7 @@ namespace Sharp.Editor.Views
             Squid.UI.isDirty = true;
         }
 
-        private void Panel_MouseDown(Control sender, MouseEventArgs args)
+        private void Panel_MouseUp(Control sender, MouseEventArgs args)
         {
             var mousePos = new Vector2(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y);
             var pos = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);

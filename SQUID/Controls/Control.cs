@@ -694,8 +694,6 @@ namespace Squid
         {
             get
             {
-                //if(this is Desktop)//TODO: add screenPos
-                //  return
                 if (_parent != null)
                     return _parent.Location + _position;
 
@@ -2442,7 +2440,7 @@ namespace Squid
                 Depth = _parent.Depth + 1;
         }
 
-        internal void Draw()
+        protected virtual void Draw()
         {
             if (_visible)
             {

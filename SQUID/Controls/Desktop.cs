@@ -13,6 +13,8 @@ namespace Squid
     /// </summary>
     public class Desktop : Control, IControlContainer
     {
+        public Point screenPos;
+
         static Desktop()
         {
             CursorSet = new CursorCollection();

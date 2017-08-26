@@ -62,19 +62,19 @@ namespace Squid
         /// <summary>
         /// Initializes a new instance of the <see cref="DropDownButton"/> class.
         /// </summary>
-        public Menu()
+        public Menu(Window win)
         {
-            Dropdown = new Window();
+            Dropdown = win;
             Dropdown.Scissor = false;
             Dropdown.Style = "";
-            Dropdown.AutoSize = AutoSize.Vertical;
+            Dropdown.AutoSize = AutoSize.HorizontalVertical;
             Align = Alignment.BottomLeft;
 
             Frame = new FlowLayoutFrame();
             Frame.Style = "";
             Frame.AutoSize = AutoSize.HorizontalVertical;
             Frame.FlowDirection = FlowDirection.TopToBottom;
-            Frame.VSpacing = -1;
+            //Frame.VSpacing = -1;
             Dropdown.Controls.Add(Frame);
             Frame.Controls.BeforeItemAdded += Childs_BeforeItemAdded;
 
@@ -98,7 +98,7 @@ namespace Squid
             if (HotDrop && Dropdown.Controls.Count == 0) return;
 
             Dropdown.Owner = Parent;
-
+            Dropdown.Open(Desktop);
             switch (Align)
             {
                 case Alignment.BottomLeft:
@@ -126,6 +126,7 @@ namespace Squid
             var arr = menuOption.Split('/');
             var id = 0;
             var container = Frame;
+
             foreach (var option in arr)
             {
                 if (arr.Length > 1 && id < arr.Length - 1)
@@ -133,11 +134,12 @@ namespace Squid
                     var dropdown = Frame.GetControl(option) as Menu;
                     if (dropdown == null)
                     {
-                        dropdown = new Menu();
+                        dropdown = new Menu(Activator.CreateInstance(Dropdown.GetType()) as Window);
                         dropdown.HotDrop = true;
+                        dropdown.Dock = DockStyle.Top;
                         dropdown.Text = option;
                         dropdown.Name = option;
-                        dropdown.Dropdown.Style = "";
+                        dropdown.Dropdown.Style = Dropdown.Style;
                         dropdown.Align = Align;
                         dropdown.Frame.Controls.BeforeItemAdded += Childs_BeforeItemAdded;
                         container.Controls.Add(dropdown);
@@ -147,6 +149,7 @@ namespace Squid
                 id++;
             }
             var button = new Button();
+            button.Dock = DockStyle.Top;
             button.Text = arr[arr.Length - 1];
             button.TextAlign = Alignment.MiddleLeft;
             container.Controls.Add(button);
@@ -173,7 +176,7 @@ namespace Squid
                 OnClosing(this, args);
                 if (args.Cancel) return;
             }
-
+            Dropdown.Close();
             Desktop.CloseDropdowns();
             IsOpen = false;
 

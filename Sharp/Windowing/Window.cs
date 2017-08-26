@@ -106,9 +106,9 @@ namespace Sharp
             SDL.SDL_AddEventWatch(filter, IntPtr.Zero);
         }
 
-        public Window(string title, SDL.SDL_WindowFlags windowFlags, IntPtr existingWin = default(IntPtr))
+        public Window(string title, SDL.SDL_WindowFlags windowFlags, IntPtr existingWin = default)
         {
-            if (existingWin == default(IntPtr))
+            if (existingWin == default)
                 handle = SDL.SDL_CreateWindow(title, SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 1000, 700, windowFlags);
             else
                 handle = SDL.SDL_CreateWindowFrom(existingWin);
