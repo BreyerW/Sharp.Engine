@@ -16,7 +16,7 @@ namespace Squid
         private bool IsDragging;
 
         [Hidden]
-        public ControlCollection Controls { get; set; }
+        public virtual ControlCollection Controls { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Window"/> is modal.

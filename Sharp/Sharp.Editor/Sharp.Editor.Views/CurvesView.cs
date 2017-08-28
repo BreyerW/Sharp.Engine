@@ -95,7 +95,7 @@ namespace Sharp.Editor.Views
             KeyUp += CurvesView_KeyDown;
             AllowFocus = true;
 
-            menu = new Menu(new NativeWindow());
+            menu = new Menu(new Squid.Window());
             menu.Style = "";
             menu.Align = Alignment.TopRight;
             menu.Size = new Point(0, 0);
@@ -108,7 +108,7 @@ namespace Sharp.Editor.Views
             trackButton.Name = "track";
             trackButton.MouseClick += TrackButton_MouseClick;
 
-            editMenu = new Menu(new NativeWindow());
+            editMenu = new Menu(new Squid.Window());
             editMenu.Style = "";
             editMenu.Align = Alignment.TopRight;
             editMenu.Size = new Point(0, 0);

@@ -81,6 +81,20 @@ namespace Squid
             MouseClick += Button_MouseClick;
             MouseDown += Button_MouseDown;
             MouseEnter += Button_MouseEnter;
+            //MouseLeave += Menu_MouseLeave;
+            OnOpening += Menu_OnOpening;
+            OnClosed += Menu_OnClosed;
+        }
+
+        private void Menu_OnClosed(Control sender, SquidEventArgs args)
+        {
+            Console.WriteLine("close");
+            Dropdown.Close();
+        }
+
+        private void Menu_OnOpening(Control sender, SquidEventArgs args)
+        {
+            Dropdown.Open(sender.Desktop);
         }
 
         /// <summary>
@@ -98,7 +112,7 @@ namespace Squid
             if (HotDrop && Dropdown.Controls.Count == 0) return;
 
             Dropdown.Owner = Parent;
-            Dropdown.Open(Desktop);
+
             switch (Align)
             {
                 case Alignment.BottomLeft:
@@ -126,7 +140,7 @@ namespace Squid
             var arr = menuOption.Split('/');
             var id = 0;
             var container = Frame;
-
+            Menu prevMenu = this;
             foreach (var option in arr)
             {
                 if (arr.Length > 1 && id < arr.Length - 1)
@@ -135,15 +149,17 @@ namespace Squid
                     if (dropdown == null)
                     {
                         dropdown = new Menu(Activator.CreateInstance(Dropdown.GetType()) as Window);
+
                         dropdown.HotDrop = true;
                         dropdown.Dock = DockStyle.Top;
                         dropdown.Text = option;
                         dropdown.Name = option;
                         dropdown.Dropdown.Style = Dropdown.Style;
                         dropdown.Align = Align;
-                        dropdown.Frame.Controls.BeforeItemAdded += Childs_BeforeItemAdded;
                         container.Controls.Add(dropdown);
+                        dropdown.Dropdown.Tag = prevMenu.Dropdown;
                     }
+                    else prevMenu = dropdown;
                     container = dropdown.Frame;
                 }
                 id++;
@@ -176,7 +192,7 @@ namespace Squid
                 OnClosing(this, args);
                 if (args.Cancel) return;
             }
-            Dropdown.Close();
+
             Desktop.CloseDropdowns();
             IsOpen = false;
 
