@@ -137,6 +137,14 @@ namespace Sharp
             outVec = Vector3.Transform(vec, quat);
         }
 
+        public static void Transform(in this Vector3 vec, in Matrix4x4 mat, out Vector3 outVec)
+        {
+            outVec = new Vector3(
+                vec.X * mat.M11 + vec.Y * mat.M21 + vec.Z * mat.M31,
+                vec.X * mat.M12 + vec.Y * mat.M22 + vec.Z * mat.M32,
+vec.X * mat.M13 + vec.Y * mat.M23 + vec.Z * mat.M33);
+        }
+
         public static IEnumerable<(int index, T item)> Indexed<T>(this IEnumerable<T> enumeration)
         {
             var index = 0;

@@ -41,7 +41,7 @@ namespace Sharp.Editor
             DrawHelper.DrawScaleGizmo(thickness, scale, xScaleColor, yScaleColor, zScaleColor, scaleOffset);
             if (rotVectSource.HasValue)
             {
-                var cross = Vector3.Cross(startAxis, currentAngle);
+                Vector3.Cross(startAxis, currentAngle).Normalize(out var cross);
                 var fullAngle = NumericsExtensions.CalculateAngle(startAxis, currentAngle);
                 var incAngle = fullAngle / halfCircleSegments;
                 var vectors = new Vector3[halfCircleSegments + 1];
@@ -49,14 +49,14 @@ namespace Sharp.Editor
                 for (uint i = 1; i < halfCircleSegments + 1; i++)
                 {
                     var rotateMat = Matrix4x4.CreateFromAxisAngle(cross, incAngle * (i - 1));
-                    var rotatedVec = Vector3.Transform(startAxis, rotateMat) * 3f * scale;
-                    vectors[i] = new Vector3(rotatedVec.X, rotatedVec.Y, rotatedVec.Z);
+                    startAxis.Transform(rotateMat, out vectors[i]);
+                    vectors[i] *= 3f * scale;
                 }
                 Matrix4x4.Decompose(startMat, out _, out var r, out _);
                 var rot = Matrix4x4.CreateFromQuaternion(Quaternion.Inverse(r));
-                var mat = entity.ModelMatrix * Camera.main.ProjectionMatrix; //rot * startMat * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+                var mat = rot * startMat * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
                 var fill = new Color(fillColor.R, fillColor.G, fillColor.B, fillColor.A);
-                DrawHelper.DrawFilledPolyline(thickness, 3f, fill, ref mat, ref vectors);
+                DrawHelper.DrawFilledPolyline(thickness, 3f * scale, fill, ref mat, ref vectors);
             }
         }
 
