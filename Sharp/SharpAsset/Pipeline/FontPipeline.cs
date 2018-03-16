@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using SharpFont;
 using System.IO;
 using System.Threading;
-using OpenTK;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SharpAsset.Pipeline

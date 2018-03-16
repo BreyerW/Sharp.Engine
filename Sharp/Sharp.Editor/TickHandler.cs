@@ -131,7 +131,7 @@ namespace Sharp.Editor
 
         public float[] GetTicksAtLevel(int level, bool excludeTicksFromHigherlevels)
         {
-            int num = MathHelper.Clamp(this.m_SmallestTick + level, 0, this.m_TickModulos.Length - 1);
+            int num = NumericsExtensions.Clamp(this.m_SmallestTick + level, 0, this.m_TickModulos.Length - 1);
             List<float> list = new List<float>();
             int num2 = (int)Math.Floor((double)(this.m_MinValue / this.m_TickModulos[num]));
             int num3 = (int)Math.Ceiling((double)(this.m_MaxValue / this.m_TickModulos[num]));
@@ -152,7 +152,7 @@ namespace Sharp.Editor
 
         public float GetPeriodOfLevel(int level)
         {
-            return this.m_TickModulos[MathHelper.Clamp(this.m_SmallestTick + level, 0, this.m_TickModulos.Length - 1)];
+            return this.m_TickModulos[NumericsExtensions.Clamp(this.m_SmallestTick + level, 0, this.m_TickModulos.Length - 1)];
         }
 
         public int GetLevelWithMinSeparation(float pixelSeparation)
@@ -189,7 +189,7 @@ namespace Sharp.Editor
             }
             for (int j = this.m_SmallestTick; j <= this.m_BiggestTick; j++)
             {
-                this.m_TickStrengths[j] = MathHelper.Clamp(this.m_TickStrengths[j], 0, 1);
+                this.m_TickStrengths[j] = NumericsExtensions.Clamp(this.m_TickStrengths[j], 0, 1);
                 if (sqrt)
                 {
                     this.m_TickStrengths[j] = (float)Math.Sqrt(this.m_TickStrengths[j]);

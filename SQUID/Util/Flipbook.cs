@@ -13,7 +13,7 @@ namespace Squid
         public int Columns = 1;
         public float Speed = 60;
 
-        private float Timer;
+        private double Timer;
         private int col = 0;
         private int row = 0;
 
@@ -24,7 +24,7 @@ namespace Squid
             if (texture < 0) return;
 
             Timer += UI.TimeElapsed;
-            
+
             if (Timer >= Speed)
             {
                 Timer = 0;
@@ -32,7 +32,7 @@ namespace Squid
             }
 
             Point size = UI.Renderer.GetTextureSize(texture);
-            
+
             int w = (int)((float)size.x / (float)Columns);
             int h = (int)((float)size.y / (float)Rows);
 

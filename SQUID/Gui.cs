@@ -57,7 +57,7 @@ namespace Squid
         /// <summary>
         /// Elapsed time since last frame in milliseconds
         /// </summary>
-        public static float TimeElapsed { get; set; }
+        public static double TimeElapsed { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [always scissor].

@@ -231,7 +231,7 @@ namespace Squid
 
                 if (Ease)
                 {
-                    _easeScroll += ((_value - _easeScroll) / 8f) * Math.Min(8, UI.TimeElapsed * 0.1f);
+                    _easeScroll += ((_value - _easeScroll) / 8f) * (float)Math.Min(8, UI.TimeElapsed * 0.1);
                     m = (_easeScroll - Minimum) / (Maximum - Minimum);
                 }
                 else
@@ -259,7 +259,7 @@ namespace Squid
             }
 
             if (Ease)
-                EasedValue += ((_value - EasedValue) / 8f) * Math.Min(8, UI.TimeElapsed * 0.1f);
+                EasedValue += ((_value - EasedValue) / 8f) * (float)Math.Min(8, UI.TimeElapsed * 0.1);
             else
                 EasedValue = _value;
         }

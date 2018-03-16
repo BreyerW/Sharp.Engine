@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using SharpAsset.Pipeline;
 using Squid;
-using TupleExtensions;
 
 namespace Sharp.Editor.Views
 {

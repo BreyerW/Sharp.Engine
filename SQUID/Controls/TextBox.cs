@@ -11,7 +11,7 @@ namespace Squid
     [Toolbox]
     public class TextBox : Control, IText
     {
-        private float BlinkTime;
+        private double BlinkTime;
         private int DoBlink;
         private string _text = string.Empty;
         private bool IsSelection { get { return SelectStart != SelectEnd; } }

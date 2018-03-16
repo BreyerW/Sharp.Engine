@@ -87,8 +87,8 @@
     <Compile Include="Interfaces\IControlContainer.cs" />
     <Compile Include="Interfaces\ISelectable.cs" />
     <Compile Include="Interfaces\ISquidRenderer.cs" />
+    <Compile Include="Interfaces\IStyleProperty.cs" />
     <Compile Include="Interfaces\IText.cs" />
-    <Compile Include="Interfaces\IWindow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Skinning\ControlStyle.cs" />
     <Compile Include="Skinning\Skin.cs" />
@@ -100,6 +100,9 @@
     <Compile Include="Structs\Margin.cs" />
     <Compile Include="Structs\Point.cs" />
     <Compile Include="Structs\Rectangle.cs" />
+    <Compile Include="StyleProperties\BorderImage.cs" />
+    <Compile Include="StyleProperties\CSSEquivalentAttribute.cs" />
+    <Compile Include="StyleProperties\padding.cs" />
     <Compile Include="Util\ActionList.cs" />
     <Compile Include="Util\ActiveList.cs" />
     <Compile Include="Util\Attributes.cs" />

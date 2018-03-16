@@ -8,7 +8,8 @@ using System.Reflection;
 using System.Linq;
 using Sharp.Editor;
 using Squid;
-using TupleExtensions;
+
+//using TupleExtensions;
 using System.Threading.Tasks;
 
 namespace Sharp
@@ -53,7 +54,7 @@ namespace Sharp
             var button = SDL.SDL_GetGlobalMouseState(out globalMousePosition.x, out globalMousePosition.y);
             var winPos = Window.windows[Window.UnderMouseWindowId].Position;
             curMouseState = new bool[5];
-            foreach (var (key, val) in mouseCodes.WithIndexes())
+            foreach (var (key, val) in mouseCodes.Indexed())
             {
                 curMouseState[key] = (button & val) == val;
             }

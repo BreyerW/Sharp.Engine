@@ -5,7 +5,6 @@ using OpenTK;
 using SharpAsset;
 using System.Text;
 using System.Collections.Generic;
-using TupleExtensions;
 
 namespace SharpSL.BackendRenderers.OpenGL
 {
@@ -176,9 +175,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.BindAttribLocation(Program, 1, "vertex_color");
             GL.BindAttribLocation(Program, 2, "vertex_texcoord");
             GL.BindAttribLocation(Program, 3, "vertex_normal");
-
             GL.LinkProgram(Program);
-
             int numOfUniforms = 0;
             GL.GetProgram(Program, GetProgramParameterName.ActiveUniforms, out numOfUniforms);
             int num;
@@ -230,7 +227,7 @@ namespace SharpSL.BackendRenderers.OpenGL
         public void ClearColor()
         {
             ClearColor(0.15f, 0.15f, 0.15f, 0f);//use 0.12f for background 0.25f use for ui elem
-            //ClearColor(1f, 1f, 1f, 0f);
+                                                //ClearColor(1f, 1f, 1f, 0f);
         }
 
         public void ClearColor(float r, float g, float b, float a)
@@ -302,7 +299,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
         private int slot = 0;
 
-        public void SendTexture2D(int location, ref int tbo)
+        public void SendTexture2D(int location, int tbo)
         {
             //GL.ActiveTexture(TextureUnit.Texture0 + slot);//bugged?
             GL.BindTexture(TextureTarget.Texture2D, tbo);

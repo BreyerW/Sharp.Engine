@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System;
-using OpenTK;
+using System.Numerics;
 using Sharp;
 
 namespace SharpAsset

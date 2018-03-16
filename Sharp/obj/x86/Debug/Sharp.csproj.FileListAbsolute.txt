@@ -67,7 +67,6 @@ B:\Sharp.Engine3\Sharp\bin\Debug\SharpAvi.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\SmallBlockMemoryStream.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\System.AppContext.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Buffers.dll
-B:\Sharp.Engine3\Sharp\bin\Debug\System.Buffers.Primitives.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Collections.Immutable.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Console.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Diagnostics.DiagnosticSource.dll
@@ -89,12 +88,7 @@ B:\Sharp.Engine3\Sharp\bin\Debug\System.Runtime.Extensions.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Runtime.InteropServices.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Runtime.InteropServices.RuntimeInformation.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Security.Cryptography.Algorithms.dll
-B:\Sharp.Engine3\Sharp\bin\Debug\System.Security.Cryptography.Encoding.dll
-B:\Sharp.Engine3\Sharp\bin\Debug\System.Security.Cryptography.Primitives.dll
-B:\Sharp.Engine3\Sharp\bin\Debug\System.Security.Cryptography.X509Certificates.dll
-B:\Sharp.Engine3\Sharp\bin\Debug\System.ValueTuple.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Xml.ReaderWriter.dll
-B:\Sharp.Engine3\Sharp\bin\Debug\TupleExtensions.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\fastBinaryJSON.pdb
 B:\Sharp.Engine3\Sharp\bin\Debug\fastJSON.pdb
 B:\Sharp.Engine3\Sharp\bin\Debug\SDL2-CS.pdb
@@ -112,7 +106,6 @@ B:\Sharp.Engine3\Sharp\bin\Debug\SharpAvi.xml
 B:\Sharp.Engine3\Sharp\bin\Debug\ColorSharp.xml
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Numerics.Vectors.xml
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
-B:\Sharp.Engine3\Sharp\bin\Debug\TupleExtensions.xml
 B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.csprojResolveAssemblyReference.cache
 B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.exe
 B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.pdb
@@ -122,5 +115,13 @@ B:\Sharp.Engine3\Sharp\bin\Debug\SharpFont.dll.config
 B:\Sharp.Engine3\Sharp\bin\Debug\freetype6.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\SharpFont.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\SharpFont.xml
-B:\Sharp.Engine3\Sharp\bin\Debug\System.ValueTuple.xml
 B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.csproj.CoreCompileInputs.cache
+B:\Sharp.Engine3\Sharp\bin\Debug\System.Data.Common.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\System.Diagnostics.StackTrace.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\System.Globalization.Extensions.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\System.Runtime.Serialization.Primitives.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\System.Security.SecureString.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\System.Threading.Overlapped.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\System.Xml.XPath.XDocument.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\System.Buffers.xml
+B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.csproj.CopyComplete

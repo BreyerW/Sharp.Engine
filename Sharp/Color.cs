@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using OpenTK;
+using System.Numerics;
 using System.Text;
 
 namespace Sharp
@@ -1554,12 +1554,12 @@ namespace Sharp
         /// <returns>Interpolated <see cref="Color"/>.</returns>
         /*public static Color Lerp(Color value1, Color value2, Single amount)
         {
-            amount = MathHelper.Clamp(amount, 0, 1);
+            amount = NumericsExtensions.Clamp(amount, 0, 1);
             return new Color(
-                (int)MathHelper.Lerp(value1.R, value2.R, amount),
-                (int)MathHelper.Lerp(value1.G, value2.G, amount),
-                (int)MathHelper.Lerp(value1.B, value2.B, amount),
-                (int)MathHelper.Lerp(value1.A, value2.A, amount));
+                (int)NumericsExtensions.Lerp(value1.R, value2.R, amount),
+                (int)NumericsExtensions.Lerp(value1.G, value2.G, amount),
+                (int)NumericsExtensions.Lerp(value1.B, value2.B, amount),
+                (int)NumericsExtensions.Lerp(value1.A, value2.A, amount));
         }*/
 
         public static Color Lerp(Color val1, Color val2, float time)

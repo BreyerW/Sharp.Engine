@@ -1,7 +1,7 @@
 ﻿using System;
 using Assimp;
 using Assimp.Configs;
-using OpenTK;
+using System.Numerics;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -93,9 +93,9 @@ namespace SharpAsset.Pipeline
             throw new NotImplementedException();
         }
 
-        private Matrix4 FromMatrix(Matrix4x4 mat)
+        private System.Numerics.Matrix4x4 FromMatrix(Assimp.Matrix4x4 mat)
         {
-            Matrix4 m = new Matrix4();
+            var m = new System.Numerics.Matrix4x4();
             m.M11 = mat.A1;
             m.M12 = mat.A2;
             m.M13 = mat.A3;

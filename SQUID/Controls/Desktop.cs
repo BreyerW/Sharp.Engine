@@ -170,7 +170,11 @@ namespace Squid
         public void CloseDropdowns()
         {
             foreach (Control control in Dropdowns)
+            {
+                //control.Close();
+                control.IsVisible = false;
                 control.Parent = null;
+            }
 
             Dropdowns.Clear();
         }
@@ -343,6 +347,8 @@ namespace Squid
                 {
                     for (int i = Dropdowns.Count - 1; i >= index; i--)
                     {
+                        //Dropdowns[i].Close();
+                        Dropdowns[i].IsVisible = false;
                         Dropdowns[i].Parent = null;
                         Dropdowns.RemoveAt(i);
                     }
@@ -350,6 +356,7 @@ namespace Squid
             }
 
             control.Parent = this;
+            control.IsVisible = true;
             Dropdowns.Add(control);
         }
 
@@ -492,6 +499,8 @@ namespace Squid
                             {
                                 if (!Dropdowns[i].Contains(hot))
                                 {
+                                    //Dropdowns[i].Close();
+                                    Dropdowns[i].IsVisible = false;
                                     Dropdowns[i].Parent = null;
                                     Dropdowns.RemoveAt(i);
                                 }

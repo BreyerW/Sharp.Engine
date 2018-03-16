@@ -4,6 +4,7 @@ using SDL2;
 using System.Threading;
 using Sharp.Editor.Views;
 using SharpAsset.Pipeline;
+using System.Numerics;
 
 namespace Sharp
 {
@@ -31,7 +32,7 @@ namespace Sharp
             MainWindow.backendRenderer.SwapBuffers += SDL.SDL_GL_SwapWindow;
 
             var e = new Entity();
-            e.Rotation = new OpenTK.Vector3((float)Math.PI, 0f, 0f);
+            e.Rotation = new Vector3((float)Math.PI, 0f, 0f);
             var cam = e.AddComponent<Camera>();
             cam.SetModelviewMatrix();
             cam.SetProjectionMatrix();

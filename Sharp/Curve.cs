@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using OpenTK;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using Sharp;
 
 namespace Sharp
 {
@@ -54,7 +55,7 @@ namespace Sharp
                         return GetCurvePosition(virtualPos);
 
                     case WrapMode.Linear:// linear y = a*x +b with a tangeant of last point
-                        return first.value - MathHelper.RadiansToDegrees(first.inTangent) * (first.time - position);
+                        return first.value - NumericsExtensions.RadiansToDegrees(first.inTangent) * (first.time - position);
                 }
             }
             else if (position > last.time)
@@ -90,7 +91,7 @@ namespace Sharp
                         return GetCurvePosition(virtualPos);
 
                     case WrapMode.Linear:  // linear y = a*x +b with a tangeant of last point
-                        return last.value + MathHelper.RadiansToDegrees(last.outTangent) * (position - last.time);
+                        return last.value + NumericsExtensions.RadiansToDegrees(last.outTangent) * (position - last.time);
                 }
             }
 

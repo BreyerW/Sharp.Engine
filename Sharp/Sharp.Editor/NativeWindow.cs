@@ -8,7 +8,6 @@ namespace Sharp.Editor
     public class NativeWindow : Squid.Window
     {
         public Window win = new TooltipWindow();
-        private Desktop canvas;
 
         public override ControlCollection Controls
         {
@@ -24,38 +23,45 @@ namespace Sharp.Editor
         public NativeWindow()
         {
             win.Hide();
-            PositionChanged += NativeWindow_PositionChanged;
             //NoEvents = true;
+            VisibilityChanged += NativeWindow_VisibilityChanged;
         }
 
-        private void NativeWindow_PositionChanged(Control sender)
+        private void NativeWindow_VisibilityChanged(Control sender)
         {
-            win.Position = Tag is NativeWindow natWin ? (sender.Location.x + natWin.win.Position.x, sender.Location.y + natWin.win.Position.y) : (sender.Location.x + canvas.screenPos.x, sender.Location.y + canvas.screenPos.y);
+            if (sender.IsVisible)
+            {
+                // NoEvents = false;
+                if (sender.Tag is NativeWindow natWin)
+                {
+                    //natWin.Update += NatWin_Update;
+                    win.Position = (sender.Location.x + natWin.win.Position.x, sender.Location.y + natWin.win.Position.y);
+                }
+                else
+                    win.Position = (sender.Location.x + sender.Desktop.screenPos.x, sender.Location.y + sender.Desktop.screenPos.y);
+                MainEditorView.mainViews[win.windowId].desktop.Update();
+                var control = MainEditorView.mainViews[win.windowId].desktop.Controls[0];
+                win.Size = (control.Size.x, control.Size.y);
+                win.Show();
+            }
+            else
+            {
+                win.Hide();
+                // NoEvents = true;
+                Console.WriteLine("state changed");
+            }
         }
 
         protected override void Draw()
         {
         }
 
-        public override void Open(Desktop target)
+        public override void Open()
         {
-            // NoEvents = false;
-            canvas = target;
-            //target.Controls.Add(this);
-
-            //NativeWindow_PositionChanged(this);
-            MainEditorView.mainViews[win.windowId].desktop.Update();
-            //var control = MainEditorView.mainViews[win.windowId].desktop;
-            win.Size = (Controls[0].Size.x, Controls[0].Size.y);
-            win.Show();
-            SDL2.SDL.SDL_RaiseWindow(win.handle);
         }
 
         public override void Close()
         {
-            win.Hide();
-            // NoEvents = true;
-            Console.WriteLine("state changed");
         }
     }
 }

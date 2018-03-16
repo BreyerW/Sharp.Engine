@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using Sharp;
 using Sharp.Editor.Views;
-using OpenTK;
+using System.Numerics;
 
 namespace SharpAsset
 {
@@ -23,6 +23,7 @@ namespace SharpAsset
 
         internal Dictionary<string, int> uniformArray;//=new Dictionary<UniformType, Dictionary<string, int>> ();
 
+        //internal static Dictionary<string, int> globalUniformArray;
         public bool allocated;
 
         public override string ToString()

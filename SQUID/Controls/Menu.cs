@@ -76,25 +76,17 @@ namespace Squid
             Frame.FlowDirection = FlowDirection.TopToBottom;
             //Frame.VSpacing = -1;
             Dropdown.Controls.Add(Frame);
+            Dropdown.VisibilityChanged += Dropdown_VisibilityChanged;
             Frame.Controls.BeforeItemAdded += Childs_BeforeItemAdded;
 
             MouseClick += Button_MouseClick;
             MouseDown += Button_MouseDown;
             MouseEnter += Button_MouseEnter;
-            //MouseLeave += Menu_MouseLeave;
-            OnOpening += Menu_OnOpening;
-            OnClosed += Menu_OnClosed;
         }
 
-        private void Menu_OnClosed(Control sender, SquidEventArgs args)
+        private void Dropdown_VisibilityChanged(Control sender)
         {
-            Console.WriteLine("close");
-            Dropdown.Close();
-        }
-
-        private void Menu_OnOpening(Control sender, SquidEventArgs args)
-        {
-            Dropdown.Open(sender.Desktop);
+            //if (!sender.IsVisible) Close();
         }
 
         /// <summary>
@@ -127,7 +119,6 @@ namespace Squid
                     Dropdown.Position = Location - new Point(Dropdown.Size.x, 0);
                     break;
             }
-
             Desktop.ShowDropdown(Dropdown, true);
             IsOpen = true;
 

@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using Assimp;
 using System.Threading;
-using OpenTK;
+using System.Numerics;
 using System.IO;
 using Sharp;
 using Sharp.Editor.Views;
 using System.Runtime.CompilerServices;
-using TupleExtensions;
 using System.Linq;
 
 namespace SharpAsset.Pipeline
@@ -39,6 +38,7 @@ namespace SharpAsset.Pipeline
             //if (!SupportedFileFormatsAttribute.supportedFileFormats.Contains (format))
             //throw new NotSupportedException (format+" format is not supported");
             var scene = asset.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals);
+
             if (!scene.HasMeshes) return null;
 
             var internalMesh = new Mesh();
@@ -49,7 +49,7 @@ namespace SharpAsset.Pipeline
             var vertFormat = RegisterAsAttribute.registeredVertexFormats[vertType];
             var finalSupportedAttribs = supportedAttribs.Where((attrib) => vertFormat.ContainsKey(attrib) && scene.Meshes[0].HasAttribute(attrib));
             var meshData = new(VertexAttribute attrib, byte[] data)[finalSupportedAttribs.Count()];
-            foreach (var (key, attrib) in finalSupportedAttribs.WithIndexes())
+            foreach (var (key, attrib) in finalSupportedAttribs.Indexed())
                 meshData[key] = (attrib, null);
 
             foreach (var mesh in scene.Meshes)
@@ -67,17 +67,17 @@ namespace SharpAsset.Pipeline
                 var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
                 var vertices = new byte[mesh.VertexCount * size].AsSpan();
 
-                foreach (var (key, data) in meshData.WithIndexes())
+                foreach (var (key, data) in meshData.Indexed())
                     meshData[key].data = mesh.GetAttribute(data.attrib);
 
                 for (int i = 0; i < mesh.VertexCount; i++)
                 {
                     var tmpVec = new Vector3(mesh.Vertices[i].X, mesh.Vertices[i].Y, mesh.Vertices[i].Z);
 
-                    min = Vector3.ComponentMin(min, tmpVec);
-                    max = Vector3.ComponentMax(max, tmpVec);
+                    min = Vector3.Min(min, tmpVec);
+                    max = Vector3.Max(max, tmpVec);
 
-                    foreach (var (key, data) in meshData.WithIndexes())
+                    foreach (var (key, data) in meshData.Indexed())
                         CopyBytes(vertFormat[data.attrib], i, ref meshData[key].data, ref vertices);
                 }
 

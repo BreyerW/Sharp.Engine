@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>Sharp</RootNamespace>
     <AssemblyName>Sharp</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
@@ -87,11 +87,8 @@
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.AppContext.4.3.0\lib\net46\System.AppContext.dll</HintPath>
     </Reference>
-    <Reference Include="System.Buffers, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.3.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Buffers.Primitives, Version=0.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.Primitives.0.1.0-e170425-3\lib\netstandard1.1\System.Buffers.Primitives.dll</HintPath>
+    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
     </Reference>
     <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
@@ -141,9 +138,6 @@
     <Reference Include="System.Memory, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.4.0-preview2-25405-01\lib\netstandard1.0\System.Memory.dll</HintPath>
     </Reference>
-    <Reference Include="System.Net.Http, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.4.3.2\lib\net46\System.Net.Http.dll</HintPath>
-    </Reference>
     <Reference Include="System.Net.Sockets, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Net.Sockets.4.3.0\lib\net46\System.Net.Sockets.dll</HintPath>
     </Reference>
@@ -154,8 +148,8 @@
     <Reference Include="ColorSharp">
       <HintPath>..\packages\ColorSharp.0.11.0.32448\lib\net40\ColorSharp.dll</HintPath>
     </Reference>
-    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.4.0-preview2-25405-01\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0-preview1-26216-02\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
     <Reference Include="System.Reflection, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Reflection.4.3.0\lib\net462\System.Reflection.dll</HintPath>
@@ -164,7 +158,7 @@
       <HintPath>..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.4.0-preview2-25405-01\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.4.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Extensions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.Extensions.4.3.0\lib\net462\System.Runtime.Extensions.dll</HintPath>
@@ -175,28 +169,10 @@
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
     </Reference>
-    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.4.0-preview2-25405-01\lib\net461\System.ValueTuple.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
-    </Reference>
-    <Reference Include="TupleExtensions, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TupleExtensions.VictorGavrish.1.2.3\lib\netstandard1.0\TupleExtensions.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -226,7 +202,9 @@
     <Compile Include="Sharp.Editor\UIVertexFormat.cs" />
     <Compile Include="Sharp.Editor\UndoCommand.cs" />
     <Compile Include="SharpAsset\Font.cs" />
-    <Compile Include="SharpAsset\SharpAsset.Pipeline\FontPipeline.cs" />
+    <Compile Include="SharpAsset\Pipeline\FontPipeline.cs" />
+    <Compile Include="SharpAsset\Pipeline\StylePipeline.cs" />
+    <Compile Include="SharpAsset\Style.cs" />
     <Compile Include="Time.cs" />
     <Compile Include="Windowing\FloatingWindow.cs" />
     <Compile Include="Windowing\ISplitter.cs" />
@@ -281,14 +259,14 @@
     <Compile Include="SharpAsset\Mesh.cs" />
     <Compile Include="SharpAsset\Shader.cs" />
     <Compile Include="SharpAsset\Texture.cs" />
-    <Compile Include="SharpAsset\SharpAsset.CustomVertex\IVertex.cs" />
-    <Compile Include="SharpAsset\SharpAsset.CustomVertex\RegisterAsAttribute.cs" />
-    <Compile Include="SharpAsset\SharpAsset.CustomVertex\VertexAttribute.cs" />
-    <Compile Include="SharpAsset\SharpAsset.Pipeline\Pipeline.cs" />
-    <Compile Include="SharpAsset\SharpAsset.Pipeline\MeshPipeline.cs" />
-    <Compile Include="SharpAsset\SharpAsset.Pipeline\ShaderPipeline.cs" />
-    <Compile Include="SharpAsset\SharpAsset.Pipeline\SupportedFilesAttribute.cs" />
-    <Compile Include="SharpAsset\SharpAsset.Pipeline\TexturePipeline.cs" />
+    <Compile Include="SharpAsset\CustomVertex\IVertex.cs" />
+    <Compile Include="SharpAsset\CustomVertex\RegisterAsAttribute.cs" />
+    <Compile Include="SharpAsset\CustomVertex\VertexAttribute.cs" />
+    <Compile Include="SharpAsset\Pipeline\Pipeline.cs" />
+    <Compile Include="SharpAsset\Pipeline\MeshPipeline.cs" />
+    <Compile Include="SharpAsset\Pipeline\ShaderPipeline.cs" />
+    <Compile Include="SharpAsset\Pipeline\SupportedFilesAttribute.cs" />
+    <Compile Include="SharpAsset\Pipeline\TexturePipeline.cs" />
     <Compile Include="BoundingBox.cs" />
     <Compile Include="Ray.cs" />
     <Compile Include="SharpSL\Work.cs" />
@@ -296,12 +274,12 @@
     <Compile Include="SharpSL\SharpSL.BackendRenderers\IEditorBackendRenderer.cs" />
     <Compile Include="SharpSL\SharpSL.BackendRenderers\SharpSL.BackendRenderers.OpenGL\EditorOpenGLRenderer.cs" />
     <Compile Include="SharpSL\SharpSL.BackendRenderers\SharpSL.BackendRenderers.OpenGL\OpenGLRenderer.cs" />
-    <Compile Include="SharpAsset\SharpAsset.CustomVertex\CustomConverter.cs" />
-    <Compile Include="SharpAsset\SharpAsset.CustomVertex\VertexType.cs" />
+    <Compile Include="SharpAsset\CustomVertex\CustomConverter.cs" />
+    <Compile Include="SharpAsset\CustomVertex\VertexType.cs" />
     <Compile Include="SharpAsset\Script.cs" />
-    <Compile Include="SharpAsset\SharpAsset.Pipeline\SkeletonPipeline.cs" />
+    <Compile Include="SharpAsset\Pipeline\SkeletonPipeline.cs" />
     <Compile Include="SharpAsset\Skeleton.cs" />
-    <Compile Include="SharpAsset\SharpAsset.Pipeline\AnimationPipeline.cs" />
+    <Compile Include="SharpAsset\Pipeline\AnimationPipeline.cs" />
     <Compile Include="SharpAsset\Animation.cs" />
     <Compile Include="SkeletonRenderer.cs" />
     <Compile Include="SkinnedMeshRenderer.cs" />
@@ -396,13 +374,13 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\AssimpNet.3.3.2\build\AssimpNet.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\AssimpNet.3.3.2\build\AssimpNet.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Packaging.Tools.1.0.0-preview1-25301-01\build\Microsoft.Packaging.Tools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Packaging.Tools.1.0.0-preview1-25301-01\build\Microsoft.Packaging.Tools.targets'))" />
-    <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.0-preview1-25301-01\build\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.0-preview1-25301-01\build\NETStandard.Library.targets'))" />
     <Error Condition="!Exists('..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props'))" />
     <Error Condition="!Exists('..\packages\SharpFont.4.0.1\build\SharpFont.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.4.0.1\build\SharpFont.props'))" />
   </Target>
@@ -411,5 +389,4 @@
     <PreBuildEvent>XCOPY "$(SolutionDir)\Sharp\Content" "$(TargetDir)\Content" /E /Y /I</PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Microsoft.Packaging.Tools.1.0.0-preview1-25301-01\build\Microsoft.Packaging.Tools.targets" Condition="Exists('..\packages\Microsoft.Packaging.Tools.1.0.0-preview1-25301-01\build\Microsoft.Packaging.Tools.targets')" />
-  <Import Project="..\packages\NETStandard.Library.2.0.0-preview1-25301-01\build\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0-preview1-25301-01\build\NETStandard.Library.targets')" />
 </Project>

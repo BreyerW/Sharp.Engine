@@ -189,16 +189,12 @@ namespace Squid
         /// Shows this window on the specified Desktop.
         /// </summary>
         /// <param name="target">The target.</param>
-        public virtual void Open(Desktop target)
+        public virtual void Open()
         {
-            if (Parent == target) return;
-
-            target.Controls.Add(this);
-
             SetDepth();
 
             if (Modal)
-                target.RegisterModal(this);
+                Desktop.RegisterModal(this);
 
             IsVisible = true;
         }
@@ -208,12 +204,11 @@ namespace Squid
         /// </summary>
         public virtual void Close()
         {
+            Console.WriteLine("close");
             if (Desktop == null) return;
 
             if (Modal)
                 Desktop.UnregisterModal(this);
-
-            Desktop.Controls.Remove(this);
 
             IsVisible = false;
         }

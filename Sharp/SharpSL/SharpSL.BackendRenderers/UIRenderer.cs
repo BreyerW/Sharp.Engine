@@ -4,7 +4,7 @@ using Sharp;
 using SharpAsset.Pipeline;
 using Sharp.Editor.Views;
 using SharpFont;
-using OpenTK;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.IO;
 
@@ -18,7 +18,7 @@ namespace SharpSL.BackendRenderers
         {
             OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
             var col = new Color((uint)color);
-            var mat = Matrix4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
+            var mat = Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
             MainEditorView.editorBackendRenderer.DrawQuad(0, 0, width, height, ref col.R);
             MainEditorView.editorBackendRenderer.UnloadMatrix();
@@ -71,7 +71,7 @@ namespace SharpSL.BackendRenderers
 
             MainWindow.backendRenderer.WriteDepth(false);
 
-            var mat = Matrix4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
+            var mat = Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
             MainEditorView.editorBackendRenderer.UnloadMatrix();
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
             // Create a new bitmap that fits the string.
@@ -199,7 +199,7 @@ namespace SharpSL.BackendRenderers
             ref var texture2d = ref Pipeline.GetPipeline<TexturePipeline>().GetAsset(texture);
             var col = new Color((uint)color);
 
-            var mat = Matrix4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
+            var mat = Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
 
             MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
             MainWindow.backendRenderer.Allocate(ref texture2d.bitmap[0], texture2d.width, texture2d.height);

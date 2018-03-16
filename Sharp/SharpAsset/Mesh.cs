@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
-using OpenTK;
+using System.Numerics;
 using Sharp;
 using SharpAsset.Pipeline;
 using SharpAsset;
@@ -105,7 +105,7 @@ namespace SharpAsset
             eObject.AddComponent(renderer);
             Pipeline.Pipeline.GetPipeline<TexturePipeline>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\duckCM.bmp");
             //zamienic na ref loading pipeliny
-            renderer.material.BindProperty("MyTexture", () => ref Pipeline.Pipeline.GetPipeline<TexturePipeline>().GetAsset("duckCM"));
+            renderer.material.BindProperty("MyTexture", ref Pipeline.Pipeline.GetPipeline<TexturePipeline>().GetAsset("duckCM"));
             if (context != null) //make as child of context?
             {
             }

@@ -1,5 +1,5 @@
 ﻿using System;
-using OpenTK;
+using System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
 using Sharp.Editor.Attribs;
@@ -243,7 +243,7 @@ namespace Sharp.Editor.UI.Property
             float num = maxTime - minTime;
             float num2 = nextKeyTime - keyTime;
             int value = (int)Math.Round(1000 * (num2 / num), MidpointRounding.AwayFromZero);
-            return MathHelper.Clamp(value, 1, 50);
+            return NumericsExtensions.Clamp(value, 1, 50);
         }
 
         private static Color PrepareColorForCurve(Color color, int curveId)
@@ -291,10 +291,10 @@ namespace Sharp.Editor.UI.Property
 
             var canvas = Desktop;
 
-            var mat = Matrix4.CreateOrthographicOffCenter(0, canvas.Size.x, canvas.Size.y, 0, -1, 1);
+            var mat = Matrix4x4.CreateOrthographicOffCenter(0, canvas.Size.x, canvas.Size.y, 0, -1, 1);
             var array = new Vector3[region.Length];
             for (int i = 0; i < region.Length; i++)
-                array[i] = new Vector3(CurveToViewSpace(region[i], scale, translation));
+                array[i] = new Vector3(CurveToViewSpace(region[i], scale, translation), 0);
 
             MainEditorView.editorBackendRenderer.DrawFilledPolyline(3, 3, ref color.R, ref mat, ref array, false);
 

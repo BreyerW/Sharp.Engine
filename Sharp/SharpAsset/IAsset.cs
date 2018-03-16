@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Sharp;
-using OpenTK;
+using System.Numerics;
 
 //[assembly: TypeForwarded(typeof(System.Numerics.Vector3))]
 namespace SharpAsset

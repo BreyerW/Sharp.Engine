@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using OpenTK;
+using System.Numerics;
 using System;
 using Squid;
 
@@ -71,7 +71,7 @@ namespace Sharp.Editor.Views
             {
                 if (Manipulators.selectedAxisId == 0)
                 {
-                    Camera.main.Rotate(-Squid.UI.MouseDelta.x, -Squid.UI.MouseDelta.y, 0.3f);//maybe divide delta by fov?
+                    Camera.main.Rotate(Squid.UI.MouseDelta.x, Squid.UI.MouseDelta.y, 0.3f);//maybe divide delta by fov?
                     OnSetupMatrices?.Invoke();
                 }
                 else//simple, precise, snapping
@@ -83,7 +83,8 @@ namespace Sharp.Editor.Views
                         //var winPos = Window.windows[attachedToWindow].Position;
                         var localMouse = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
                         var start = Camera.main.ScreenToWorld(localMouse.x, localMouse.y, Size.x, Size.y, 1);
-                        var ray = new Ray(orig, (start - orig).Normalized());
+                        (start - orig).Normalize(out var dir);
+                        var ray = new Ray(orig, dir);
                         //foreach (var selected in SceneStructureView.tree.SelectedChildren)
                         if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
                         {
@@ -168,7 +169,7 @@ namespace Sharp.Editor.Views
             var locPos = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
             Camera.main.SetModelviewMatrix();
             var orig = Camera.main.entityObject.Position;
-            var dir = (Camera.main.ScreenToWorld(locPos.x, locPos.y, Size.x, Size.y) - orig).Normalized();
+            (Camera.main.ScreenToWorld(locPos.x, locPos.y, Size.x, Size.y) - orig).Normalize(out var dir);
             if (e.Source.UserData is ValueTuple<string, string>[] entities)
                 foreach (var asset in entities)
                 {
@@ -200,7 +201,9 @@ namespace Sharp.Editor.Views
             {
                 //foreach (var selected in SceneStructureView.tree.SelectedChildren)
                 {
-                    var mvpMat = (globalMode ? entity.ModelMatrix.ClearRotation() : entity.ModelMatrix).ClearScale() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+                    entity.ModelMatrix.Invert(out var inverted);
+                    Matrix4x4.Decompose(globalMode ? inverted : entity.ModelMatrix, out _, out var rot, out var trans);
+                    var mvpMat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans) * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;//TODO: check if properly hit, probably trans first, quat later
 
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
                     MainWindow.backendRenderer.ClearDepth();
@@ -278,7 +281,9 @@ namespace Sharp.Editor.Views
                 //foreach (var selected in SceneStructureView.tree.SelectedNode)
                 if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
                 {
-                    var mvpMat = (globalMode ? entity.ModelMatrix.ClearRotation() : entity.ModelMatrix).ClearScale() * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+                    entity.ModelMatrix.Invert(out var inverted);
+                    Matrix4x4.Decompose(globalMode ? inverted : entity.ModelMatrix, out _, out var rot, out var trans);
+                    var mvpMat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans) * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
 
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
 
@@ -308,7 +313,8 @@ namespace Sharp.Editor.Views
         {
             var orig = Camera.main.entityObject.Position;
             var end = Camera.main.ScreenToWorld(locPos.Value.x, locPos.Value.y, Size.x, Size.y);
-            var ray = new Ray(orig, (end - orig).Normalized());
+            (end - orig).Normalize(out var dir);
+            var ray = new Ray(orig, dir);
             var hitList = new SortedList<Vector3, int>(new OrderByDistanceToCamera());
             foreach (var ent in entities)
             {
@@ -340,8 +346,8 @@ namespace Sharp.Editor.Views
     {
         public int Compare(Vector3 x, Vector3 y)
         {
-            var xDistance = (x - Camera.main.entityObject.Position).Length;
-            var yDistance = (y - Camera.main.entityObject.Position).Length;
+            var xDistance = (x - Camera.main.entityObject.Position).Length();
+            var yDistance = (y - Camera.main.entityObject.Position).Length();
             if (xDistance > yDistance) return 1;
             else if (xDistance < yDistance) return -1;
             else return 0;

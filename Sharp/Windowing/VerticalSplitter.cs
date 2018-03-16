@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TupleExtensions;
 
 namespace Sharp.Windowing
 {
@@ -49,7 +48,7 @@ namespace Sharp.Windowing
         {
             var size = parent.Size;
             var pos = parent.Position;
-            foreach (var (i, win) in m_Sections.WithIndexes())
+            foreach (var (i, win) in m_Sections.Indexed())
             {
                 m_Sections[i].Position = (pos.x + (int)(size.width * (i is 0 ? 0 : m_HVal[i - 1] * i)), pos.y + 100);
                 m_Sections[i].Size = ((int)(size.width * m_HVal[i]), size.height - 100);

@@ -11,7 +11,7 @@ namespace Squid
     [Toolbox]
     public class TextArea : Control, IText
     {
-        private float BlinkTime;
+        private double BlinkTime;
         private int DoBlink;
         private bool HasFocus;
         private string SavedText;

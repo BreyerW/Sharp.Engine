@@ -1,12 +1,12 @@
 ﻿using System;
 using Sharp.Editor.Views;
-using OpenTK;
+using System.Numerics;
 
 namespace Sharp.Editor
 {
     public static class DrawHelper
     {
-        public static void DrawGrid(Color color, Vector3 pos, float X, float Y, ref Matrix4 projMat, int cell_size = 16, int grid_size = 2560)
+        public static void DrawGrid(Color color, Vector3 pos, float X, float Y, ref Matrix4x4 projMat, int cell_size = 16, int grid_size = 2560)
         {
             MainEditorView.editorBackendRenderer.DrawGrid(ref color.R, pos, X, Y, ref projMat, cell_size, grid_size);
         }
@@ -136,7 +136,7 @@ namespace Sharp.Editor
             MainEditorView.editorBackendRenderer.DrawScaleGizmo(thickness, scale, ref xColor.R, ref yColor.R, ref zColor.R, offset);
         }
 
-        public static void DrawFilledPolyline(float size, float lineWidth, Color color, ref Matrix4 mat, ref Vector3[] vecArray, bool fan = true)
+        public static void DrawFilledPolyline(float size, float lineWidth, Color color, ref Matrix4x4 mat, ref Vector3[] vecArray, bool fan = true)
         {
             MainEditorView.editorBackendRenderer.DrawFilledPolyline(size, lineWidth, ref color.R, ref mat, ref vecArray, fan);
         }

@@ -1,10 +1,11 @@
 ﻿using System;
 using Squid;
+using System.Numerics;
 using System.Globalization;
 
 namespace Sharp.Editor.UI.Property
 {
-    public class Vector3Drawer : PropertyDrawer<OpenTK.Vector3>
+    public class Vector3Drawer : PropertyDrawer<Vector3>
     {
         private FlowLayoutFrame layout = new FlowLayoutFrame();
         private TextBox posX;
@@ -57,14 +58,14 @@ namespace Sharp.Editor.UI.Property
             posZ.TextChanged += (sender) => { propertyIsDirty = true; };
         }
 
-        public override OpenTK.Vector3 Value
+        public override Vector3 Value
         {
             get
             {
                 var xIsEmpty = !float.TryParse(posX.Text, out var x);
                 var yIsEmpty = !float.TryParse(posY.Text, out var y);
                 var zIsEmpty = !float.TryParse(posZ.Text, out var z);
-                return new OpenTK.Vector3(xIsEmpty ? 0 : x, yIsEmpty ? 0 : y, zIsEmpty ? 0 : z);
+                return new Vector3(xIsEmpty ? 0 : x, yIsEmpty ? 0 : y, zIsEmpty ? 0 : z);
             }
             set
             {

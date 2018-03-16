@@ -1,5 +1,5 @@
 ﻿using System;
-using OpenTK;
+using System.Numerics;
 using SharpAsset;
 
 namespace SharpSL
@@ -19,7 +19,7 @@ namespace SharpSL
 
         void display(ref Skeleton skele);
 
-        void DrawGrid(ref byte color, Vector3 pos, float X, float Y, ref Matrix4 projMat, int cell_size = 16, int grid_size = 2560);//IBackendRendererHelper/IEditorBackend?
+        void DrawGrid(ref byte color, Vector3 pos, float X, float Y, ref Matrix4x4 projMat, int cell_size = 16, int grid_size = 2560);//IBackendRendererHelper/IEditorBackend?
 
         void DrawBox(Vector3 pos1, Vector3 pos2);
 
@@ -43,7 +43,7 @@ namespace SharpSL
 
         void DrawCircle(float size, float lineWidth, ref byte unColor, Plane plane, float angle, bool filled);
 
-        void DrawFilledPolyline(float size, float lineWidth, ref byte color, ref Matrix4 mat, ref Vector3[] vecArray, bool fan = true);
+        void DrawFilledPolyline(float size, float lineWidth, ref byte color, ref Matrix4x4 mat, ref Vector3[] vecArray, bool fan = true);
 
         void DrawSlicedQuad(float x1, float y1, float x2, float y2, float left, float right, float top, float bottom, ref byte unColor);
 
@@ -63,7 +63,7 @@ namespace SharpSL
 
         void DrawDiamond(Vector2 pos, Vector2 dir, ref byte color);
 
-        void LoadMatrix(ref Matrix4 mat);
+        void LoadMatrix(ref Matrix4x4 mat);
 
         void UnloadMatrix();
     }

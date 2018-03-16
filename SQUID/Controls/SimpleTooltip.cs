@@ -11,7 +11,7 @@ namespace Squid
     {
         private Control _context;
         private int FadeDirection = 1; // used to fade in&out
-        private float DelayTimer; // timer to keep track of delay
+        private double DelayTimer; // timer to keep track of delay
 
         public bool AutoLayout = false;
 
@@ -34,6 +34,7 @@ namespace Squid
         public float Delay { get; set; }
 
         protected Control Context { get { return _context; } }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SimpleTooltip"/> class.
         /// </summary>
@@ -101,7 +102,7 @@ namespace Squid
         private float rotation;
         private Rectangle clip;
 
-        void AlignTooltip()
+        private void AlignTooltip()
         {
             if (_context == null) return;
 
@@ -109,7 +110,7 @@ namespace Squid
             Point p;
 
             FinalAlign = Alignment.Inherit;
-            
+
             p = TryAlign(_context.TooltipAlign);
 
             Rectangle oos = OutOfScreen(p, Size);
@@ -138,7 +139,7 @@ namespace Squid
                 {
                     if (oos.Left > 0)
                         p.x += oos.Left;
-                    else if(oos.Right > 0)
+                    else if (oos.Right > 0)
                         p.x -= oos.Right;
                     else
                         p = TryAlign(Alignment.BottomCenter);
@@ -159,7 +160,7 @@ namespace Squid
             PerformUpdate();
         }
 
-        Rectangle OutOfScreen(Point pos, Point size)
+        private Rectangle OutOfScreen(Point pos, Point size)
         {
             Rectangle result = new Rectangle(0, 0, 0, 0);
 
@@ -190,12 +191,15 @@ namespace Squid
                 case Alignment.TopCenter:
                     p = new Point(loc.x + csize.x / 2 - Size.x / 2, loc.y - Size.y);
                     break;
+
                 case Alignment.BottomCenter:
                     p = new Point(loc.x + csize.x / 2 - Size.x / 2, loc.y + csize.y);
                     break;
+
                 case Alignment.MiddleLeft:
                     p = new Point(loc.x - Size.x, loc.y + csize.y / 2 - Size.y / 2);
                     break;
+
                 case Alignment.MiddleRight:
                     p = new Point(loc.x + csize.x, loc.y + csize.y / 2 - Size.y / 2);
                     break;
@@ -213,8 +217,8 @@ namespace Squid
             if (DelayTimer >= Delay)
             {
                 // fade Opacity in/out over Duration depending on FadeDirection
-                // (FPS independent linear interpolation) 
-                Opacity += (UI.TimeElapsed / FadeDuration) * FadeDirection;
+                // (FPS independent linear interpolation)
+                Opacity += (float)(UI.TimeElapsed / FadeDuration) * FadeDirection;
 
                 // clamp between 0 and 1
                 Opacity = Opacity < 0 ? 0 : (Opacity > 1 ? 1 : Opacity);

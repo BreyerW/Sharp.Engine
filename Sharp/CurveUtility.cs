@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using OpenTK;
+using System.Numerics;
 
 namespace Sharp
 {
@@ -40,15 +40,15 @@ namespace Sharp
 
         public static Vector2 RotateAroundPivot(this Vector2 pivot, Vector2 point, Vector3 angles)
         {
-            var dir = new Vector3(point - pivot);
-            dir = Quaternion.FromEulerAngles(angles) * dir;
-            return dir.Xy + pivot;
+            var dir = point - pivot;
+            dir = Vector2.Transform(dir, Matrix3x2.CreateRotation(angles.X));
+            return new Vector2(dir.X, dir.Y) + pivot;
         }
 
         public static Vector3 RotateAroundPivot(this Vector3 pivot, Vector3 point, Vector3 angles)
         {
             var dir = point - pivot;
-            dir = Quaternion.FromEulerAngles(angles) * dir;
+            dir = Vector3.Transform(dir, Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationZ(angles.Z));
             return dir + pivot;
         }
 

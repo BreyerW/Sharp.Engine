@@ -2,6 +2,7 @@
 using Sharp.Commands;
 using Sharp.Editor.Attribs;
 using Squid;
+using System.Numerics;
 
 namespace Sharp.Editor.UI.Property
 {
@@ -54,8 +55,8 @@ namespace Sharp.Editor.UI.Property
                     object obj = getter();
                     if (obj is float || obj is double || obj is decimal)
                         obj = Math.Round((decimal)obj, Application.roundingPrecision);
-                    else if (obj is OpenTK.Vector3 vec)
-                        obj = new OpenTK.Vector3((float)Math.Round(vec.X, Application.roundingPrecision), (float)Math.Round(vec.Y, Application.roundingPrecision), (float)Math.Round(vec.Z, Application.roundingPrecision));
+                    else if (obj is Vector3 vec)
+                        obj = new Vector3((float)Math.Round(vec.X, Application.roundingPrecision), (float)Math.Round(vec.Y, Application.roundingPrecision), (float)Math.Round(vec.Z, Application.roundingPrecision));
                     if (!obj.Equals(command.newValue))//take rounding into account
                     {
                         command.newValue = Value;

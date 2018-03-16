@@ -1,5 +1,5 @@
 ﻿using System;
-using OpenTK;
+using System.Numerics;
 using SharpAsset;
 
 namespace Sharp
@@ -8,9 +8,9 @@ namespace Sharp
     {
         public static Camera main;//rename to or add current camera and generate camera for each window and sceneview
         public Frustum frustum;
-        private Matrix4 projectionMatrix;
+        private Matrix4x4 projectionMatrix;
 
-        public Matrix4 ProjectionMatrix
+        public Matrix4x4 ProjectionMatrix
         {
             get
             {
@@ -20,13 +20,13 @@ namespace Sharp
             {
                 projectionMatrix = value;
                 if (main != null)
-                    Material.BindGlobalProperty("camProjection", () => ref main.projectionMatrix);
+                    Material.SetGlobalProperty("camProjection", ref main.projectionMatrix);
             }
         }
 
-        private Matrix4 orthoMatrix;
+        private Matrix4x4 orthoMatrix;
 
-        public Matrix4 OrthoMatrix
+        public Matrix4x4 OrthoMatrix
         {
             get
             {
@@ -40,25 +40,25 @@ namespace Sharp
             }
         }
 
-        private Matrix4 orthoLeftBottomMatrix;
+        private Matrix4x4 orthoLeftBottomMatrix;
 
-        public Matrix4 OrthoLeftBottomMatrix
+        public ref Matrix4x4 OrthoLeftBottomMatrix
         {
             get
             {
-                return orthoLeftBottomMatrix;
+                return ref orthoLeftBottomMatrix;
             }
-            set
-            {
-                orthoLeftBottomMatrix = value;
-                //if (main != null)
-                // Material.BindGlobalProperty("camProjection", () => ref main.projectionMatrix);
-            }
+            /* set
+             {
+                 orthoLeftBottomMatrix = value;
+                 //if (main != null)
+                 // Material.BindGlobalProperty("camProjection", () => ref main.projectionMatrix);
+             }*/
         }
 
-        private Matrix4 modelViewMatrix;
+        private Matrix4x4 modelViewMatrix;
 
-        public Matrix4 ModelViewMatrix
+        public Matrix4x4 ModelViewMatrix
         {
             get
             {
@@ -68,13 +68,17 @@ namespace Sharp
             {
                 modelViewMatrix = value;
                 if (main != null)
-                    Material.BindGlobalProperty("camView", () => ref main.modelViewMatrix);
+                    Material.SetGlobalProperty("camView", ref main.modelViewMatrix);
             }
         }
 
         public bool moved = false;
 
         #region Constructors
+
+        static Camera()
+        {
+        }
 
         public Camera()
         {
@@ -136,13 +140,13 @@ namespace Sharp
 
         public void SetProjectionMatrix()
         {
-            ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView((float)(FieldOfView * Math.PI / 180.0), AspectRatio, ZNear, ZFar);
+            ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView((float)(FieldOfView * Math.PI / 180.0), AspectRatio, ZNear, ZFar);
         }
 
         public void SetOrthoMatrix(int width, int height)
         {
-            OrthoMatrix = Matrix4.CreateOrthographicOffCenter(0, width, 0, height, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
-            OrthoLeftBottomMatrix = Matrix4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
+            OrthoMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, 0, height, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
+            OrthoLeftBottomMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
 
             this.width = width;
             this.height = height;
@@ -150,8 +154,9 @@ namespace Sharp
 
         public void SetModelviewMatrix()
         {
-            var translationMatrix = Matrix4.CreateTranslation(-entityObject.Position);
-            var rotationMatrix = Matrix4.CreateFromQuaternion(entityObject.ToQuaterion(entityObject.Rotation));
+            var translationMatrix = Matrix4x4.CreateTranslation(-entityObject.Position);
+            var angles = entityObject.rotation * NumericsExtensions.Pi / 180f;
+            var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
             //modelViewMatrix = rotationMatrix*translationMatrix; orbit
             ModelViewMatrix = translationMatrix * rotationMatrix; //pan
         }
@@ -171,11 +176,10 @@ namespace Sharp
             vec.Z = time;
             vec.W = 1.0f;
 
-            Matrix4 viewInv = modelViewMatrix.Inverted();
-            Matrix4 projInv = main.projectionMatrix.Inverted();
-
-            Vector4.Transform(ref vec, ref projInv, out vec);
-            Vector4.Transform(ref vec, ref viewInv, out vec);
+            modelViewMatrix.Invert(out var viewInv);
+            main.projectionMatrix.Invert(out var projInv);
+            vec.Transform(projInv, out vec);
+            vec.Transform(viewInv, out vec);
 
             if (vec.W > 0.000001f || vec.W < -0.000001f)
             {
@@ -184,14 +188,14 @@ namespace Sharp
                 vec.Z /= vec.W;
             }
 
-            return vec.Xyz;
+            return new Vector3(vec.X, vec.Y, vec.Z);
         }
 
         public Vector3 WorldToScreen(Vector3 pos, int width, int height)
         {
             var pos4 = Vector4.Transform(new Vector4(pos, 1), modelViewMatrix * projectionMatrix);
 
-            var NDCSpace = pos4.Xyz / pos4.W;
+            var NDCSpace = new Vector3(pos4.X, pos4.Y, pos4.Z) / pos4.W;
             return new Vector3(NDCSpace.X * (width / (2f)), NDCSpace.Y * (height / (2f)), NDCSpace.Z);//look at divide part
         }
 
@@ -238,7 +242,7 @@ namespace Sharp
         /// </summary>
         protected void ClampMouseValues()
         {
-            var newRot = new Vector3(entityObject.Rotation);
+            var newRot = entityObject.Rotation;
             if (newRot.Y >= 360) //360 degrees in radians (or something in radians)
                 newRot.Y -= 360;
             if (newRot.Y <= -360)
@@ -267,14 +271,14 @@ namespace Sharp
         /// </param>
         public void Rotate(float x, float y, float time = 1)
         {
-            var newRot = new Vector3(entityObject.Rotation);
+            var newRot = entityObject.Rotation;
             newRot.X += (y * MouseXSensitivity * time);
             newRot.Y += (x * MouseYSensitivity * time);
             entityObject.Rotation = newRot;
             SetModelviewMatrix();
             //Console.WriteLine("Rotation={0}", MouseRotation);
             //ClampMouseValues();
-            frustum?.Update(Camera.main.modelViewMatrix * Camera.main.projectionMatrix);
+            frustum?.Update(main.modelViewMatrix * main.projectionMatrix);
             //ResetMouse();
         }
 
@@ -303,11 +307,11 @@ namespace Sharp
             }
             if (CameraMode == CamMode.FirstPerson)
             {
-                entityObject.Position += Vector3.Transform(Movement, Quaternion.Invert(entityObject.ToQuaterion(entityObject.Rotation)));
+                entityObject.Position += Vector3.Transform(Movement, Quaternion.Inverse(entityObject.ToQuaterion(entityObject.Rotation)));//Invert?
                 entityObject.Position = new Vector3(entityObject.Position.X, 5, entityObject.Position.Z);
             }
             else
-                entityObject.Position += Vector3.Transform(Movement, Quaternion.Invert(entityObject.ToQuaterion(entityObject.Rotation)));
+                entityObject.Position += Vector3.Transform(Movement, Quaternion.Inverse(entityObject.ToQuaterion(entityObject.Rotation)));
 
             SetModelviewMatrix();
             SetProjectionMatrix();

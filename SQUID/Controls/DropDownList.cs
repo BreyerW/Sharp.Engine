@@ -22,14 +22,17 @@ namespace Squid
         /// Raised when [on closed].
         /// </summary>
         public event EventWithArgs OnClosed;
+
         /// <summary>
         /// Raised when [on opened].
         /// </summary>
         public event EventWithArgs OnOpened;
+
         /// <summary>
         /// Raised when [on opening].
         /// </summary>
         public event EventWithArgs OnOpening;
+
         /// <summary>
         /// Raised when [on closing].
         /// </summary>
@@ -40,16 +43,19 @@ namespace Squid
         /// </summary>
         /// <value>The label.</value>
         public Label Label { get; private set; }
+
         /// <summary>
         /// Gets the button.
         /// </summary>
         /// <value>The button.</value>
         public Button Button { get; private set; }
+
         /// <summary>
         /// Gets the listbox.
         /// </summary>
         /// <value>The listbox.</value>
         public ListBox Listbox { get; private set; }
+
         /// <summary>
         /// Gets the dropdown.
         /// </summary>
@@ -67,6 +73,7 @@ namespace Squid
         /// </summary>
         /// <value>The size of the dropdown.</value>
         public Point DropdownSize { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [dropdown auto size].
         /// </summary>
@@ -129,18 +136,18 @@ namespace Squid
             Dropdown.Controls.Add(Listbox);
         }
 
-        void Items_ItemRemoved(object sender, ListEventArgs<ListBoxItem> e)
+        private void Items_ItemRemoved(object sender, ListEventArgs<ListBoxItem> e)
         {
             if (e.Item.IsSelected)
             {
                 Label.Text = string.Empty;
-            
+
                 if (SelectedItemChanged != null)
                     SelectedItemChanged(this, e.Item);
             }
         }
 
-        void Items_ItemAdded(object sender, ListEventArgs<ListBoxItem> e)
+        private void Items_ItemAdded(object sender, ListEventArgs<ListBoxItem> e)
         {
             if (e.Item.IsSelected)
             {
@@ -151,7 +158,7 @@ namespace Squid
             }
         }
 
-        void Listbox_SelectedItemChanged(Control sender, ListBoxItem value)
+        private void Listbox_SelectedItemChanged(Control sender, ListBoxItem value)
         {
             Label.Text = value != null ? value.Text : string.Empty;
 
@@ -215,7 +222,7 @@ namespace Squid
             return control.IsChildOf(Dropdown);
         }
 
-        void Button_MouseClick(Control sender, MouseEventArgs args)
+        private void Button_MouseClick(Control sender, MouseEventArgs args)
         {
             if (args.Button > 0) return;
 

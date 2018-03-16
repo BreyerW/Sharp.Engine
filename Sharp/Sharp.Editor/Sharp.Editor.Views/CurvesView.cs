@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenTK;
+using System.Numerics;
 using Sharp.Editor.UI;
 using Sharp.Editor.UI.Property;
-using TupleExtensions;
 using Squid;
 
 namespace Sharp.Editor.Views
@@ -134,7 +133,7 @@ namespace Sharp.Editor.Views
             for (int j = 0; j < 2; j++)
             {
                 c = PrepareColorForCurve(c, j);
-                foreach (var (key, keyframe) in drawer.Value[j].keys.WithIndexes())
+                foreach (var (key, keyframe) in drawer.Value[j].keys.Indexed())
                 {
                     AddButtonsForNewKey(keyframe, j, ref c);
                 }
@@ -244,7 +243,8 @@ namespace Sharp.Editor.Views
             var condition = button.Name is "outTan";
             var pointInVS = RegionDrawer.CurveToViewSpace(keyframePos, scale, translation);
             var point = RegionDrawer.CurveToViewSpace(keyframePos.RotateAroundPivot(keyframePos + new Vector2(condition ? 1 : -1, 0), new Vector3((float)Math.Atan(condition ? value.outTangent : value.inTangent), 0, 0)), scale, translation);
-            var dir = (point - pointInVS).Normalized() * 50;
+            (point - pointInVS).Normalize(out var dir);
+            dir *= 50;
             button.UserData = new Point((int)dir.X, (int)dir.Y);
             var pos = new Point(center.Position.x + 6, center.Position.y + 6) + (Point)button.UserData;
             ChangePositionWithoutEvent(button, new Point(pos.x - 6, pos.y - 6));
@@ -494,7 +494,7 @@ namespace Sharp.Editor.Views
             var rightClick = args.Button is 1;
             var checkMousePos = new bool[drawer.Value.Length];
             var checkIfOutsideRegion = new bool[drawer.Value.Length / 2];
-            foreach (var (id, curve) in drawer.Value.WithIndexes())
+            foreach (var (id, curve) in drawer.Value.Indexed())
             {
                 checkMousePos[id] = Math.Abs(curve.Evaluate(pos.X) - pos.Y) < 0.5f;
                 if ((id & 1) is 0)
@@ -503,7 +503,7 @@ namespace Sharp.Editor.Views
 
             if (rightClick)
             {
-                foreach (var (id, condition) in checkMousePos.WithIndexes())
+                foreach (var (id, condition) in checkMousePos.Indexed())
                 {
                     if (!condition) continue;
 
@@ -589,7 +589,7 @@ namespace Sharp.Editor.Views
             var array = new Vector3[drawer.region.Length];
             for (int i = 0; i < drawer.region.Length; i++)
             {
-                array[i] = new Vector3(RegionDrawer.CurveToViewSpace(drawer.region[i], scale, translation));
+                array[i] = new Vector3(RegionDrawer.CurveToViewSpace(drawer.region[i], scale, translation), 0);
             }
 
             MainWindow.backendRenderer.WriteDepth(false);
@@ -733,7 +733,7 @@ namespace Sharp.Editor.Views
                         ticksAtLevel[j] /= axisUiScalars.X;
                         if (ticksAtLevel[j] > drawer.curvesRange.x && ticksAtLevel[j] < maxX)
                         {
-                            MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(ticksAtLevel[j], num), scale, translation)), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(ticksAtLevel[j], num2), scale, translation)), ref c.R);
+                            MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(ticksAtLevel[j], num), scale, translation), 0), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(ticksAtLevel[j], num2), scale, translation), 0), ref c.R);
                         }
                     }
                 }
@@ -741,11 +741,11 @@ namespace Sharp.Editor.Views
             c = curveSettings.hTickStyle.color * new Color(1f, 1f, 1f, 1f) * new Color(1, 1, 1, 0.75f);
             if (drawer.curvesRange.x != -float.PositiveInfinity)
             {
-                MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(drawer.curvesRange.x, num), scale, translation)), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(drawer.curvesRange.x, num2), scale, translation)), ref c.R);
+                MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(drawer.curvesRange.x, num), scale, translation), 0), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(drawer.curvesRange.x, num2), scale, translation), 0), ref c.R);
             }
             if (maxX != float.PositiveInfinity)
             {
-                MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(maxX, num), scale, translation)), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(maxX, num2), scale, translation)), ref c.R);
+                MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(maxX, num), scale, translation), 0), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(maxX, num2), scale, translation), 0), ref c.R);
             }
             vTicks.SetTickStrengths((float)curveSettings.vTickStyle.distMin, (float)curveSettings.vTickStyle.distFull, false);
             if (curveSettings.vTickStyle.stubs)
@@ -770,7 +770,7 @@ namespace Sharp.Editor.Views
                         ticksAtLevel2[l] /= axisUiScalars.Y;
                         if (ticksAtLevel2[l] > drawer.curvesRange.y && ticksAtLevel2[l] < maxY)
                         {
-                            MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num, ticksAtLevel2[l]), scale, translation)), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num2, ticksAtLevel2[l]), scale, translation)), ref c.R);
+                            MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num, ticksAtLevel2[l]), scale, translation), 0), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num2, ticksAtLevel2[l]), scale, translation), 0), ref c.R);
                         }
                     }
                 }
@@ -778,11 +778,11 @@ namespace Sharp.Editor.Views
             c = curveSettings.vTickStyle.color * new Color(1f, 1f, 1f, 1f) * new Color(1, 1, 1, 0.75f);
             if (drawer.curvesRange.y != -float.PositiveInfinity)
             {
-                MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num, drawer.curvesRange.y), scale, translation)), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num2, drawer.curvesRange.y), scale, translation)), ref c.R);
+                MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num, drawer.curvesRange.y), scale, translation), 0), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num2, drawer.curvesRange.y), scale, translation), 0), ref c.R);
             }
             if (maxY != float.PositiveInfinity)
             {
-                MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num, maxY), scale, translation)), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num2, maxY), scale, translation)), ref c.R);
+                MainEditorView.editorBackendRenderer.DrawLine(new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num, maxY), scale, translation), 0), new Vector3(RegionDrawer.CurveToViewSpace(new Vector2(num2, maxY), scale, translation), 0), ref c.R);
             }
 
             OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
@@ -792,7 +792,7 @@ namespace Sharp.Editor.Views
                 {
                     // curveSettings.hTickStyle.labelColor;
                     int levelWithMinSeparation = hTicks.GetLevelWithMinSeparation((float)curveSettings.hTickStyle.distLabel);
-                    int numberOfDecimalsForMinimumDifference = MathHelper.Clamp(-(int)Math.Floor(Math.Log10(hTicks.GetPeriodOfLevel(levelWithMinSeparation))), 0, 15);
+                    int numberOfDecimalsForMinimumDifference = NumericsExtensions.Clamp(-(int)Math.Floor(Math.Log10(hTicks.GetPeriodOfLevel(levelWithMinSeparation))), 0, 15);
                     float[] ticksAtLevel3 = hTicks.GetTicksAtLevel(levelWithMinSeparation, false);
                     float[] array = (float[])ticksAtLevel3.Clone();
 
@@ -829,7 +829,7 @@ namespace Sharp.Editor.Views
                     float[] ticksAtLevel4 = vTicks.GetTicksAtLevel(levelWithMinSeparation2, false);
                     float[] array2 = (float[])ticksAtLevel4.Clone();
 
-                    int numberOfDecimalsForMinimumDifference2 = MathHelper.Clamp(-(int)Math.Floor(Math.Log10(hTicks.GetPeriodOfLevel(levelWithMinSeparation2))), 0, 15); ;
+                    int numberOfDecimalsForMinimumDifference2 = NumericsExtensions.Clamp(-(int)Math.Floor(Math.Log10(hTicks.GetPeriodOfLevel(levelWithMinSeparation2))), 0, 15); ;
                     string text = "n" + numberOfDecimalsForMinimumDifference2;
                     float width = 35;
                     if (!curveSettings.vTickStyle.stubs && ticksAtLevel4.Length > 1)

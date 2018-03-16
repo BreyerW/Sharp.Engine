@@ -2,11 +2,10 @@
 using System.Linq;
 using SDL2;
 using Sharp.Editor.Views;
-using OpenTK;
+using System.Numerics;
 using SharpSL.BackendRenderers;
 using Sharp.Windowing;
 using Squid;
-using TupleExtensions;
 
 namespace Sharp
 {
@@ -25,7 +24,7 @@ namespace Sharp
             backendRenderer.SetupGraphic();
             Control parent = MainEditorView.mainViews[windowId].desktop;
             var margin = new Margin(0, 50, 0, 30);
-            foreach (var (id, view) in viewsToOpen.WithIndexes())
+            foreach (var (id, view) in viewsToOpen.Indexed())
             {
                 var splitter = new SplitContainer();
                 splitter.SplitFrame1.MinSize = new Point(100, 100);

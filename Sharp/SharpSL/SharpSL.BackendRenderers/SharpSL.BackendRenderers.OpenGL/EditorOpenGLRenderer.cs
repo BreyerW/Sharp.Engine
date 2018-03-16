@@ -1,5 +1,8 @@
 ﻿using System;
-using OpenTK;
+using System.Numerics;
+using Sharp;
+
+//using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using SharpAsset;
 using SharpAsset.Pipeline;
@@ -15,9 +18,9 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.PopMatrix();
         }
 
-        public void LoadMatrix(ref Matrix4 mat)
+        public void LoadMatrix(ref Matrix4x4 mat)
         {
-            GL.LoadMatrix(ref mat);
+            GL.LoadMatrix(ref mat.M11);
             GL.PushMatrix();
         }
 
@@ -45,7 +48,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Color4(0, 0, 0, 0);
         }
 
-        public void DrawScaleGizmo(float thickness, float scale, ref byte xColor, ref byte yColor, ref byte zColor, Vector3 offset)
+        public void DrawScaleGizmo(float thickness, float scale, ref byte xColor, ref byte yColor, ref byte zColor, System.Numerics.Vector3 offset)
         {
             this.DrawCube(scale / 2f, -scale / 4f, offset.Y != 0 ? offset.Y : 3.5f * scale, scale / 4f, ref yColor);
             this.DrawCube(scale / 2f, -scale / 4f, -scale / 4f, offset.Z != 0 ? offset.Z : 4f * scale, ref zColor);
@@ -71,10 +74,14 @@ namespace SharpSL.BackendRenderers.OpenGL
         {
             GL.Color4(ref color);
             GL.Begin(BeginMode.Quads);
-            GL.Vertex2(pos + new Vector2(0, dir.Y));
-            GL.Vertex2(pos + new Vector2(dir.X, 0));
-            GL.Vertex2(pos - new Vector2(0, dir.Y));
-            GL.Vertex2(pos - new Vector2(dir.X, 0));
+            var pos1 = pos + new Vector2(0, dir.Y);
+            GL.Vertex2(ref pos1.X);
+            var pos2 = pos + new Vector2(dir.X, 0);
+            GL.Vertex2(ref pos2.X);
+            var pos3 = pos - new Vector2(0, dir.Y);
+            GL.Vertex2(ref pos3.X);
+            var pos4 = pos - new Vector2(dir.X, 0);
+            GL.Vertex2(ref pos4.X);
             GL.End();
             GL.Color3((byte)255, (byte)255, (byte)255);
         }
@@ -327,12 +334,12 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
             GL.Color4(ref unColor);
             GL.Begin(filled ? PrimitiveType.TriangleFan : PrimitiveType.LineLoop);
-            float num = MathHelper.Pi * 0.01f;
-            float fraction = MathHelper.DegreesToRadians(Math.Abs(angle)) / MathHelper.TwoPi;
+            float num = NumericsExtensions.Pi * 0.01f;
+            float fraction = NumericsExtensions.DegreesToRadians(Math.Abs(angle)) / (2 * NumericsExtensions.Pi);
 
             GL.Vertex3(0.0, 0.0, 0.0);
 
-            for (float num2 = 0; num2 < MathHelper.TwoPi * fraction + num; num2 += num)
+            for (float num2 = 0; num2 < 2 * NumericsExtensions.Pi * fraction + num; num2 += num)
             {
                 switch (plane)
                 {
@@ -353,7 +360,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             DrawLine(v1.X, v1.Y, v1.Z, v2.X, v2.Y, v2.Z, ref color);
         }
 
-        public void DrawFilledPolyline(float size, float lineWidth, ref byte color, ref Matrix4 mat, ref Vector3[] vecArray, bool fan = true)
+        public void DrawFilledPolyline(float size, float lineWidth, ref byte color, ref Matrix4x4 mat, ref Vector3[] vecArray, bool fan = true)
         {
             //TurnOnDebugging();
 
@@ -361,7 +368,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
             GL.LoadIdentity();
-            GL.LoadMatrix(ref mat);
+            GL.LoadMatrix(ref mat.M11);
             GL.PushMatrix();
             GL.Color4(ref color);
             GL.Begin(fan ? PrimitiveType.TriangleFan : PrimitiveType.Triangles);
@@ -550,7 +557,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             axis.X = ((axis.X != 1f) ? (offset + height) : 0f);
             axis.X = ((axis.Y == 1f) ? (offset + height) : 0f);
             axis.X = ((axis.Z == 1f) ? (offset + height) : 0f);
-            GL.Vertex3(axis);
+            GL.Vertex3(ref axis.X);
             float z;
             for (float num = 0f; num < 6.28318548f; num += 0.1f)
             {
@@ -600,14 +607,14 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.End();
         }
 
-        public void DrawGrid(ref byte color, Vector3 pos, float X, float Y, ref Matrix4 projMat, int cell_size = 16, int grid_size = 2560)
+        public void DrawGrid(ref byte color, Vector3 pos, float X, float Y, ref Matrix4x4 projMat, int cell_size = 16, int grid_size = 2560)
         {
             GL.UseProgram(0);
             int num = (int)Math.Round((double)(pos.X / (float)cell_size)) * cell_size;
             int num2 = (int)Math.Round((double)(pos.Y / (float)cell_size)) * cell_size;
             int num3 = grid_size / cell_size;
             GL.Disable(EnableCap.Texture2D);
-            GL.LoadMatrix(ref projMat);
+            GL.LoadMatrix(ref projMat.M11);
             GL.PushMatrix();
             GL.Translate((float)num - (float)grid_size / 2f, 0f, (float)num2 - (float)grid_size / 2f);
 
@@ -630,12 +637,13 @@ namespace SharpSL.BackendRenderers.OpenGL
         }
 
         private void bvh_to_vertices(Bone joint, ref List<Vector4> vertices,
-            ref List<ushort> indices, ref List<Matrix4> matrices,
+            ref List<ushort> indices, ref List<Matrix4x4> matrices,
             ushort parentIndex = 0)
         {
             // vertex from current joint is in 4-th ROW (column-major ordering)
-            var translatedVertex = joint.Offset.Inverted().Column3;//check column if wrong
-            matrices.Add(joint.Offset.Inverted());
+            Matrix4x4.Invert(joint.Offset, out var inverted);
+            var translatedVertex = new Vector4(inverted.M14, inverted.M24, inverted.M34, inverted.M44);//check column if wrong
+            matrices.Add(inverted);
             //Console.WriteLine(translatedVertex.W);
             // pushing current
             vertices.Add(translatedVertex);
@@ -656,7 +664,7 @@ namespace SharpSL.BackendRenderers.OpenGL
         {
             List<Vector4> vertices = new List<Vector4>();
             List<ushort> bvhindices = new List<ushort>();
-            List<Matrix4> matrices = new List<Matrix4>();
+            List<Matrix4x4> matrices = new List<Matrix4x4>();
 
             bvh_to_vertices(skele.bones[0], ref vertices, ref bvhindices, ref matrices);
 
@@ -670,7 +678,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             GL.Enable(EnableCap.DepthTest);
 
             List<Vector4> vertices = new List<Vector4>();
-            List<Matrix4> matriceses = new List<Matrix4>();
+            List<Matrix4x4> matriceses = new List<Matrix4x4>();
             List<ushort> bvhindices = new List<ushort>();
 
             bvh_to_vertices(skele.bones[0], ref vertices, ref bvhindices, ref matriceses);
@@ -710,7 +718,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             //shader1.use();
 
             List<Vector4> vertices = new List<Vector4>();
-            List<Matrix4> matrices = new List<Matrix4>();
+            List<Matrix4x4> matrices = new List<Matrix4x4>();
             List<ushort> bvhindices = new List<ushort>();
 
             bvh_to_vertices(skele.bones[0], ref vertices, ref bvhindices, ref matrices);
@@ -720,12 +728,12 @@ namespace SharpSL.BackendRenderers.OpenGL
             //GL.light
             //GL.LoadMatrix(ref skele.MVP);
             //GL.ShadeModel (ShadingModel.Flat);
-            GL.LoadMatrix(ref skele.MVP);
+            GL.LoadMatrix(ref skele.MVP.M11);
             //foreach (var childBone in skele.bones[0].Children)
             DisplayOcta(skele.bones[0]);
             var skeleShader = Pipeline.GetPipeline<ShaderPipeline>().GetAsset("SkeletonShader");
             GL.UseProgram(skeleShader.Program);
-            GL.UniformMatrix4(GL.GetUniformLocation(skeleShader.Program, "mvp_matrix"), false, ref skele.MVP);
+            GL.UniformMatrix4(GL.GetUniformLocation(skeleShader.Program, "mvp_matrix"), 1, false, ref skele.MVP.M11);
 
             update(ref skele);
             GL.BindVertexArray(skele.VAO);
@@ -742,11 +750,14 @@ namespace SharpSL.BackendRenderers.OpenGL
 
         private void DisplayOcta(Bone bone)
         {
-            var mat = bone.Offset.Inverted();
-            var head = mat.Column3.Xyz;
-            var tail = bone.Children.Count > 0 ? bone.Children[0].Offset.Inverted().Column3.Xyz : Vector4.Transform(Vector4.Zero, mat).Xyz; //or borrow last length
-                                                                                                                                            //Console.WriteLine ((copyMat-final).Length);
-            draw_bone_solid_octahedral(ref mat, (head - tail).Length);
+            Matrix4x4.Invert(bone.Offset, out var inverted);
+            var mat = inverted;
+            var head = new Vector3(inverted.M14, inverted.M24, inverted.M34);
+            Matrix4x4.Invert(bone.Children[0].Offset, out var invertedChild);
+            var boneVec = bone.Children.Count > 0 ? new Vector4(invertedChild.M14, invertedChild.M24, invertedChild.M34, invertedChild.M44) : Vector4.Transform(Vector4.Zero, mat);
+            var tail = new Vector3(boneVec.X, boneVec.Y, boneVec.Z); //or borrow last length
+                                                                     //Console.WriteLine ((copyMat-final).Length);
+            draw_bone_solid_octahedral(ref mat, (head - tail).Length());
             foreach (var childBone in bone.Children)
                 DisplayOcta(childBone);
         }
@@ -789,7 +800,7 @@ namespace SharpSL.BackendRenderers.OpenGL
     new []{ 0.00000000f,  0.11043154f,  0.99388373f}
         };
 
-        private static void draw_bone_solid_octahedral(ref Matrix4 mat, float length)
+        private static void draw_bone_solid_octahedral(ref Matrix4x4 mat, float length)
         {
             //Console.WriteLine ("buuu");
             //	displist = GL.GenLists(1);
@@ -797,7 +808,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
             GL.PushMatrix();
 
-            GL.MultTransposeMatrix(ref mat);
+            GL.MultTransposeMatrix(ref mat.M11);
             GL.Scale(length, length, length);
             GL.Begin(PrimitiveType.Triangles);
             for (var i = 0; i < 8; i++)

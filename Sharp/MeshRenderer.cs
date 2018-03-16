@@ -27,7 +27,7 @@ namespace Sharp
             MainWindow.backendRenderer.GenerateBuffers(ref mesh.VBO, ref mesh.EBO);
             MainWindow.backendRenderer.BindBuffers(ref mesh.VBO, ref mesh.EBO);
             MainWindow.backendRenderer.Allocate(ref mesh.UsageHint, ref mesh.SpanToMesh.DangerousGetPinnableReference(), ref mesh.Indices[0], mesh.SpanToMesh.Length, mesh.Indices.Length);
-            material.BindProperty("model", () => ref entityObject.ModelMatrix);
+
             foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.vertType].Values)
                 MainWindow.backendRenderer.BindVertexAttrib(ref vertAttrib.type, vertAttrib.shaderLocation, vertAttrib.dimension, mesh.stride, vertAttrib.offset);
         }
@@ -49,6 +49,7 @@ namespace Sharp
             var shader = material.Shader;
 
             MainWindow.backendRenderer.Use(shader.Program);
+            material.SetProperty("model", ref entityObject.ModelMatrix, false);
             material.SendData();
             MainWindow.backendRenderer.Use(ref mesh.indiceType, mesh.Indices.Length);
             MainWindow.backendRenderer.ChangeShader();

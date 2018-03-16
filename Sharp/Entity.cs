@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using OpenTK;
+using System.Numerics;
 using Sharp.Editor.Views;
 using System.Linq;
 
@@ -78,9 +78,9 @@ namespace Sharp
         private HashSet<int> tags = new HashSet<int>();
 
         //public
-        private Matrix4 modelMatrix;
+        private Matrix4x4 modelMatrix;
 
-        public ref Matrix4 ModelMatrix
+        public ref Matrix4x4 ModelMatrix
         {
             get { return ref modelMatrix; }
         }
@@ -148,16 +148,16 @@ namespace Sharp
 
         public void SetModelMatrix()
         {
-            var angles = rotation * MathHelper.Pi / 180f;
-            ModelMatrix = Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(angles.X) * Matrix4.CreateRotationY(angles.Y) * Matrix4.CreateRotationZ(angles.Z) * Matrix4.CreateTranslation(position);
+            var angles = rotation * NumericsExtensions.Pi / 180f;
+            ModelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
         }
 
         public Quaternion ToQuaterion(Vector3 angles)
         {
             // Assuming the angles are in radians.
-            angles *= MathHelper.Pi / 180f;
+            angles *= NumericsExtensions.Pi / 180f;
 
-            return Quaternion.FromMatrix(Matrix3.CreateRotationX(angles.X) * Matrix3.CreateRotationY(angles.Y) * Matrix3.CreateRotationZ(angles.Z));
+            return Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z));
         }
 
         public static Vector3 ToEuler(Quaternion q)
@@ -178,7 +178,7 @@ namespace Sharp
             {
                 // Singularity at north pole
                 pitchYawRoll.Z = 2f * (float)Math.Atan2(q.X, q.W);  // Yaw
-                pitchYawRoll.Y = MathHelper.Pi * 0.5f;                         // Pitch
+                pitchYawRoll.Y = NumericsExtensions.Pi * 0.5f;                         // Pitch
                 pitchYawRoll.X = 0f;                                // Roll
                 return pitchYawRoll;
             }
@@ -186,7 +186,7 @@ namespace Sharp
             {
                 // Singularity at south pole
                 pitchYawRoll.Z = -2f * (float)Math.Atan2(q.X, q.W); // Yaw
-                pitchYawRoll.Y = -MathHelper.Pi * 0.5f;                        // Pitch
+                pitchYawRoll.Y = -NumericsExtensions.Pi * 0.5f;                        // Pitch
                 pitchYawRoll.X = 0f;                                // Roll
                 return pitchYawRoll;
             }
@@ -200,25 +200,25 @@ namespace Sharp
             return pitchYawRoll;
         }
 
-        public static Vector3 rotationMatrixToEulerAngles(Matrix4 mat)
+        public static Vector3 rotationMatrixToEulerAngles(Matrix4x4 mat)
         {
             //assert(isRotationMatrix(R));
-            mat.Transpose();
-            float sy = (float)Math.Sqrt(mat[0, 0] * mat[0, 0] + mat[1, 0] * mat[1, 0]);
+            mat = Matrix4x4.Transpose(mat);
+            float sy = (float)Math.Sqrt(mat.M11 * mat.M11 + mat.M21 * mat.M21);
 
             bool singular = sy < 1e-6; // If
 
             float x, y, z;
             if (!singular)
             {
-                x = (float)Math.Atan2(mat[2, 1], mat[2, 2]);
-                y = (float)Math.Atan2(-mat[2, 0], sy);
-                z = (float)Math.Atan2(mat[1, 0], mat[0, 0]);
+                x = (float)Math.Atan2(mat.M32, mat.M33);
+                y = (float)Math.Atan2(-mat.M31, sy);
+                z = (float)Math.Atan2(mat.M21, mat.M11);
             }
             else
             {
-                x = (float)Math.Atan2(-mat[1, 2], mat[1, 1]);
-                y = (float)Math.Atan2(-mat[2, 0], sy);
+                x = (float)Math.Atan2(-mat.M23, mat.M22);
+                y = (float)Math.Atan2(-mat.M31, sy);
                 z = 0;
             }
             return new Vector3(x, y, z);

@@ -1,5 +1,5 @@
 ﻿using System;
-using OpenTK;
+using System.Numerics;
 using Sharp;
 
 namespace Sharp
@@ -19,6 +19,7 @@ namespace Sharp
             this.Min = min;
             this.Max = max;
         }
+
         public Vector3[] GetCorners()
         {
             return new Vector3[] {
@@ -33,15 +34,15 @@ namespace Sharp
             };
         }
 
-
         public override int GetHashCode()
         {
             return this.Min.GetHashCode() + this.Max.GetHashCode();
         }
-        public Vector3 getPositiveVertex(Vector3 normal, Matrix4 modelMatrix)
+
+        public Vector3 getPositiveVertex(Vector3 normal, Matrix4x4 modelMatrix)
         {
-            Vector3 positiveVertex = Vector3.TransformPosition(Min, modelMatrix);// add /scale
-            var max = Vector3.TransformPosition(Max, modelMatrix);
+            Vector3 positiveVertex = Vector3.Transform(Min, modelMatrix);//TransformPosition(Min, modelMatrix);// add /scale
+            var max = Vector3.Transform(Max, modelMatrix);
             if (normal.X >= 0.0f) positiveVertex.X = max.X;
             if (normal.Y >= 0.0f) positiveVertex.Y = max.Y;
             if (normal.Z >= 0.0f) positiveVertex.Z = max.Z;
@@ -49,21 +50,22 @@ namespace Sharp
             return positiveVertex;
         }
 
-        public Vector3 getNegativeVertex(Vector3 normal, Matrix4 modelMatrix)
+        public Vector3 getNegativeVertex(Vector3 normal, Matrix4x4 modelMatrix)
         {
-            Vector3 negativeVertex = Vector3.TransformPosition(Max, modelMatrix);
-            var min = Vector3.TransformPosition(Min, modelMatrix);
+            Vector3 negativeVertex = Vector3.Transform(Max, modelMatrix);
+            var min = Vector3.Transform(Min, modelMatrix);
             if (normal.X >= 0.0f) negativeVertex.X = min.X;
             if (normal.Y >= 0.0f) negativeVertex.Y = min.Y;
             if (normal.Z >= 0.0f) negativeVertex.Z = min.Z;
 
             return negativeVertex;
         }
-        public bool Intersect(ref Ray ray, ref Matrix4 matrix, out Vector3 hitPoint)
+
+        public bool Intersect(ref Ray ray, ref Matrix4x4 matrix, out Vector3 hitPoint)
         {
             hitPoint = Vector3.Zero;
-            var max = Vector3.TransformPosition(Max, matrix);
-            var min = Vector3.TransformPosition(Min, matrix);
+            var max = Vector3.Transform(Max, matrix);
+            var min = Vector3.Transform(Min, matrix);
             float coordX, coordY;
             //first test if start in box
             if (ray.origin.X >= min.X
@@ -94,7 +96,6 @@ namespace Sharp
             else if (ray.origin.Z > max.Z && ray.direction.Z != 0.0f)
                 maxT.Z = (max.Z - ray.origin.Z) / ray.direction.Z;
 
-
             //get the maximum maxT
             if (maxT.X > maxT.Y && maxT.X > maxT.Z)
             {
@@ -102,7 +103,7 @@ namespace Sharp
                     return false;// ray go on opposite of face
                                  //coordonate of hit point of face of cube
                 coordX = ray.origin.Z + maxT.X * ray.direction.Z;
-                // if hit point coord ( intersect face with ray) is out of other plane coord it miss 
+                // if hit point coord ( intersect face with ray) is out of other plane coord it miss
                 if (coordX < min.Z || coordX > max.Z)
                     return false;
                 coordY = ray.origin.Y + maxT.X * ray.direction.Y;
@@ -117,7 +118,7 @@ namespace Sharp
                     return false;// ray go on opposite of face
                                  //coordonate of hit point of face of cube
                 coordX = ray.origin.Z + maxT.Y * ray.direction.Z;
-                // if hit point coord ( intersect face with ray) is out of other plane coord it miss 
+                // if hit point coord ( intersect face with ray) is out of other plane coord it miss
                 if (coordX < min.Z || coordX > max.Z)
                     return false;
                 coordY = ray.origin.X + maxT.Y * ray.direction.X;
@@ -132,7 +133,7 @@ namespace Sharp
                     return false;// ray go on opposite of face
                                  //coordonate of hit point of face of cube
                 coordX = ray.origin.X + maxT.Z * ray.direction.X;
-                // if hit point coord ( intersect face with ray) is out of other plane coord it miss 
+                // if hit point coord ( intersect face with ray) is out of other plane coord it miss
                 if (coordX < min.X || coordX > max.X)
                     return false;
                 coordY = ray.origin.Y + maxT.Z * ray.direction.Y;
@@ -142,6 +143,7 @@ namespace Sharp
                 return true;
             }
         }
+
         /*
          public bool Intersect(ref Ray ray, ref Matrix4 matrix, out Vector3 hitPoint)
         {
@@ -204,6 +206,7 @@ namespace Sharp
             f1 = tmpF2;
         }
           */
+
         /// <summary>
         /// Determines whether there is an intersection between a <see cref="SharpDX.Ray"/> and a <see cref="SharpDX.BoundingSphere"/>.
         /// </summary>
@@ -212,11 +215,11 @@ namespace Sharp
         /// <param name="distance">When the method completes, contains the distance of the intersection,
         /// or 0 if there was no intersection.</param>
         /// <returns>Whether the two objects intersected.</returns>
-        public static bool Intersect(ref Ray ray, ref Vector3 centerSphere, float radius, ref Matrix4 matrix, out float distance)
+        public static bool Intersect(ref Ray ray, ref Vector3 centerSphere, float radius, ref Matrix4x4 matrix, out float distance)
         {
             //Source: Real-Time Collision Detection by Christer Ericson
             //Reference: Page 177
-            var center = Vector3.TransformPosition(centerSphere, matrix);
+            var center = Vector3.Transform(centerSphere, matrix);
             Vector3 m = ray.origin - center;
 
             float b = Vector3.Dot(m, ray.direction);
@@ -245,14 +248,14 @@ namespace Sharp
         }
 
         /// <summary>
-        /// Determines whether there is an intersection between a <see cref="SharpDX.Ray"/> and a <see cref="SharpDX.BoundingSphere"/>. 
+        /// Determines whether there is an intersection between a <see cref="SharpDX.Ray"/> and a <see cref="SharpDX.BoundingSphere"/>.
         /// </summary>
         /// <param name="ray">The ray to test.</param>
         /// <param name="sphere">The sphere to test.</param>
         /// <param name="point">When the method completes, contains the point of intersection,
         /// or <see cref="SharpDX.Vector3.Zero"/> if there was no intersection.</param>
         /// <returns>Whether the two objects intersected.</returns>
-        public static bool Intersect(ref Ray ray, ref Vector3 centerSphere, float radius, ref Matrix4 matrix, out Vector3 point)
+        public static bool Intersect(ref Ray ray, ref Vector3 centerSphere, float radius, ref Matrix4x4 matrix, out Vector3 point)
         {
             float distance;
             if (!Intersect(ref ray, ref centerSphere, radius, ref matrix, out distance))
@@ -264,9 +267,5 @@ namespace Sharp
             point = ray.origin + (ray.direction * distance);
             return true;
         }
-
-
     }
 }
-
-

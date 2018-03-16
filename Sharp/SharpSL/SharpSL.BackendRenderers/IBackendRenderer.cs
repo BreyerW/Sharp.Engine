@@ -28,7 +28,7 @@ namespace SharpSL.BackendRenderers
         void SendMatrix4(int location, ref float mat);
 
         //void Send(ref int location,ref int[] i);
-        void SendTexture2D(int location, ref int tbo/*, int slot*/);
+        void SendTexture2D(int location, int tbo/*, int slot*/);
 
         void SendUniform1(int location, ref float data);
 
@@ -58,6 +58,7 @@ namespace SharpSL.BackendRenderers
 
         void ClearColor();
 
+        //int PropertyToID(string property);
         void ClearColor(float r, float b, float g, float a);
 
         void ClearDepth();

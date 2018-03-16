@@ -1,5 +1,66 @@
-﻿using OpenTK;
+﻿using System.Numerics;
 using Sharp;
+using System.Runtime.CompilerServices;
+
+namespace SharpAsset
+
+{
+    public delegate ref T GetData<T>();
+
+    internal interface IParameter
+    {
+        void ConsumeData(int location);
+    }
+
+    internal class Matrix4Parameter : IParameter
+    {
+        public Matrix4x4 data;
+
+        public Matrix4Parameter(in Matrix4x4 mat)
+        {
+            data = mat;
+        }
+
+        public void ConsumeData(int location)
+        {
+            SendToGPU(location, ref data.M11);
+        }
+
+        public static void SendToGPU(int location, ref float address)
+        {
+            MainWindow.backendRenderer.SendMatrix4(location, ref address/*, Slot*/);
+        }
+    }
+
+    internal class Texture2DParameter : IParameter //zalatwiaj primitivy tutaj
+    {
+        //private int Slot;
+
+        public int data;
+
+        public Texture2DParameter(in Texture tex/*, int slot*/)
+        {
+            //Slot = slot;
+            data = tex.TBO;
+        }
+
+        public void ConsumeData(int location)
+        {
+            SendToGPU(data, location);
+        }
+
+        public static void SendToGPU(int tbo, int location)
+        {
+            MainWindow.backendRenderer.SendTexture2D(location, tbo/*, Slot*/);
+        }
+    }
+}
+
+/*
+ *
+ using OpenTK;
+using Sharp;
+using SharpAsset.Pipeline;
 using System.Runtime.CompilerServices;
 
 namespace SharpAsset
@@ -14,16 +75,16 @@ namespace SharpAsset
 
     internal struct Matrix4Parameter : IParameter
     {
-        public GetData<Matrix4> data;
+        public Matrix4 data;
 
-        public Matrix4Parameter(GetData<Matrix4> getData)
+        public Matrix4Parameter(ref Matrix4 data)
         {
-            data = getData;
+            this.data = data;
         }
 
         public void ConsumeData(int location)
         {
-            MainWindow.backendRenderer.SendMatrix4(location, ref data().Row0.X);
+            MainWindow.backendRenderer.SendMatrix4(location, ref data.Row0.X);
         }
     }
 
@@ -31,23 +92,22 @@ namespace SharpAsset
     {
         //private int Slot;
 
-        public GetData<Texture> data;
+        public int data;
 
-        public Texture2DParameter(GetData<Texture> getData/*, int slot*/)
+        public Texture2DParameter(ref Texture data/*, int slot*)
         {
             //Slot = slot;
-            data = getData;
+            this.data = TexturePipeline.nameToKey.IndexOf(data.Name);
         }
 
-        public void ConsumeData(int location)
-        {
-            MainWindow.backendRenderer.SendTexture2D(location, ref data().TBO/*, Slot*/);
-        }
+public void ConsumeData(int location)
+{
+    MainWindow.backendRenderer.SendTexture2D(location, ref Pipeline.Pipeline.GetPipeline<TexturePipeline>().GetAsset(data).TBO/*, Slot*);
+}
     }
 }
 
-/*
- * public override void ConsumeData()
+    public override void ConsumeData()
         {
             for(int i=0; i<data.Length; i++)
             SceneView.backendRenderer.Send(ref location, ref data[i],i);
