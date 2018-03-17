@@ -22,7 +22,8 @@ namespace Sharp
             SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
             //SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
             //SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, (int)SDL.SDL_GLcontext.);
-            OpenTK.Toolkit.Init();
+            MainWindow.backendRenderer.Start();
+
             var dummy = SDL.SDL_CreateWindow("", 0, 0, 1, 1, SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN | SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL); //convert dummy to splash screen?
                                                                                                                                              //
             SDL.SDL_GL_CreateContext(dummy);

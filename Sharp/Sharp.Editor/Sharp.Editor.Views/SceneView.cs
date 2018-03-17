@@ -83,8 +83,8 @@ namespace Sharp.Editor.Views
                         //var winPos = Window.windows[attachedToWindow].Position;
                         var localMouse = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
                         var start = Camera.main.ScreenToWorld(localMouse.x, localMouse.y, Size.x, Size.y, 1);
-                        (start - orig).Normalize(out var dir);
-                        var ray = new Ray(orig, dir);
+
+                        var ray = new Ray(orig, (start - orig).Normalize());
                         //foreach (var selected in SceneStructureView.tree.SelectedChildren)
                         if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
                         {
@@ -169,12 +169,11 @@ namespace Sharp.Editor.Views
             var locPos = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
             Camera.main.SetModelviewMatrix();
             var orig = Camera.main.entityObject.Position;
-            (Camera.main.ScreenToWorld(locPos.x, locPos.y, Size.x, Size.y) - orig).Normalize(out var dir);
             if (e.Source.UserData is ValueTuple<string, string>[] entities)
                 foreach (var asset in entities)
                 {
                     (string name, string extension) = asset;
-                    Pipeline.GetPipeline(extension).Import(name).PlaceIntoScene(null, orig + dir * Camera.main.ZFar * 0.1f);
+                    Pipeline.GetPipeline(extension).Import(name).PlaceIntoScene(null, orig + (Camera.main.ScreenToWorld(locPos.x, locPos.y, Size.x, Size.y) - orig).Normalize() * Camera.main.ZFar * 0.1f);
                 }
         }
 
@@ -201,8 +200,7 @@ namespace Sharp.Editor.Views
             {
                 //foreach (var selected in SceneStructureView.tree.SelectedChildren)
                 {
-                    entity.ModelMatrix.Invert(out var inverted);
-                    Matrix4x4.Decompose(globalMode ? inverted : entity.ModelMatrix, out _, out var rot, out var trans);
+                    Matrix4x4.Decompose(globalMode ? entity.ModelMatrix.Inverted() : entity.ModelMatrix, out _, out var rot, out var trans);
                     var mvpMat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans) * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;//TODO: check if properly hit, probably trans first, quat later
 
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
@@ -281,8 +279,7 @@ namespace Sharp.Editor.Views
                 //foreach (var selected in SceneStructureView.tree.SelectedNode)
                 if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
                 {
-                    entity.ModelMatrix.Invert(out var inverted);
-                    Matrix4x4.Decompose(globalMode ? inverted : entity.ModelMatrix, out _, out var rot, out var trans);
+                    Matrix4x4.Decompose(globalMode ? entity.ModelMatrix.Inverted() : entity.ModelMatrix, out _, out var rot, out var trans);
                     var mvpMat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans) * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
 
                     MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
@@ -313,8 +310,8 @@ namespace Sharp.Editor.Views
         {
             var orig = Camera.main.entityObject.Position;
             var end = Camera.main.ScreenToWorld(locPos.Value.x, locPos.Value.y, Size.x, Size.y);
-            (end - orig).Normalize(out var dir);
-            var ray = new Ray(orig, dir);
+            ;
+            var ray = new Ray(orig, (end - orig).Normalize());
             var hitList = new SortedList<Vector3, int>(new OrderByDistanceToCamera());
             foreach (var ent in entities)
             {

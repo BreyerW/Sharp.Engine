@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Sharp
 {
@@ -105,44 +105,86 @@ namespace Sharp
             return Math.Pow(2, Math.Ceiling(Math.Log((double)n, 2)));
         }
 
-        public static void Invert(in this Matrix4x4 m, out Matrix4x4 outMat)
+        public static Matrix4x4 Inverted(in this Matrix4x4 m)
         {
             if (m.GetDeterminant() != 0)
-                Matrix4x4.Invert(m, out outMat);
-            else outMat = m;
+            {
+                Matrix4x4.Invert(m, out var invertedMat);
+                return invertedMat;
+            }
+            return m;
         }
 
-        public static void Normalize(in this Vector4 vec, out Vector4 outVec)
+        public static Vector4 Normalized(in this Vector4 vec)
         {
-            outVec = Vector4.Normalize(vec);
+            return Vector4.Normalize(vec);
         }
 
-        public static void Normalize(in this Vector3 vec, out Vector3 outVec)
+        public static Vector3 Normalized(in this Vector3 vec)
         {
-            outVec = Vector3.Normalize(vec);
+            return Vector3.Normalize(vec);
         }
 
-        public static void Normalize(in this Vector2 vec, out Vector2 outVec)
+        public static Vector2 Normalized(in this Vector2 vec)
         {
-            outVec = Vector2.Normalize(vec);
+            return Vector2.Normalize(vec);
         }
 
-        public static void Transform(in this Vector4 vec, in Matrix4x4 mat, out Vector4 outVec)
+        public static Vector4 Transformed(in this Vector4 vec, in Matrix4x4 mat)
         {
-            outVec = Vector4.Transform(vec, mat);
+            return Vector4.Transform(vec, mat);
         }
 
-        public static void Transform(in this Vector3 vec, in Quaternion quat, out Vector3 outVec)
+        public static Vector3 Transformed(in this Vector3 vec, in Quaternion quat)
         {
-            outVec = Vector3.Transform(vec, quat);
+            return Vector3.Transform(vec, quat);
         }
 
-        public static void Transform(in this Vector3 vec, in Matrix4x4 mat, out Vector3 outVec)
+        public static Vector3 Transformed(in this Vector3 vec, in Matrix4x4 mat)
         {
-            outVec = new Vector3(
-                vec.X * mat.M11 + vec.Y * mat.M21 + vec.Z * mat.M31,
-                vec.X * mat.M12 + vec.Y * mat.M22 + vec.Z * mat.M32,
-vec.X * mat.M13 + vec.Y * mat.M23 + vec.Z * mat.M33);
+            return Vector3.Transform(vec, mat);
+        }
+
+        public static ref Vector4 Normalize(in this Vector4 vec)
+        {
+            ref var refVec = ref Unsafe.AsRef(vec);
+            refVec = Vector4.Normalize(vec);
+            return ref refVec;
+        }
+
+        public static ref Vector3 Normalize(in this Vector3 vec)
+        {
+            ref var refVec = ref Unsafe.AsRef(vec);
+            refVec = Vector3.Normalize(vec);
+            return ref refVec;
+        }
+
+        public static ref Vector2 Normalize(in this Vector2 vec)
+        {
+            ref var refVec = ref Unsafe.AsRef(vec);
+            refVec = Vector2.Normalize(vec);
+            return ref refVec;
+        }
+
+        public static ref Vector4 Transform(in this Vector4 vec, in Matrix4x4 mat)
+        {
+            ref var refVec = ref Unsafe.AsRef(vec);
+            refVec = Vector4.Transform(vec, mat);
+            return ref refVec;
+        }
+
+        public static ref Vector3 Transform(in this Vector3 vec, in Quaternion quat)
+        {
+            ref var refVec = ref Unsafe.AsRef(vec);
+            refVec = Vector3.Transform(vec, quat);
+            return ref refVec;
+        }
+
+        public static ref Vector3 Transform(in this Vector3 vec, in Matrix4x4 mat)
+        {
+            ref var refVec = ref Unsafe.AsRef(vec);
+            refVec = Vector3.Transform(vec, mat);
+            return ref refVec;
         }
 
         public static IEnumerable<(int index, T item)> Indexed<T>(this IEnumerable<T> enumeration)

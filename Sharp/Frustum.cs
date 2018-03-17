@@ -25,7 +25,7 @@ namespace Sharp
             };
             for (int i = 0; i < _frustum.Length; i++)
             {
-                _frustum[i].Normalize(out _frustum[i]);
+                _frustum[i].Normalize();
             }
         }
 

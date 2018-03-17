@@ -243,8 +243,7 @@ namespace Sharp.Editor.Views
             var condition = button.Name is "outTan";
             var pointInVS = RegionDrawer.CurveToViewSpace(keyframePos, scale, translation);
             var point = RegionDrawer.CurveToViewSpace(keyframePos.RotateAroundPivot(keyframePos + new Vector2(condition ? 1 : -1, 0), new Vector3((float)Math.Atan(condition ? value.outTangent : value.inTangent), 0, 0)), scale, translation);
-            (point - pointInVS).Normalize(out var dir);
-            dir *= 50;
+            var dir = (point - pointInVS).Normalize() * 50;
             button.UserData = new Point((int)dir.X, (int)dir.Y);
             var pos = new Point(center.Position.x + 6, center.Position.y + 6) + (Point)button.UserData;
             ChangePositionWithoutEvent(button, new Point(pos.x - 6, pos.y - 6));

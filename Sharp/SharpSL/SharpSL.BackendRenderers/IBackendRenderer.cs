@@ -11,6 +11,8 @@ namespace SharpSL.BackendRenderers
         Func<IntPtr, IntPtr, int> MakeCurrent { get; set; }
         Action<IntPtr> SwapBuffers { get; set; }
 
+        void Start();
+
         //void Do(Work whatToDo, ref Shader shader);
         //void Do<IndexType> (Work whatToDo,ref Mesh<IndexType> mesh) where IndexType: struct, IConvertible;
         void Allocate(ref UsageHint usageHint, ref byte vertsMemAddr, ref byte indicesMemAddr, int vertsMemLength, int indicesMemLength);

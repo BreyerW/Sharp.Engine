@@ -176,10 +176,9 @@ namespace Sharp
             vec.Z = time;
             vec.W = 1.0f;
 
-            modelViewMatrix.Invert(out var viewInv);
-            main.projectionMatrix.Invert(out var projInv);
-            vec.Transform(projInv, out vec);
-            vec.Transform(viewInv, out vec);
+            var viewInv = modelViewMatrix.Inverted();
+            var projInv = main.projectionMatrix.Inverted();
+            vec.Transform(projInv).Transform(viewInv);
 
             if (vec.W > 0.000001f || vec.W < -0.000001f)
             {

@@ -15,6 +15,15 @@ namespace SharpSL.BackendRenderers.OpenGL
         public Func<IntPtr, IntPtr, int> MakeCurrent { get; set; }
         public Action<IntPtr> SwapBuffers { get; set; }
 
+        public OpenGLRenderer()
+        {
+        }
+
+        public void Start()
+        {
+            Toolkit.Init();
+        }
+
         public IntPtr CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext)//add createConext func?
         {
             new GraphicsContext(ContextHandle.Zero, (function) => GetProcAddress(function),

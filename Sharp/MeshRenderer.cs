@@ -26,7 +26,7 @@ namespace Sharp
         {
             MainWindow.backendRenderer.GenerateBuffers(ref mesh.VBO, ref mesh.EBO);
             MainWindow.backendRenderer.BindBuffers(ref mesh.VBO, ref mesh.EBO);
-            MainWindow.backendRenderer.Allocate(ref mesh.UsageHint, ref mesh.SpanToMesh.DangerousGetPinnableReference(), ref mesh.Indices[0], mesh.SpanToMesh.Length, mesh.Indices.Length);
+            MainWindow.backendRenderer.Allocate(ref mesh.UsageHint, ref mesh.SpanToMesh[0], ref mesh.Indices[0], mesh.SpanToMesh.Length, mesh.Indices.Length);
 
             foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.vertType].Values)
                 MainWindow.backendRenderer.BindVertexAttrib(ref vertAttrib.type, vertAttrib.shaderLocation, vertAttrib.dimension, mesh.stride, vertAttrib.offset);

@@ -41,7 +41,7 @@ namespace SharpSL.BackendRenderers
         public void DrawText(string text, int x, int y, int width, int height, int font, int color, float fontSize)//TODO: split this to draw texture and draw mesh
         {
             //fontSize = 16;
-            var chars = text.AsSpan();
+            var chars = text.AsReadOnlySpan();
             ref var realFont = ref Pipeline.GetPipeline<FontPipeline>().GetAsset(font);
             ref var face = ref realFont.face;
             //MainWindow.backendRenderer.ChangeShader();

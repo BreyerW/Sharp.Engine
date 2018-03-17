@@ -41,7 +41,7 @@ namespace Sharp.Editor
             DrawHelper.DrawScaleGizmo(thickness, scale, xScaleColor, yScaleColor, zScaleColor, scaleOffset);
             if (rotVectSource.HasValue)
             {
-                Vector3.Cross(startAxis, currentAngle).Normalize(out var cross);
+                var cross = Vector3.Cross(startAxis, currentAngle).Normalize();
                 var fullAngle = NumericsExtensions.CalculateAngle(startAxis, currentAngle);
                 var incAngle = fullAngle / halfCircleSegments;
                 var vectors = new Vector3[halfCircleSegments + 1];
@@ -49,8 +49,7 @@ namespace Sharp.Editor
                 for (uint i = 1; i < halfCircleSegments + 1; i++)
                 {
                     var rotateMat = Matrix4x4.CreateFromAxisAngle(cross, incAngle * (i - 1));
-                    startAxis.Transform(rotateMat, out vectors[i]);
-                    vectors[i] *= 3f * scale;
+                    vectors[i] = startAxis.Transformed(rotateMat) * 3f * scale;
                 }
                 Matrix4x4.Decompose(startMat, out _, out var r, out _);
                 var rot = Matrix4x4.CreateFromQuaternion(Quaternion.Inverse(r));
@@ -98,8 +97,7 @@ namespace Sharp.Editor
             if (!SceneView.globalMode)
             {
                 Matrix4x4.Decompose(entity.ModelMatrix, out _, out var r, out _);
-                v.Transform(r, out v);
-                v.Normalize(out v);//TransformVector
+                v.Transform(r).Normalize();//TransformVector
             }
             var len = ComputeLength(ref ray, entity.Position);
             if (!relativeOrigin.HasValue)
@@ -125,8 +123,7 @@ namespace Sharp.Editor
             if (!SceneView.globalMode)
             {
                 Matrix4x4.Decompose(entity.ModelMatrix, out _, out var r, out _);
-                v.Transform(r, out v);
-                v.Normalize(out v);
+                v.Transform(r).Normalize();
             }
             var plane = BuildPlane(entity.Position, v);
             transformationPlane = new Vector4(plane.Normal.X, plane.Normal.Y, plane.Normal.Z, plane.D);
@@ -135,11 +132,11 @@ namespace Sharp.Editor
             if (!rotVectSource.HasValue)
             {
                 var origin = ray.origin + ray.direction * len - entity.Position;
-                constrain(origin, v).Normalize(out var rotVec);
+                var rotVec = constrain(origin, v).Normalize();
                 rotVectSource = rotVec;
                 rotAngleOrigin = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
                 startMat = entity.ModelMatrix;
-                origin.Normalize(out startAxis);
+                startAxis = origin.Normalized();
                 UI.Property.PropertyDrawer.StopCommandCommits = true;
             }
             /* var currentVect = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
@@ -149,14 +146,12 @@ namespace Sharp.Editor
              entity.Rotation = Entity.rotationMatrixToEulerAngles(Matrix4.CreateFromQuaternion(quat)) * (180.0f / NumericsExtensions.Pi);*///entity.ModelMatrix.ExtractRotation().Normalized() *
             angle = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
             //entity.ModelMatrix.Inverted().ExtractRotation();
-            entity.ModelMatrix.Invert(out var invMat);
-            Matrix4x4.Decompose(invMat, out _, out var rot, out _);
+            Matrix4x4.Decompose(entity.ModelMatrix.Inverted(), out _, out var rot, out _);
 
-            new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z).Transform(rot, out var rotAxis);
-            rotAxis.Normalize(out rotAxis);
+            var rotAxis = new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z).Transform(rot).Normalize();
             var deltaRot = Matrix4x4.CreateFromAxisAngle(rotAxis, angle - rotAngleOrigin.Value);
             entity.Rotation = Entity.rotationMatrixToEulerAngles(deltaRot * entity.ModelMatrix) * (180.0f / NumericsExtensions.Pi);
-            (ray.origin + ray.direction * len - entity.Position).Normalize(out currentAngle);
+            currentAngle = (ray.origin + ray.direction * len - entity.Position).Normalize();
             rotAngleOrigin = angle;
             //rotvectsource = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
             //startRot = quat * startRot;
@@ -168,8 +163,7 @@ namespace Sharp.Editor
             if (!SceneView.globalMode)
             {
                 Matrix4x4.Decompose(entity.ModelMatrix, out _, out var r, out _);
-                v.Transform(r, out v);
-                v.Normalize(out v); //TransformVector
+                v.Transform(r).Normalize(); //TransformVector
             }
             var len = ComputeLength(ref ray, entity.Position);
             if (!planeOrigin.HasValue)
@@ -201,14 +195,14 @@ namespace Sharp.Editor
                 return onPlane * (1 / (float)Math.Sqrt(norm));
             }
             if (axis.Z is 1) onPlane = Vector3.UnitX;
-            else new Vector3(-axis.Y, axis.X, 0).Normalize(out onPlane);
+            else onPlane = new Vector3(-axis.Y, axis.X, 0).Normalize();
             return onPlane;
         }
 
         private static Plane BuildPlane(Vector3 pos, Vector3 normal)
         {
             Vector4 baseForPlane = Vector4.Zero;
-            normal.Normalize(out normal);
+            normal.Normalize();
             baseForPlane.W = Vector3.Dot(normal, pos);
             baseForPlane.X = normal.X;
             baseForPlane.Y = normal.Y;
@@ -219,8 +213,8 @@ namespace Sharp.Editor
         private static float ComputeAngleOnPlane(Entity entity, ref Ray ray, ref Vector4 plane)
         {
             var len = ray.IntersectPlane(ref plane);
-            (ray.origin + ray.direction * len - entity.Position).Normalize(out var localPos);
-            Vector3.Cross(rotVectSource.Value, new Vector3(plane.X, plane.Y, plane.Z)).Normalize(out var perpendicularVect);
+            var localPos = (ray.origin + ray.direction * len - entity.Position).Normalize();
+            var perpendicularVect = Vector3.Cross(rotVectSource.Value, new Vector3(plane.X, plane.Y, plane.Z)).Normalize();
             var angle = NumericsExtensions.CalculateAngle(localPos, rotVectSource.Value);//(float)Math.Acos(NumericsExtensions.Clamp(Vector3.Dot(localPos, rotVectSource.Value), -0.9999f, 0.9999f));
 
             return angle *= NumericsExtensions.Clamp((Vector3.Dot(localPos, perpendicularVect) < 0.0f) ? 1.0f : -1.0f, -0.9999f, 0.9999f);

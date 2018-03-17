@@ -87,7 +87,7 @@ namespace SharpAsset
             var condition = size > stride;
             for (int i = 0; i < SpanToMesh.Length; i++)
             {
-                tmpSpan[i] = Unsafe.As<byte, TTo>(ref SpanToMesh.Slice(i * stride, condition ? stride : size).DangerousGetPinnableReference());//check for SpanExiensions.Read/Write
+                tmpSpan[i] = Unsafe.As<byte, TTo>(ref SpanToMesh.Slice(i * stride, condition ? stride : size)[0]);//check for SpanExiensions.Read/Write
             }
             return tmpSpan;
             //Unsafe.As<byte[], TTo[]>(ref verts);

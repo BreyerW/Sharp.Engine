@@ -51,7 +51,6 @@ namespace SharpAsset.Pipeline
             var meshData = new(VertexAttribute attrib, byte[] data)[finalSupportedAttribs.Count()];
             foreach (var (key, attrib) in finalSupportedAttribs.Indexed())
                 meshData[key] = (attrib, null);
-
             foreach (var mesh in scene.Meshes)
             {
                 if (mesh.HasBones)
