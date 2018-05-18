@@ -46,7 +46,7 @@ namespace Sharp.Editor.UI.Property
             {
                 if (propertyIsDirty)
                 {
-                    CreateCommand(command is null);
+                    CreateCommand(command is null /*&& !InputHandler.isKeyboardPressed && !InputHandler.isMouseDragging*/);
 
                     propertyIsDirty = false;
                 }
@@ -71,10 +71,10 @@ namespace Sharp.Editor.UI.Property
 
         private void CreateCommand(bool create)
         {
-            if (create)
+            //  if (create)//disable on mouse drag and on keyboard press
             {
-                command = new ChangeValueCommand((o) => { setter((T)o); Value = getter(); propertyIsDirty = false; }, getter(), Value);
-                Console.WriteLine("save " + Value + " " + getter());
+                //   command = new ChangeValueCommand((o) => { setter((T)o); Value = getter(); propertyIsDirty = false; }, getter(), Value);
+                //   Console.WriteLine("save " + Value + " " + getter());
             }
         }
 

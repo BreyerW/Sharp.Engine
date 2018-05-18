@@ -143,6 +143,7 @@ namespace Sharp
                 UI.currentCanvas?.Update();//TODO: change it so that during dragging it will update both source and hovered window
                 onRenderFrame?.Invoke();
                 onBeforeNextFrame?.Invoke();
+
                 if (UI.isDirty)
                 {
                     Selection.OnSelectionDirty?.Invoke(Selection.Asset, EventArgs.Empty);
@@ -179,7 +180,6 @@ namespace Sharp
                         //  windows[FocusedWindowId].Close();
                     }
                     //Console.WriteLine("1 " + (uint)'1' + " : ! " + (uint)'!');
-                    InputHandler.mustHandleKeyboard = true;
                     InputHandler.ProcessKeyboard();
                     break;
 

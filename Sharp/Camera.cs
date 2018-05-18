@@ -7,6 +7,21 @@ namespace Sharp
     public class Camera : Component
     {
         public static Camera main;//rename to or add current camera and generate camera for each window and sceneview
+
+        /* public static Camera main
+         {
+             set
+             {
+                 if (Main != value)
+                 {
+                     Main = value;
+                     Material.SetGlobalProperty("camView", ref value.modelViewMatrix);
+                     Material.SetGlobalProperty("camProjection", ref value.projectionMatrix);
+                 }
+             }
+             get { return Main; }
+         }*/
+
         public Frustum frustum;
         private Matrix4x4 projectionMatrix;
 
@@ -21,6 +36,8 @@ namespace Sharp
                 projectionMatrix = value;
                 if (main != null)
                     Material.SetGlobalProperty("camProjection", ref main.projectionMatrix);
+                // else
+                //     Material.SetGlobalProperty("camProjection", ref projectionMatrix);
             }
         }
 
@@ -69,6 +86,8 @@ namespace Sharp
                 modelViewMatrix = value;
                 if (main != null)
                     Material.SetGlobalProperty("camView", ref main.modelViewMatrix);
+                // else
+                //   Material.SetGlobalProperty("camView", ref modelViewMatrix);
             }
         }
 
@@ -155,7 +174,7 @@ namespace Sharp
         public void SetModelviewMatrix()
         {
             var translationMatrix = Matrix4x4.CreateTranslation(-entityObject.Position);
-            var angles = entityObject.rotation * NumericsExtensions.Pi / 180f;
+            var angles = entityObject.Rotation * NumericsExtensions.Pi / 180f;
             var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
             //modelViewMatrix = rotationMatrix*translationMatrix; orbit
             ModelViewMatrix = translationMatrix * rotationMatrix; //pan

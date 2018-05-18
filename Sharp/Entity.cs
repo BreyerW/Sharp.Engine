@@ -3,17 +3,23 @@ using System.Collections.Generic;
 using System.Numerics;
 using Sharp.Editor.Views;
 using System.Linq;
+using Newtonsoft.Json;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace Sharp
 {
     public class Entity
     {
         private static int lastId = 0;
+
+        [JsonIgnore]
         internal Vector3 position = Vector3.Zero;
 
         public readonly int id;
+
         public Entity parent;
-        public List<Entity> childs = new List<Entity>();
+        public List<Entity> childs = null;
         public string name = "Entity Object";
 
         public Vector3 Position
@@ -25,10 +31,11 @@ namespace Sharp
             set
             {
                 position = value;
-                OnTransformChanged?.Invoke(this, EventArgs.Empty);
+                OnTransformChanged?.Invoke();
             }
         }
 
+        [JsonIgnore]
         internal Vector3 rotation = Vector3.Zero;
 
         public Vector3 Rotation
@@ -40,10 +47,11 @@ namespace Sharp
             set
             {
                 rotation = value;
-                OnTransformChanged?.Invoke(this, EventArgs.Empty);
+                OnTransformChanged?.Invoke();
             }
         }
 
+        [JsonIgnore]
         internal Vector3 scale = Vector3.One;
 
         public Vector3 Scale
@@ -55,7 +63,7 @@ namespace Sharp
             set
             {
                 scale = value;
-                OnTransformChanged?.Invoke(this, EventArgs.Empty);
+                OnTransformChanged?.Invoke();
             }
         }
 
@@ -80,20 +88,26 @@ namespace Sharp
         //public
         private Matrix4x4 modelMatrix;
 
-        public ref Matrix4x4 ModelMatrix
+        [JsonIgnore]
+        public ref readonly Matrix4x4 ModelMatrix
         {
             get { return ref modelMatrix; }
         }
 
-        public EventHandler OnTransformChanged;
+        public Action OnTransformChanged;
 
         private List<Component> components = new List<Component>();
 
         public Entity()
         {
-            OnTransformChanged += ((sender, e) => SetModelMatrix());
+            OnTransformChanged += onTransformChanged;
             id = ++lastId;
             lastId = id;
+        }
+
+        private void onTransformChanged()
+        {
+            SetModelMatrix(); Console.WriteLine("transform changed");
         }
 
         public static Entity[] FindAllWithTags(bool activeOnly = true, params string[] lookupTags)
@@ -148,8 +162,8 @@ namespace Sharp
 
         public void SetModelMatrix()
         {
-            var angles = rotation * NumericsExtensions.Pi / 180f;
-            ModelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
+            var angles = Rotation * NumericsExtensions.Pi / 180f;
+            modelMatrix = Matrix4x4.CreateScale(Scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
         }
 
         public Quaternion ToQuaterion(Vector3 angles)
@@ -158,46 +172,6 @@ namespace Sharp
             angles *= NumericsExtensions.Pi / 180f;
 
             return Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z));
-        }
-
-        public static Vector3 ToEuler(Quaternion q)
-        {
-            // Store the Euler angles in radians
-            Vector3 pitchYawRoll = new Vector3();
-
-            double sqw = q.W * q.W;
-            double sqx = q.X * q.X;
-            double sqy = q.Y * q.Y;
-            double sqz = q.Z * q.Z;
-
-            // If quaternion is normalised the unit is one, otherwise it is the correction factor
-            double unit = sqx + sqy + sqz + sqw;
-            double test = q.X * q.Y + q.Z * q.W;
-
-            if (test > 0.4999f * unit)                              // 0.4999f OR 0.5f - EPSILON
-            {
-                // Singularity at north pole
-                pitchYawRoll.Z = 2f * (float)Math.Atan2(q.X, q.W);  // Yaw
-                pitchYawRoll.Y = NumericsExtensions.Pi * 0.5f;                         // Pitch
-                pitchYawRoll.X = 0f;                                // Roll
-                return pitchYawRoll;
-            }
-            else if (test < -0.4999f * unit)                        // -0.4999f OR -0.5f + EPSILON
-            {
-                // Singularity at south pole
-                pitchYawRoll.Z = -2f * (float)Math.Atan2(q.X, q.W); // Yaw
-                pitchYawRoll.Y = -NumericsExtensions.Pi * 0.5f;                        // Pitch
-                pitchYawRoll.X = 0f;                                // Roll
-                return pitchYawRoll;
-            }
-            else
-            {
-                pitchYawRoll.Z = (float)Math.Atan2(2f * q.Y * q.W - 2f * q.X * q.Z, sqx - sqy - sqz + sqw);       // Yaw
-                pitchYawRoll.Y = (float)Math.Asin(2f * test / unit);                                             // Pitch
-                pitchYawRoll.X = (float)Math.Atan2(2f * q.X * q.W - 2f * q.Y * q.Z, -sqx + sqy - sqz + sqw);      // Roll
-            }
-
-            return pitchYawRoll;
         }
 
         public static Vector3 rotationMatrixToEulerAngles(Matrix4x4 mat)
@@ -276,9 +250,9 @@ namespace Sharp
 
         public void Instatiate(Vector3 pos, Vector3 rot, Vector3 s)
         {
-            scale = s;
-            position = pos;
-            rotation = rot;
+            Scale = s;
+            Position = pos;
+            Rotation = rot;
             Instatiate();
         }
 
@@ -291,6 +265,19 @@ namespace Sharp
         public override string ToString()
         {
             return name;
+        }
+    }
+
+    [Serializable]
+    public class SharpEvent<T>
+
+    {
+        private Action<T> action;
+
+        internal SharpEvent(Action<T> action)
+
+        {
+            this.action = action;
         }
     }
 }

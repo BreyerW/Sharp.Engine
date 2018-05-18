@@ -15,6 +15,7 @@ namespace Sharp
             MainEditorView.editorBackendRenderer = new SharpSL.BackendRenderers.OpenGL.EditorOpenGLRenderer();
             MainWindow.backendRenderer = new SharpSL.BackendRenderers.OpenGL.OpenGLRenderer();
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
+
             Pipeline.Initialize();
             Pipeline.GetPipeline<FontPipeline>().Import(@"C:\Windows\Fonts\tahoma.ttf");
             // OpenTK.Graphics.GraphicsContext.ShareContexts = false;
@@ -38,7 +39,7 @@ namespace Sharp
             cam.SetModelviewMatrix();
             cam.SetProjectionMatrix();
             e.name = "Main Camera";
-            e.OnTransformChanged += ((sender, evnt) => cam.SetModelviewMatrix());
+            //e.OnTransformChanged += ((sender, evnt) => cam.SetModelviewMatrix());
             Camera.main = cam;
             var mWin = new MainWindow("test"); //Console.WriteLine("alpha: " + graphic.GraphicsMode.ColorFormat.Alpha);
             mWin.Initialize(new AssetsView(mWin.windowId), new SceneView(mWin.windowId), new SceneStructureView(mWin.windowId), new InspectorView(mWin.windowId));

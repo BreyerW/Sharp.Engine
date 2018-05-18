@@ -7,6 +7,8 @@ using Squid;
 using SharpAsset.Pipeline;
 using System.Linq;
 
+using Newtonsoft.Json;
+
 namespace Sharp.Editor.Views
 {
     public class SceneView : View
@@ -14,7 +16,7 @@ namespace Sharp.Editor.Views
         private int cell_size = 32;
         private int grid_size = 4096;
 
-        public static HashSet<Entity> entities = new HashSet<Entity>();
+        public static List<Entity> entities = new List<Entity>();
         public static Action OnAddedEntity;
         public static Action OnRemovedEntity;
         //public static Scene physScene;
@@ -27,7 +29,6 @@ namespace Sharp.Editor.Views
 
         private static Point? locPos = null;
         private Vector3 normalizedMoveDir = Vector3.Zero;
-
         public bool mouseLocked = false;
         /*DebugProc DebugCallbackInstance = DebugCallback;
 
@@ -50,13 +51,24 @@ namespace Sharp.Editor.Views
             OnDragFinished += Panel_Drop;
             MouseDown += Panel_MouseDown;
             MouseUp += Panel_MouseUp;
-            KeyDown += SceneView_KeyUp;
+            KeyDown += SceneView_KeyDown;
+            KeyUp += SceneView_KeyUp;
             SizeChanged += SceneView_SizeChanged;
             Squid.UI.MouseMove += UI_MouseMove;
             Squid.UI.MouseUp += UI_MouseUp;
             Button.Text = "Scene";
             AllowFocus = true;
             OnSetupMatrices?.Invoke();
+        }
+
+        private void SceneView_Update(Control sender)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void SceneView_KeyUp(Control sender, KeyEventArgs args)
+        {
+            //Console.WriteLine("keyup");
         }
 
         private void UI_MouseUp(Control sender, MouseEventArgs args)
@@ -76,7 +88,6 @@ namespace Sharp.Editor.Views
                 }
                 else//simple, precise, snapping
                 {
-                    Console.WriteLine("test");
                     if (Squid.UI.MouseDelta.x != 0 || Squid.UI.MouseDelta.y != 0)
                     {
                         var orig = Camera.main.entityObject.Position;
@@ -117,13 +128,14 @@ namespace Sharp.Editor.Views
             Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
         }
 
-        private void SceneView_KeyUp(Control sender, KeyEventArgs args)
+        private void SceneView_KeyDown(Control sender, KeyEventArgs args)
         {
             if (Camera.main.moved)
             {
                 Camera.main.moved = false;
                 Camera.main.SetModelviewMatrix();
             }
+
             if (args.Key == Keys.Q)
                 Camera.main.Move(0f, 1f, 0f);
             if (args.Key == Keys.E)
@@ -136,6 +148,7 @@ namespace Sharp.Editor.Views
                 Camera.main.Move(0f, 0f, -1f);
             if (args.Key == Keys.S)
                 Camera.main.Move(0f, 0f, 1f);
+
             OnSetupMatrices?.Invoke();
         }
 
@@ -207,7 +220,10 @@ namespace Sharp.Editor.Views
                     MainWindow.backendRenderer.ClearDepth();
                     Manipulators.DrawCombinedGizmos(entity);
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
-
+                    /* var obj = JsonConvert.SerializeObject(SceneView.entities);
+                     Console.WriteLine(obj);
+                     var obj1 = JsonConvert.DeserializeObject<List<Entity>>(obj);
+                     obj1[0].OnTransformChanged();*/
                     /*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
                     if (renderer != null)
                     {
@@ -317,7 +333,7 @@ namespace Sharp.Editor.Views
             {
                 var render = ent.GetComponent<MeshRenderer>();
                 Vector3 hitPoint = Vector3.Zero;
-                if (render != null && render.mesh.bounds.Intersect(ref ray, ref ent.ModelMatrix, out hitPoint))
+                if (render != null && render.mesh.bounds.Intersect(ray, ent.ModelMatrix, out hitPoint))
                 {
                     Console.WriteLine("Select " + ent.name + ent.id);
                     if (!hitList.ContainsKey(hitPoint))

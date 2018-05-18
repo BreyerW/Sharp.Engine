@@ -1,16 +1,14 @@
 ﻿using System;
 using Sharp;
 using System.Collections.Generic;
-using System.Collections;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Reflection;
-using fastBinaryJSON;
 using Squid;
-
-//using UniversalSerializerLib3;
+using Sharp.Editor;
+using Fossil;
+using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Sharp
 {
@@ -18,12 +16,9 @@ namespace Sharp
     {
         private static Stack<object> assets = new Stack<object>();
 
-        //private static UniversalSerializer serializer = new UniversalSerializer(new Parameters());
         private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
-
-        private static MD5 md5 = MD5.Create();//maybe sha instead
-
-        internal static string lastHash;
+        internal static byte[] lastData = Array.Empty<byte>();
+        internal static byte[] lastStructure = Array.Empty<byte>();
 
         public static object Asset
         {
@@ -49,6 +44,13 @@ namespace Sharp
         static Selection()
         {
             Repeat(IsSelectionDirty, 30, 30, CancellationToken.None);
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
+            {
+                Converters = new List<JsonConverter>() { new DelegateConverter() },
+                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+                PreserveReferencesHandling = PreserveReferencesHandling.All,
+                ReferenceLoopHandling = ReferenceLoopHandling.Serialize
+            };
         }
 
         public static void IsSelectionDirty(CancellationToken token)
@@ -56,22 +58,47 @@ namespace Sharp
             var asset = Asset;
             if (asset == null) return;
 
-            BJSON.RegisterCustomType(typeof(EventHandler), (obj) => "", (obj) => new EventHandler((o, args) => { }));
+            var data = JsonConvert.SerializeObject(asset).AsReadOnlySpan().AsBytes();
 
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            var data = BJSON.ToBJSON(asset);
-            watch.Stop();
-            //Console.WriteLine("cast: " + watch.ElapsedTicks);
-            var byteHash = md5.ComputeHash(data);
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < byteHash.Length; i++)
+            if (!data.SequenceEqual(lastData.AsReadOnlySpan()))
             {
-                sb.Append(byteHash[i].ToString("X2"));
-            }
-            var currentHash = sb.ToString();
-            if (currentHash != lastHash)
                 UI.isDirty = true;
-            lastHash = currentHash;
+
+                if (!(InputHandler.isKeyboardPressed | InputHandler.isMouseDragging) && !(Editor.Views.SceneView.entities is null))
+                {
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
+                    var json = JsonConvert.SerializeObject(Editor.Views.SceneView.entities);
+                    var currentStructure = json.AsReadOnlySpan().AsBytes().ToArray(); //System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Editor.Views.SceneView.entities)); /*System.Text.Encoding.UTF8.GetBytes(*/// JSON.ToJSON(Editor.Views.SceneView.entities).AsReadOnlySpan().AsBytes().ToArray();//System.Text.Encoding.UTF8.GetBytes(JSON.ToJSON(Editor.Views.SceneView.entities));
+
+                    watch.Stop();
+
+                    Console.WriteLine("cast: " + watch.ElapsedMilliseconds);
+                    CalculateHistoryDiff(ref currentStructure);
+                    lastData = data.ToArray();
+                    lastStructure = currentStructure;
+                    Console.WriteLine("save");
+                }
+            }
+        }
+
+        private static void CalculateHistoryDiff(ref byte[] currentStructure)
+        {
+            var backward = Delta.Create(currentStructure, lastStructure);
+
+            if (!(UndoCommand.currentHistory is null))
+            {
+                var forward = Delta.Create(lastStructure, currentStructure);
+
+                if (UndoCommand.currentHistory != UndoCommand.snapshots.Last)
+                    UndoCommand.currentHistory.RemoveAllAfter();
+
+                var copy = UndoCommand.snapshots.Last.Value;
+                copy.upgrade = forward;
+                UndoCommand.snapshots.Last.Value = copy;
+            }
+            Console.WriteLine("data size: " + currentStructure.Length + " patch size: " + backward.Length);
+            UndoCommand.snapshots.AddLast(new HistoryDiff() { downgrade = backward });
+            UndoCommand.currentHistory = UndoCommand.snapshots.Last;
         }
 
         public static async Task Repeat(Action<CancellationToken> doWork, int delayInMilis, int periodInMilis, CancellationToken cancellationToken, bool singleThreaded = false)
@@ -83,116 +110,52 @@ namespace Sharp
                 await Task.Delay(periodInMilis, cancellationToken).ConfigureAwait(singleThreaded);
             }
         }
+
+        public static void RemoveAllBefore<T>(this LinkedListNode<T> node)
+        {
+            while (node.Previous != null) node.List.Remove(node.Previous);
+        }
+
+        public static void RemoveAllAfter<T>(this LinkedListNode<T> node)
+        {
+            while (node.Next != null) node.List.Remove(node.Next);
+        }
     }
 
-    internal class Size<TT>
+    public class DelegateConverter : JsonConverter<MulticastDelegate>
     {
-        private readonly TT _obj;
-        private readonly HashSet<object> references;
-
-        private static readonly int PointerSize =
-        Environment.Is64BitOperatingSystem ? sizeof(long) : sizeof(int);
-
-        public Size(TT obj)
+        public override MulticastDelegate ReadJson(JsonReader reader, Type objectType, MulticastDelegate existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            _obj = obj;
-            references = new HashSet<object>() { _obj };
+            //Console.WriteLine("nowy typek: " + existingValue.Method);
+            var tokens = JToken.Load(reader);
+            Console.WriteLine(tokens);
+            return existingValue;
         }
 
-        public long GetSizeInBytes()
+        public override void WriteJson(JsonWriter writer, MulticastDelegate value, JsonSerializer serializer)
         {
-            return this.GetSizeInBytes(_obj);
+            writer.WriteStartObject();
+            writer.WritePropertyName("target");
+            serializer.Serialize(writer, value.Target);
+            writer.WritePropertyName("signature");
+            serializer.Serialize(writer, value.Method);
+            writer.WritePropertyName("invocations");
+            writer.WriteStartArray();
+            foreach (var invocation in value.GetInvocationList())
+            {
+                writer.WriteStartArray();
+                serializer.Serialize(writer, invocation.Target);
+                serializer.Serialize(writer, invocation.Method);
+                writer.WriteEndArray();
+            }
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+            /*writer.WriteStartObject();
+             writer.WritePropertyName("mainTarget");
+             writer.WriteValue(serializer.ReferenceResolver.GetReference(value, value.Target));
+             writer.WriteEndObject();*/
         }
 
-        // The core functionality. Recurrently calls itself when an object appears to have fields
-        // until all fields have been  visited, or were "visited" (calculated) already.
-        private long GetSizeInBytes<T>(T obj)
-        {
-            if (obj == null) return sizeof(int);
-            var type = obj.GetType();
-            //RuntimeTypeHandle th = asset.GetType().TypeHandle;
-
-            //Console.WriteLine(Marshal.ReadInt32(th.Value, 4));
-            if (type.IsPrimitive)
-            {
-                switch (Type.GetTypeCode(type))
-                {
-                    case TypeCode.Boolean:
-                    case TypeCode.Byte:
-                    case TypeCode.SByte:
-                        return sizeof(byte);
-
-                    case TypeCode.Char:
-                        return sizeof(char);
-
-                    case TypeCode.Single:
-                        return sizeof(float);
-
-                    case TypeCode.Double:
-                        return sizeof(double);
-
-                    case TypeCode.Int16:
-                    case TypeCode.UInt16:
-                        return sizeof(Int16);
-
-                    case TypeCode.Int32:
-                    case TypeCode.UInt32:
-                        return sizeof(Int32);
-
-                    case TypeCode.Int64:
-                    case TypeCode.UInt64:
-                    default:
-                        return sizeof(Int64);
-                }
-            }
-            else if (obj is decimal)
-            {
-                return sizeof(decimal);
-            }
-            else if (obj is string)
-            {
-                return sizeof(char) * obj.ToString().Length;
-            }
-            else if (type.IsEnum)
-            {
-                return sizeof(int);
-            }
-            else if (type.IsArray)
-            {
-                long size = PointerSize;
-                var casted = (IEnumerable)obj;
-                foreach (var item in casted)
-                {
-                    size += GetSizeInBytes(item);
-                }
-                return size;
-            }
-            else if (obj is System.Reflection.Pointer)
-            {
-                return PointerSize;
-            }
-            else
-            {
-                long size = 0;
-                var t = type;
-                while (t != null)
-                {
-                    size += PointerSize;
-                    var fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public |
-                            BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
-                    foreach (var field in fields)
-                    {
-                        var tempVal = field.GetValue(obj);
-                        if (!references.Contains(tempVal))
-                        {
-                            references.Add(tempVal);
-                            size += this.GetSizeInBytes(tempVal);
-                        }
-                    }
-                    t = t.BaseType;
-                }
-                return size;
-            }
-        }
+        //public override bool CanWrite => false;
     }
 }

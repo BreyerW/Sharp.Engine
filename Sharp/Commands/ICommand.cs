@@ -15,7 +15,7 @@ namespace Sharp.Commands
         public static void StoreCommand(this ICommand command)
         {
             //command.Execute();
-            UndoCommand.done.Push(command);
+            //UndoCommand.done.Push(command);
         }
     }
 }

@@ -38,9 +38,7 @@ namespace SharpAsset.Pipeline
             //if (!SupportedFileFormatsAttribute.supportedFileFormats.Contains (format))
             //throw new NotSupportedException (format+" format is not supported");
             var scene = asset.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals);
-
             if (!scene.HasMeshes) return null;
-
             var internalMesh = new Mesh();
             internalMesh.FullPath = pathToFile;
             if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(vertType))
@@ -143,11 +141,6 @@ namespace SharpAsset.Pipeline
                 default: throw new NotSupportedException(vertAttrib + " attribute not supported");
             }
         }
-    }
-
-    internal class Pinnable
-    {
-        public byte Pin;
     }
 
     /*[SupportedFiles(".fbx", ".dae", ".obj")]

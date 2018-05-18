@@ -24,6 +24,12 @@ namespace Sharp
          }*/
         public const float Pi = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930382f;
 
+        // Degrees-to-radians conversion constant (RO).
+        public const float Deg2Rad = (float)Math.PI * 2f / 360f;
+
+        // Radians-to-degrees conversion constant (RO).
+        public const float Rad2Deg = 1f / Deg2Rad;
+
         /// <summary>
         /// Convert degrees to radians
         /// </summary>

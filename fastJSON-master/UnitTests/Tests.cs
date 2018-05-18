@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Dynamic;
 using System.IO;
+using System.Runtime.Serialization;
 
 //namespace UnitTests
 //{
@@ -2420,10 +2421,38 @@ public class tests
         //    (x) => { return DateTimeOffset.Parse(x); }
         //);
 
-        var s = JSON.ToJSON(dt, new JSONParameters { DateTimeMilliseconds = true });
+        // test with UTC format ('Z' in output rather than HH:MM timezone)
+        var s = JSON.ToJSON(dt, new JSONParameters { UseUTCDateTime = true });
         Console.WriteLine(s);
         var d = JSON.ToObject<DateTimeOffset>(s);
-        //Assert.AreEqual(dt, d);
+        // ticks will differ, so convert both to UTC and use ISO8601 roundtrip format to compare
+        Assert.AreEqual(dt.ToUniversalTime().ToString("O"), d.ToUniversalTime().ToString("O"));
+
+        s = JSON.ToJSON(dt, new JSONParameters { UseUTCDateTime = false });
+        Console.WriteLine(s);
+        d = JSON.ToObject<DateTimeOffset>(s);
+        Assert.AreEqual(dt.ToUniversalTime().ToString("O"), d.ToUniversalTime().ToString("O"));
+
+        // test deserialize of output from DateTimeOffset.ToString()
+        // DateTimeOffset roundtrip format, UTC 
+        dt = new DateTimeOffset(DateTime.UtcNow);
+        s = '"' + dt.ToString("O") + '"';
+        Console.WriteLine(s);
+        d = JSON.ToObject<DateTimeOffset>(s);
+        Assert.AreEqual(dt.ToUniversalTime().ToString("O"), d.ToUniversalTime().ToString("O"));
+
+        // DateTimeOffset roundtrip format, non-UTC
+        dt = new DateTimeOffset(new DateTime(2017, 5, 22, 10, 06, 53, 123, DateTimeKind.Unspecified), TimeSpan.FromHours(11.5));
+        s = '"' + dt.ToString("O") + '"';
+        Console.WriteLine(s);
+        d = JSON.ToObject<DateTimeOffset>(s);
+        Assert.AreEqual(dt.ToUniversalTime().ToString("O"), d.ToUniversalTime().ToString("O"));
+
+        // previous fastJSON serialization format for DateTimeOffset. Millisecond resolution only.
+        s = '"' + dt.ToString("yyyy-MM-ddTHH:mm:ss.fff zzz") + '"';
+        Console.WriteLine(s);
+        var ld = JSON.ToObject<DateTimeOffset>(s);
+        Assert.AreEqual(dt.ToUniversalTime().ToString("O"), ld.ToUniversalTime().ToString("O"));
     }
 
     class X
@@ -2612,5 +2641,211 @@ public class tests
         var o = JSON.ToObject<TimeSpan>(s);
         Assert.AreEqual(o.Days, t.Days);
     }
+
+    public class dmember
+    {
+        [DataMember(Name = "prop")]
+        public string MyProperty;
+        [DataMember(Name = "id")]
+        public int docid;
+    }
+    [Test]
+    public static void DataMember()
+    {
+        var s = "{\"prop\":\"Date\",\"id\":42}";
+        Console.WriteLine(s);
+        var o = fastJSON.JSON.ToObject<dmember>(s);
+
+        Assert.AreEqual(42, o.docid);
+        Assert.AreEqual("Date", o.MyProperty);
+
+        var ss = fastJSON.JSON.ToJSON(o, new JSONParameters { UseExtensions = false });
+        Console.WriteLine(ss);
+        Assert.AreEqual(s, ss);
+    }
+
+    [Test]
+    public static void zerostring()
+    {
+        var t = "test\0test";
+        Console.WriteLine(t);
+        var s = fastJSON.JSON.ToJSON(t, new JSONParameters { UseEscapedUnicode = false });
+        Assert.True(s.Contains("\\u0000"));
+        Console.WriteLine(s);
+        var o = fastJSON.JSON.ToObject<string>(s);
+        Assert.True(o.Contains("\0"));
+        Console.WriteLine("" + o);
+    }
+
+    [Test]
+    public static void spacetest()
+    {
+        var c = new colclass();
+
+        var s = JSON.ToNiceJSON(c);
+        Console.WriteLine(s);
+        s = JSON.Beautify(s, 2);
+        Console.WriteLine(s);
+        s = JSON.ToNiceJSON(c, new JSONParameters { FormatterIndentSpaces = 8 });
+        Console.WriteLine(s);
+    }
+
+    public class DigitLimit
+    {
+        public float Fmin;
+        public float Fmax;
+        public decimal MminDec;
+        public decimal MmaxDec;
+
+
+        public decimal Mmin;
+        public decimal Mmax;
+        public double Dmin;
+        public double Dmax;
+        public double DminDec;
+        public double DmaxDec;
+        public double Dni;
+        public double Dpi;
+        public double Dnan;
+        public float FminDec;
+        public float FmaxDec;
+        public float Fni;
+        public float Fpi;
+        public float Fnan;
+        public long Lmin;
+        public long Lmax;
+        public ulong ULmax;
+        public int Imin;
+        public int Imax;
+        public uint UImax;
+
+
+        //public IntPtr Iptr1 = new IntPtr(0); //Serialized to a Dict, exception on deserialization
+        //public IntPtr Iptr2 = new IntPtr(0x33445566); //Serialized to a Dict, exception on deserialization
+        //public UIntPtr UIptr1 = new UIntPtr(0); //Serialized to a Dict, exception on deserialization
+        //public UIntPtr UIptr2 = new UIntPtr(0x55667788); //Serialized to a Dict, exception on deserialization
+    }
+
+    [Test]
+    public static void digitlimits()
+    {
+        var d = new DigitLimit();
+        d.Fmin = float.MinValue;// serializer loss on tostring() 
+        d.Fmax = float.MaxValue;// serializer loss on tostring()
+        d.MminDec = -7.9228162514264337593543950335m; //OK to be serialized but lost precision in deserialization
+        d.MmaxDec = +7.9228162514264337593543950335m; //OK to be serialized but lost precision in deserialization
+
+        d.Mmin = decimal.MinValue;
+        d.Mmax = decimal.MaxValue;
+        //d.Dmin = double.MinValue;
+        //d.Dmax = double.MaxValue;
+        d.DminDec = -double.Epsilon;
+        d.DmaxDec = double.Epsilon;
+        d.Dni = double.NegativeInfinity;
+        d.Dpi = double.PositiveInfinity;
+        d.Dnan = double.NaN;
+        d.FminDec = -float.Epsilon;
+        d.FmaxDec = float.Epsilon;
+        d.Fni = float.NegativeInfinity;
+        d.Fpi = float.PositiveInfinity;
+        d.Fnan = float.NaN;
+        d.Lmin = long.MinValue;
+        d.Lmax = long.MaxValue;
+        d.ULmax = ulong.MaxValue;
+        d.Imin = int.MinValue;
+        d.Imax = int.MaxValue;
+        d.UImax = uint.MaxValue;
+
+
+        var s = JSON.ToNiceJSON(d);
+        Console.WriteLine(s);
+        var o = JSON.ToObject<DigitLimit>(s);
+
+
+        //ok
+        Assert.AreEqual(d.Dmax, o.Dmax);
+        Assert.AreEqual(d.DmaxDec, o.DmaxDec);
+        Assert.AreEqual(d.Dmin, o.Dmin);
+        Assert.AreEqual(d.DminDec, o.DminDec);
+        Assert.AreEqual(d.Dnan, o.Dnan);
+        Assert.AreEqual(d.Dni, o.Dni);
+        Assert.AreEqual(d.Dpi, o.Dpi);
+        Assert.AreEqual(d.FmaxDec, o.FmaxDec);
+        Assert.AreEqual(d.FminDec, o.FminDec);
+        Assert.AreEqual(d.Fnan, o.Fnan);
+        Assert.AreEqual(d.Fni, o.Fni);
+        Assert.AreEqual(d.Fpi, o.Fpi);
+        Assert.AreEqual(d.Imax, o.Imax);
+        Assert.AreEqual(d.Imin, o.Imin);
+        Assert.AreEqual(d.Lmax, o.Lmax);
+        Assert.AreEqual(d.Lmin, o.Lmin);
+        Assert.AreEqual(d.Mmax, o.Mmax);
+        Assert.AreEqual(d.Mmin, o.Mmin);
+        Assert.AreEqual(d.UImax, o.UImax);
+        Assert.AreEqual(d.ULmax, o.ULmax);
+
+        // precision loss
+        //Assert.AreEqual(d.Fmax, o.Fmax);
+        //Assert.AreEqual(d.Fmin, o.Fmin);
+        //Assert.AreEqual(d.MmaxDec, o.MmaxDec);
+        //Assert.AreEqual(d.MminDec, o.MminDec);
+    }
+
+
+    public class TestData
+    {
+        [DataMember(Name = "foo")]
+        public string Foo { get; set; }
+
+        [DataMember(Name = "Bar")]
+        public string Bar { get; set; }
+    }
+    [Test]
+    public static void ConvertTest()
+    {
+        var data = new TestData
+        {
+            Foo = "foo_value",
+            Bar = "bar_value"
+        };
+        var jsonData = JSON.ToJSON(data);
+
+        var data2 = JSON.ToObject<TestData>(jsonData);
+
+        // OK, since data member name is "foo" which is all in lower case
+        Assert.AreEqual(data.Foo ,data2.Foo);
+
+        // Fails, since data member name is "Bar", but the library looks for "bar" when setting the value
+        Assert.AreEqual(data.Bar , data2.Bar);
+    }
+
+
+    public class test {   }
+    [Test]
+    public static void ArrayOfObjectExtOff()
+    {
+        var s = JSON.ToJSON(new test[] { new test(), new test() }, new JSONParameters { UseExtensions = false});
+        var o = JSON.ToObject<test[]>(s);
+        Console.WriteLine(o.GetType().ToString());
+        Assert.AreEqual(typeof(test[]), o.GetType());
+    }
+    [Test]
+    public static void ArrayOfObjectsWithoutTypeInfoToObjectTyped()
+    {
+        var s = JSON.ToJSON(new test[] { new test(), new test() });
+        var o = JSON.ToObject<test[]>(s);
+        Console.WriteLine(o.GetType().ToString());
+        Assert.AreEqual(typeof(test[]), o.GetType());
+    }
+    [Test]
+    public static void ArrayOfObjectsWithTypeInfoToObject()
+    {
+        var s = JSON.ToJSON(new test[] { new test(), new test() });
+        var o = JSON.ToObject(s);
+        Console.WriteLine(o.GetType().ToString());
+        var i = o as List<object>;
+        Assert.AreEqual(typeof(test), i[0].GetType());
+    }
+
 }// UnitTests.Tests
 //}

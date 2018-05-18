@@ -49,7 +49,7 @@ namespace Sharp
             var shader = material.Shader;
 
             MainWindow.backendRenderer.Use(shader.Program);
-            material.SetProperty("model", ref entityObject.ModelMatrix, false);
+            material.SetProperty("model", entityObject.ModelMatrix, false);
             material.SendData();
             MainWindow.backendRenderer.Use(ref mesh.indiceType, mesh.Indices.Length);
             MainWindow.backendRenderer.ChangeShader();

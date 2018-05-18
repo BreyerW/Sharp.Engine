@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-
 #if !SILVERLIGHT
-
 using System.Data;
-
 #endif
-
 using System.IO;
 using System.Collections.Specialized;
 
@@ -16,12 +12,10 @@ namespace fastBinaryJSON
     internal sealed class BJSONSerializer : IDisposable
     {
         private MemoryStream _output = new MemoryStream();
-
         //private MemoryStream _before = new MemoryStream();
         private int _typespointer = 0;
-
         private int _MAX_DEPTH = 20;
-        private int _current_depth = 0;
+        int _current_depth = 0;
         private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
         private Dictionary<object, int> _cirobj = new Dictionary<object, int>();
         private BJSONParameters _params;
@@ -91,73 +85,109 @@ namespace fastBinaryJSON
         {
             if (obj == null || obj is DBNull)
                 WriteNull();
+
             else if (obj is string)
                 WriteString((string)obj);
+
             else if (obj is char)
                 WriteChar((char)obj);
+
             else if (obj is Guid)
                 WriteGuid((Guid)obj);
+
             else if (obj is bool)
                 WriteBool((bool)obj);
+
             else if (obj is int)
                 WriteInt((int)obj);
+
             else if (obj is uint)
                 WriteUInt((uint)obj);
+
             else if (obj is long)
                 WriteLong((long)obj);
+
             else if (obj is ulong)
                 WriteULong((ulong)obj);
+
             else if (obj is decimal)
                 WriteDecimal((decimal)obj);
+
             else if (obj is byte)
                 WriteByte((byte)obj);
+
             else if (obj is double)
                 WriteDouble((double)obj);
+
             else if (obj is float)
                 WriteFloat((float)obj);
+
             else if (obj is short)
                 WriteShort((short)obj);
+
             else if (obj is ushort)
                 WriteUShort((ushort)obj);
+
             else if (obj is DateTime)
                 WriteDateTime((DateTime)obj);
+
+            else if (obj is TimeSpan)
+                WriteTimeSpan((TimeSpan)obj);
 #if NET4
             else if (obj is System.Dynamic.ExpandoObject)
                 WriteStringDictionary((IDictionary<string, object>)obj);
 #endif
+
             else if (obj is IDictionary && obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
                 WriteStringDictionary((IDictionary)obj);
+
             else if (obj is IDictionary)
                 WriteDictionary((IDictionary)obj);
 #if !SILVERLIGHT
             else if (obj is DataSet)
                 WriteDataset((DataSet)obj);
+
             else if (obj is DataTable)
                 this.WriteDataTable((DataTable)obj);
 #endif
             else if (obj is byte[])
                 WriteBytes((byte[])obj);
+
             else if (obj is StringDictionary)
                 WriteSD((StringDictionary)obj);
+
             else if (obj is NameValueCollection)
                 WriteNV((NameValueCollection)obj);
+
             else if (_params.UseTypedArrays && obj is Array)
                 WriteTypedArray((ICollection)obj);
+
             else if (obj is IEnumerable)
                 WriteArray((IEnumerable)obj);
+
             else if (obj is Enum)
                 WriteEnum((Enum)obj);
+
             else if (Reflection.Instance.IsTypeRegistered(obj.GetType()))
                 WriteCustom(obj);
 
             //else if (obj is Exception)
             //    WriteException((Exception)obj);
+
             else
                 WriteObject(obj);
         }
 
+        private void WriteTimeSpan(TimeSpan obj)
+        {
+            _output.WriteByte(TOKENS.TIMESPAN);
+            byte[] b = Helper.GetBytes(obj.Ticks, false);
+            _output.Write(b, 0, b.Length);
+        }
+
         private void WriteException(Exception obj)
         {
+
         }
 
         private void WriteTypedArray(ICollection array)
@@ -169,12 +199,21 @@ namespace fastBinaryJSON
             {
                 if (t.GetElementType().IsClass)
                 {
-                    _output.WriteByte(TOKENS.ARRAY_TYPED);
                     token = false;
                     // array type name
                     byte[] b = Reflection.Instance.utf8.GetBytes(Reflection.Instance.GetTypeAssemblyName(t.GetElementType()));
-                    _output.WriteByte((byte)b.Length);
-                    _output.Write(b, 0, b.Length % 256);
+                    if (b.Length < 256)
+                    {
+                        _output.WriteByte(TOKENS.ARRAY_TYPED);
+                        _output.WriteByte((byte)b.Length);
+                        _output.Write(b, 0, b.Length);
+                    }
+                    else
+                    {
+                        _output.WriteByte(TOKENS.ARRAY_TYPED_LONG);
+                        _output.Write(Helper.GetBytes(b.Length, false), 0, 2);
+                        _output.Write(b, 0, b.Length);
+                    }
                     // array count
                     _output.Write(Helper.GetBytes(array.Count, false), 0, 4); //count
                 }
@@ -311,6 +350,7 @@ namespace fastBinaryJSON
             _output.WriteByte(TOKENS.NULL);
         }
 
+
         private void WriteCustom(object obj)
         {
             Serialize s;
@@ -357,7 +397,6 @@ namespace fastBinaryJSON
         }
 
 #if !SILVERLIGHT
-
         private DatasetSchema GetSchema(DataTable ds)
         {
             if (ds == null) return null;
@@ -452,7 +491,7 @@ namespace fastBinaryJSON
             _output.WriteByte(TOKENS.ARRAY_END);
         }
 
-        private void WriteDataTable(DataTable dt)
+        void WriteDataTable(DataTable dt)
         {
             _output.WriteByte(TOKENS.DOC_START);
             //if (this.useExtension)
@@ -466,9 +505,8 @@ namespace fastBinaryJSON
             // end datatable
             _output.WriteByte(TOKENS.DOC_END);
         }
-
 #endif
-        private bool _TypesWritten = false;
+        bool _TypesWritten = false;
 
         private void WriteObject(object obj)
         {
@@ -504,6 +542,7 @@ namespace fastBinaryJSON
                 }
                 else
                     _output.WriteByte(TOKENS.DOC_START);
+
             }
             _current_depth++;
             if (_current_depth > _MAX_DEPTH)
@@ -537,6 +576,7 @@ namespace fastBinaryJSON
                 var o = p.Getter(obj);
                 if (_params.SerializeNulls == false && (o == null || o is DBNull))
                 {
+
                 }
                 else
                 {

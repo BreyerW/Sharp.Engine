@@ -5,9 +5,9 @@ namespace fastBinaryJSON
 {
     internal sealed class BJsonParser
     {
-        readonly byte[] _json;
-        int _index;
-        bool _useUTC = true;
+        private readonly byte[] _json;
+        private int _index;
+        private bool _useUTC = true;
 
         internal BJsonParser(byte[] json, bool useUTC)
         {
@@ -36,7 +36,7 @@ namespace fastBinaryJSON
                 {
                     // save curr index position
                     int savedindex = _index;
-                    // set index = pointer 
+                    // set index = pointer
                     _index = ParseInt();
                     t = GetToken();
                     // read $types
@@ -108,67 +108,110 @@ namespace fastBinaryJSON
             {
                 case TOKENS.BYTE:
                     return ParseByte();
+
                 case TOKENS.BYTEARRAY:
                     return ParseByteArray();
+
                 case TOKENS.CHAR:
                     return ParseChar();
+
                 case TOKENS.DATETIME:
                     return ParseDateTime();
+
                 case TOKENS.DECIMAL:
                     return ParseDecimal();
+
                 case TOKENS.DOUBLE:
                     return ParseDouble();
+
                 case TOKENS.FLOAT:
                     return ParseFloat();
+
                 case TOKENS.GUID:
                     return ParseGuid();
+
                 case TOKENS.INT:
                     return ParseInt();
+
                 case TOKENS.LONG:
                     return ParseLong();
+
                 case TOKENS.SHORT:
                     return ParseShort();
+
                 case TOKENS.UINT:
                     return ParseUint();
+
                 case TOKENS.ULONG:
                     return ParseULong();
+
                 case TOKENS.USHORT:
                     return ParseUShort();
+
                 case TOKENS.UNICODE_STRING:
                     return ParseUnicodeString();
+
                 case TOKENS.STRING:
                     return ParseString();
+
                 case TOKENS.DOC_START:
                     return ParseObject();
+
                 case TOKENS.ARRAY_START:
                     return ParseArray();
+
                 case TOKENS.TRUE:
                     return true;
+
                 case TOKENS.FALSE:
                     return false;
+
                 case TOKENS.NULL:
                     return null;
+
                 case TOKENS.ARRAY_END:
                     breakparse = true;
                     return TOKENS.ARRAY_END;
+
                 case TOKENS.DOC_END:
                     breakparse = true;
                     return TOKENS.DOC_END;
+
                 case TOKENS.COMMA:
                     breakparse = true;
                     return TOKENS.COMMA;
+
                 case TOKENS.ARRAY_TYPED:
-                    return ParseTypedArray();
+                case TOKENS.ARRAY_TYPED_LONG:
+                    return ParseTypedArray(t);
+
+                case TOKENS.TIMESPAN:
+                    return ParsTimeSpan();
             }
 
             throw new Exception("Unrecognized token at index = " + _index);
         }
 
-        private object ParseTypedArray()
+        private TimeSpan ParsTimeSpan()
         {
-            typedarray ar = new typedarray();
+            long l = Helper.ToInt64(_json, _index);
+            _index += 8;
 
-            ar.typename = ParseName();
+            TimeSpan dt = new TimeSpan(l);
+
+            return dt;
+        }
+
+        private object ParseTypedArray(byte token)
+        {
+            // fix : if long name
+
+            typedarray ar = new typedarray();
+            if (token == TOKENS.ARRAY_TYPED)
+                ar.typename = ParseName();
+            else
+                ar.typename = ParseNameLong();
+
             ar.count = ParseInt();
 
             bool breakparse = false;
@@ -189,6 +232,15 @@ namespace fastBinaryJSON
                     break;
             }
             return ar;
+        }
+
+        private string ParseNameLong()
+        {
+            short c = (short)Helper.ToInt16(_json, _index);
+            _index += 2;
+            string s = Reflection.Instance.utf8.GetString(_json, _index, c);
+            _index += c;
+            return s;
         }
 
         private object ParseChar()

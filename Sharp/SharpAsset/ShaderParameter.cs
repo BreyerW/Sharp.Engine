@@ -5,10 +5,10 @@ using System.Runtime.CompilerServices;
 namespace SharpAsset
 
 {
-    public delegate ref T GetData<T>();
-
     internal interface IParameter
     {
+        ref byte DataAddress { get; }
+
         void ConsumeData(int location);
     }
 
@@ -16,10 +16,7 @@ namespace SharpAsset
     {
         public Matrix4x4 data;
 
-        public Matrix4Parameter(in Matrix4x4 mat)
-        {
-            data = mat;
-        }
+        public ref byte DataAddress { get { return ref Unsafe.As<Matrix4x4, byte>(ref data); } }
 
         public void ConsumeData(int location)
         {
@@ -38,11 +35,7 @@ namespace SharpAsset
 
         public int data;
 
-        public Texture2DParameter(in Texture tex/*, int slot*/)
-        {
-            //Slot = slot;
-            data = tex.TBO;
-        }
+        public ref byte DataAddress { get { return ref Unsafe.As<int, byte>(ref data); } }
 
         public void ConsumeData(int location)
         {

@@ -47,7 +47,9 @@ namespace SharpAsset
                 if (!localParams.ContainsKey(propName))
                 {
                     //lastSlot = ++lastSlot;
-                    localParams.Add(propName, new Texture2DParameter(data/*, lastSlot*/));
+                    var param = new Texture2DParameter(/*, lastSlot*/);
+                    Unsafe.WriteUnaligned(ref param.DataAddress, data.TBO);
+                    localParams.Add(propName, param);
                 }
             }
             else
@@ -56,15 +58,19 @@ namespace SharpAsset
             //(localParams[shaderLoc] as Texture2DParameter).tbo = tex.TBO;
         }
 
-        public void SetProperty(string propName, ref Matrix4x4 data, bool store = true)
+        public void SetProperty(string propName, in Matrix4x4 data, bool store = true)
         {
             if (store)
             {
                 if (!localParams.ContainsKey(propName))
-                    localParams.Add(propName, new Matrix4Parameter(data));
+                {
+                    var param = new Matrix4Parameter();
+                    Unsafe.WriteUnaligned(ref param.DataAddress, data);
+                    localParams.Add(propName, param);
+                }
             }
             else
-                Matrix4Parameter.SendToGPU(Shader.uniformArray[propName], ref data.M11);
+                Matrix4Parameter.SendToGPU(Shader.uniformArray[propName], ref Unsafe.AsRef(data.M11));
 
             //else
             //(localParams[shaderLoc] as Matrix4Parameter).data[0] = mat;
@@ -75,12 +81,19 @@ namespace SharpAsset
             // if (store)
             // {
             if (!globalParams.ContainsKey(propName))
-                globalParams.Add(propName, new Matrix4Parameter(data));
+            {
+                var param = new Matrix4Parameter();
+                Unsafe.WriteUnaligned(ref param.DataAddress, data);
+                //Unsafe.CopyBlock(ref param.dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
+                globalParams.Add(propName, param);
+            }
             // }
             //else
             // Matrix4Parameter.SendToGPU(Shader.uniformArray[propName], ref data.Row0.X);
             else
-                (globalParams[propName] as Matrix4Parameter).data = data;
+                Unsafe.WriteUnaligned(ref globalParams[propName].DataAddress, data);
+
+            //Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
         }
 
         internal void SendData()

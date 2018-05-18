@@ -61,7 +61,7 @@ namespace Sharp
             return negativeVertex;
         }
 
-        public bool Intersect(ref Ray ray, ref Matrix4x4 matrix, out Vector3 hitPoint)
+        public bool Intersect(in Ray ray, in Matrix4x4 matrix, out Vector3 hitPoint)
         {
             hitPoint = Vector3.Zero;
             var max = Vector3.Transform(Max, matrix);

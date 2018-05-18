@@ -4,9 +4,14 @@ using System.Reflection.Emit;
 using System.Reflection;
 using System.Collections;
 using System.Text;
+using System.Runtime.Serialization;
+
 #if !SILVERLIGHT
+
 using System.Data;
+
 #endif
+
 using System.Collections.Specialized;
 
 namespace fastBinaryJSON
@@ -15,6 +20,7 @@ namespace fastBinaryJSON
     {
         public string Name;
         public string lcName;
+        public string memberName;
         public Reflection.GenericGetter Getter;
     }
 
@@ -52,6 +58,9 @@ namespace fastBinaryJSON
         public Reflection.GenericGetter getter;
         public Type[] GenericTypes;
         public string Name;
+#if net4
+        public string memberName;
+#endif
         public myPropInfoType Type;
         public bool CanWrite;
 
@@ -66,18 +75,23 @@ namespace fastBinaryJSON
     {
         // Sinlgeton pattern 4 from : http://csharpindepth.com/articles/general/singleton.aspx
         private static readonly Reflection instance = new Reflection();
+
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
         static Reflection()
         {
         }
+
         private Reflection()
         {
         }
+
         public static Reflection Instance { get { return instance; } }
 
         internal delegate object GenericSetter(object target, object value);
+
         internal delegate object GenericGetter(object obj);
+
         private delegate object CreateObject();
 
         private SafeDictionary<Type, string> _tyname = new SafeDictionary<Type, string>();
@@ -89,13 +103,17 @@ namespace fastBinaryJSON
         private SafeDictionary<Type, Type> _genericTypeDef = new SafeDictionary<Type, Type>();
 
         #region bjson custom types
+
         internal UnicodeEncoding unicode = new UnicodeEncoding();
         internal UTF8Encoding utf8 = new UTF8Encoding();
-        #endregion
+
+        #endregion bjson custom types
 
         #region json custom types
+
         // JSON custom
         internal SafeDictionary<Type, Serialize> _customSerializer = new SafeDictionary<Type, Serialize>();
+
         internal SafeDictionary<Type, Deserialize> _customDeserializer = new SafeDictionary<Type, Deserialize>();
 
         internal object CreateCustom(string v, Type type)
@@ -123,7 +141,8 @@ namespace fastBinaryJSON
             Serialize s;
             return _customSerializer.TryGetValue(t, out s);
         }
-        #endregion
+
+        #endregion json custom types
 
         public Type GetGenericTypeDefinition(Type t)
         {
@@ -173,6 +192,21 @@ namespace fastBinaryJSON
                     if (d.setter != null)
                         d.CanWrite = true;
                     d.getter = Reflection.CreateGetMethod(type, p);
+#if net4
+                    var att = p.GetCustomAttributes(true);
+                    foreach (var at in att)
+                    {
+                        if (at is DataMemberAttribute)
+                        {
+                            var dm = (DataMemberAttribute)at;
+                            if (dm.Name != "")
+                                d.memberName = dm.Name;
+                        }
+                    }
+                    if (d.memberName != null)
+                        sd.Add(d.memberName, d);
+                    else
+#endif
                     sd.Add(p.Name.ToLower(), d);
                 }
                 FieldInfo[] fi = type.GetFields(bf);
@@ -185,6 +219,21 @@ namespace fastBinaryJSON
                         if (d.setter != null)
                             d.CanWrite = true;
                         d.getter = Reflection.CreateGetField(type, f);
+#if net4
+                        var att = f.GetCustomAttributes(true);
+                        foreach (var at in att)
+                        {
+                            if (at is DataMemberAttribute)
+                            {
+                                var dm = (DataMemberAttribute)at;
+                                if (dm.Name != "")
+                                    d.memberName = dm.Name;
+                            }
+                        }
+                        if (d.memberName != null)
+                            sd.Add(d.memberName, d);
+                        else
+#endif
                         sd.Add(f.Name.ToLower(), d);
                     }
                 }
@@ -511,7 +560,6 @@ namespace fastBinaryJSON
             Getters[] val = null;
             if (_getterscache.TryGetValue(type, out val))
                 return val;
-
             //bool isAnonymous = IsAnonymousType(type);
 
             var bf = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
@@ -541,9 +589,24 @@ namespace fastBinaryJSON
                     if (found)
                         continue;
                 }
+                string mName = null;
+#if net4
+                var att = p.GetCustomAttributes(true);
+                foreach (var at in att)
+                {
+                    if (at is DataMemberAttribute)
+                    {
+                        var dm = (DataMemberAttribute)at;
+                        if (dm.Name != "")
+                        {
+                            mName = dm.Name;
+                        }
+                    }
+                }
+#endif
                 GenericGetter g = CreateGetMethod(type, p);
                 if (g != null)
-                    getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLower() });
+                    getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLower(), memberName = mName });
             }
 
             FieldInfo[] fi = type.GetFields(bf);
@@ -563,11 +626,26 @@ namespace fastBinaryJSON
                     if (found)
                         continue;
                 }
+                string mName = null;
+#if net4
+                var att = f.GetCustomAttributes(true);
+                foreach (var at in att)
+                {
+                    if (at is DataMemberAttribute)
+                    {
+                        var dm = (DataMemberAttribute)at;
+                        if (dm.Name != "")
+                        {
+                            mName = dm.Name;
+                        }
+                    }
+                }
+#endif
                 if (f.IsLiteral == false)
                 {
                     GenericGetter g = CreateGetField(type, f);
                     if (g != null)
-                        getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLower() });
+                        getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLower(), memberName = mName });
                 }
             }
             val = getters.ToArray();
@@ -591,7 +669,8 @@ namespace fastBinaryJSON
 
         //    return false;
         //}
-        #endregion
+
+        #endregion [   PROPERTY GET SET   ]
 
         internal void ResetPropertyCache()
         {

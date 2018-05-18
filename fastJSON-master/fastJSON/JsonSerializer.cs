@@ -83,6 +83,12 @@ namespace fastJSON
                 double d = (double)obj;
                 if (double.IsNaN(d))
                     _output.Append("\"NaN\"");
+                else if (double.IsInfinity(d))
+                {
+                    _output.Append("\"");
+                    _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
+                    _output.Append("\"");
+                }
                 else
                     _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
             }
@@ -91,6 +97,12 @@ namespace fastJSON
                 float d = (float)obj;
                 if (float.IsNaN(d))
                     _output.Append("\"NaN\"");
+                else if (float.IsInfinity(d))
+                {
+                    _output.Append("\"");
+                    _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
+                    _output.Append("\"");
+                }
                 else
                     _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
             }
@@ -148,15 +160,26 @@ namespace fastJSON
 
         private void WriteDateTimeOffset(DateTimeOffset d)
         {
-            write_date_value(d.DateTime);
-            _output.Append(" ");
-            if (d.Offset.Hours > 0)
-                _output.Append("+");
+            DateTime dt = _params.UseUTCDateTime ? d.UtcDateTime : d.DateTime;
+            
+            write_date_value(dt);
+
+            var ticks = dt.Ticks % TimeSpan.TicksPerSecond;
+            _output.Append('.');
+            _output.Append(ticks.ToString("0000000", NumberFormatInfo.InvariantInfo));
+
+            if (_params.UseUTCDateTime)
+                _output.Append('Z');
             else
-                _output.Append("-");
-            _output.Append(d.Offset.Hours.ToString("00", NumberFormatInfo.InvariantInfo));
-            _output.Append(":");
-            _output.Append(d.Offset.Minutes);
+            {
+                if (d.Offset.Hours > 0)
+                    _output.Append("+");
+                else
+                    _output.Append("-");
+                _output.Append(d.Offset.Hours.ToString("00", NumberFormatInfo.InvariantInfo));
+                _output.Append(":");
+                _output.Append(d.Offset.Minutes.ToString("00", NumberFormatInfo.InvariantInfo));
+            }
 
             _output.Append('\"');
         }
@@ -253,6 +276,12 @@ namespace fastJSON
 
             write_date_value(dt);
 
+            if (_params.DateTimeMilliseconds)
+            {
+                _output.Append('.');
+                _output.Append(dt.Millisecond.ToString("000", NumberFormatInfo.InvariantInfo));
+            }
+
             if (_params.UseUTCDateTime)
                 _output.Append('Z');
 
@@ -273,11 +302,6 @@ namespace fastJSON
             _output.Append(dt.Minute.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append(':');
             _output.Append(dt.Second.ToString("00", NumberFormatInfo.InvariantInfo));
-            if (_params.DateTimeMilliseconds)
-            {
-                _output.Append('.');
-                _output.Append(dt.Millisecond.ToString("000", NumberFormatInfo.InvariantInfo));
-            }
         }
 
 #if !SILVERLIGHT
@@ -463,7 +487,9 @@ namespace fastJSON
                 {
                     if (append)
                         _output.Append(',');
-                    if (_params.SerializeToLowerCaseNames)
+                    if (p.memberName != null)
+                        WritePair(p.memberName, o);
+                    else if (_params.SerializeToLowerCaseNames)
                         WritePair(p.lcName, o);
                     else
                         WritePair(p.Name, o);
@@ -619,7 +645,7 @@ namespace fastJSON
                 }
                 else
                 {
-                    if (c != '\t' && c != '\n' && c != '\r' && c != '\"' && c != '\\')// && c != ':' && c!=',')
+                    if (c != '\t' && c != '\n' && c != '\r' && c != '\"' && c != '\\' && c!='\0')// && c != ':' && c!=',')
                     {
                         if (runIndex == -1)
                             runIndex = index;
@@ -641,6 +667,7 @@ namespace fastJSON
                     case '\n': _output.Append("\\n"); break;
                     case '"':
                     case '\\': _output.Append('\\'); _output.Append(c); break;
+                    case '\0': _output.Append("\\u0000"); break;
                     default:
                         if (_useEscapedUnicode)
                         {

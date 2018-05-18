@@ -35,7 +35,7 @@ namespace Sharp.Editor
 
         public static void DrawCombinedGizmos(Entity entity, Color xColor, Color yColor, Color zColor, Color xRotColor, Color yRotColor, Color zRotColor, Color xScaleColor, Color yScaleColor, Color zScaleColor, float thickness = 5f)
         {
-            float scale = (Camera.main.entityObject.Position - entity.position).Length() / 25f;
+            float scale = (Camera.main.entityObject.Position - entity.Position).Length() / 25f;
             DrawHelper.DrawTranslationGizmo(thickness, scale, xColor, yColor, zColor);
             DrawHelper.DrawRotationGizmo(thickness, scale, xRotColor, yRotColor, zRotColor);
             DrawHelper.DrawScaleGizmo(thickness, scale, xScaleColor, yScaleColor, zScaleColor, scaleOffset);
@@ -63,7 +63,7 @@ namespace Sharp.Editor
         {
             //if (newCommand != null)
             //    newCommand.StoreCommand();
-            UI.Property.PropertyDrawer.StopCommandCommits = false;
+            //UI.Property.PropertyDrawer.StopCommandCommits = false;
             newCommand = null;
             rotVectSource = null;
             rotAngleOrigin = null;
@@ -104,7 +104,7 @@ namespace Sharp.Editor
             {
                 planeOrigin = ray.origin + ray.direction * len;
                 relativeOrigin = (planeOrigin - entity.Position) * (1f / (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
-                UI.Property.PropertyDrawer.StopCommandCommits = true;
+                //UI.Property.PropertyDrawer.StopCommandCommits = true;
             }
             var newPos = ray.origin + ray.direction * len;
             var newOrigin = newPos - relativeOrigin.Value * (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
@@ -115,15 +115,38 @@ namespace Sharp.Editor
         }
 
         //private static Quaternion startRot = Quaternion.Identity;
+        private static Vector3 MakePositive(Vector3 euler)
+        {
+            float negativeFlip = -0.0001f * NumericsExtensions.Rad2Deg;
+            float positiveFlip = 360.0f + negativeFlip;
+
+            if (euler.X < negativeFlip)
+                euler.X += 360.0f;
+            else if (euler.X > positiveFlip)
+                euler.X -= 360.0f;
+
+            if (euler.Y < negativeFlip)
+                euler.Y += 360.0f;
+            else if (euler.Y > positiveFlip)
+                euler.Y -= 360.0f;
+
+            if (euler.Z < negativeFlip)
+                euler.Z += 360.0f;
+            else if (euler.Z > positiveFlip)
+                euler.Z -= 360.0f;
+
+            return euler;
+        }
 
         public static void HandleRotation(Entity entity, ref Ray ray)//bugged when rescaled
         {
             var v = GetAxis();
             var unchangedV = v;
+            //var rot = Quaternion.CreateFromYawPitchRoll(entity.rotation.Y * NumericsExtensions.Deg2Rad, entity.rotation.X * NumericsExtensions.Deg2Rad, entity.rotation.Z * NumericsExtensions.Deg2Rad);
+            Matrix4x4.Decompose(entity.ModelMatrix, out _, out var rot, out _);
             if (!SceneView.globalMode)
             {
-                Matrix4x4.Decompose(entity.ModelMatrix, out _, out var r, out _);
-                v.Transform(r).Normalize();
+                v.Transform(rot).Normalize();
             }
             var plane = BuildPlane(entity.Position, v);
             transformationPlane = new Vector4(plane.Normal.X, plane.Normal.Y, plane.Normal.Z, plane.D);
@@ -137,7 +160,7 @@ namespace Sharp.Editor
                 rotAngleOrigin = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
                 startMat = entity.ModelMatrix;
                 startAxis = origin.Normalized();
-                UI.Property.PropertyDrawer.StopCommandCommits = true;
+                //UI.Property.PropertyDrawer.StopCommandCommits = true;
             }
             /* var currentVect = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
              var cross = Vector3.Cross(rotVectSource.Value, currentVect);
@@ -146,11 +169,9 @@ namespace Sharp.Editor
              entity.Rotation = Entity.rotationMatrixToEulerAngles(Matrix4.CreateFromQuaternion(quat)) * (180.0f / NumericsExtensions.Pi);*///entity.ModelMatrix.ExtractRotation().Normalized() *
             angle = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
             //entity.ModelMatrix.Inverted().ExtractRotation();
-            Matrix4x4.Decompose(entity.ModelMatrix.Inverted(), out _, out var rot, out _);
-
-            var rotAxis = new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z).Transform(rot).Normalize();
+            var rotAxis = new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z).Transform(Quaternion.Inverse(rot)).Normalize();
             var deltaRot = Matrix4x4.CreateFromAxisAngle(rotAxis, angle - rotAngleOrigin.Value);
-            entity.Rotation = Entity.rotationMatrixToEulerAngles(deltaRot * entity.ModelMatrix) * (180.0f / NumericsExtensions.Pi);
+            entity.Rotation = Entity.rotationMatrixToEulerAngles(deltaRot * entity.ModelMatrix) * NumericsExtensions.Rad2Deg;
             currentAngle = (ray.origin + ray.direction * len - entity.Position).Normalize();
             rotAngleOrigin = angle;
             //rotvectsource = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
@@ -170,7 +191,7 @@ namespace Sharp.Editor
             {
                 planeOrigin = ray.origin + ray.direction * len;
                 scaleOrigin = entity.Scale;
-                UI.Property.PropertyDrawer.StopCommandCommits = true;
+                // UI.Property.PropertyDrawer.StopCommandCommits = true;
             }
             var newPos = ray.origin + ray.direction * len;
             var delta = (newPos - entity.Position).Length() / (planeOrigin.Value - entity.Position).Length();
@@ -203,7 +224,7 @@ namespace Sharp.Editor
         {
             Vector4 baseForPlane = Vector4.Zero;
             normal.Normalize();
-            baseForPlane.W = Vector3.Dot(normal, pos);
+            baseForPlane.W = Vector3.Dot(pos, normal);
             baseForPlane.X = normal.X;
             baseForPlane.Y = normal.Y;
             baseForPlane.Z = normal.Z;

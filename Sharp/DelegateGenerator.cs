@@ -2,12 +2,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-public delegate void RefAction<T>(ref T arg);
-
-public delegate ref TResult RefFunc<TResult>();
-
-public delegate ref TResult RefFunc<T, TResult>(ref T arg);
-
 namespace Sharp
 {
     internal static class DelegateGenerator
@@ -30,6 +24,21 @@ namespace Sharp
         }
 
         /// <summary>
+        /// Generate open getter for field or property
+        /// </summary>
+        /// <typeparam name="T">Type of unbound instance</typeparam>
+        /// <param name="memberInfo">Field or property info</param>
+        /// <returns></returns>
+        public static Func<object, T> GenerateGetter<T>(MemberInfo memberInfo)
+        {
+            ParameterExpression paramExpression = Expression.Parameter(typeof(T), "value");
+
+            MemberExpression memberExp = CreateMemberExpression(paramExpression, memberInfo);
+
+            return Expression.Lambda<Func<object, T>>(memberExp, paramExpression).Compile();
+        }
+
+        /// <summary>
         /// Generate closed setter for field or property
         /// </summary>
         /// <param name="instance">Instance to which setter will be bound</param>
@@ -44,6 +53,26 @@ namespace Sharp
 
             //compile the whole thing
             return Expression.Lambda<Action<T>>(assignExp, valueExp).Compile();
+        }
+
+        /// <summary>
+        /// Generate closed getter for field or property
+        /// </summary>
+        /// <param name="instance">Instance to which setter will be bound</param>
+        /// <param name="memberInfo">Field or property info</param>
+        /// <returns></returns>
+        public static Func<T> GenerateGetter<T>(object instance, MemberInfo memberInfo)
+        {
+            ConstantExpression paramExpression = Expression.Constant(instance);
+
+            MemberExpression memberExp = CreateMemberExpression(paramExpression, memberInfo);
+
+            Expression castValueExp = memberExp;
+            //cast the value to its correct type
+            if (typeof(T) != memberInfo.GetUnderlyingType())
+                castValueExp = CreateCastExpression(memberExp, typeof(T));
+
+            return Expression.Lambda<Func<T>>(castValueExp).Compile();
         }
 
         private static (BinaryExpression assign, ParameterExpression param) SetterHelper<T>(Expression targetExp, MemberInfo memberInfo)
@@ -66,41 +95,6 @@ namespace Sharp
             //assign the "value" to the `field`
             BinaryExpression assignExp = Expression.Assign(memberExp, castValueExp);
             return (assignExp, valueExp);
-        }
-
-        /// <summary>
-        /// Generate open getter for field or property
-        /// </summary>
-        /// <typeparam name="T">Type of unbound instance</typeparam>
-        /// <param name="memberInfo">Field or property info</param>
-        /// <returns></returns>
-        public static Func<object, T> GenerateGetter<T>(MemberInfo memberInfo)
-        {
-            ParameterExpression paramExpression = Expression.Parameter(typeof(T), "value");
-
-            MemberExpression memberExp = CreateMemberExpression(paramExpression, memberInfo);
-
-            return Expression.Lambda<Func<object, T>>(memberExp, paramExpression).Compile();
-        }
-
-        /// <summary>
-        /// Generate closed getter for field or property
-        /// </summary>
-        /// <param name="instance">Instance to which setter will be bound</param>
-        /// <param name="memberInfo">Field or property info</param>
-        /// <returns></returns>
-        public static Func<T> GenerateGetter<T>(object instance, MemberInfo memberInfo)
-        {
-            ConstantExpression paramExpression = Expression.Constant(instance);
-
-            MemberExpression memberExp = CreateMemberExpression(paramExpression, memberInfo);
-
-            Expression castValueExp = memberExp;
-            //cast the value to its correct type
-            if (typeof(T) != memberInfo.GetUnderlyingType())
-                castValueExp = CreateCastExpression(memberExp, typeof(T));
-
-            return Expression.Lambda<Func<T>>(castValueExp).Compile();
         }
 
         private static Expression CreateCastExpression(Expression exp, Type type)
@@ -172,9 +166,96 @@ namespace Sharp
                     );
             }
         }
-
-        internal static void RewriteGetterAsSetter()
-        {
-        }
     }
+
+    //some experimental code from Reflection.cs in BJSON
+    /*  internal static GenericSetter CreateSetField(Type type, FieldInfo fieldInfo)
+        {
+            return GenerateSetter(type, fieldInfo);
+        }
+
+        internal static GenericSetter CreateSetMethod(Type type, PropertyInfo propertyInfo)
+        {
+            return GenerateSetter(type, propertyInfo);
+        }
+
+        internal static GenericGetter CreateGetField(Type type, FieldInfo fieldInfo)
+        {
+            return GenerateGetter(type, fieldInfo);
+        }
+
+        internal static GenericGetter CreateGetMethod(Type type, PropertyInfo propertyInfo)
+        {
+            return GenerateGetter(type, propertyInfo);
+        }
+
+        /// <summary>
+        /// Generate open setter for field or property
+        /// </summary>
+        /// <typeparam name="T">Type of unbound instance</typeparam>
+        /// <param name="memberInfo">Field or property info</param>
+        /// <returns></returns>
+        public static GenericSetter GenerateSetter(Type type, MemberInfo memberInfo)//TODO: inject event calls?
+        {
+            if(memberInfo is FieldInfo f && f.IsInitOnly)
+                return null;
+            //parameter "target", the object on which to set the field `field`
+            ParameterExpression targetExp = Expression.Parameter(typeof(object), "target");
+
+            (var assignExp, var valueExp) = SetterHelper(type, targetExp, memberInfo);
+
+            //compile the whole thing
+            return Expression.Lambda<GenericSetter>(assignExp, targetExp, valueExp).Compile();
+        }
+
+        /// <summary>
+        /// Generate open getter for field or property
+        /// </summary>
+        /// <typeparam name="T">Type of unbound instance</typeparam>
+        /// <param name="memberInfo">Field or property info</param>
+        /// <returns></returns>
+        public static GenericGetter GenerateGetter(Type type, MemberInfo memberInfo)
+        {
+            ParameterExpression paramExpression = Expression.Parameter(typeof(object), "value");
+
+            UnaryExpression memberExp = (UnaryExpression)CreateCastExpression(CreateMemberExpression(CreateCastExpression(paramExpression, type), memberInfo), typeof(object));
+
+            return Expression.Lambda<GenericGetter>(memberExp, paramExpression).Compile();
+        }
+
+        private static (Expression assign, ParameterExpression param) SetterHelper(Type type, Expression targetExp, MemberInfo memberInfo)
+        {
+            var memberType = memberInfo.GetUnderlyingType();
+            //parameter "value" the value to be set in the `field` on "target"
+            ParameterExpression valueExp = Expression.Parameter(typeof(object), "value");
+
+            //cast the target from object to its correct type
+            Expression castTartgetExp = CreateCastExpression(targetExp, memberInfo.DeclaringType);
+
+            Expression castValueExp = valueExp;
+            //cast the value to its correct type
+
+            //if (type != memberType)
+            castValueExp = CreateCastExpression(valueExp, memberType);
+            //the field `field` on "target"
+            MemberExpression memberExp = CreateMemberExpression(castTartgetExp, memberInfo);
+
+            //assign the "value" to the `field`
+            var assignExp = CreateCastExpression(Expression.Assign(memberExp, castValueExp), typeof(object));
+            return (assignExp, valueExp);
+        }
+
+        private static Expression CreateCastExpression(Expression exp, Type type)
+        {
+            return type.IsValueType
+                ? Expression.Unbox(exp, type)
+                : Expression.Convert(exp, type);
+        }
+
+        private static MemberExpression CreateMemberExpression(Expression exp, MemberInfo memberInfo)
+        {
+            return memberInfo is FieldInfo fieldInfo ? Expression.Field(exp, fieldInfo)
+                : memberInfo is PropertyInfo propertyInfo ? Expression.Property(exp, propertyInfo)
+                : null;//method call/events unsupported
+        }*/
 }

@@ -47,7 +47,7 @@ namespace Sharp.Editor.Views
             node.Style = "label";
             node.Label.Style = "label";
             node.UserData = ent;
-            if (ent.childs.Count is 0)
+            if (ent.childs?.Count is 0)
                 node.Button.Style = "";
             tree.Nodes.Add(node);
         }

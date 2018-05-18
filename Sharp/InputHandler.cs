@@ -26,6 +26,7 @@ namespace Sharp
         public static (int x, int y) globalMousePosition;
         public static int wheelState;
         public static bool isMouseDragging = false;
+        public static bool isKeyboardPressed = false;
 
         internal static bool[] prevMouseState;
         internal static bool[] curMouseState = new bool[5];
@@ -34,7 +35,6 @@ namespace Sharp
         private static readonly SDL.SDL_Scancode[] keyboardCodes = (SDL.SDL_Scancode[])Enum.GetValues(typeof(SDL.SDL_Scancode));
         private static List<IMenuCommand> menuCommands = new List<IMenuCommand>();//keycombinations as key
         private static SDL.SDL_Keymod modState;
-        public static bool mustHandleKeyboard = false;
 
         static InputHandler()
         {
@@ -71,7 +71,7 @@ namespace Sharp
         public static void ProcessMouseMove()
         {
             if (!Window.windows.Contains(Window.UnderMouseWindowId)) return;
-            var winPos = Window.windows[Window.UnderMouseWindowId].Position;
+            //var winPos = Window.windows[Window.UnderMouseWindowId].Position;
             var button = SDL.SDL_GetGlobalMouseState(out globalMousePosition.x, out globalMousePosition.y);
         }
 
@@ -121,12 +121,14 @@ namespace Sharp
                 }
                 if (combinationMet) { command.Execute(); return; }
             }
-
+            isKeyboardPressed = false;
             foreach (var keyCode in keyboardCodes)
             {
                 if (keyCode == SDL.SDL_Scancode.SDL_NUM_SCANCODES) continue;
                 int key = (int)keyCode;
-                keyState.Add(new KeyData() { Scancode = (int)ScancodeToKeyData(keyCode), Pressed = curKeyState[key] is 1 });
+                var keyPressed = curKeyState[key] is 1;
+                isKeyboardPressed |= keyPressed;
+                keyState.Add(new KeyData() { Scancode = (int)ScancodeToKeyData(keyCode), Pressed = keyPressed });
                 //keyState[key].Char = (char)SDL.SDL_GetKeyFromScancode(keyCode);
             }
         }
@@ -146,6 +148,7 @@ namespace Sharp
             UI.SetKeyboard(data.ToArray());
             keyState.Clear();
             UI.SetMouseWheel(wheelState);
+            Editor.UI.Property.PropertyDrawer.StopCommandCommits = isKeyboardPressed | isMouseDragging;
         }
 
         private static Keys ScancodeToKeyData(SDL.SDL_Scancode scancode)
