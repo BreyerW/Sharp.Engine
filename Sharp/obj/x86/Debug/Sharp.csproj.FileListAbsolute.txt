@@ -59,3 +59,5 @@ B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.csproj.CopyComplete
 B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.exe
 B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.pdb
 B:\Sharp.Engine3\Sharp\bin\Debug\JsonDiffPatchDotNet.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\TeximpNet.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\TeximpNet.xml

@@ -220,10 +220,10 @@ namespace Sharp.Editor.Views
                     MainWindow.backendRenderer.ClearDepth();
                     Manipulators.DrawCombinedGizmos(entity);
                     MainEditorView.editorBackendRenderer.UnloadMatrix();
-                    /* var obj = JsonConvert.SerializeObject(SceneView.entities);
-                     Console.WriteLine(obj);
-                     var obj1 = JsonConvert.DeserializeObject<List<Entity>>(obj);
-                     obj1[0].OnTransformChanged();*/
+                    var obj = JsonConvert.SerializeObject(SceneView.entities);
+                    //Console.WriteLine(obj);
+                    //var obj1 = JsonConvert.DeserializeObject<List<Entity>>(obj);
+                    //obj1[0].OnTransformChanged();*/
                     /*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
                     if (renderer != null)
                     {

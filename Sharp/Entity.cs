@@ -31,7 +31,7 @@ namespace Sharp
             set
             {
                 position = value;
-                OnTransformChanged?.Invoke();
+                onTransformChanged?.Invoke();
             }
         }
 
@@ -47,7 +47,7 @@ namespace Sharp
             set
             {
                 rotation = value;
-                OnTransformChanged?.Invoke();
+                onTransformChanged?.Invoke();
             }
         }
 
@@ -63,7 +63,7 @@ namespace Sharp
             set
             {
                 scale = value;
-                OnTransformChanged?.Invoke();
+                onTransformChanged?.Invoke();
             }
         }
 
@@ -94,18 +94,18 @@ namespace Sharp
             get { return ref modelMatrix; }
         }
 
-        public Action OnTransformChanged;
+        public Action onTransformChanged;
 
         private List<Component> components = new List<Component>();
 
         public Entity()
         {
-            OnTransformChanged += onTransformChanged;
+            onTransformChanged += OnTransformChanged;
             id = ++lastId;
             lastId = id;
         }
 
-        private void onTransformChanged()
+        private void OnTransformChanged()
         {
             SetModelMatrix(); Console.WriteLine("transform changed");
         }

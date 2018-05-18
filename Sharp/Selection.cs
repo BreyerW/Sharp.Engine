@@ -43,14 +43,15 @@ namespace Sharp
 
         static Selection()
         {
-            Repeat(IsSelectionDirty, 30, 30, CancellationToken.None);
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
                 Converters = new List<JsonConverter>() { new DelegateConverter() },
                 ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
                 PreserveReferencesHandling = PreserveReferencesHandling.All,
-                ReferenceLoopHandling = ReferenceLoopHandling.Serialize
+                ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+                TypeNameHandling = TypeNameHandling.Auto
             };
+            Repeat(IsSelectionDirty, 30, 30, CancellationToken.None);
         }
 
         public static void IsSelectionDirty(CancellationToken token)
@@ -126,36 +127,37 @@ namespace Sharp
     {
         public override MulticastDelegate ReadJson(JsonReader reader, Type objectType, MulticastDelegate existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            //Console.WriteLine("nowy typek: " + existingValue.Method);
             var tokens = JToken.Load(reader);
-            Console.WriteLine(tokens);
-            return existingValue;
+            var type = tokens["signature"].ToObject<Type>();
+            Delegate del = null;
+            foreach (var invocation in tokens["invocations"])
+            {
+                var tmpDel = Delegate.CreateDelegate(type, serializer.ReferenceResolver.ResolveReference(serializer, invocation[0]["$ref"].Value<string>()), invocation[1].Value<string>());
+                del = del is null ? tmpDel : Delegate.Combine(del, tmpDel);
+            }
+            return del as MulticastDelegate;
         }
 
         public override void WriteJson(JsonWriter writer, MulticastDelegate value, JsonSerializer serializer)
         {
             writer.WriteStartObject();
-            writer.WritePropertyName("target");
-            serializer.Serialize(writer, value.Target);
             writer.WritePropertyName("signature");
-            serializer.Serialize(writer, value.Method);
+            serializer.Serialize(writer, value.GetType());
             writer.WritePropertyName("invocations");
             writer.WriteStartArray();
             foreach (var invocation in value.GetInvocationList())
             {
                 writer.WriteStartArray();
-                serializer.Serialize(writer, invocation.Target);
-                serializer.Serialize(writer, invocation.Method);
+                if (invocation.Target is null)
+                    writer.WriteNull();
+                else
+                    serializer.Serialize(writer, invocation.Target);
+                writer.WriteValue(invocation.Method.Name);
+
                 writer.WriteEndArray();
             }
             writer.WriteEndArray();
             writer.WriteEndObject();
-            /*writer.WriteStartObject();
-             writer.WritePropertyName("mainTarget");
-             writer.WriteValue(serializer.ReferenceResolver.GetReference(value, value.Target));
-             writer.WriteEndObject();*/
         }
-
-        //public override bool CanWrite => false;
     }
 }
