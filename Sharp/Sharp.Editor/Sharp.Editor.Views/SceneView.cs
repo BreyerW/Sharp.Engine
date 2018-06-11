@@ -328,23 +328,23 @@ namespace Sharp.Editor.Views
             var end = Camera.main.ScreenToWorld(locPos.Value.x, locPos.Value.y, Size.x, Size.y);
             ;
             var ray = new Ray(orig, (end - orig).Normalize());
-            var hitList = new SortedList<Vector3, int>(new OrderByDistanceToCamera());
+            var hitList = new SortedList<Vector3, Guid>(new OrderByDistanceToCamera());
             foreach (var ent in entities)
             {
                 var render = ent.GetComponent<MeshRenderer>();
                 Vector3 hitPoint = Vector3.Zero;
                 if (render != null && render.mesh.bounds.Intersect(ray, ent.ModelMatrix, out hitPoint))
                 {
-                    Console.WriteLine("Select " + ent.name + ent.id);
+                    Console.WriteLine("Select " + ent.name + ent.Id);
                     if (!hitList.ContainsKey(hitPoint))
-                        hitList.Add(hitPoint, ent.id);
+                        hitList.Add(hitPoint, ent.Id);
                     //break;
                 }
             }
             if (hitList.Count > 0)
             {
-                var entity = entities.First((ent) => ent.id == hitList.Values[0]);
-                Console.WriteLine("Select " + entity.name + entity.id);
+                var entity = entities.First((ent) => ent.Id == hitList.Values[0]);
+                Console.WriteLine("Select " + entity.name + entity.Id);
                 Selection.Asset = entity;
                 SceneStructureView.tree.SelectedNode = null;
                 SceneStructureView.tree.Nodes.Find((item) => item.UserData == entity).IsSelected = true;

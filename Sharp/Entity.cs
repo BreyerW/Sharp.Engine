@@ -9,17 +9,15 @@ using System.Runtime.Serialization;
 
 namespace Sharp
 {
-    public class Entity
+    [Serializable]
+    public class Entity : IEngineObject
     {
-        private static int lastId = 0;
+        public Guid Id { get; } = Guid.NewGuid();
 
-        [JsonIgnore]
         internal Vector3 position = Vector3.Zero;
 
-        public readonly int id;
-
         public Entity parent;
-        public List<Entity> childs = null;
+        public List<Entity> childs = new List<Entity>();
         public string name = "Entity Object";
 
         public Vector3 Position
@@ -35,7 +33,6 @@ namespace Sharp
             }
         }
 
-        [JsonIgnore]
         internal Vector3 rotation = Vector3.Zero;
 
         public Vector3 Rotation
@@ -51,7 +48,6 @@ namespace Sharp
             }
         }
 
-        [JsonIgnore]
         internal Vector3 scale = Vector3.One;
 
         public Vector3 Scale
@@ -88,21 +84,19 @@ namespace Sharp
         //public
         private Matrix4x4 modelMatrix;
 
-        [JsonIgnore]
         public ref readonly Matrix4x4 ModelMatrix
         {
             get { return ref modelMatrix; }
         }
 
         public Action onTransformChanged;
-
         private List<Component> components = new List<Component>();
 
         public Entity()
         {
             onTransformChanged += OnTransformChanged;
-            id = ++lastId;
-            lastId = id;
+            //id = ++lastId;
+            //lastId = id;
         }
 
         private void OnTransformChanged()
@@ -245,7 +239,7 @@ namespace Sharp
         {
             SceneView.entities.Add(this);
             SceneView.OnAddedEntity?.Invoke();
-            lastId = id;
+            //lastId = id;
         }
 
         public void Instatiate(Vector3 pos, Vector3 rot, Vector3 s)

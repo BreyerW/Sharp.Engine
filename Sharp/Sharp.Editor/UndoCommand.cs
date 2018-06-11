@@ -39,7 +39,10 @@ namespace Sharp.Editor
             var str = Delta.Apply(Selection.lastStructure, UndoCommand.currentHistory.Value.downgrade);
             Selection.lastStructure = str;
             Console.WriteLine("undo " + Views.SceneView.entities[Views.SceneView.entities.Count - 1].rotation);
-            //Console.WriteLine(new string(Unsafe.As<byte[], char[]>(ref str), 0, str.Length / Unsafe.SizeOf<char>()));
+            Console.WriteLine(new string(Unsafe.As<byte[], char[]>(ref str), 0, str.Length / Unsafe.SizeOf<char>()));
+            //Selection.serializer.Populate(new System.IO.StringReader(new string(Unsafe.As<byte[], char[]>(ref str), 0, str.Length / Unsafe.SizeOf<char>())), Views.SceneView.entities);
+            //JsonConvert.PopulateObject(new string(Unsafe.As<byte[], char[]>(ref str), 0, str.Length / Unsafe.SizeOf<char>()), Views.SceneView.entities);//instead of sizeof should use System.Text.Encoding.Unicode.GetCharCount(str)?
+
             Views.SceneView.entities = JsonConvert.DeserializeObject<List<Entity>>(new string(Unsafe.As<byte[], char[]>(ref str), 0, str.Length / Unsafe.SizeOf<char>()));//instead of sizeof should use System.Text.Encoding.Unicode.GetCharCount(str)?
             currentHistory = UndoCommand.currentHistory.Previous;
             Squid.UI.isDirty = true;

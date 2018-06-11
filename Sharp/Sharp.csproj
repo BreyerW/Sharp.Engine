@@ -141,6 +141,7 @@
     <Compile Include="DelegateGenerator.cs" />
     <Compile Include="DoubleConverter.cs" />
     <Compile Include="Extension.cs" />
+    <Compile Include="IEngineObject.cs" />
     <Compile Include="NumericsExtensions.cs" />
     <Compile Include="Sharp.Editor\CurveSettings.cs" />
     <Compile Include="Sharp.Editor\MenuCommand.cs" />

@@ -3,8 +3,11 @@ using Sharp.Editor.Attribs;
 
 namespace Sharp
 {
-    public abstract class Component
+    [Serializable]
+    public abstract class Component : IEngineObject
     {
+        public Guid Id { get; } = Guid.NewGuid();
+
         public bool active
         {
             get { return enabled; }
@@ -55,9 +58,15 @@ namespace Sharp
         {
         }
 
+        public void Destroy()
+        {
+        }
+
         public Component()
         {
             active = true;
+            //id = ++Entity.lastId;
+            // Entity.lastId = id;
         }
     }
 }

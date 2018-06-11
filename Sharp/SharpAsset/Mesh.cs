@@ -10,6 +10,7 @@ using SharpAsset;
 
 namespace SharpAsset
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Mesh : IAsset
     {

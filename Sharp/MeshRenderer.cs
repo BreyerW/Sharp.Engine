@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Sharp
 {
+    [Serializable]
     public class MeshRenderer : Renderer //where VertexFormat : struct, IVertex
     {
         internal Mesh mesh;

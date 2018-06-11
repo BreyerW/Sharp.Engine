@@ -9,13 +9,14 @@ using Fossil;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Sharp
 {
     public static class Selection//enimachine engine
     {
         private static Stack<object> assets = new Stack<object>();
-
+        private static GenericResolver<IEngineObject> refResolver = new GenericResolver<IEngineObject>(p => p.Id.ToString("N"));
         private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
         internal static byte[] lastData = Array.Empty<byte>();
         internal static byte[] lastStructure = Array.Empty<byte>();
@@ -40,17 +41,22 @@ namespace Sharp
         public static EventHandler OnSelectionChange;
         public static EventHandler OnSelectionDirty;
         public static bool isDragging = false;
+        internal static JsonSerializer serializer;
 
         static Selection()
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
-                Converters = new List<JsonConverter>() { new DelegateConverter() },
+                ContractResolver = new DefaultContractResolver() { IgnoreSerializableAttribute = false },
+                Converters = new List<JsonConverter>() { new DelegateConverter(), new ArrayReferenceConverter() },
                 ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
                 PreserveReferencesHandling = PreserveReferencesHandling.All,
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                TypeNameHandling = TypeNameHandling.Auto
+                TypeNameHandling = TypeNameHandling.Auto,
+                //ReferenceResolverProvider = () => refResolver
             };
+
+            serializer = JsonSerializer.CreateDefault();
             Repeat(IsSelectionDirty, 30, 30, CancellationToken.None);
         }
 
@@ -135,6 +141,7 @@ namespace Sharp
                 var tmpDel = Delegate.CreateDelegate(type, serializer.ReferenceResolver.ResolveReference(serializer, invocation[0]["$ref"].Value<string>()), invocation[1].Value<string>());
                 del = del is null ? tmpDel : Delegate.Combine(del, tmpDel);
             }
+            Console.WriteLine(del.GetInvocationList().Length);
             return del as MulticastDelegate;
         }
 
@@ -158,6 +165,139 @@ namespace Sharp
             }
             writer.WriteEndArray();
             writer.WriteEndObject();
+        }
+    }
+
+    public class GenericResolver<TEntity> : IReferenceResolver where TEntity : class
+    {
+        private readonly IDictionary<string, TEntity> _objects = new Dictionary<string, TEntity>();
+        private readonly Func<TEntity, string> _keyReader;
+
+        public GenericResolver(Func<TEntity, string> keyReader)
+        {
+            _keyReader = keyReader;
+        }
+
+        public object ResolveReference(object context, string reference)
+        {
+            _objects.TryGetValue(reference, out var o);
+            return o;
+        }
+
+        public string GetReference(object context, object value)
+        {
+            var o = (TEntity)value;
+            var key = _keyReader(o);
+            _objects[key] = o;
+
+            return key;
+        }
+
+        public bool IsReferenced(object context, object value)
+        {
+            var o = (TEntity)value;
+            return _objects.ContainsKey(_keyReader(o));
+        }
+
+        public void AddReference(object context, string reference, object value)
+        {
+            if (value is TEntity val)
+                _objects[reference] = val;
+        }
+    }
+
+    public class ArrayReferenceConverter : JsonConverter
+
+    {
+        private const string refProperty = "$ref";
+        private const string idProperty = "$id";
+        private const string valuesProperty = "$values";
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType.IsArray;
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (reader.TokenType == JsonToken.Null)
+                return null;
+            else if (reader.TokenType == JsonToken.StartArray)
+            {
+                // No $ref.  Deserialize as a List<T> to avoid infinite recursion and return as an array.
+                var elementType = objectType.GetElementType();
+                var listType = typeof(List<>).MakeGenericType(elementType);
+                var list = serializer.Deserialize(reader, listType) as System.Collections.IList;
+                if (list == null)
+                    return null;
+                var array = Array.CreateInstance(elementType, list.Count);
+                list.CopyTo(array, 0);
+                return array;
+            }
+            else
+            {
+                var obj = JObject.Load(reader);
+                var refId = (string)obj[refProperty];
+                if (refId != null)
+                {
+                    var reference = serializer.ReferenceResolver.ResolveReference(serializer, refId);
+                    if (reference != null)
+                        return reference;
+                }
+                var values = obj[valuesProperty] as JArray;
+                if (values == null || values.Type == JTokenType.Null)
+                    return null;
+                var count = values.Count;
+
+                var elementType = objectType.GetElementType();
+                var array = Array.CreateInstance(elementType, count);
+
+                var objId = (string)obj[idProperty];
+                if (objId != null)
+                {
+                    // Add the empty array into the reference table BEFORE populating it,
+                    // to handle recursive references.
+                    serializer.ReferenceResolver.AddReference(serializer, objId, array);
+                }
+
+                var listType = typeof(List<>).MakeGenericType(elementType);
+                using (var subReader = values.CreateReader())
+                {
+                    var list = serializer.Deserialize(subReader, listType) as System.Collections.IList;
+                    list.CopyTo(array, 0);
+                }
+
+                return array;
+            }
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            if (value is Array array)
+            {
+                writer.WriteStartObject();
+                if (!serializer.ReferenceResolver.IsReferenced(serializer, value))
+                {
+                    writer.WritePropertyName("$id");
+                    writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
+                    writer.WritePropertyName("$values");
+                    writer.WriteStartArray();
+                    foreach (var item in array)
+                    {
+                        serializer.Serialize(writer, item);
+                    }
+                    writer.WriteEndArray();
+                }
+                else
+                {
+                    writer.WritePropertyName("$ref");
+                    writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
+
+                    return;
+                }
+
+                writer.WriteEndObject();
+            }
         }
     }
 }
