@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-
-namespace Squid
+﻿namespace Squid
 {
     public delegate string TranslateStringHandler(string text);
 
@@ -338,6 +333,7 @@ namespace Squid
             checkButtonStyle.Pressed.Texture = "checkbox_down.png";
             checkButtonStyle.Checked.Texture = "checkbox_checked.png";
             checkButtonStyle.CheckedFocused.Texture = "checkbox_checked_hot.png";
+            checkButtonStyle.Focused.Texture = "checkbox_hot.png";
             checkButtonStyle.CheckedHot.Texture = "checkbox_checked_hot.png";
             checkButtonStyle.CheckedPressed.Texture = "checkbox_down.png";
 

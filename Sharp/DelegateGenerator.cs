@@ -12,15 +12,15 @@ namespace Sharp
         /// <typeparam name="T">Type of unbound instance</typeparam>
         /// <param name="memberInfo">Field or property info</param>
         /// <returns></returns>
-        public static Action<T, object> GenerateSetter<T>(MemberInfo memberInfo)//TODO: inject event calls?
+        public static Action<object, T> GenerateSetter<T>(MemberInfo memberInfo)//TODO: inject event calls?
         {
             //parameter "target", the object on which to set the field `field`
-            ParameterExpression targetExp = Expression.Parameter(typeof(T), "target");
-
-            (var assignExp, var valueExp) = SetterHelper<object>(targetExp, memberInfo);
+            ParameterExpression targetExp = Expression.Parameter(typeof(object), "target");
+            var castValueExp = CreateCastExpression(targetExp, memberInfo.DeclaringType);
+            (var assignExp, var valueExp) = SetterHelper<T>(castValueExp, memberInfo);
 
             //compile the whole thing
-            return Expression.Lambda<Action<T, object>>(assignExp, targetExp, valueExp).Compile();
+            return Expression.Lambda<Action<object, T>>(assignExp, targetExp, valueExp).Compile();
         }
 
         /// <summary>
@@ -31,9 +31,9 @@ namespace Sharp
         /// <returns></returns>
         public static Func<object, T> GenerateGetter<T>(MemberInfo memberInfo)
         {
-            ParameterExpression paramExpression = Expression.Parameter(typeof(T), "value");
-
-            MemberExpression memberExp = CreateMemberExpression(paramExpression, memberInfo);
+            ParameterExpression paramExpression = Expression.Parameter(typeof(object), "value");
+            var castValueExp = CreateCastExpression(paramExpression, memberInfo.DeclaringType);
+            MemberExpression memberExp = CreateMemberExpression(castValueExp, memberInfo);
 
             return Expression.Lambda<Func<object, T>>(memberExp, paramExpression).Compile();
         }
@@ -74,6 +74,14 @@ namespace Sharp
 
             return Expression.Lambda<Func<T>>(castValueExp).Compile();
         }
+
+        /* public static Action<object, T> GenerateNestedSetter<T>(string nestedPropName, params int[] indexes)
+         {
+         }
+
+         public static Func<object, T> GenerateNestedGetter<T>(string nestedPropName, params int[] indexes)
+         {
+         }*/
 
         private static (BinaryExpression assign, ParameterExpression param) SetterHelper<T>(Expression targetExp, MemberInfo memberInfo)
         {

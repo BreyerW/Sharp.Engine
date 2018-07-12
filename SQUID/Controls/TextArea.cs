@@ -656,7 +656,7 @@ namespace Squid
 
         protected override void OnKeyDown(KeyEventArgs args)
         {
-            Desktop root = Desktop;
+            Desktop root = Canvas;
             if (root == null) return;
 
             BlinkTime = 0; DoBlink = 1;
@@ -1127,7 +1127,7 @@ namespace Squid
 
         protected override void OnStateChanged()
         {
-            Style style = Desktop.GetStyle(Style).Styles[State];
+            Style style = Canvas.GetStyle(Style).Styles[State];
             UpdateText(style);
         }
 
@@ -1135,7 +1135,7 @@ namespace Squid
         {
             if (IsDirty)
             {
-                Style style = Desktop.GetStyle(Style).Styles[State];
+                Style style = Canvas.GetStyle(Style).Styles[State];
                 UpdateText(style);
             }
 
@@ -1154,7 +1154,7 @@ namespace Squid
 
             if (IsDirty)
             {
-                Style style = Desktop.GetStyle(Style).Styles[State];
+                Style style = Canvas.GetStyle(Style).Styles[State];
                 UpdateText(style);
             }
 

@@ -100,7 +100,7 @@ namespace Squid
                     break;
             }
 
-            Desktop.ShowDropdown(Dropdown, true);
+            Canvas.ShowDropdown(Dropdown, true);
             IsOpen = true;
 
             if (OnOpened != null)
@@ -109,7 +109,7 @@ namespace Squid
 
         public void Close()
         {
-            if (Desktop == null) return;
+            if (Canvas == null) return;
 
             if (OnClosing != null)
             {
@@ -118,7 +118,7 @@ namespace Squid
                 if (args.Cancel) return;
             }
 
-            Desktop.CloseDropdowns();
+            Canvas.CloseDropdowns();
             IsOpen = false;
 
             if (OnClosed != null)

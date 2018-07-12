@@ -1,23 +1,19 @@
-﻿using System;
-using Sharp.Editor.Views;
+﻿using Sharp.Editor.Views;
 
 namespace Sharp
 {
-	public abstract class Renderer: Component
+	public abstract class Renderer : Component
 	{
-		public abstract void Render ();
-		public abstract void SetupMatrices ();
+		public abstract void Render();
 
-		protected internal sealed override void OnEnableInternal ()
+		protected internal sealed override void OnEnableInternal()
 		{
-			SceneView.OnRenderFrame +=Render;
-			SceneView.OnSetupMatrices += SetupMatrices;
+			SceneView.entities.OnRenderFrame += Render;
 		}
-		protected internal sealed override void OnDisableInternal ()
+
+		protected internal sealed override void OnDisableInternal()
 		{
-			SceneView.OnRenderFrame -=Render;
-			SceneView.OnSetupMatrices -= SetupMatrices;
+			SceneView.entities.OnRenderFrame -= Render;
 		}
 	}
 }
-

@@ -1,123 +1,144 @@
-﻿using System;
-using Sharp.Commands;
-using Sharp.Editor.Attribs;
+﻿using Sharp.Editor.Attribs;
 using Squid;
-using System.Numerics;
+using System;
+using System.Reflection;
 
 namespace Sharp.Editor.UI.Property
 {
-    /// <summary>
-    /// Base control for property entry.
-    /// </summary>
-    public abstract class PropertyDrawer<T> : Control//if u want support multiple types with same drawer use object, object have least priority compared to same attrib but specialized drawer
-    {
-        protected Label label = new Label();
-        public bool propertyIsDirty = false;
+	public abstract class PropertyDrawer : Control
+	{
+		public MemberInfo memberInfo;
+		public CustomPropertyDrawerAttribute[] attributes;
 
-        private ChangeValueCommand command = null;
+		protected Label label = new Label();
 
-        public Action<T> setter;
-        public Func<T> getter;
+		//protected bool propertyIsFocused = false;
 
-        public CustomPropertyDrawerAttribute[] attributes;
+		public PropertyDrawer(string name) : base()
+		{
+			//Scissor = true;
+			//Size = new Point(0, 20);
+			label.Text = name;
+			label.Size = new Point(75, Size.y);
+			label.AutoEllipsis = false;
+			Childs.Add(label);
+			LateUpdate += PropertyDrawer_Update;
+			//Childs.BeforeItemAdded += Childs_BeforeItemAdded;
+		}
 
-        /// <summary>
-        /// Property value (todo: always string, which is ugly. do something about it).
-        /// </summary>
-        public abstract T Value
-        {
-            get;
-            set;
-        }
+		/* private void AddFocusEvents(Control control)
+         {
+             IControlContainer container = control as IControlContainer;
+             if (container is null)
+                 control.Childs.BeforeItemAdded += Childs_BeforeItemAdded;
+             else
+                 container.Controls.BeforeItemAdded += Childs_BeforeItemAdded;
+             control.GotFocus += Item_GotFocus;
+             control.LostFocus += Item_LostFocus;
+             if (control.Childs.Count > 0)
+                 foreach (var child in control.Childs)
+                     AddFocusEvents(child);
+             else if (container?.Controls.Count > 0)
+                 foreach (var child in container.Controls)
+                     AddFocusEvents(child);
+         }
 
-        public PropertyDrawer(string name) : base()
-        {
-            //Scissor = true;
-            //Size = new Point(0, 20);
-            label.Text = name;
-            label.Size = new Point(75, Size.y);
-            label.AutoEllipsis = false;
-            Childs.Add(label);
-            Selection.OnSelectionDirty += (sender, args) =>
-            {
-                Value = getter();
-            };
-            Window.onBeforeNextFrame += () =>
-            {
-                if (propertyIsDirty)
-                {
-                    CreateCommand(command is null /*&& !InputHandler.isKeyboardPressed && !InputHandler.isMouseDragging*/);
+         private void Childs_BeforeItemAdded(object sender, ListEventArgs<Control> e)
+         {
+             //AddFocusEvents(e.Item);
+         }
 
-                    propertyIsDirty = false;
-                }
-                if (!PropertyDrawer.StopCommandCommits && command != null)
-                {
-                    object obj = getter();
-                    if (obj is float || obj is double || obj is decimal)
-                        obj = Math.Round((decimal)obj, Application.roundingPrecision);
-                    else if (obj is Vector3 vec)
-                        obj = new Vector3((float)Math.Round(vec.X, Application.roundingPrecision), (float)Math.Round(vec.Y, Application.roundingPrecision), (float)Math.Round(vec.Z, Application.roundingPrecision));
-                    if (!obj.Equals(command.newValue))//take rounding into account
-                    {
-                        command.newValue = Value;
-                        command.StoreCommand();
-                    }
-                    setter(Value);
-                    command = null;
-                }
-            };
-            PropertyDrawer.onCommandBehaviourChanged += CreateCommand;
-        }
+         private void Item_LostFocus(Control sender)
+         {
+             propertyIsFocused = false;
+         }
 
-        private void CreateCommand(bool create)
-        {
-            //  if (create)//disable on mouse drag and on keyboard press
-            {
-                //   command = new ChangeValueCommand((o) => { setter((T)o); Value = getter(); propertyIsDirty = false; }, getter(), Value);
-                //   Console.WriteLine("save " + Value + " " + getter());
-            }
-        }
+         protected void Item_GotFocus(Control sender)
+         {
+             propertyIsFocused = true;
+         }*/
 
-        protected override void DrawBefore()
-        {
-            base.DrawBefore();
-        }
+		protected abstract void PropertyDrawer_Update(Control sender);
 
-        //public abstract bool IsValid(CustomPropertyDrawerAttribute[] attributes);
-    }
+		internal abstract void GenerateSetterGetter();
+	}
 
-    public static class PropertyDrawer
-    {
-        private static bool stopCommandCommits = false;
-        public static Action<bool> onCommandBehaviourChanged;
+	/// <summary>
+	/// Base control for property entry.
+	/// </summary>
+	public abstract class PropertyDrawer<T> : PropertyDrawer//if u want support multiple types with same drawer use object, object have least priority compared to same attrib but specialized drawer
+	{
+		private T prevUIValue;
+		private T prevObjValue;
 
-        public static bool StopCommandCommits
-        {
-            set
-            {
-                if (value != stopCommandCommits)
-                    onCommandBehaviourChanged?.Invoke(value);
-                stopCommandCommits = value;
-            }
-            internal get => stopCommandCommits;
-        }
-    }
+		public Action<object, T> setter;
+		public Func<object, T> getter;
 
-    public static class TypeExtensions
-    {
-        public static bool IsSubclassOfOpenGeneric(this Type toCheck, Type type)
-        {
-            if (toCheck.IsAbstract) return false;
-            while (toCheck != null && toCheck != typeof(object) && toCheck != type)
-            {
-                var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
-                if (type == cur)
-                {
-                    return true;
-                }
-                toCheck = toCheck.BaseType;
-            }
-            return false;
-        }
-    }
+		public abstract T Value
+		{
+			get;
+			set;
+		}
+
+		public PropertyDrawer(string name) : base(name)
+		{
+		}
+
+		internal sealed override void GenerateSetterGetter()
+		{
+			if (typeof(T) == memberInfo.GetUnderlyingType())
+			{
+				getter = DelegateGenerator.GenerateGetter<T>(memberInfo);
+				setter = DelegateGenerator.GenerateSetter<T>(memberInfo);
+			}
+			// else { //happens usually when propertyDrawer is default
+			//    DelegateGenerator.GenerateGetter
+			//}
+			var refComp = (Parent.Parent as ComponentNode).referencedComponent;
+			Value = getter(refComp);
+			prevUIValue = Value;
+			prevObjValue = getter(refComp);
+		}
+
+		protected override void PropertyDrawer_Update(Control sender)
+		{
+			var refComp = (Parent.Parent as ComponentNode).referencedComponent;
+			//if (!(Desktop.FocusedControl is Views.SceneView) && !Value.Equals(getter((Parent.Parent as ComponentNode).referencedComponent)))//&& !(InputHandler.isKeyboardPressed | InputHandler.isMouseDragging)
+			if (!prevUIValue.Equals(Value))
+			{
+				setter(refComp, Value);
+				prevUIValue = Value;
+			}
+			else if (!prevObjValue.Equals(getter(refComp))) //if (!Value.Equals(getter((Parent.Parent as ComponentNode).referencedComponent)))
+			{
+				Value = getter(refComp);
+				prevObjValue = getter(refComp);
+			}
+		}
+
+		protected override void DrawBefore()
+		{
+			base.DrawBefore();
+		}
+
+		//public abstract bool IsValid(CustomPropertyDrawerAttribute[] attributes);
+	}
+
+	public static class TypeExtensions
+	{
+		public static bool IsSubclassOfOpenGeneric(this Type toCheck, Type type)
+		{
+			if (toCheck.IsAbstract) return false;
+			while (toCheck != null && toCheck != typeof(object) && toCheck != type)
+			{
+				var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
+				if (type == cur)
+				{
+					return true;
+				}
+				toCheck = toCheck.BaseType;
+			}
+			return false;
+		}
+	}
 }

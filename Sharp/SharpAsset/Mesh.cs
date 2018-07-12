@@ -1,156 +1,157 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
-using System.Numerics;
-using Sharp;
+﻿using Sharp;
 using SharpAsset.Pipeline;
-using SharpAsset;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace SharpAsset
 {
-    [Serializable]
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Mesh : IAsset
-    {
-        public int stride;//talk to vertex format to be able to query exact attribute
+	[Serializable]
+	[StructLayout(LayoutKind.Sequential)]
+	public struct Mesh : IAsset
+	{
+		public int stride;//talk to vertex format to be able to query exact attribute
 
-        public Type vertType;
-        public IndiceType indiceType;
+		public Type vertType;
+		public IndiceType indiceType;
 
-        public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
-        public string Extension { get { return Path.GetExtension(FullPath); } set { } }
-        public string FullPath { get; set; }
-        public UsageHint UsageHint;
-        public byte[] Indices;
-        public byte[] verts;
-        public BoundingBox bounds;
+		public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
+		public string Extension { get { return Path.GetExtension(FullPath); } set { } }
+		public string FullPath { get; set; }
+		public UsageHint UsageHint;
 
-        internal static Dictionary<string, byte[]> sharedMeshes = new Dictionary<string, byte[]>();
+		public byte[] Indices;
+		public byte[] verts;
 
-        internal int VBO;
-        internal int EBO;
+		public BoundingBox bounds;
 
-        public Span<byte> SpanToMesh
-        {
-            get
-            {
-                return verts is null ? SpanToSharedMesh : verts.AsSpan();
-            }
-        }
+		internal static Dictionary<string, byte[]> sharedMeshes = new Dictionary<string, byte[]>();
 
-        public Span<byte> SpanToSharedMesh
-        {
-            get
-            {
-                return sharedMeshes[Name].AsSpan();
-            }
-        }
+		internal int VBO;
+		internal int EBO;
 
-        public Span<byte> SpanToIndices
-        {
-            get
-            {
-                return Indices.AsSpan();
-            }
-        }
+		public Span<byte> SpanToMesh
+		{
+			get
+			{
+				return verts is null ? SpanToSharedMesh : verts.AsSpan();
+			}
+		}
 
-        public bool isMeshShared
-        {
-            get { return verts is null; }
-            set
-            {
-                verts = value ? null : SpanToMesh.ToArray();
-            }
-        }
+		public Span<byte> SpanToSharedMesh
+		{
+			get
+			{
+				return sharedMeshes[Name].AsSpan();
+			}
+		}
 
-        public override string ToString()
-        {
-            return Name;
-        }
+		public Span<byte> SpanToIndices
+		{
+			get
+			{
+				return Indices.AsSpan();
+			}
+		}
 
-        public ref T ReadVertexAtIndex<T>(int index) where T : struct, IVertex
-        {
-            return ref Unsafe.As<byte, T>(ref SpanToMesh[index * stride]);
-        }
+		public bool isMeshShared
+		{
+			get { return verts is null; }
+			set
+			{
+				verts = value ? null : SpanToMesh.ToArray();
+			}
+		}
 
-        //public TExpected ReadVertexAttributeAtIndex<TExpected>(VertexAttribute attrib,int layer, int index) where TExpected : struct {
-        //consult vertex format in order to read only attributes
-        //}
-        public Span<TTo> SnapshotConvertToFormat<TTo>() where TTo : struct, IVertex //PermamentConvertToFormat
-        {
-            var size = Unsafe.SizeOf<TTo>();
-            //if (size == stride)
-            //    return
-            var tmpSpan = new Span<TTo>(new TTo[SpanToMesh.Length]);//danger! copy instead of reference. Change it so that unamaged memory is resized and this new span point to resized memory?
+		public override string ToString()
+		{
+			return Name;
+		}
 
-            var condition = size > stride;
-            for (int i = 0; i < SpanToMesh.Length; i++)
-            {
-                tmpSpan[i] = Unsafe.As<byte, TTo>(ref SpanToMesh.Slice(i * stride, condition ? stride : size)[0]);//check for SpanExiensions.Read/Write
-            }
-            return tmpSpan;
-            //Unsafe.As<byte[], TTo[]>(ref verts);
-        }
+		public ref T ReadVertexAtIndex<T>(int index) where T : struct, IVertex
+		{
+			return ref Unsafe.As<byte, T>(ref SpanToMesh[index * stride]);
+		}
 
-        public void PlaceIntoScene(Entity context, Vector3 worldPos)//PlaceIntoView(View view,)
-        {
-            var eObject = new Entity();
-            eObject.Position = worldPos;
-            var shader = (Shader)Pipeline.Pipeline.GetPipeline<ShaderPipeline>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\TextureOnlyShader.shader");
-            //Pipeline.Pipeline.GetPipeline<ShaderPipeline>().GetAsset("TextureOnlyShader");
-            var mat = new Material();
-            mat.Shader = shader;
-            var renderer = new MeshRenderer(ref this, mat);
-            eObject.AddComponent(renderer);
-            Pipeline.Pipeline.GetPipeline<TexturePipeline>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\duckCM.bmp");
-            //zamienic na ref loading pipeliny
-            renderer.material.BindProperty("MyTexture", ref Pipeline.Pipeline.GetPipeline<TexturePipeline>().GetAsset("duckCM"));
-            if (context != null) //make as child of context?
-            {
-            }
-            eObject.Instatiate();
-        }
-    }
+		//public TExpected ReadVertexAttributeAtIndex<TExpected>(VertexAttribute attrib,int layer, int index) where TExpected : struct {
+		//consult vertex format in order to read only attributes
+		//}
+		public Span<TTo> SnapshotConvertToFormat<TTo>() where TTo : struct, IVertex //PermamentConvertToFormat
+		{
+			var size = Unsafe.SizeOf<TTo>();
+			//if (size == stride)
+			//    return
+			var tmpSpan = new Span<TTo>(new TTo[SpanToMesh.Length]);//danger! copy instead of reference. Change it so that unamaged memory is resized and this new span point to resized memory?
 
-    public enum UsageHint
-    {
-        StreamDraw = 35040,
-        StreamRead,
-        StreamCopy,
-        StaticDraw = 35044,
-        StaticRead,
-        StaticCopy,
-        DynamicDraw = 35048,
-        DynamicRead,
-        DynamicCopy
-    }
+			var condition = size > stride;
+			for (int i = 0; i < SpanToMesh.Length; i++)
+			{
+				tmpSpan[i] = Unsafe.As<byte, TTo>(ref SpanToMesh.Slice(i * stride, condition ? stride : size)[0]);//check for SpanExiensions.Read/Write
+			}
+			return tmpSpan;
+			//Unsafe.As<byte[], TTo[]>(ref verts);
+		}
 
-    public enum IndiceType
-    {
-        UnsignedByte = 5121,
-        UnsignedShort = 5123,
-        UnsignedInt = 5125
-    }
+		public void PlaceIntoScene(Entity context, Vector3 worldPos)//PlaceIntoView(View view,)
+		{
+			var eObject = new Entity();
+			eObject.Position = worldPos;
+			var shader = (Shader)Pipeline.Pipeline.GetPipeline<ShaderPipeline>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\TextureOnlyShader.shader");
+			//Pipeline.Pipeline.GetPipeline<ShaderPipeline>().GetAsset("TextureOnlyShader");
+			var mat = new Material();
+			mat.Shader = shader;
+			var renderer = new MeshRenderer(ref this, mat);
+			eObject.AddComponent(renderer);
+			Pipeline.Pipeline.GetPipeline<TexturePipeline>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\duckCM.bmp");
+			//zamienic na ref loading pipeliny
+			renderer.material.BindProperty("MyTexture", ref Pipeline.Pipeline.GetPipeline<TexturePipeline>().GetAsset("duckCM"));
+			if (context != null) //make as child of context?
+			{
+			}
+			eObject.Instatiate();
+		}
+	}
 
-    public class SafePointer : SafeHandle
-    {
-        public SafePointer(IntPtr invalidHandleValue) : base(invalidHandleValue, true)
-        {
-            SetHandle(invalidHandleValue);
-        }
+	public enum UsageHint
+	{
+		StreamDraw = 35040,
+		StreamRead,
+		StreamCopy,
+		StaticDraw = 35044,
+		StaticRead,
+		StaticCopy,
+		DynamicDraw = 35048,
+		DynamicRead,
+		DynamicCopy
+	}
 
-        public override bool IsInvalid
-        {
-            [System.Security.SecurityCritical]
-            get { return handle == new IntPtr(-1); }
-        }
+	public enum IndiceType
+	{
+		UnsignedByte = 5121,
+		UnsignedShort = 5123,
+		UnsignedInt = 5125
+	}
 
-        protected override bool ReleaseHandle()
-        {
-            Marshal.FreeHGlobal(handle);
-            return true;
-        }
-    }
+	public class SafePointer : SafeHandle
+	{
+		public SafePointer(IntPtr invalidHandleValue) : base(invalidHandleValue, true)
+		{
+			SetHandle(invalidHandleValue);
+		}
+
+		public override bool IsInvalid
+		{
+			[System.Security.SecurityCritical]
+			get { return handle == new IntPtr(-1); }
+		}
+
+		protected override bool ReleaseHandle()
+		{
+			Marshal.FreeHGlobal(handle);
+			return true;
+		}
+	}
 }

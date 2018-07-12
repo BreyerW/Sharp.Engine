@@ -7,6 +7,7 @@ using SharpAsset.Pipeline;
 
 namespace SharpAsset
 {
+    [Serializable]
     public class Material//IAsset
     {
         //private int lastSlot;

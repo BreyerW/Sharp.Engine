@@ -1,63 +1,57 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using Sharp.Editor.Views;
-using SharpAsset;
-using System.Runtime.CompilerServices;
+﻿using SharpAsset;
+using System;
 
 namespace Sharp
 {
-    [Serializable]
-    public class MeshRenderer : Renderer //where VertexFormat : struct, IVertex
-    {
-        internal Mesh mesh;
+	[Serializable]
+	public class MeshRenderer : Renderer //where VertexFormat : struct, IVertex
+	{
+		internal Mesh mesh;
 
-        public Material material;
+		public Material material;
 
-        public MeshRenderer(ref Mesh meshToRender, Material mat)
-        {
-            mesh = meshToRender;
-            material = mat;
-            if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(mesh.vertType))
-                RegisterAsAttribute.ParseVertexFormat(mesh.vertType);
-            Allocate();
-        }
+		public MeshRenderer(ref Mesh meshToRender, Material mat)
+		{
+			mesh = meshToRender;
+			material = mat;
+			if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(mesh.vertType))
+				RegisterAsAttribute.ParseVertexFormat(mesh.vertType);
+			Allocate();
+		}
 
-        private void Allocate()
-        {
-            MainWindow.backendRenderer.GenerateBuffers(ref mesh.VBO, ref mesh.EBO);
-            MainWindow.backendRenderer.BindBuffers(ref mesh.VBO, ref mesh.EBO);
-            MainWindow.backendRenderer.Allocate(ref mesh.UsageHint, ref mesh.SpanToMesh[0], ref mesh.Indices[0], mesh.SpanToMesh.Length, mesh.Indices.Length);
+		private void Allocate()
+		{
+			MainWindow.backendRenderer.GenerateBuffers(ref mesh.VBO, ref mesh.EBO);
+			MainWindow.backendRenderer.BindBuffers(ref mesh.VBO, ref mesh.EBO);
+			MainWindow.backendRenderer.Allocate(ref mesh.UsageHint, ref mesh.SpanToMesh[0], ref mesh.Indices[0], mesh.SpanToMesh.Length, mesh.Indices.Length);
 
-            foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.vertType].Values)
-                MainWindow.backendRenderer.BindVertexAttrib(ref vertAttrib.type, vertAttrib.shaderLocation, vertAttrib.dimension, mesh.stride, vertAttrib.offset);
-        }
+			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.vertType].Values)
+				MainWindow.backendRenderer.BindVertexAttrib(ref vertAttrib.type, vertAttrib.shaderLocation, vertAttrib.dimension, mesh.stride, vertAttrib.offset);
+		}
 
-        public override void Render()
-        {
-            if (Camera.main.frustum.Intersect(mesh.bounds, entityObject.ModelMatrix) == 0)
-            {
-                //Console.WriteLine("cull");
-                return;
-            }
-            //Console.WriteLine ("no-cull ");
+		public override void Render()
+		{
+			if (Camera.main.frustum.Intersect(mesh.bounds, entityObject.ModelMatrix) == 0)
+			{
+				//Console.WriteLine("cull");
+				return;
+			}
+			//Console.WriteLine ("no-cull ");
 
-            //int current = GL.GetInteger (GetPName.CurrentProgram);
-            //GL.ValidateProgram (material.shaderId);
-            //if (current != material.shaderId) {
-            //}
-            //if (!IsLoaded) return;
-            var shader = material.Shader;
+			//int current = GL.GetInteger (GetPName.CurrentProgram);
+			//GL.ValidateProgram (material.shaderId);
+			//if (current != material.shaderId) {
+			//}
+			//if (!IsLoaded) return;
+			var shader = material.Shader;
 
-            MainWindow.backendRenderer.Use(shader.Program);
-            material.SetProperty("model", entityObject.ModelMatrix, false);
-            material.SendData();
-            MainWindow.backendRenderer.Use(ref mesh.indiceType, mesh.Indices.Length);
-            MainWindow.backendRenderer.ChangeShader();
-        }
+			MainWindow.backendRenderer.Use(shader.Program);
 
-        public override void SetupMatrices()
-        {
-        }
-    }
+			//entityObject.SetModelMatrix();
+			material.SetProperty("model", entityObject.ModelMatrix, false);
+			material.SendData();
+			MainWindow.backendRenderer.Use(ref mesh.indiceType, mesh.Indices.Length);
+			MainWindow.backendRenderer.ChangeShader();
+		}
+	}
 }

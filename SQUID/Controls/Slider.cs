@@ -160,7 +160,7 @@ namespace Squid
         {
             base.OnUpdate();
 
-            Desktop root = Desktop;
+            Desktop root = Canvas;
             if (root == null) return;
 
             if (AutoScale)

@@ -688,7 +688,7 @@ namespace Squid
         {
             if (IsDirty)
             {
-                Style style = Desktop.GetStyle(Style).Styles[State];
+                Style style = Canvas.GetStyle(Style).Styles[State];
                 UpdateText(style);
             }
 
@@ -707,7 +707,7 @@ namespace Squid
 
             if (IsDirty)
             {
-                Style style = Desktop.GetStyle(Style).Styles[State];
+                Style style = Canvas.GetStyle(Style).Styles[State];
                 UpdateText(style);
             }
 

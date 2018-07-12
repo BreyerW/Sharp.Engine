@@ -19,6 +19,7 @@ namespace Sharp.Editor.UI.Property
         public Label Label { get; private set; }
 
         public FlowLayoutFrame Frame { get; private set; }
+        public object referencedComponent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TreeNodeLabel"/> class.

@@ -38,7 +38,7 @@ namespace Sharp.Editor
                     win.Position = (sender.Location.x + natWin.win.Position.x, sender.Location.y + natWin.win.Position.y);
                 }
                 else
-                    win.Position = (sender.Location.x + sender.Desktop.screenPos.x, sender.Location.y + sender.Desktop.screenPos.y);
+                    win.Position = (sender.Location.x + sender.Canvas.screenPos.x, sender.Location.y + sender.Canvas.screenPos.y);
                 MainEditorView.mainViews[win.windowId].desktop.Update();
                 var control = MainEditorView.mainViews[win.windowId].desktop.Controls[0];
                 win.Size = (control.Size.x, control.Size.y);

@@ -82,11 +82,11 @@ namespace Squid
 
             Point p2 = p + Size;
 
-            if (p2.x > Desktop.Size.x)
-                p.x = Desktop.Size.x - Size.x;
+            if (p2.x > Canvas.Size.x)
+                p.x = Canvas.Size.x - Size.x;
 
-            if (p2.y > Desktop.Size.y)
-                p.y = Desktop.Size.y - Size.y;
+            if (p2.y > Canvas.Size.y)
+                p.y = Canvas.Size.y - Size.y;
 
             Position = p;
             PerformUpdate();

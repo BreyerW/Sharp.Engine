@@ -668,8 +668,8 @@ namespace Squid
                 _oldState = _state;
                 _state = value;
 
-                Style last = Desktop.GetStyle(Style).Styles[_oldState];
-                Style next = Desktop.GetStyle(Style).Styles[_state];
+                Style last = Canvas.GetStyle(Style).Styles[_oldState];
+                Style next = Canvas.GetStyle(Style).Styles[_state];
 
                 TextureFade = last.IsTextureDifferent(next);
                 FontFade = last.IsFontDifferent(next);
@@ -706,12 +706,12 @@ namespace Squid
         /// <summary>
         /// Returns the root control
         /// </summary>
-        public Desktop Desktop
+        public Desktop Canvas
         {
             get
             {
                 if (_parent != null)
-                    return _parent.Desktop;
+                    return _parent.Canvas;
                 else
                     return this as Desktop;
             }
@@ -775,14 +775,14 @@ namespace Squid
         public void Focus()
         {
             if (!AllowFocus) return;
-            if (Desktop == null) return;
+            if (Canvas == null) return;
 
             Desktop.FocusedControl = this;
         }
 
         public void Unfocus()
         {
-            if (Desktop == null) return;
+            if (Canvas == null) return;
             Desktop.FocusedControl = null;
         }
 
@@ -916,9 +916,9 @@ namespace Squid
         /// <param name="data">The control to be displayed as dragged</param>
         public void DoDragDrop(Control data)
         {
-            if (Desktop == null) return;
+            if (Canvas == null) return;
 
-            Desktop.DoDragDrop(this, data);
+            Canvas.DoDragDrop(this, data);
         }
 
         /// <summary>
@@ -984,7 +984,7 @@ namespace Squid
         /// </summary>
         public virtual void Click(int button)
         {
-            if (Desktop.CheckModalLock(this))
+            if (Canvas.CheckModalLock(this))
                 return;
 
             OnMouseDown(button);
@@ -1288,7 +1288,7 @@ namespace Squid
         /// </summary>
         public void PerformLayout()
         {
-            if (!IsVisible && !Desktop.DesignMode) return;
+            if (!IsVisible && !Canvas.DesignMode) return;
 
             PerformLayoutAndClip();
 
@@ -1387,7 +1387,7 @@ namespace Squid
         /// <returns>System.Single.</returns>
         public float GetOpacity()
         {
-            ControlStyle style = Desktop.GetStyle(Style);
+            ControlStyle style = Canvas.GetStyle(Style);
             if (style == null) return 1;
             return GetOpacity(style.Styles[_state].Opacity);
         }
@@ -1699,7 +1699,7 @@ namespace Squid
         /// </summary>
         protected void ResetScissor()
         {
-            Rectangle r = Desktop.ClipRect;
+            Rectangle r = Canvas.ClipRect;
 
             for (int i = Depth - 1; i >= 0; i--)
             {
@@ -2049,7 +2049,7 @@ namespace Squid
             }
 
             if (NoEvents) return;
-            if (Desktop == null) return;
+            if (Canvas == null) return;
 
             // if (root.DesignMode) return;
 
@@ -2459,12 +2459,12 @@ namespace Squid
 
                 if (FadeSpeed > 0 || UI.GlobalFadeSpeed > 0)
                 {
-                    Style next = Desktop.GetStyle(Style).Styles[_state];
+                    Style next = Canvas.GetStyle(Style).Styles[_state];
                     float opacity = GetOpacity(next.Opacity);
 
                     if (_oldState != _state && FadeIn < 1 && (TextureFade || FontFade))
                     {
-                        Style last = Desktop.GetStyle(Style).Styles[_oldState];
+                        Style last = Canvas.GetStyle(Style).Styles[_oldState];
 
                         float a1 = GetOpacity(last.Opacity) * FadeOut;
                         float a2 = GetOpacity(next.Opacity) * FadeIn;
@@ -2493,7 +2493,7 @@ namespace Squid
                 }
                 else
                 {
-                    Style style = Desktop.GetStyle(Style).Styles[_state];
+                    Style style = Canvas.GetStyle(Style).Styles[_state];
                     float opacity = GetOpacity(style.Opacity);
 
                     DrawStyle(style, opacity);
@@ -2554,7 +2554,7 @@ namespace Squid
         internal void DoEvents()
         {
             if (NoEvents) return;
-            if (Desktop == null) return;
+            if (Canvas == null) return;
 
             if (UI.MouseScroll != 0)
                 OnMouseWheel();
@@ -2596,10 +2596,10 @@ namespace Squid
                 }
             }
 
-            if (Desktop.MouseDownControl != null)
+            if (Canvas.MouseDownControl != null)
             {
                 Desktop.PressedControl = null;
-                Desktop.MouseDownControl = null;
+                Canvas.MouseDownControl = null;
             }
         }
 
@@ -2722,7 +2722,7 @@ namespace Squid
             Control control = null;
             IList<Control> controls = Childs;
 
-            if (!IsVisible || Desktop.CheckModalLock(this))
+            if (!IsVisible || Canvas.CheckModalLock(this))
                 return null;
 
             if (!NoEvents && Enabled && TabIndex == index)
@@ -2875,11 +2875,11 @@ namespace Squid
         /// <param name="button">The button.</param>
         internal void OnMousePress(int button)
         {
-            if (Desktop == null) return;
+            if (Canvas == null) return;
 
             //if(button == 0)
             Desktop.PressedControl = this;
-            Desktop.MouseDownControl = this;
+            Canvas.MouseDownControl = this;
 
             if (MousePress != null)
                 MousePress(this, new MouseEventArgs { Button = button });
@@ -2901,9 +2901,9 @@ namespace Squid
         /// <param name="button"></param>
         internal void OnMouseRelease(int button)
         {
-            if (Desktop == null) return;
+            if (Canvas == null) return;
 
-            if (Desktop.MouseDownControl != this) return;
+            if (Canvas.MouseDownControl != this) return;
 
             OnMouseClick(button);
 
@@ -2920,11 +2920,11 @@ namespace Squid
         /// <param name="button"></param>
         internal void OnMouseDown(int button)
         {
-            if (Desktop == null) return;
+            if (Canvas == null) return;
 
             //if (button == 0)
             Desktop.PressedControl = this;
-            Desktop.MouseDownControl = this;
+            Canvas.MouseDownControl = this;
 
             DateTime now = DateTime.Now;
             TimeSpan delta = now.Subtract(TimeClicked);

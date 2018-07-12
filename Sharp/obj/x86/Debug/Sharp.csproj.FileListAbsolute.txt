@@ -61,3 +61,7 @@ B:\Sharp.Engine3\Sharp\obj\x86\Debug\Sharp.pdb
 B:\Sharp.Engine3\Sharp\bin\Debug\JsonDiffPatchDotNet.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\TeximpNet.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\TeximpNet.xml
+B:\Sharp.Engine3\Sharp\bin\Debug\Delta.pdb
+B:\Sharp.Engine3\Sharp\bin\Debug\Delta.dll.config
+B:\Sharp.Engine3\Sharp\bin\Debug\System.Threading.Tasks.Extensions.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\System.Threading.Tasks.Extensions.xml

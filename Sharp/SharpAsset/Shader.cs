@@ -7,6 +7,7 @@ using System.Numerics;
 
 namespace SharpAsset
 {
+    [Serializable]
     public struct Shader : IAsset//move backendrenderer here?
     {
         public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }

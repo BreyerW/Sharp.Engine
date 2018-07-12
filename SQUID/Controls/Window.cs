@@ -102,8 +102,8 @@ namespace Squid
         {
             if (Modal)
             {
-                SetScissor(0, 0, Desktop.Size.x, Desktop.Size.y);
-                UI.Renderer.DrawBox(0, 0, Desktop.Size.x, Desktop.Size.y, ColorInt.FromArgb(GetOpacity(1), Desktop.ModalColor));
+                SetScissor(0, 0, Canvas.Size.x, Canvas.Size.y);
+                UI.Renderer.DrawBox(0, 0, Canvas.Size.x, Canvas.Size.y, ColorInt.FromArgb(GetOpacity(1), Canvas.ModalColor));
                 ResetScissor();
             }
 
@@ -194,7 +194,7 @@ namespace Squid
             SetDepth();
 
             if (Modal)
-                Desktop.RegisterModal(this);
+                Canvas.RegisterModal(this);
 
             IsVisible = true;
         }
@@ -205,10 +205,10 @@ namespace Squid
         public virtual void Close()
         {
             Console.WriteLine("close");
-            if (Desktop == null) return;
+            if (Canvas == null) return;
 
             if (Modal)
-                Desktop.UnregisterModal(this);
+                Canvas.UnregisterModal(this);
 
             IsVisible = false;
         }

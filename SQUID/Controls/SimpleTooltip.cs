@@ -170,11 +170,11 @@ namespace Squid
             if (pos.y < 0)
                 result.Top = -pos.y;
 
-            if (pos.x + size.x > Desktop.Size.x)
-                result.Right = (pos.x + size.x) - Desktop.Size.x;
+            if (pos.x + size.x > Canvas.Size.x)
+                result.Right = (pos.x + size.x) - Canvas.Size.x;
 
-            if (pos.y + size.y > Desktop.Size.y)
-                result.Bottom = (pos.y + size.y) - Desktop.Size.y;
+            if (pos.y + size.y > Canvas.Size.y)
+                result.Bottom = (pos.y + size.y) - Canvas.Size.y;
 
             return result;
         }

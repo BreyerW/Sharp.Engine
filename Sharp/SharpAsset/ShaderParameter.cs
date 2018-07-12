@@ -1,52 +1,55 @@
-﻿using System.Numerics;
-using Sharp;
+﻿using Sharp;
+using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SharpAsset
 
 {
-    internal interface IParameter
-    {
-        ref byte DataAddress { get; }
+	internal interface IParameter
+	{
+		ref byte DataAddress { get; }
 
-        void ConsumeData(int location);
-    }
+		void ConsumeData(int location);
+	}
 
-    internal class Matrix4Parameter : IParameter
-    {
-        public Matrix4x4 data;
+	[Serializable]
+	internal class Matrix4Parameter : IParameter
+	{
+		public Matrix4x4 data;
 
-        public ref byte DataAddress { get { return ref Unsafe.As<Matrix4x4, byte>(ref data); } }
+		public ref byte DataAddress { get { return ref Unsafe.As<Matrix4x4, byte>(ref data); } }
 
-        public void ConsumeData(int location)
-        {
-            SendToGPU(location, ref data.M11);
-        }
+		public void ConsumeData(int location)
+		{
+			SendToGPU(location, ref data.M11);
+		}
 
-        public static void SendToGPU(int location, ref float address)
-        {
-            MainWindow.backendRenderer.SendMatrix4(location, ref address/*, Slot*/);
-        }
-    }
+		public static void SendToGPU(int location, ref float address)
+		{
+			MainWindow.backendRenderer.SendMatrix4(location, ref address/*, Slot*/);
+		}
+	}
 
-    internal class Texture2DParameter : IParameter //zalatwiaj primitivy tutaj
-    {
-        //private int Slot;
+	[Serializable]
+	internal class Texture2DParameter : IParameter //zalatwiaj primitivy tutaj
+	{
+		//private int Slot;
 
-        public int data;
+		public int data;
 
-        public ref byte DataAddress { get { return ref Unsafe.As<int, byte>(ref data); } }
+		public ref byte DataAddress { get { return ref Unsafe.As<int, byte>(ref data); } }
 
-        public void ConsumeData(int location)
-        {
-            SendToGPU(data, location);
-        }
+		public void ConsumeData(int location)
+		{
+			SendToGPU(data, location);
+		}
 
-        public static void SendToGPU(int tbo, int location)
-        {
-            MainWindow.backendRenderer.SendTexture2D(location, tbo/*, Slot*/);
-        }
-    }
+		public static void SendToGPU(int tbo, int location)
+		{
+			MainWindow.backendRenderer.SendTexture2D(location, tbo/*, Slot*/);
+		}
+	}
 }
 
 /*

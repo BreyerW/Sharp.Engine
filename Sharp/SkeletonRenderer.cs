@@ -24,16 +24,15 @@ namespace Sharp
 
         public override void Render()
         {
-            SetupMatrices();
             MainEditorView.editorBackendRenderer.update(ref skele);
             MainEditorView.editorBackendRenderer.display(ref skele);
         }
 
-        public override void SetupMatrices()
-        {
-            entityObject.Scale = new Vector3(20, 20, 20);
-            entityObject.SetModelMatrix();
-            skele.MVP = entityObject.ModelMatrix * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
-        }
+        /* public override void SetupMatrices()
+         {
+             entityObject.Scale = new Vector3(20, 20, 20);
+             entityObject.SetModelMatrix();
+             skele.MVP = entityObject.ModelMatrix * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+         }*/
     }
 }

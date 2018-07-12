@@ -263,7 +263,7 @@ namespace Squid
             if (args.Button > 0) return;
             if (UI.CtrlPressed) return;
 
-            Style style = Desktop.GetStyle(Style).Styles[State];
+            Style style = Canvas.GetStyle(Style).Styles[State];
 
             string masked = Text;
             if (IsPassword)
@@ -314,7 +314,7 @@ namespace Squid
                 HasFocus = true;
             }
 
-            Style style = Desktop.GetStyle(Style).Styles[State];
+            Style style = Canvas.GetStyle(Style).Styles[State];
             string masked = Text;
             if (IsPassword)
                 masked = new string(PasswordChar, masked.Length);
@@ -531,7 +531,7 @@ namespace Squid
 
         protected override void OnKeyDown(KeyEventArgs args)
         {
-            Desktop root = Desktop;
+            Desktop root = Canvas;
             if (root == null) return;
 
             BlinkTime = 0; DoBlink = 1;

@@ -2,7 +2,7 @@
 
 namespace Sharp
 {
-    internal interface IEngineObject/*:IDisposable*/
+    public interface IEngineObject/*:IDisposable*/
     {
         Guid Id { get; }
 

@@ -455,7 +455,7 @@ namespace Squid
 
             Row row = (Row)sender.Tag;
 
-            if (sender.Equals(Desktop.HotControl) || sender.Equals(Desktop.DropTarget))
+            if (sender.Equals(Desktop.HotControl) || sender.Equals(Canvas.DropTarget))
             {
                 foreach (Control cell in row.Cells)
                 {

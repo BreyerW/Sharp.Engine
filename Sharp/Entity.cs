@@ -1,228 +1,230 @@
-﻿using System;
+﻿using Sharp.Editor.Views;
+using System;
 using System.Collections.Generic;
-using System.Numerics;
-using Sharp.Editor.Views;
 using System.Linq;
-using Newtonsoft.Json;
-using System.Reflection;
-using System.Runtime.Serialization;
+using System.Numerics;
 
 namespace Sharp
 {
-    [Serializable]
-    public class Entity : IEngineObject
-    {
-        public Guid Id { get; } = Guid.NewGuid();
+	[Serializable]
+	public class Entity : IEngineObject
+	{
+		[NonSerializable]
+		public Guid Id { get; internal set; } = Guid.NewGuid();
 
-        internal Vector3 position = Vector3.Zero;
+		internal Vector3 position = Vector3.Zero;
 
-        public Entity parent;
-        public List<Entity> childs = new List<Entity>();
-        public string name = "Entity Object";
+		public Entity parent;
+		public List<Entity> childs = new List<Entity>();
+		public string name = "Entity Object";
 
-        public Vector3 Position
-        {
-            get
-            {
-                return position;
-            }
-            set
-            {
-                position = value;
-                onTransformChanged?.Invoke();
-            }
-        }
+		public Vector3 Position
+		{
+			get
+			{
+				return position;
+			}
+			set
+			{
+				position = value;
+				onTransformChanged?.Invoke();
+			}
+		}
 
-        internal Vector3 rotation = Vector3.Zero;
+		internal Vector3 rotation = Vector3.Zero;
 
-        public Vector3 Rotation
-        {
-            get
-            {
-                return rotation;
-            }
-            set
-            {
-                rotation = value;
-                onTransformChanged?.Invoke();
-            }
-        }
+		public Vector3 Rotation
+		{
+			get
+			{
+				return rotation;
+			}
+			set
+			{
+				rotation = value;
+				onTransformChanged?.Invoke();
+			}
+		}
 
-        internal Vector3 scale = Vector3.One;
+		internal Vector3 scale = Vector3.One;
 
-        public Vector3 Scale
-        {
-            get
-            {
-                return scale;
-            }
-            set
-            {
-                scale = value;
-                onTransformChanged?.Invoke();
-            }
-        }
+		public Vector3 Scale
+		{
+			get
+			{
+				return scale;
+			}
+			set
+			{
+				scale = value;
+				onTransformChanged?.Invoke();
+			}
+		}
 
-        public bool active
-        {
-            get { return enabled; }
-            set
-            {
-                if (enabled == value)
-                    return;
-                enabled = value;
-                //if (enabled)
-                //OnEnableInternal ();
-                //else
-                //OnDisableInternal ();
-            }
-        }
+		public bool active
+		{
+			get { return enabled; }
+			set
+			{
+				if (enabled == value)
+					return;
+				enabled = value;
+				//if (enabled)
+				//OnEnableInternal ();
+				//else
+				//OnDisableInternal ();
+			}
+		}
 
-        private bool enabled;
-        private HashSet<int> tags = new HashSet<int>();
+		private bool enabled = true;
+		private HashSet<int> tags = new HashSet<int>();
 
-        //public
-        private Matrix4x4 modelMatrix;
+		//public
+		private Matrix4x4 modelMatrix;
 
-        public ref readonly Matrix4x4 ModelMatrix
-        {
-            get { return ref modelMatrix; }
-        }
+		public ref readonly Matrix4x4 ModelMatrix
+		{
+			get { return ref modelMatrix; }
+		}
 
-        public Action onTransformChanged;
-        private List<Component> components = new List<Component>();
+		public Action onTransformChanged;
 
-        public Entity()
-        {
-            onTransformChanged += OnTransformChanged;
-            //id = ++lastId;
-            //lastId = id;
-        }
+		private List<Component> components = new List<Component>();
 
-        private void OnTransformChanged()
-        {
-            SetModelMatrix(); Console.WriteLine("transform changed");
-        }
+		public Entity()
+		{
+			onTransformChanged += OnTransformChanged;
+			SceneView.entities.AddEngineObject(this);
+			//id = ++lastId;
+			//lastId = id;
+		}
 
-        public static Entity[] FindAllWithTags(bool activeOnly = true, params string[] lookupTags)
-        {
-            //find all entities with tags in scene
-            HashSet<Entity> intersectedArr;
-            var id = TagsContainer.allTags.IndexOf(lookupTags[0]);
-            intersectedArr = TagsContainer.entitiesToTag[id];
-            foreach (var tag in lookupTags)
-            {
-                id = TagsContainer.allTags.IndexOf(tag);
-                intersectedArr.IntersectWith(TagsContainer.entitiesToTag[id]);
-            }
-            if (activeOnly)
-                foreach (var entity in intersectedArr)
-                    if (!entity.active)
-                        intersectedArr.Remove(entity);
-            return intersectedArr.ToArray();
-        }
+		private void OnTransformChanged()
+		{
+			SetModelMatrix(); Console.WriteLine("transform changed");
+		}
 
-        //public Entity[] FindWithTags(bool activeOnly=true, params string[] lookupTags){
-        //find children entities with tags in scene
-        //}
-        public void AddTags(params string[] tagsToAdd)
-        {
-            foreach (var tag in tagsToAdd)
-            {
-                if (TagsContainer.allTags.Contains(tag))
-                {
-                    var id = TagsContainer.allTags.IndexOf(tag);
-                    TagsContainer.entitiesToTag[id].Add(this);
-                    tags.Add(id);
-                }
-                else
-                {
-                    throw new ArgumentException("Tag " + tag + " doesn't exist!");
-                    //TagsContainer.allTags.Add (tag);
-                    //TagsContainer.entitiesToTag.Add(new HashSet<Entity>(){this});
-                }
-            }
-        }
+		public static Entity[] FindAllWithTags(bool activeOnly = true, params string[] lookupTags)
+		{
+			//find all entities with tags in scene
+			HashSet<Entity> intersectedArr;
+			var id = TagsContainer.allTags.IndexOf(lookupTags[0]);
+			intersectedArr = TagsContainer.entitiesToTag[id];
+			foreach (var tag in lookupTags)
+			{
+				id = TagsContainer.allTags.IndexOf(tag);
+				intersectedArr.IntersectWith(TagsContainer.entitiesToTag[id]);
+			}
+			if (activeOnly)
+				foreach (var entity in intersectedArr)
+					if (!entity.active)
+						intersectedArr.Remove(entity);
+			return intersectedArr.ToArray();
+		}
 
-        public void RemoveTags(params string[] tagsToRemove)
-        {
-            foreach (var tag in tagsToRemove)
-            {
-                var id = TagsContainer.allTags.IndexOf(tag);
-                TagsContainer.entitiesToTag[id].Remove(this);
-                tags.Remove(id);
-            }
-        }
+		//public Entity[] FindWithTags(bool activeOnly=true, params string[] lookupTags){
+		//find children entities with tags in scene
+		//}
+		public void AddTags(params string[] tagsToAdd)
+		{
+			foreach (var tag in tagsToAdd)
+			{
+				if (TagsContainer.allTags.Contains(tag))
+				{
+					var id = TagsContainer.allTags.IndexOf(tag);
+					TagsContainer.entitiesToTag[id].Add(this);
+					tags.Add(id);
+				}
+				else
+				{
+					throw new ArgumentException("Tag " + tag + " doesn't exist!");
+					//TagsContainer.allTags.Add (tag);
+					//TagsContainer.entitiesToTag.Add(new HashSet<Entity>(){this});
+				}
+			}
+		}
 
-        public void SetModelMatrix()
-        {
-            var angles = Rotation * NumericsExtensions.Pi / 180f;
-            modelMatrix = Matrix4x4.CreateScale(Scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
-        }
+		public void RemoveTags(params string[] tagsToRemove)
+		{
+			foreach (var tag in tagsToRemove)
+			{
+				var id = TagsContainer.allTags.IndexOf(tag);
+				TagsContainer.entitiesToTag[id].Remove(this);
+				tags.Remove(id);
+			}
+		}
 
-        public Quaternion ToQuaterion(Vector3 angles)
-        {
-            // Assuming the angles are in radians.
-            angles *= NumericsExtensions.Pi / 180f;
+		public void SetModelMatrix()
+		{
+			var angles = Rotation * NumericsExtensions.Pi / 180f;
+			modelMatrix = Matrix4x4.CreateScale(Scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
+		}
 
-            return Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z));
-        }
+		public Quaternion ToQuaterion(Vector3 angles)
+		{
+			// Assuming the angles are in radians.
+			angles *= NumericsExtensions.Pi / 180f;
 
-        public static Vector3 rotationMatrixToEulerAngles(Matrix4x4 mat)
-        {
-            //assert(isRotationMatrix(R));
-            mat = Matrix4x4.Transpose(mat);
-            float sy = (float)Math.Sqrt(mat.M11 * mat.M11 + mat.M21 * mat.M21);
+			return Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z));
+		}
 
-            bool singular = sy < 1e-6; // If
+		public static Vector3 rotationMatrixToEulerAngles(Matrix4x4 mat)
+		{
+			//assert(isRotationMatrix(R));
+			mat = Matrix4x4.Transpose(mat);
+			float sy = (float)Math.Sqrt(mat.M11 * mat.M11 + mat.M21 * mat.M21);
 
-            float x, y, z;
-            if (!singular)
-            {
-                x = (float)Math.Atan2(mat.M32, mat.M33);
-                y = (float)Math.Atan2(-mat.M31, sy);
-                z = (float)Math.Atan2(mat.M21, mat.M11);
-            }
-            else
-            {
-                x = (float)Math.Atan2(-mat.M23, mat.M22);
-                y = (float)Math.Atan2(-mat.M31, sy);
-                z = 0;
-            }
-            return new Vector3(x, y, z);
-        }
+			bool singular = sy < 1e-6; // If
 
-        public T GetComponent<T>() where T : Component
-        {
-            return (components.Find((obj) => obj is T)) as T;
-        }
+			float x, y, z;
+			if (!singular)
+			{
+				x = (float)Math.Atan2(mat.M32, mat.M33);
+				y = (float)Math.Atan2(-mat.M31, sy);
+				z = (float)Math.Atan2(mat.M21, mat.M11);
+			}
+			else
+			{
+				x = (float)Math.Atan2(-mat.M23, mat.M22);
+				y = (float)Math.Atan2(-mat.M31, sy);
+				z = 0;
+			}
+			return new Vector3(x, y, z);
+		}
 
-        public Component GetComponent(Type type)
-        {
-            foreach (var component in components)
-                if (component.GetType().IsGenericType && component.GetType().GetGenericTypeDefinition() == type || component.GetType() == type)
-                    return component;
-            return null;
-        }
+		public T GetComponent<T>() where T : Component
+		{
+			return (components.Find((obj) => obj is T)) as T;
+		}
 
-        public List<Component> GetAllComponents()
-        {
-            return components;
-        }
+		public Component GetComponent(Type type)
+		{
+			foreach (var component in components)
+				if (component.GetType().IsGenericType && component.GetType().GetGenericTypeDefinition() == type || component.GetType() == type)
+					return component;
+			return null;
+		}
 
-        public T AddComponent<T>() where T : Component, new()
-        {
-            return AddComponent(new T()) as T;
-        }
+		public List<Component> GetAllComponents()
+		{
+			return components;
+		}
 
-        public Component AddComponent(Component comp)
-        {
-            comp.entityObject = this;
-            components.Add(comp);
-            return comp;
-        }
+		public T AddComponent<T>() where T : Component, new()
+		{
+			return AddComponent(new T()) as T;
+		}
 
-        /*private Behaviour AddComponent (Behaviour comp)
+		public Component AddComponent(Component comp)
+		{
+			//if (comp is Renderer renderer)
+			//    SceneView.renderers.Add(renderer);
+			comp.entityObject = this;
+			components.Add(comp);
+			return comp;
+		}
+
+		/*private Behaviour AddComponent (Behaviour comp)
 		{
 		//assign behaviour specific events to scene view
 			components.Add (comp.GetType(),comp);
@@ -235,43 +237,40 @@ namespace Sharp
 			return components [comp.GetType()] as Renderer;
 		}*/
 
-        public void Instatiate()
-        {
-            SceneView.entities.Add(this);
-            SceneView.OnAddedEntity?.Invoke();
-            //lastId = id;
-        }
+		public void Instatiate()
+		{
+			//lastId = id;
+		}
 
-        public void Instatiate(Vector3 pos, Vector3 rot, Vector3 s)
-        {
-            Scale = s;
-            Position = pos;
-            Rotation = rot;
-            Instatiate();
-        }
+		public void Instatiate(Vector3 pos, Vector3 rot, Vector3 s)
+		{
+			Scale = s;
+			Position = pos;
+			Rotation = rot;
+			Instatiate();
+		}
 
-        public void Destroy()
-        {
-            SceneView.entities.Remove(this);
-            SceneView.OnRemovedEntity?.Invoke();
-        }
+		public void Destroy()
+		{
+			SceneView.entities.RemoveEngineObject(this);
+		}
 
-        public override string ToString()
-        {
-            return name;
-        }
-    }
+		public override string ToString()
+		{
+			return name;
+		}
+	}
 
-    [Serializable]
-    public class SharpEvent<T>
+	[Serializable]
+	public class SharpEvent<T>
 
-    {
-        private Action<T> action;
+	{
+		private Action<T> action;
 
-        internal SharpEvent(Action<T> action)
+		internal SharpEvent(Action<T> action)
 
-        {
-            this.action = action;
-        }
-    }
+		{
+			this.action = action;
+		}
+	}
 }

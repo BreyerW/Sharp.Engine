@@ -1,55 +1,59 @@
-﻿using System;
-using Squid;
+﻿using Squid;
 
 namespace Sharp.Editor.Views
 {
-    public class SceneStructureView : View
-    {
-        public static TreeView tree;
+	public class SceneStructureView : View
+	{
+		public static TreeView tree;
 
-        public SceneStructureView(uint attachToWindow) : base(attachToWindow)
-        {
-            if (tree == null)
-                tree = new TreeView();
-            tree.Parent = this;
-            tree.Dock = DockStyle.Fill;
-            tree.SelectedNodeChanged += Tree_SelectedNodeChanged;
+		public SceneStructureView(uint attachToWindow) : base(attachToWindow)
+		{
+			if (tree == null)
+				tree = new TreeView();
+			tree.Parent = this;
+			tree.Dock = DockStyle.Fill;
+			tree.SelectedNodeChanged += Tree_SelectedNodeChanged;
 
-            SceneView.OnAddedEntity += ReconstructTree;
-            SceneView.OnRemovedEntity += ReconstructTree;
-            Button.Text = "Scene Structure";
-            ReconstructTree();
-        }
+			SceneView.onAddedEntity += () => ReconstructTree(null);
+			SceneView.onRemovedEntity += () => ReconstructTree(null);
+			Selection.OnSelectionChange += (sender) => ReconstructTree(sender as Entity);
+			Button.Text = "Scene Structure";
+			ReconstructTree(null);
+		}
 
-        private void Tree_SelectedNodeChanged(Control sender, TreeNode value)
-        {
-            if (value is null) return;
-            Selection.Asset = value.UserData;
+		private void Tree_SelectedNodeChanged(Control sender, TreeNode value)
+		{
+			if (value is null) return;
+			Selection.Asset = value.UserData;
 
-            // var node = sender as TreeNode; if (Selection.Asset == node.Content) tree.UnselectAll();
-            // else
-        }
+			// var node = sender as TreeNode; if (Selection.Asset == node.Content) tree.UnselectAll();
+			// else
+		}
 
-        private void ReconstructTree()
-        {
-            tree.Nodes.Clear();
-            RegisterEntity(Camera.main.entityObject);
-            foreach (var entity in SceneView.entities)
-                RegisterEntity(entity);
-        }
+		internal static void ReconstructTree(Entity obj)
+		{
+			tree.Nodes.Clear();
+			tree.SelectedNode = null;
+			//RegisterEntity(Camera.main.entityObject, Camera.main.entityObject == obj);
+			foreach (var entity in SceneView.entities.root)
+				RegisterEntity(entity, entity == obj);
+		}
 
-        private static void RegisterEntity(Entity ent)
-        {
-            //var id=SceneView.entities.IndexOf (ent);
-            var node = new TreeNodeLabel();
-            node.Label.Text = ent.name;
-            node.Label.TextAlign = Alignment.MiddleLeft;
-            node.Style = "label";
-            node.Label.Style = "label";
-            node.UserData = ent;
-            if (ent.childs?.Count is 0)
-                node.Button.Style = "";
-            tree.Nodes.Add(node);
-        }
-    }
+		private static void RegisterEntity(Entity ent, bool selected)
+		{
+			//var id=SceneView.entities.IndexOf (ent);
+			var node = new TreeNodeLabel();
+			node.Label.Text = ent.name;
+			node.Label.TextAlign = Alignment.MiddleLeft;
+			node.Style = "label";
+			node.Label.Style = "label";
+			node.UserData = ent;
+			if (ent.childs?.Count is 0)
+				node.Button.Style = "";
+
+			tree.Nodes.Add(node);
+			if (selected)
+				tree.SelectedNode = node;
+		}
+	}
 }
