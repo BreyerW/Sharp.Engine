@@ -50,9 +50,8 @@ namespace Sharp.Editor
 				{
 					SceneView.entities = serializer.Deserialize<Root>(jsonReader);
 				}
-				Selection.Asset = SceneView.entities.allEngineObjects[UndoCommand.currentHistory.Value.selectedObject.Value];
+				Selection.Asset = UndoCommand.currentHistory.Value.selectedObject.HasValue ? SceneView.entities.allEngineObjects[UndoCommand.currentHistory.Value.selectedObject.Value] : null;//kolejnosc selectow zbugowana?
 				currentHistory = UndoCommand.currentHistory.Previous;
-
 				Squid.UI.isDirty = true;
 
 				//Console.WriteLine("undo " + Views.SceneView.entities.root[SceneView.entities.root.Count - 1].ModelMatrix);

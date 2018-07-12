@@ -392,6 +392,7 @@ namespace Fossil
 	  return zDelta.ToArray();
 	}
 
+	//This method change Stream's content
 	public static void Apply(Stream origin, byte[] delta)
 	{
 	  uint limit, total = 0;

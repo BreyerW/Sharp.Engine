@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 
 namespace Sharp.Editor.Views
 {
@@ -44,6 +45,7 @@ namespace Sharp.Editor.Views
 			eLight.Position = Camera.main.entityObject.Position;
 			var light = eLight.AddComponent<Light>();
 			eLight.Instatiate();
+			Selection.Repeat(Selection.IsSelectionDirty, 30, 30, CancellationToken.None);
 			AllowDrop = true;
 			OnDragFinished += Panel_Drop;
 			MouseDown += Panel_MouseDown;

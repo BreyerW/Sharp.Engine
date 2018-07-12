@@ -29,7 +29,7 @@ namespace Sharp
 		};
 
 		private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
-		internal static MemoryStream lastStructure = new MemoryStream();
+		internal static Stream lastStructure = memStream.GetStream();
 		public static object sync = new object();
 
 		public static object Asset
@@ -54,13 +54,11 @@ namespace Sharp
 		public static Action<object> OnSelectionChange;
 		public static Action<object> OnSelectionDirty;
 		public static bool isDragging = false;
-		internal static JsonSerializer serializer;
+		//internal static JsonSerializer serializer;
 
 		static Selection()
 		{
 			JsonConvert.DefaultSettings = () => serializerSettings;
-			serializer = JsonSerializer.CreateDefault();
-			Repeat(IsSelectionDirty, 30, 30, CancellationToken.None);
 		}
 
 		/*try
@@ -102,8 +100,6 @@ namespace Sharp
 		{
 			lock (sync)
 			{
-				var asset = Asset;
-				if (asset == null) return;
 				//var tmpdata = JsonConvert.SerializeObject(Editor.Views.SceneView.entities);
 				//var data = tmpdata.AsReadOnlySpan().AsBytes();
 				/*using (var sw = new StreamWriter(tempName, false))
@@ -113,46 +109,36 @@ namespace Sharp
 						serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
 					}
 				}*/
-				var tempFile = new FileStream(tempCurrName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 2048, options: FileOptions.Asynchronous);
-				serializer = JsonSerializer.CreateDefault();
+				//var tempFile = new FileStream(tempCurrName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 2048, options: FileOptions.Asynchronous);
+				var serializer = JsonSerializer.CreateDefault();
 				var mem = memStream.GetStream();
 				using (var sw = new StreamWriter(mem, System.Text.Encoding.UTF8, 4096, true))//
 				using (var jsonWriter = new JsonTextWriter(sw))
 				{
+					var watch = System.Diagnostics.Stopwatch.StartNew();
 					//sw.AutoFlush = true;
 					serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
 
-					/*for (int i = 0; i < mem.Length; i++)
-					{
-						var b = mem.ReadByte();
-						//Console.WriteLine(b);
-						if (b != -1 && tmpdata[i] != b)
-						{
-							//Console.WriteLine("not identical." + mem.Length + " " + data.Length + " " + tmpdata.Length);
-							break;
-						}
-						//else Console.WriteLine("identical." + mem.Length + " " + data.Length + " " + tmpdata.Length);
-					}
-					*/
-					//tempFile.Close();
-					//mem.Seek(0, SeekOrigin.Begin);
+					watch.Stop();
+					//Console.WriteLine("cast: " + watch.ElapsedMilliseconds);
 				}
-				//Console.WriteLine(lastStructure);
-				var data = mem.ToArray();
-				//Console.WriteLine(data.Array);
-				if (!data.AsReadOnlySpan().SequenceEqual(lastStructure.ToArray().AsReadOnlySpan()))
+				var condition = mem.Length == lastStructure.Length;
+				for (int i = 0, j = 0; j < lastStructure.Length && i < mem.Length && condition; i++, j++)
+				{
+					var b1 = lastStructure.ReadByte();
+					var b2 = mem.ReadByte();
+					condition &= (b1 is -1 || b2 is -1 || b1 != b2);
+				}
+				if (!condition)
 				{
 					//Console.WriteLine("current: " + tmpdata);
 					//Console.WriteLine("past: " + new string(Unsafe.As<byte[], char[]>(ref lastStructure), 0, lastStructure.Length / Unsafe.SizeOf<char>()));
-					//UI.isDirty = true;
+					Squid.UI.isDirty = true;
 
 					if (!(InputHandler.isKeyboardPressed | InputHandler.isMouseDragging) && !(Editor.Views.SceneView.entities is null))
 					{
-						var watch = System.Diagnostics.Stopwatch.StartNew();
-						var currentStructure = data; //System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Editor.Views.SceneView.entities)); /*System.Text.Encoding.UTF8.GetBytes(// JSON.ToJSON(Editor.Views.SceneView.entities).AsReadOnlySpan().AsBytes().ToArray();//System.Text.Encoding.UTF8.GetBytes(JSON.ToJSON(Editor.Views.SceneView.entities));
-						watch.Stop();
+						//System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Editor.Views.SceneView.entities)); /*System.Text.Encoding.UTF8.GetBytes(// JSON.ToJSON(Editor.Views.SceneView.entities).AsReadOnlySpan().AsBytes().ToArray();//System.Text.Encoding.UTF8.GetBytes(JSON.ToJSON(Editor.Views.SceneView.entities));
 
-						Console.WriteLine("cast: " + watch.ElapsedMilliseconds);
 						CalculateHistoryDiff(mem);
 						lastStructure = mem;
 						Console.WriteLine("save");
@@ -161,7 +147,7 @@ namespace Sharp
 			}
 		}
 
-		private static void CalculateHistoryDiff(MemoryStream currentStructure)
+		private static void CalculateHistoryDiff(Stream currentStructure)
 		{
 			var backward = Delta.Create(currentStructure, lastStructure);
 
@@ -206,13 +192,16 @@ namespace Sharp
 	{
 		public override MulticastDelegate ReadJson(JsonReader reader, Type objectType, MulticastDelegate existingValue, bool hasExistingValue, JsonSerializer serializer)
 		{
+			//if (!hasExistingValue) return null;
 			var tokens = JToken.Load(reader);
-			var type = tokens["signature"].ToObject<Type>();
+			if (!tokens.HasValues) return null;
+			//var type = tokens["signature"].ToObject<Type>();
 			Delegate del = null;
+			//Console.WriteLine("declTYpe:" + existingValue.GetType().DeclaringType);
 			foreach (var invocation in tokens["invocations"])
 			{
 				Console.WriteLine("deserialized: " + serializer.Deserialize(invocation[0].CreateReader()));
-				var tmpDel = Delegate.CreateDelegate(type, /*serializer.Deserialize(invocation[0].CreateReader())*/ serializer.ReferenceResolver.ResolveReference(serializer, (invocation[0]["$ref"] ?? invocation[0]["$id"]).Value<string>()), invocation[1].Value<string>());
+				var tmpDel = Delegate.CreateDelegate(objectType, /*serializer.Deserialize(invocation[0].CreateReader())*/ serializer.ReferenceResolver.ResolveReference(serializer, (invocation[0]["$ref"] ?? invocation[0]["$id"]).Value<string>()), invocation[1].Value<string>());
 				del = del is null ? tmpDel : Delegate.Combine(del, tmpDel);
 			}
 			//Console.WriteLine(del.GetInvocationList().Length);
@@ -222,8 +211,9 @@ namespace Sharp
 		public override void WriteJson(JsonWriter writer, MulticastDelegate value, JsonSerializer serializer)
 		{
 			writer.WriteStartObject();
-			writer.WritePropertyName("signature");
-			serializer.Serialize(writer, value.GetType());
+			//writer.WritePropertyName("signature");
+			//serializer.Serialize(writer, value.GetType());
+			//Console.WriteLine(value.GetType());
 			writer.WritePropertyName("invocations");
 			writer.WriteStartArray();
 			foreach (var invocation in value.GetInvocationList())
