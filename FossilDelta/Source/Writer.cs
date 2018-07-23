@@ -17,7 +17,7 @@ namespace Fossil
 
 	public Writer()
 	{
-	  this.a = new List<byte>();
+	  this.a = new List<byte>();//TODO: add arraypool<byte> instead of list<byte>
 	}
 
 	public void PutChar(char c)
@@ -48,6 +48,12 @@ namespace Fossil
 	public void PutArray(byte[] a, int start, int end)
 	{
 	  for (var i = start; i < end; i++) this.a.Add(a[i]);
+	}
+
+	public void PutArray(Stream a, int start, int end)
+	{
+	  a.Position = start;
+	  for (var i = start; i < end; i++) this.a.Add((byte)a.ReadByte());
 	}
 
 	public byte[] ToArray()

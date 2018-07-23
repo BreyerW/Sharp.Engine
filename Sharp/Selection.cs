@@ -29,7 +29,8 @@ namespace Sharp
 		};
 
 		private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
-		internal static Stream lastStructure = memStream.GetStream();
+		internal static Stream lastStructure;// memStream.GetStream();
+
 		public static object sync = new object();
 
 		public static object Asset
@@ -59,6 +60,7 @@ namespace Sharp
 		static Selection()
 		{
 			JsonConvert.DefaultSettings = () => serializerSettings;
+			lastStructure = memStream.GetStream();// new FileStream(tempPrevName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
 		}
 
 		/*try
@@ -109,7 +111,7 @@ namespace Sharp
 						serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
 					}
 				}*/
-				//var tempFile = new FileStream(tempCurrName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 2048, options: FileOptions.Asynchronous);
+				//var mem = new FileStream(tempCurrName, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
 				var serializer = JsonSerializer.CreateDefault();
 				var mem = memStream.GetStream();
 				using (var sw = new StreamWriter(mem, System.Text.Encoding.UTF8, 4096, true))//
@@ -141,6 +143,7 @@ namespace Sharp
 
 						CalculateHistoryDiff(mem);
 						lastStructure = mem;
+						Utils.Swap(ref tempCurrName, ref tempPrevName);
 						Console.WriteLine("save");
 					}
 				}
@@ -167,12 +170,15 @@ namespace Sharp
 			UndoCommand.currentHistory = UndoCommand.snapshots.Last;
 		}
 
+		//static ManualResetEventSlim waiter = new ManualResetEventSlim();
 		public static async Task Repeat(Action<CancellationToken> doWork, int delayInMilis, int periodInMilis, CancellationToken cancellationToken, bool singleThreaded = false)
 		{
 			await Task.Delay(delayInMilis, cancellationToken).ConfigureAwait(singleThreaded);
 			while (!cancellationToken.IsCancellationRequested)
 			{
+				//waiter.Wait(delayInMilis, cancellationToken);
 				doWork(cancellationToken);
+				//waiter.Reset();
 				await Task.Delay(periodInMilis, cancellationToken).ConfigureAwait(singleThreaded);
 			}
 		}

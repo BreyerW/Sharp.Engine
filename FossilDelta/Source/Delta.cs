@@ -25,12 +25,10 @@ namespace Fossil
 	  // literal segment for the entire target and exit.
 	  if (lenSrc <= NHASH)
 	  {
-		buffer = new byte[lenOut];
-		target.Read(buffer, 0, lenOut);
 		zDelta.PutInt((uint)lenOut);
 		zDelta.PutChar(':');
-		zDelta.PutArray(buffer, 0, lenOut);
-		zDelta.PutInt(Checksum(buffer));
+		zDelta.PutArray(target, 0, lenOut);
+		zDelta.PutInt(Checksum(target));
 		zDelta.PutChar(';');
 		return zDelta.ToArray();
 	  }
@@ -46,8 +44,7 @@ namespace Fossil
 
 	  for (i = 0; i < lenSrc - NHASH; i += NHASH)
 	  {
-		origin.Read(hashBuffer, 0, NHASH);
-		h.Init(hashBuffer, 0);
+		h.Init(origin, i);
 		hv = (int)(h.Value() % nHash);
 		collide[i / NHASH] = landmark[hv];
 		landmark[hv] = i / NHASH;
@@ -60,8 +57,7 @@ namespace Fossil
 	  {
 		bestOfst = 0;
 		bestLitsz = 0;
-		target.Read(hashBuffer, 0, NHASH);
-		h.Init(hashBuffer, 0);
+		h.Init(target, _base);
 
 		i = 0; // Trying to match a landmark against zOut[_base+i]
 		bestCnt = 0;
@@ -148,10 +144,7 @@ namespace Fossil
 			  // Add an insert command before the copy.
 			  zDelta.PutInt((uint)bestLitsz);
 			  zDelta.PutChar(':');
-			  target.Position = _base;
-			  buffer = new byte[bestLitsz];
-			  target.Read(buffer, 0, bestLitsz);
-			  zDelta.PutArray(buffer, 0, bestLitsz);
+			  zDelta.PutArray(target, _base, _base + bestLitsz);
 			  _base += bestLitsz;
 			}
 			_base += bestCnt;
@@ -170,14 +163,11 @@ namespace Fossil
 		  // If we reach this point, it means no match is found so far
 		  if (_base + i + NHASH >= lenOut)
 		  {
-			target.Position = _base;
-			buffer = new byte[lenOut - _base];
-			target.Read(buffer, 0, lenOut - _base);
 			// We have reached the end and have not found any
 			// matches.  Do an "insert" for everything that does not match
 			zDelta.PutInt((uint)(lenOut - _base));
 			zDelta.PutChar(':');
-			zDelta.PutArray(buffer, 0, lenOut - _base);
+			zDelta.PutArray(target, _base, _base + lenOut - _base);
 			_base = lenOut;
 			break;
 		  }
@@ -197,29 +187,12 @@ namespace Fossil
 	  // the file that does not match anything in the source.
 	  if (_base < lenOut)
 	  {
-		target.Position = _base;
-		buffer = new byte[lenOut - _base];
-		target.Read(buffer, 0, lenOut - _base);
 		zDelta.PutInt((uint)(lenOut - _base));
 		zDelta.PutChar(':');
-		zDelta.PutArray(buffer, 0, lenOut - _base);
+		zDelta.PutArray(target, _base, _base + lenOut - _base);
 	  }
 	  // Output the final checksum record.
-	  uint sum = 0;
-	  target.Position = 0;
-	  buffer = new byte[128];
-	  for (int id = 0; id < lenOut; id += 128)
-	  {
-		var b = target.Read(buffer, 0, 128);
-		//if (b is 0)
-		//  break;
-		if (b < 128)
-		  Array.Resize(ref buffer, b);
-		sum += Checksum(buffer);
-		if (buffer.Length != 128)
-		  Array.Resize(ref buffer, 128);
-	  }
-	  zDelta.PutInt(sum);
+	  zDelta.PutInt(Checksum(target));
 	  zDelta.PutChar(';');
 	  return zDelta.ToArray();
 	}
@@ -420,10 +393,7 @@ namespace Fossil
 			  throw new Exception("copy exceeds output file size");
 			if (ofst + cnt > lenSrc)
 			  throw new Exception("copy extends past end of input");
-			var buffer = new byte[cnt];
-			origin.Position = ofst;
-			origin.Read(buffer, 0, (int)cnt);
-			zOut.PutArray(buffer, 0, (int)cnt);
+			zOut.PutArray(origin, (int)ofst, (int)(ofst + cnt));
 			break;
 
 		  case ':':
@@ -568,6 +538,54 @@ namespace Fossil
 
 		case 1:
 		  sum += (uint)(arr[z + 0] << 24);
+		  break;
+	  }
+	  return sum;
+	}
+
+	private static uint Checksum(Stream arr)
+	{
+	  arr.Position = 0;
+	  uint sum0 = 0, sum1 = 0, sum2 = 0, sum = 0,
+		N = (uint)arr.Length;
+
+	  while (N >= 16)
+	  {
+		arr.Read(hashBuffer, 0, NHASH);
+		sum0 += (uint)hashBuffer[0] + hashBuffer[4] + hashBuffer[8] + hashBuffer[12];
+		sum1 += (uint)hashBuffer[1] + hashBuffer[5] + hashBuffer[9] + hashBuffer[13];
+		sum2 += (uint)hashBuffer[2] + hashBuffer[6] + hashBuffer[10] + hashBuffer[14];
+		sum += (uint)hashBuffer[3] + hashBuffer[7] + hashBuffer[11] + hashBuffer[15];
+		N -= 16;
+	  }
+	  while (N >= 4)
+	  {
+		arr.Read(hashBuffer, 0, 4);
+		sum0 += hashBuffer[0];
+		sum1 += hashBuffer[1];
+		sum2 += hashBuffer[2];
+		sum += hashBuffer[3];
+		N -= 4;
+	  }
+
+	  sum += (sum2 << 8) + (sum1 << 16) + (sum0 << 24);
+	  switch (N & 3)
+	  {
+		case 3:
+		  arr.Read(hashBuffer, 0, 3);
+		  sum += (uint)(hashBuffer[2] << 8);
+		  sum += (uint)(hashBuffer[1] << 16);
+		  sum += (uint)(hashBuffer[0] << 24);
+		  break;
+
+		case 2:
+		  arr.Read(hashBuffer, 0, 2);
+		  sum += (uint)(hashBuffer[1] << 16);
+		  sum += (uint)(hashBuffer[0] << 24);
+		  break;
+
+		case 1:
+		  sum += (uint)(arr.ReadByte() << 24);
 		  break;
 	  }
 	  return sum;

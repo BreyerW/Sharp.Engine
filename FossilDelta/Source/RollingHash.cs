@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace Fossil
 {
@@ -28,6 +29,22 @@ namespace Fossil
 	  for (i = 0; i < Delta.NHASH; i++)
 	  {
 		x = z[pos + i];
+		a = (UInt16)((a + x) & 0xffff);
+		b = (UInt16)((b + (Delta.NHASH - i) * x) & 0xffff);
+		this.z[i] = (byte)x;
+	  }
+	  this.a = (UInt16)(a & 0xffff);
+	  this.b = (UInt16)(b & 0xffff);
+	  this.i = 0;
+	}
+
+	public void Init(Stream z, int pos)
+	{
+	  UInt16 a = 0, b = 0, i, x;
+	  z.Position = pos;
+	  for (i = 0; i < Delta.NHASH; i++)
+	  {
+		x = (UInt16)z.ReadByte();
 		a = (UInt16)((a + x) & 0xffff);
 		b = (UInt16)((b + (Delta.NHASH - i) * x) & 0xffff);
 		this.z[i] = (byte)x;
