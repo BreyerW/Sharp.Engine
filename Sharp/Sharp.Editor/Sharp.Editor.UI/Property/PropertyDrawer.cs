@@ -110,16 +110,8 @@ namespace Sharp.Editor.UI.Property
 			//if (!(Desktop.FocusedControl is Views.SceneView) && !Value.Equals(getter((Parent.Parent as ComponentNode).referencedComponent)))//&& !(InputHandler.isKeyboardPressed | InputHandler.isMouseDragging)
 			if (!prevUIValue.Equals(Value))
 			{
-				if (((PropertyInfo)memberInfo).PropertyType == typeof(System.Numerics.Vector3))
-				{
-					var newgetter = DelegateGenerator.GenerateGetter<object>(memberInfo);
-					Unsafe.Unbox<System.Numerics.Vector3>(newgetter(refComp)) = System.Numerics.Vector3.One;
-				}
-				else
-					setter(refComp, Value);
-
+				setter(refComp, Value);
 				prevUIValue = Value;
-
 			}
 			else if (!prevObjValue.Equals(getter(refComp))) //if (!Value.Equals(getter((Parent.Parent as ComponentNode).referencedComponent)))
 			{
