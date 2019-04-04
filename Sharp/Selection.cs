@@ -9,6 +9,10 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Buffers;
+using System.Linq;
+using System.Collections;
+using System.Runtime.CompilerServices;
 
 namespace Sharp
 {
@@ -19,13 +23,14 @@ namespace Sharp
 		private static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
 		{
 			ContractResolver = new DefaultContractResolver() { IgnoreSerializableAttribute = false },
-			Converters = new List<JsonConverter>() { new DelegateConverter(), new ArrayReferenceConverter() },
+			Converters = new List<JsonConverter>() { new DelegateConverter(), new ListReferenceConverter() },
 			ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
 			PreserveReferencesHandling = PreserveReferencesHandling.All,
 			ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
 			TypeNameHandling = TypeNameHandling.All,
 			ObjectCreationHandling = ObjectCreationHandling.Auto,
-			ReferenceResolverProvider = () => new ThreadsafeReferenceResolver()
+			ReferenceResolverProvider = () => new ThreadsafeReferenceResolver(),
+			//NullValueHandling = NullValueHandling.Ignore
 		};
 
 		private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
@@ -59,6 +64,7 @@ namespace Sharp
 
 		static Selection()
 		{
+			//memStream.AggressiveBufferReturn = true;
 			JsonConvert.DefaultSettings = () => serializerSettings;
 			lastStructure = memStream.GetStream();// new FileStream(tempPrevName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
 		}
@@ -105,7 +111,7 @@ namespace Sharp
 				//var tmpdata = JsonConvert.SerializeObject(Editor.Views.SceneView.entities);
 				//var data = tmpdata.AsReadOnlySpan().AsBytes();
 				/*using (var sw = new StreamWriter(tempName, false))
-				{
+			{
 					using (var jsonWriter = new JsonTextWriter(sw))
 					{
 						serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
@@ -114,22 +120,28 @@ namespace Sharp
 				//var mem = new FileStream(tempCurrName, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
 				var serializer = JsonSerializer.CreateDefault();
 				var mem = memStream.GetStream();
+
 				using (var sw = new StreamWriter(mem, System.Text.Encoding.UTF8, 4096, true))//
 				using (var jsonWriter = new JsonTextWriter(sw))
 				{
 					var watch = System.Diagnostics.Stopwatch.StartNew();
 					//sw.AutoFlush = true;
+					jsonWriter.ArrayPool = JsonArrayPool.Instance;
 					serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
 
 					watch.Stop();
 					//Console.WriteLine("cast: " + watch.ElapsedMilliseconds);
 				}
+				mem.Position = 0;
+				lastStructure.Position = 0;
 				var condition = mem.Length == lastStructure.Length;
+				//Console.WriteLine("serializedarr: " + System.Text.Encoding.UTF8.GetString(mem.ToArray()));
 				for (int i = 0, j = 0; j < lastStructure.Length && i < mem.Length && condition; i++, j++)
 				{
 					var b1 = lastStructure.ReadByte();
 					var b2 = mem.ReadByte();
-					condition &= (b1 is -1 || b2 is -1 || b1 != b2);
+					//Console.WriteLine(b1 + " " + b2);
+					condition = !((b1 is -1 && b2 > -1) || (b2 is -1 && b1 > -1) || b1 != b2);
 				}
 				if (!condition)
 				{
@@ -143,7 +155,7 @@ namespace Sharp
 
 						CalculateHistoryDiff(mem);
 						lastStructure = mem;
-						Utils.Swap(ref tempCurrName, ref tempPrevName);
+						//Utils.Swap(ref tempCurrName, ref tempPrevName);
 						Console.WriteLine("save");
 					}
 				}
@@ -152,6 +164,7 @@ namespace Sharp
 
 		private static void CalculateHistoryDiff(Stream currentStructure)
 		{
+			currentStructure.Position = 0;
 			var backward = Delta.Create(currentStructure, lastStructure);
 
 			if (!(UndoCommand.currentHistory is null))
@@ -166,7 +179,7 @@ namespace Sharp
 				UndoCommand.snapshots.Last.Value = copy;
 			}
 			Console.WriteLine("data size: " + currentStructure.Length + " patch size: " + backward.Length);
-			UndoCommand.snapshots.AddLast(new HistoryDiff() { downgrade = backward, selectedObject = (Asset as IEngineObject)?.Id });
+			UndoCommand.snapshots.AddLast(new HistoryDiff() { downgrade = backward, selectedObject = Asset?.GetInstanceID() });
 			UndoCommand.currentHistory = UndoCommand.snapshots.Last;
 		}
 
@@ -206,11 +219,10 @@ namespace Sharp
 			//Console.WriteLine("declTYpe:" + existingValue.GetType().DeclaringType);
 			foreach (var invocation in tokens["invocations"])
 			{
-				Console.WriteLine("deserialized: " + serializer.Deserialize(invocation[0].CreateReader()));
+				//Console.WriteLine("deserialized: " + serializer.Deserialize(invocation[0].CreateReader()));
 				var tmpDel = Delegate.CreateDelegate(objectType, /*serializer.Deserialize(invocation[0].CreateReader())*/ serializer.ReferenceResolver.ResolveReference(serializer, (invocation[0]["$ref"] ?? invocation[0]["$id"]).Value<string>()), invocation[1].Value<string>());
 				del = del is null ? tmpDel : Delegate.Combine(del, tmpDel);
 			}
-			//Console.WriteLine(del.GetInvocationList().Length);
 			return del as MulticastDelegate;
 		}
 
@@ -241,55 +253,23 @@ namespace Sharp
 		}
 	}
 
-	public class GenericResolver<TEntity> : IReferenceResolver where TEntity : class
-	{
-		private readonly IDictionary<string, TEntity> _objects = new Dictionary<string, TEntity>();
-		private readonly Func<TEntity, string> _keyReader;
-
-		public GenericResolver(Func<TEntity, string> keyReader)
-		{
-			_keyReader = keyReader;
-		}
-
-		public object ResolveReference(object context, string reference)
-		{
-			_objects.TryGetValue(reference, out var o);
-			return o;
-		}
-
-		public string GetReference(object context, object value)
-		{
-			var o = (TEntity)value;
-			var key = _keyReader(o);
-			_objects[key] = o;
-
-			return key;
-		}
-
-		public bool IsReferenced(object context, object value)
-		{
-			var o = (TEntity)value;
-			return _objects.ContainsKey(_keyReader(o));
-		}
-
-		public void AddReference(object context, string reference, object value)
-		{
-			if (value is TEntity val)
-				_objects[reference] = val;
-		}
-	}
-
 	//TODO: removing component that doesnt exist after selection changed, smoothing out scenestructure rebuild after redo/undo, fix bug with ispropertydirty, add transform component
 	public class ThreadsafeReferenceResolver : IReferenceResolver
 	{
+		internal static ConditionalWeakTable<object, string> objToGuidMapping = new ConditionalWeakTable<object, string>();
+		//private static IDictionary<string, string> referenceToRoot = new Dictionary<string, string>();
+
+		//private static Dictionary<string, WeakReference<object>> guidToObjMapping = new Dictionary<string, WeakReference<object>>();
 		private IDictionary<string, object> stringToReference;
+
 		private IDictionary<object, string> referenceToString;
-		private int referenceCount = 0;
+
+		//private int referenceCount = 0;
 
 		public ThreadsafeReferenceResolver()
 		{
-			this.stringToReference = new Dictionary<string, object>(EqualityComparer<string>.Default);
-			this.referenceToString = new Dictionary<object, string>(EqualityComparer<object>.Default);
+			stringToReference = new Dictionary<string, object>(EqualityComparer<string>.Default);
+			referenceToString = new Dictionary<object, string>(EqualityComparer<object>.Default);
 		}
 
 		public void AddReference(
@@ -298,33 +278,22 @@ namespace Sharp
 			object value)
 		{
 			if (value.GetType().IsValueType) return;
-			/*if (referenceToString.TryGetValue(value, out var existingSecond))
-			 {
-				 if (!existingSecond.Equals(reference) || ( ))
-				 {
-					 return; //throw new ArgumentException("reference duplication with different instances on " + reference);
-				 }
-			 }*/
-			if (stringToReference.TryGetValue(reference, out var existingFirst))
-			{
-				if (!existingFirst.Equals(value) && value is IEngineObject obj1 && existingFirst is IEngineObject obj2 && obj1.Id != obj2.Id)
-				{
-					throw new ArgumentException("reference duplication with different instances on " + value);
-				}
-			}
-			this.referenceToString.Add(value, reference);
-			this.stringToReference.Add(reference, value);
+			if (stringToReference.TryGetValue(reference, out _))
+				return;
+			referenceToString.Add(value, reference);
+			stringToReference.Add(reference, value);
 		}
 
 		public string GetReference(
 			object context,
 			object value)
 		{
-			if (!this.referenceToString.TryGetValue(value, out string result))
+			if (value.GetType().IsValueType) return null;
+			if (!referenceToString.TryGetValue(value, out string result))
 			{
-				result = referenceCount.ToString(CultureInfo.InvariantCulture);
+				//Console.WriteLine(value + " " + rootRef);
+				result = value.GetInstanceID().ToString();
 				AddReference(context, result, value);
-				Interlocked.Increment(ref referenceCount);
 			}
 
 			return result;
@@ -334,93 +303,84 @@ namespace Sharp
 			object context,
 			object value)
 		{
-			return this.referenceToString.ContainsKey(value);
+			//var isReferenced = objToGuidMapping.TryGetValue(value, out var reference);
+			//Console.WriteLine(isReferenced + " " + rootRef);
+			//isReferenced = isReferenced && ((string.IsNullOrEmpty(rootRef)) /*&& (referenceToRoot.ContainsKey(reference) && referenceToRoot[reference] != rootRef)*/);
+
+			return referenceToString.TryGetValue(value, out _);
 		}
 
 		public object ResolveReference(
 			object context,
 			string reference)
 		{
-			this.stringToReference.TryGetValue(reference, out var r);
-			return r;
+			stringToReference.TryGetValue(reference, out var obj);
+			return obj;
 		}
 	}
 
-	public class ArrayReferenceConverter : JsonConverter
-
+	public class ListReferenceConverter : JsonConverter
 	{
-		private const string refProperty = "$ref";
-		private const string idProperty = "$id";
-		private const string valuesProperty = "$values";
+		internal const string refProperty = "$ref";
+		internal const string idProperty = "$id";
+		internal const string valuesProperty = "$values";
 
 		public override bool CanConvert(Type objectType)
 		{
-			return objectType.IsArray;
+			return typeof(IList).IsAssignableFrom(objectType); // && !objectType.IsArray;
 		}
 
 		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
 			if (reader.TokenType == JsonToken.Null)
 				return null;
-			else if (reader.TokenType == JsonToken.StartArray)
+			var obj = JToken.Load(reader);
+			var refId = (string)obj[refProperty] ?? (string)obj[idProperty]; //?? (string)obj[idProperty] was added because we need persistence between Serialize() calls and it is possible that one object can be serialized in multiple places with $id rather than $ref
+			if (refId != null)
 			{
-				// No $ref.  Deserialize as a List<T> to avoid infinite recursion and return as an array.
-				var elementType = objectType.GetElementType();
-				var listType = typeof(List<>).MakeGenericType(elementType);
-				var list = serializer.Deserialize(reader, listType) as System.Collections.IList;
-				if (list == null)
-					return null;
-				var array = Array.CreateInstance(elementType, list.Count);
-				list.CopyTo(array, 0);
-				return array;
+				var reference = serializer.ReferenceResolver.ResolveReference(serializer, refId);
+				if (reference != null)
+					return reference;
 			}
-			else
+			//Console.WriteLine("exist: " + existingValue);
+			var values = (obj.Type == JTokenType.Array ? obj : obj[valuesProperty]) as JArray;
+			if (values == null || values.Type == JTokenType.Null)
+				return null;
+			var count = values.Count;
+			var elementType = objectType.IsArray ? objectType.GetElementType() : objectType.GetGenericArguments()[0];
+
+			var value = Array.CreateInstance(elementType, count) as IList;
+			if (!objectType.IsArray)
+				value = Activator.CreateInstance(objectType, value) as IList;
+			var objId = (string)obj[idProperty];
+			if (objId != null)
 			{
-				var obj = JObject.Load(reader);
-				var refId = (string)obj[refProperty];
-				if (refId != null)
-				{
-					var reference = serializer.ReferenceResolver.ResolveReference(serializer, refId);
-					if (reference != null)
-						return reference;
-				}
-				var values = obj[valuesProperty] as JArray;
-				if (values == null || values.Type == JTokenType.Null)
-					return null;
-				var count = values.Count;
-
-				var elementType = objectType.GetElementType();
-				var array = Array.CreateInstance(elementType, count);
-
-				var objId = (string)obj[idProperty];
-				if (objId != null)
-				{
-					// Add the empty array into the reference table BEFORE populating it,
-					// to handle recursive references.
-					serializer.ReferenceResolver.AddReference(serializer, objId, array);
-				}
-
-				var listType = typeof(List<>).MakeGenericType(elementType);
-				using (var subReader = values.CreateReader())
-				{
-					var list = serializer.Deserialize(subReader, listType) as System.Collections.IList;
-					list.CopyTo(array, 0);
-				}
-
-				return array;
+				// Add the empty array into the reference table BEFORE populating it,
+				// to handle recursive references.
+				serializer.ReferenceResolver.AddReference(serializer, objId, value);
 			}
+			int id = 0;
+			foreach (var token in values)
+			{
+				value[id] = serializer.Deserialize(token.CreateReader(), elementType);
+				id++;
+			}
+
+			existingValue = value;
+
+			return existingValue;
 		}
 
 		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
-			if (value is Array array)
+			if (value is IList array)
 			{
 				writer.WriteStartObject();
 				if (!serializer.ReferenceResolver.IsReferenced(serializer, value))
 				{
-					writer.WritePropertyName("$id");
+					writer.WritePropertyName(idProperty);
 					writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
-					writer.WritePropertyName("$values");
+					writer.WritePropertyName(valuesProperty);
 					writer.WriteStartArray();
 					foreach (var item in array)
 					{
@@ -430,11 +390,126 @@ namespace Sharp
 				}
 				else
 				{
-					writer.WritePropertyName("$ref");
+					writer.WritePropertyName(refProperty);
 					writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
 				}
 				writer.WriteEndObject();
 			}
 		}
 	}
+
+	public class JsonArrayPool : IArrayPool<char>
+
+	{
+		public static readonly JsonArrayPool Instance = new JsonArrayPool();
+
+		public char[] Rent(int minimumLength)
+
+		{
+			return ArrayPool<char>.Shared.Rent(minimumLength);
+		}
+
+		public void Return(char[] array)
+
+		{
+			ArrayPool<char>.Shared.Return(array);
+		}
+	}
 }
+
+/*public class ArrayReferenceConverter : JsonConverter
+
+{
+	public override bool CanConvert(Type objectType)
+	{
+		return objectType.IsArray;
+	}
+
+	public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+	{
+		if (reader.TokenType == JsonToken.Null)
+			return null;
+		else if (reader.TokenType == JsonToken.StartArray)
+		{
+			// No $ref.  Deserialize as a List<T> to avoid infinite recursion and return as an array.
+			var elementType = objectType.GetElementType();
+			//if (existingValue is null)
+			{
+				var listType = typeof(List<>).MakeGenericType(elementType);
+				var list = serializer.Deserialize(reader, listType) as IList;
+				if (list == null)
+					return null;
+
+				existingValue = Array.CreateInstance(elementType, list.Count);
+				list.CopyTo((Array)existingValue, 0);
+			}
+			/*else
+			{
+				Console.WriteLine("exist: " + existingValue);
+			}*
+			return existingValue;
+		}
+		else
+		{
+			var obj = JObject.Load(reader);
+			var refId = (string)obj[refProperty];
+			if (refId != null)
+			{
+				var reference = serializer.ReferenceResolver.ResolveReference(serializer, refId);
+				if (reference != null)
+					return reference;
+			}
+			//Console.WriteLine("exist: " + existingValue);
+			var values = obj[valuesProperty] as JArray;
+			if (values == null || values.Type == JTokenType.Null)
+				return null;
+			var count = values.Count;
+
+			var elementType = objectType.GetElementType();
+			var array = Array.CreateInstance(elementType, count);
+
+			var objId = (string)obj[idProperty];
+			if (objId != null)
+			{
+				// Add the empty array into the reference table BEFORE populating it,
+				// to handle recursive references.
+				serializer.ReferenceResolver.AddReference(serializer, objId, array);
+			}
+
+			var listType = typeof(List<>).MakeGenericType(elementType);
+			using (var subReader = values.CreateReader())
+			{
+				var list = serializer.Deserialize(subReader, listType) as IList;
+				list.CopyTo(array, 0);
+			}
+
+			return array;
+		}
+	}
+
+	public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+	{
+		if (value is Array array)
+		{
+			writer.WriteStartObject();
+			if (!serializer.ReferenceResolver.IsReferenced(serializer, value))
+			{
+				writer.WritePropertyName(idProperty);
+				writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
+				writer.WritePropertyName(valuesProperty);
+				writer.WriteStartArray();
+				foreach (var item in array)
+				{
+					serializer.Serialize(writer, item);
+				}
+				writer.WriteEndArray();
+			}
+			else
+			{
+				writer.WritePropertyName(refProperty);
+				writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
+			}
+			writer.WriteEndObject();
+		}
+	}
+}*/

@@ -6,9 +6,6 @@ namespace Sharp
 	[Serializable]
 	public abstract class Component : IEngineObject
 	{
-		[NonSerializable]
-		public Guid Id { get; internal set; } = Guid.NewGuid();
-
 		private bool enabled;
 
 		public bool active

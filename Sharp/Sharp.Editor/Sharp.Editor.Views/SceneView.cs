@@ -42,7 +42,7 @@ namespace Sharp.Editor.Views
 		{
 			var eLight = new Entity();
 			eLight.name = "Directional Light";
-			eLight.Position = Camera.main.entityObject.Position;
+			eLight.transform.Position = Camera.main.entityObject.transform.Position;
 			var light = eLight.AddComponent<Light>();
 			eLight.Instatiate();
 			//System.Threading.Tasks.Task.Run(() => );
@@ -88,7 +88,7 @@ namespace Sharp.Editor.Views
 				{
 					if (Squid.UI.MouseDelta.x != 0 || Squid.UI.MouseDelta.y != 0)
 					{
-						var orig = Camera.main.entityObject.Position;
+						var orig = Camera.main.entityObject.transform.Position;
 						//var winPos = Window.windows[attachedToWindow].Position;
 						var localMouse = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
 						var start = Camera.main.ScreenToWorld(localMouse.x, localMouse.y, Size.x, Size.y, 1);
@@ -176,7 +176,7 @@ namespace Sharp.Editor.Views
 		{
 			var locPos = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
 			Camera.main.SetModelviewMatrix();
-			var orig = Camera.main.entityObject.Position;
+			var orig = Camera.main.entityObject.transform.Position;
 			if (e.Source.UserData is ValueTuple<string, string>[] entities)
 				foreach (var asset in entities)
 				{
@@ -200,7 +200,7 @@ namespace Sharp.Editor.Views
 
 			MainWindow.backendRenderer.SetStandardState();
 			var projMat = Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
-			DrawHelper.DrawGrid(Color.White, Camera.main.entityObject.Position, cell_size, grid_size, ref projMat);
+			DrawHelper.DrawGrid(Color.White, Camera.main.entityObject.transform.Position, cell_size, grid_size, ref projMat);
 
 			//foreach (var renderer in renderers)
 			//   renderer.Render();
@@ -317,7 +317,7 @@ namespace Sharp.Editor.Views
 
 		private void PickTestForObject()
 		{
-			var orig = Camera.main.entityObject.Position;
+			var orig = Camera.main.entityObject.transform.Position;
 			var end = Camera.main.ScreenToWorld(locPos.Value.x, locPos.Value.y, Size.x, Size.y);
 			var ray = new Ray(orig, (end - orig).Normalize());
 			var hitList = new SortedList<Vector3, Guid>(new OrderByDistanceToCamera());
@@ -327,16 +327,16 @@ namespace Sharp.Editor.Views
 				Vector3 hitPoint = Vector3.Zero;
 				if (render != null && render.mesh.bounds.Intersect(ray, ent.ModelMatrix, out hitPoint))
 				{
-					Console.WriteLine("Select " + ent.name + ent.Id);
+					//Console.WriteLine("Select " + ent.name + ent.Id);
 					if (!hitList.ContainsKey(hitPoint))
-						hitList.Add(hitPoint, ent.Id);
+						hitList.Add(hitPoint, ent.GetInstanceID());
 					//break;
 				}
 			}
 			if (hitList.Count > 0)
 			{
-				var entity = entities.root.First((ent) => ent.Id == hitList.Values[0]);
-				Console.WriteLine("Select " + entity.name + entity.Id);
+				var entity = entities.root.First((ent) => ent.GetInstanceID() == hitList.Values[0]);
+				Console.WriteLine("Select " + entity.name + entity.GetInstanceID());
 				Selection.Asset = entity;
 				SceneStructureView.tree.SelectedNode = null;
 				SceneStructureView.tree.Nodes.Find((item) => item.UserData == entity).IsSelected = true;
@@ -351,8 +351,8 @@ namespace Sharp.Editor.Views
 	{
 		public int Compare(Vector3 x, Vector3 y)
 		{
-			var xDistance = (x - Camera.main.entityObject.Position).Length();
-			var yDistance = (y - Camera.main.entityObject.Position).Length();
+			var xDistance = (x - Camera.main.entityObject.transform.Position).Length();
+			var yDistance = (y - Camera.main.entityObject.transform.Position).Length();
 			if (xDistance > yDistance) return 1;
 			else if (xDistance < yDistance) return -1;
 			else return 0;
@@ -372,7 +372,7 @@ namespace Sharp.Editor.Views
 			{
 				if (entity.parent is null)
 					root.Add(entity);
-				allEngineObjects.Add(entity.Id, entity);
+				allEngineObjects.Add(entity.GetInstanceID(), entity);
 				SceneView.onAddedEntity?.Invoke();
 			}
 		}
@@ -383,7 +383,7 @@ namespace Sharp.Editor.Views
 			{
 				if (entity.parent is null)
 					root.Remove(entity);
-				allEngineObjects.Remove(entity.Id);
+				allEngineObjects.Remove(entity.GetInstanceID());
 				SceneView.onRemovedEntity?.Invoke();
 			}
 		}
@@ -392,7 +392,7 @@ namespace Sharp.Editor.Views
 		{
 			lock (Selection.sync)
 			{
-				allEngineObjects.Add(obj.Id, obj);
+				allEngineObjects.Add(obj.GetInstanceID(), obj);
 			}
 		}
 
@@ -400,7 +400,7 @@ namespace Sharp.Editor.Views
 		{
 			lock (Selection.sync)
 			{
-				allEngineObjects.Remove(obj.Id);
+				allEngineObjects.Remove(obj.GetInstanceID());
 			}
 		}
 	}

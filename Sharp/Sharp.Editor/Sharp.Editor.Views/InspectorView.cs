@@ -64,7 +64,7 @@ namespace Sharp.Editor.Views
 				Console.WriteLine("SelectionChange");
 				if (sender is IEngineObject obj)
 				{
-					currentlyDrawedObject = obj.Id;
+					currentlyDrawedObject = sender.GetInstanceID();
 				}
 				//ptree.Nodes.Clear();
 				if (sender is Entity entity) RenderComponents(entity);
@@ -124,33 +124,11 @@ namespace Sharp.Editor.Views
 
 		public void RenderComponents(Entity entity)
 		{
-			var prop = ptree.GetControl("Transform") as ComponentNode;
-
-			PropertyDrawer propDrawer;
-			if (prop is null)
-			{
-				var node = new ComponentNode();
-				node.Label.Text = "Transform";
-				node.Name = "Transform";
-				node.Label.TextAlign = Alignment.MiddleLeft;
-				node.referencedComponent = entity;//TODO: create transform component?
-				var props = entity.GetType().GetProperties().Where(p => p.CanRead && p.CanWrite);
-				ptree.Nodes.Add(node);
-				foreach (var entityProp in props)
-				{
-					if (entityProp.GetCustomAttribute<NonSerializableAttribute>(false) != null) continue;
-					propDrawer = Add(entityProp.Name + ":", entity, entityProp);
-					node.Frame.Controls.Add(propDrawer);
-					propDrawer.GenerateSetterGetter();
-				}
-			}
-			else
-				prop.referencedComponent = entity;
 			var comps = entity.GetAllComponents();
 
 			foreach (var component in comps)
 			{
-				prop = ptree.GetControl(component.GetType().Name) as ComponentNode;
+				var prop = ptree.GetControl(component.GetType().Name) as ComponentNode;
 				if (prop is null)
 				{
 					var node = new ComponentNode();
@@ -167,6 +145,12 @@ namespace Sharp.Editor.Views
 				else
 					prop.referencedComponent = component;
 			}
+			List<ComponentNode> toBeRemoved = new List<ComponentNode>();
+			foreach (ComponentNode node in ptree.Nodes)
+				if (node.Name != "Transform" && !comps.Contains(node.referencedComponent as Component)) toBeRemoved.Add(node);
+
+			foreach (var remove in toBeRemoved)
+				ptree.Nodes.Remove(remove);
 		}
 
 		/*  private void UpdateInspector() {

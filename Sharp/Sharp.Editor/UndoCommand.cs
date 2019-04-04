@@ -48,7 +48,9 @@ namespace Sharp.Editor
 				using (var sr = new StreamReader(Selection.lastStructure, System.Text.Encoding.UTF8, true, 4096, true))
 				using (var jsonReader = new JsonTextReader(sr))
 				{
-					SceneView.entities = serializer.Deserialize<Root>(jsonReader);
+					jsonReader.ArrayPool = JsonArrayPool.Instance;
+					serializer.Populate(jsonReader, SceneView.entities);
+					//SceneView.entities = serializer.Deserialize<Root>(jsonReader);
 				}
 				Selection.Asset = UndoCommand.currentHistory.Previous.Value.selectedObject.HasValue ? SceneView.entities.allEngineObjects[UndoCommand.currentHistory.Previous.Value.selectedObject.Value] : null;//TODO: kolejnosc selectow zbugowana?
 				currentHistory = UndoCommand.currentHistory.Previous;

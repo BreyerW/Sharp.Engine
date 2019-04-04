@@ -33,9 +33,11 @@ namespace Sharp
         {
             ParameterExpression paramExpression = Expression.Parameter(typeof(object), "value");
             var castValueExp = CreateCastExpression(paramExpression, memberInfo.DeclaringType);
-            MemberExpression memberExp = CreateMemberExpression(castValueExp, memberInfo);
+            Expression memberExp = CreateMemberExpression(castValueExp, memberInfo);
 
-            return Expression.Lambda<Func<object, T>>(memberExp, paramExpression).Compile();
+			if (typeof(T) != memberInfo.GetUnderlyingType())
+				memberExp = CreateCastExpression(memberExp, typeof(T));
+			return Expression.Lambda<Func<object, T>>(memberExp, paramExpression).Compile();
         }
 
         /// <summary>

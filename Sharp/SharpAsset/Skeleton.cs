@@ -84,7 +84,7 @@ namespace SharpAsset
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)
 		{
 			var eObject = new Entity();
-			eObject.Position = worldPos;
+			eObject.transform.Position = worldPos;
 			var renderer = eObject.AddComponent(new SkeletonRenderer(ref this));
 			var shader = Pipeline.Pipeline.GetPipeline<ShaderPipeline>().GetAsset("SkeletonShader");
 			eObject.Instatiate();

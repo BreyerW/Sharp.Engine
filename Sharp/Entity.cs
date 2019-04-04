@@ -3,63 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Sharp.Engine.Components;
 
 namespace Sharp
 {
 	[Serializable]
 	public class Entity : IEngineObject
 	{
-		[NonSerializable]
-		public Guid Id { get; internal set; } = Guid.NewGuid();
-
-		internal Vector3 position = Vector3.Zero;
-
-		public Entity parent;
-		public List<Entity> childs = new List<Entity>();
-		public string name = "Entity Object";
-
-		public Vector3 Position
-		{
-			get
-			{
-				return position;
-			}
-			set
-			{
-				position = value;
-				onTransformChanged?.Invoke();
-			}
-		}
-
+		public Vector3 position = Vector3.Zero;
 		internal Vector3 rotation = Vector3.Zero;
-
-		public Vector3 Rotation
-		{
-			get
-			{
-				return rotation;
-			}
-			set
-			{
-				rotation = value;
-				onTransformChanged?.Invoke();
-			}
-		}
-
 		internal Vector3 scale = Vector3.One;
 
-		public Vector3 Scale
-		{
-			get
-			{
-				return scale;
-			}
-			set
-			{
-				scale = value;
-				onTransformChanged?.Invoke();
-			}
-		}
+		public Entity parent;
+		public Transform transform;
+		public List<Entity> childs = new List<Entity>();
+		public string name = "Entity Object";
 
 		public bool active
 		{
@@ -94,6 +52,7 @@ namespace Sharp
 		public Entity()
 		{
 			onTransformChanged += OnTransformChanged;
+			transform = AddComponent<Transform>();
 			SceneView.entities.AddEngineObject(this);
 			//id = ++lastId;
 			//lastId = id;
@@ -156,8 +115,8 @@ namespace Sharp
 
 		public void SetModelMatrix()
 		{
-			var angles = Rotation * NumericsExtensions.Pi / 180f;
-			modelMatrix = Matrix4x4.CreateScale(Scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
+			var angles = rotation * NumericsExtensions.Pi / 180f;
+			modelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
 		}
 
 		public Quaternion ToQuaterion(Vector3 angles)
@@ -244,9 +203,9 @@ namespace Sharp
 
 		public void Instatiate(Vector3 pos, Vector3 rot, Vector3 s)
 		{
-			Scale = s;
-			Position = pos;
-			Rotation = rot;
+			scale = s;
+			position = pos;
+			rotation = rot;
 			Instatiate();
 		}
 

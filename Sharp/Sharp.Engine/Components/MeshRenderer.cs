@@ -48,7 +48,7 @@ namespace Sharp
 			MainWindow.backendRenderer.Use(shader.Program);
 
 			//entityObject.SetModelMatrix();
-			material.SetProperty("model", entityObject.ModelMatrix, false);
+			material.InternalSetProperty("model", entityObject.ModelMatrix);
 			material.SendData();
 			MainWindow.backendRenderer.Use(ref mesh.indiceType, mesh.Indices.Length);
 			MainWindow.backendRenderer.ChangeShader();

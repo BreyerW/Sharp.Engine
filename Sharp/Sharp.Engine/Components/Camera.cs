@@ -175,8 +175,8 @@ namespace Sharp
 
 		public void SetModelviewMatrix()
 		{
-			var translationMatrix = Matrix4x4.CreateTranslation(-entityObject.Position);
-			var angles = entityObject.Rotation * NumericsExtensions.Pi / 180f;
+			var translationMatrix = Matrix4x4.CreateTranslation(-entityObject.transform.Position);
+			var angles = entityObject.transform.Rotation * NumericsExtensions.Pi / 180f;
 			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
 			//modelViewMatrix = rotationMatrix*translationMatrix; orbit
 			ModelViewMatrix = translationMatrix * rotationMatrix; //pan
@@ -262,7 +262,7 @@ namespace Sharp
 		/// </summary>
 		protected void ClampMouseValues()
 		{
-			var newRot = entityObject.Rotation;
+			var newRot = entityObject.transform.Rotation;
 			if (newRot.Y >= 360) //360 degrees in radians (or something in radians)
 				newRot.Y -= 360;
 			if (newRot.Y <= -360)
@@ -272,7 +272,7 @@ namespace Sharp
 				newRot.X -= 360;
 			if (newRot.X <= -360)
 				newRot.X += 360;
-			entityObject.Rotation = newRot;
+			entityObject.transform.Rotation = newRot;
 			/*if (MouseRotation.Y >= 6.28) //360 degrees in radians (or something in radians)
                 MouseRotation.Y-= 6.28f;
             if (MouseRotation.Y <= -6.28)
@@ -291,10 +291,10 @@ namespace Sharp
 		/// </param>
 		public void Rotate(float x, float y, float time = 1)
 		{
-			var newRot = entityObject.Rotation;
+			var newRot = entityObject.transform.Rotation;
 			newRot.X += (y * MouseXSensitivity * time);
 			newRot.Y += (x * MouseYSensitivity * time);
-			entityObject.Rotation = newRot;
+			entityObject.transform.Rotation = newRot;
 			SetModelviewMatrix();
 			//Console.WriteLine("Rotation={0}", MouseRotation);
 			//ClampMouseValues();
@@ -327,11 +327,11 @@ namespace Sharp
 			}
 			if (CameraMode == CamMode.FirstPerson)
 			{
-				entityObject.Position += Vector3.Transform(Movement, Quaternion.Inverse(entityObject.ToQuaterion(entityObject.Rotation)));//Invert?
-				entityObject.Position = new Vector3(entityObject.Position.X, 5, entityObject.Position.Z);
+				entityObject.transform.Position += Vector3.Transform(Movement, Quaternion.Inverse(entityObject.ToQuaterion(entityObject.transform.Rotation)));//Invert?
+				entityObject.transform.Position = new Vector3(entityObject.transform.Position.X, 5, entityObject.transform.Position.Z);
 			}
 			else
-				entityObject.Position += Vector3.Transform(Movement, Quaternion.Inverse(entityObject.ToQuaterion(entityObject.Rotation)));
+				entityObject.transform.Position += Vector3.Transform(Movement, Quaternion.Inverse(entityObject.ToQuaterion(entityObject.transform.Rotation)));
 
 			SetModelviewMatrix();
 			SetProjectionMatrix();

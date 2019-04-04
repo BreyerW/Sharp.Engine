@@ -2,10 +2,8 @@
 
 namespace Sharp
 {
-    public interface IEngineObject/*:IDisposable*/
-    {
-        Guid Id { get; }
-
-        void Destroy();
-    }
+	public interface IEngineObject/*:IDisposable*/
+	{
+		void Destroy();
+	}
 }

@@ -35,7 +35,7 @@ namespace Sharp.Editor
 
 		public static void DrawCombinedGizmos(Entity entity, Color xColor, Color yColor, Color zColor, Color xRotColor, Color yRotColor, Color zRotColor, Color xScaleColor, Color yScaleColor, Color zScaleColor, float thickness = 5f)
 		{
-			float scale = (Camera.main.entityObject.Position - entity.Position).Length() / 25f;
+			float scale = (Camera.main.entityObject.transform.Position - entity.transform.Position).Length() / 25f;
 			DrawHelper.DrawTranslationGizmo(thickness, scale, xColor, yColor, zColor);
 			DrawHelper.DrawRotationGizmo(thickness, scale, xRotColor, yRotColor, zRotColor);
 			DrawHelper.DrawScaleGizmo(thickness, scale, xScaleColor, yScaleColor, zScaleColor, scaleOffset);
@@ -99,19 +99,19 @@ namespace Sharp.Editor
 				Matrix4x4.Decompose(entity.ModelMatrix, out _, out var r, out _);
 				v.Transform(r).Normalize();//TransformVector
 			}
-			var len = ComputeLength(ref ray, entity.Position);
+			var len = ComputeLength(ref ray, entity.transform.Position);
 			if (!relativeOrigin.HasValue)
 			{
 				planeOrigin = ray.origin + ray.direction * len;
-				relativeOrigin = (planeOrigin - entity.Position) * (1f / (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
+				relativeOrigin = (planeOrigin - entity.transform.Position) * (1f / (0.1f * GetUniform(entity.transform.Position, Camera.main.ProjectionMatrix)));
 				//UI.Property.PropertyDrawer.StopCommandCommits = true;
 			}
 			var newPos = ray.origin + ray.direction * len;
-			var newOrigin = newPos - relativeOrigin.Value * (0.1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
-			var delta = newOrigin - entity.Position;
+			var newOrigin = newPos - relativeOrigin.Value * (0.1f * GetUniform(entity.transform.Position, Camera.main.ProjectionMatrix));
+			var delta = newOrigin - entity.transform.Position;
 			var lenOnAxis = Vector3.Dot(delta, v);
 			delta = v * lenOnAxis;
-			entity.Position += delta;
+			entity.transform.Position += delta;
 		}
 
 		//private static Quaternion startRot = Quaternion.Identity;
@@ -148,13 +148,13 @@ namespace Sharp.Editor
 			{
 				v.Transform(rot).Normalize();
 			}
-			var plane = BuildPlane(entity.Position, v);
+			var plane = BuildPlane(entity.transform.Position, v);
 			transformationPlane = new Vector4(plane.Normal.X, plane.Normal.Y, plane.Normal.Z, plane.D);
-			var len = ComputeLength(ref ray, entity.Position);
+			var len = ComputeLength(ref ray, entity.transform.Position);
 
 			if (!rotVectSource.HasValue)
 			{
-				var origin = ray.origin + ray.direction * len - entity.Position;
+				var origin = ray.origin + ray.direction * len - entity.transform.Position;
 				var rotVec = constrain(origin, v).Normalize();
 				rotVectSource = rotVec;
 				rotAngleOrigin = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
@@ -171,8 +171,8 @@ namespace Sharp.Editor
 			//entity.ModelMatrix.Inverted().ExtractRotation();
 			var rotAxis = new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z).Transform(Quaternion.Inverse(rot)).Normalize();
 			var deltaRot = Matrix4x4.CreateFromAxisAngle(rotAxis, angle - rotAngleOrigin.Value);
-			entity.Rotation = Entity.rotationMatrixToEulerAngles(deltaRot * entity.ModelMatrix) * NumericsExtensions.Rad2Deg;
-			currentAngle = (ray.origin + ray.direction * len - entity.Position).Normalize();
+			entity.transform.Rotation = Entity.rotationMatrixToEulerAngles(deltaRot * entity.ModelMatrix) * NumericsExtensions.Rad2Deg;
+			currentAngle = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
 			rotAngleOrigin = angle;
 			//rotvectsource = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
 			//startRot = quat * startRot;
@@ -186,17 +186,17 @@ namespace Sharp.Editor
 				Matrix4x4.Decompose(entity.ModelMatrix, out _, out var r, out _);
 				v.Transform(r).Normalize(); //TransformVector
 			}
-			var len = ComputeLength(ref ray, entity.Position);
+			var len = ComputeLength(ref ray, entity.transform.Position);
 			if (!planeOrigin.HasValue)
 			{
 				planeOrigin = ray.origin + ray.direction * len;
-				scaleOrigin = entity.Scale;
+				scaleOrigin = entity.transform.Scale;
 				// UI.Property.PropertyDrawer.StopCommandCommits = true;
 			}
 			var newPos = ray.origin + ray.direction * len;
-			var delta = (newPos - entity.Position).Length() / (planeOrigin.Value - entity.Position).Length();
+			var delta = (newPos - entity.transform.Position).Length() / (planeOrigin.Value - entity.transform.Position).Length();
 			scaleOffset = newPos * v;
-			entity.Scale = scaleOrigin.Value + v * delta - v;
+			entity.transform.Scale = scaleOrigin.Value + v * delta - v;
 		}
 
 		private static float GetUniform(Vector3 pos, Matrix4x4 mat)
@@ -234,7 +234,7 @@ namespace Sharp.Editor
 		private static float ComputeAngleOnPlane(Entity entity, ref Ray ray, ref Vector4 plane)
 		{
 			var len = ray.IntersectPlane(ref plane);
-			var localPos = (ray.origin + ray.direction * len - entity.Position).Normalize();
+			var localPos = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
 			var perpendicularVect = Vector3.Cross(rotVectSource.Value, new Vector3(plane.X, plane.Y, plane.Z)).Normalize();
 			var angle = NumericsExtensions.CalculateAngle(localPos, rotVectSource.Value);//(float)Math.Acos(NumericsExtensions.Clamp(Vector3.Dot(localPos, rotVectSource.Value), -0.9999f, 0.9999f));
 

@@ -34,7 +34,7 @@ namespace Sharp
 			MainWindow.backendRenderer.SwapBuffers += SDL.SDL_GL_SwapWindow;
 
 			var e = new Entity();
-			e.Rotation = new Vector3((float)Math.PI, 0f, 0f);
+			e.transform.Rotation = new Vector3((float)Math.PI, 0f, 0f);
 			var cam = e.AddComponent<Camera>();
 			cam.SetModelviewMatrix();
 			cam.SetProjectionMatrix();

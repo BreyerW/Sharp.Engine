@@ -98,13 +98,15 @@ namespace SharpAsset
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)//PlaceIntoView(View view,)
 		{
 			var eObject = new Entity();
-			eObject.Position = worldPos;
+			eObject.transform.Position = worldPos;
 			var shader = (Shader)Pipeline.Pipeline.GetPipeline<ShaderPipeline>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\TextureOnlyShader.shader");
 			//Pipeline.Pipeline.GetPipeline<ShaderPipeline>().GetAsset("TextureOnlyShader");
 			var mat = new Material();
 			mat.Shader = shader;
 			var renderer = new MeshRenderer(ref this, mat);
+
 			eObject.AddComponent(renderer);
+
 			Pipeline.Pipeline.GetPipeline<TexturePipeline>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\duckCM.bmp");
 			//zamienic na ref loading pipeliny
 			renderer.material.BindProperty("MyTexture", ref Pipeline.Pipeline.GetPipeline<TexturePipeline>().GetAsset("duckCM"));

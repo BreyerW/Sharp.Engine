@@ -2,6 +2,7 @@
 using Squid;
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Sharp.Editor.UI.Property
 {
@@ -98,6 +99,9 @@ namespace Sharp.Editor.UI.Property
 			Value = getter(refComp);
 			prevUIValue = Value;
 			prevObjValue = getter(refComp);
+			Console.WriteLine("test:" + ((PropertyInfo)memberInfo).PropertyType);
+			//var comp=__makeref(refComp);
+
 		}
 
 		protected override void PropertyDrawer_Update(Control sender)
@@ -106,8 +110,16 @@ namespace Sharp.Editor.UI.Property
 			//if (!(Desktop.FocusedControl is Views.SceneView) && !Value.Equals(getter((Parent.Parent as ComponentNode).referencedComponent)))//&& !(InputHandler.isKeyboardPressed | InputHandler.isMouseDragging)
 			if (!prevUIValue.Equals(Value))
 			{
-				setter(refComp, Value);
+				if (((PropertyInfo)memberInfo).PropertyType == typeof(System.Numerics.Vector3))
+				{
+					var newgetter = DelegateGenerator.GenerateGetter<object>(memberInfo);
+					Unsafe.Unbox<System.Numerics.Vector3>(newgetter(refComp)) = System.Numerics.Vector3.One;
+				}
+				else
+					setter(refComp, Value);
+
 				prevUIValue = Value;
+
 			}
 			else if (!prevObjValue.Equals(getter(refComp))) //if (!Value.Equals(getter((Parent.Parent as ComponentNode).referencedComponent)))
 			{

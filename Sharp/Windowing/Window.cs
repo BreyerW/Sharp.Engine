@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+using System.Collections;
 
 namespace Sharp
 {
@@ -124,6 +126,7 @@ namespace Sharp
 
 			while (!quit)
 			{
+				Coroutine.AdvanceInstructions(ref Coroutine.startOfFrameInstructions);
 				while (SDL.SDL_PollEvent(out sdlEvent) != 0)
 				{
 					if (windows.Contains(sdlEvent.window.windowID))
@@ -141,8 +144,11 @@ namespace Sharp
 
 				UI.TimeElapsed = Time.deltaTime;
 				UI.currentCanvas?.Update();//TODO: change it so that during dragging it will update both source and hovered window
+				Coroutine.AdvanceInstructions(ref Coroutine.customInstructions);
+				Coroutine.AdvanceInstructions(ref Coroutine.endOfFrameInstructions);
 				onRenderFrame?.Invoke();
-				onBeforeNextFrame?.Invoke();
+
+				//onBeforeNextFrame?.Invoke();
 
 				if (UI.isDirty)
 				{
@@ -150,9 +156,10 @@ namespace Sharp
 					UI.isDirty = false;
 				}
 				Time.SetTime();
+				Coroutine.AdvanceInstructions(ref Coroutine.timeInstructions);
 			}
 		}
-
+		
 		private void OnInternalRenderFrame()
 		{
 			MainWindow.backendRenderer.MakeCurrent(handle, contexts[0]);
@@ -215,7 +222,7 @@ namespace Sharp
 						// the character array is null terminated, so we need to find that terminator
 					}
 					int indexOfNullTerminator = Array.IndexOf(rawBytes, (byte)0);
-
+					//int indexOfNullTerminator =rawBytes.IndexOf((byte)0);
 					// finally, since the character array is UTF-8 encoded, get the UTF-8 string
 					string text = System.Text.Encoding.UTF8.GetString(rawBytes, 0, indexOfNullTerminator);
 					InputHandler.ProcessTextInput(text);
