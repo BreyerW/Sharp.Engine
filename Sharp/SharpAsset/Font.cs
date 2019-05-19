@@ -29,7 +29,7 @@ namespace SharpAsset
         {
             if (string.IsNullOrEmpty(text)) return (0, 0);
 
-            var chars = text.AsReadOnlySpan();
+            var chars = text.AsSpan();
             float width = 0, height = 0;
             float overrun = 0;
             float underrun = 0;

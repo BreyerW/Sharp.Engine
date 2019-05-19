@@ -85,9 +85,8 @@ namespace SharpAsset
 		{
 			var eObject = new Entity();
 			eObject.transform.Position = worldPos;
-			var renderer = eObject.AddComponent(new SkeletonRenderer(ref this));
-			var shader = Pipeline.Pipeline.GetPipeline<ShaderPipeline>().GetAsset("SkeletonShader");
-			eObject.Instatiate();
+			var renderer = eObject.AddComponent<SkeletonRenderer>();
+			var shader = Pipeline.Pipeline.Get<ShaderPipeline>().GetAsset("SkeletonShader");
 		}
 
 		#endregion IAsset implementation

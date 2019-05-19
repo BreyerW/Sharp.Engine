@@ -54,9 +54,8 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AssimpNet, Version=3.3.2.0, Culture=neutral, PublicKeyToken=3edc10cb77b1bca2, processorArchitecture=MSIL">
-      <HintPath>..\packages\AssimpNet.3.3.2\lib\net45\AssimpNet.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="AssimpNet, Version=4.1.0.0, Culture=neutral, PublicKeyToken=0d51b391f59f42a6, processorArchitecture=MSIL">
+      <HintPath>..\packages\AssimpNet.4.1.0\lib\net40\AssimpNet.dll</HintPath>
     </Reference>
     <Reference Include="BepuPhysics, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BepuPhysics.2.0.0-alpha\lib\netstandard2.0\BepuPhysics.dll</HintPath>
@@ -66,6 +65,9 @@
     </Reference>
     <Reference Include="JsonDiffPatchDotNet, Version=2.1.0.0, Culture=neutral, PublicKeyToken=a407b9994a6d66d5, processorArchitecture=MSIL">
       <HintPath>..\packages\JsonDiffPatch.Net.2.1.0\lib\net45\JsonDiffPatchDotNet.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Experimental.Collections, Version=1.0.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Experimental.Collections.1.0.6-preview2-190117-2\lib\netstandard2.0\Microsoft.Experimental.Collections.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.2.2\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
@@ -106,8 +108,8 @@
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Memory, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.0-preview1-26216-02\lib\netstandard2.0\System.Memory.dll</HintPath>
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard2.0\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Numerics" />
     <Reference Include="SharpAvi">
@@ -116,11 +118,21 @@
     <Reference Include="ColorSharp">
       <HintPath>..\packages\ColorSharp.0.11.0.32448\lib\net40\ColorSharp.dll</HintPath>
     </Reference>
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0-preview1-26216-02\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    <Reference Include="System.Numerics.Vectors, Version=4.1.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.0-preview5.19224.8\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.6.0-preview.18571.3\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.6.0-preview6.19259.10\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.InteropServices, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.4.3.0\lib\net463\System.Runtime.InteropServices.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.0.0\lib\portable-net45+win8+wp8+wpa81\System.Threading.Tasks.Extensions.dll</HintPath>
@@ -145,22 +157,23 @@
     <Compile Include="IEngineObject.cs" />
     <Compile Include="NonSerializableAttribute.cs" />
     <Compile Include="NumericsExtensions.cs" />
-    <Compile Include="Sharp.Editor\CurveSettings.cs" />
-    <Compile Include="Sharp.Editor\MenuCommand.cs" />
-    <Compile Include="Sharp.Editor\NativeCursor.cs" />
-    <Compile Include="Sharp.Editor\NativeWindow.cs" />
-    <Compile Include="Sharp.Editor\RedoCommand.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CurveRangeAttribute.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\DrawAsRegionAttribute.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\DraggableButton.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\ComponentNode.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\CurveDrawer.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\RegionDrawer.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\CurvesView.cs" />
-    <Compile Include="Sharp.Editor\TickHandler.cs" />
-    <Compile Include="Sharp.Editor\UIVertexFormat.cs" />
-    <Compile Include="Sharp.Editor\UndoCommand.cs" />
-    <Compile Include="Sharp.Engine\Components\Transform.cs" />
+    <Compile Include="Editor\CurveSettings.cs" />
+    <Compile Include="Editor\EditorCamera.cs" />
+    <Compile Include="Editor\MenuCommand.cs" />
+    <Compile Include="Editor\NativeCursor.cs" />
+    <Compile Include="Editor\NativeWindow.cs" />
+    <Compile Include="Editor\RedoCommand.cs" />
+    <Compile Include="Editor\Attribs\CurveRangeAttribute.cs" />
+    <Compile Include="Editor\Attribs\DrawAsRegionAttribute.cs" />
+    <Compile Include="Editor\UI\DraggableButton.cs" />
+    <Compile Include="Editor\UI\Property\ComponentNode.cs" />
+    <Compile Include="Editor\UI\Property\CurveDrawer.cs" />
+    <Compile Include="Editor\UI\Property\RegionDrawer.cs" />
+    <Compile Include="Editor\Views\CurvesView.cs" />
+    <Compile Include="Editor\TickHandler.cs" />
+    <Compile Include="Editor\UIVertexFormat.cs" />
+    <Compile Include="Editor\UndoCommand.cs" />
+    <Compile Include="Engine\Components\Transform.cs" />
     <Compile Include="SharpAsset\Font.cs" />
     <Compile Include="SharpAsset\Pipeline\FontPipeline.cs" />
     <Compile Include="SharpAsset\Pipeline\StylePipeline.cs" />
@@ -169,51 +182,51 @@
     <Compile Include="Windowing\FloatingWindow.cs" />
     <Compile Include="Windowing\ISplitter.cs" />
     <Compile Include="Windowing\MainWindow.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\ArrayDrawer.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\DefaultPropertyDrawer.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\EventHandlerDrawer.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\PropertyDrawer.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\BooleanDrawer.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Color.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CustomPropertyDrawerAttribute.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\RangeAttribute.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\RangeDrawer.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Text.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\Property\Vector3Drawer.cs" />
+    <Compile Include="Editor\UI\Property\ArrayDrawer.cs" />
+    <Compile Include="Editor\UI\Property\DefaultPropertyDrawer.cs" />
+    <Compile Include="Editor\UI\Property\EventHandlerDrawer.cs" />
+    <Compile Include="Editor\UI\Property\PropertyDrawer.cs" />
+    <Compile Include="Editor\UI\Property\BooleanDrawer.cs" />
+    <Compile Include="Editor\UI\Property\Color.cs" />
+    <Compile Include="Editor\Attribs\CustomPropertyDrawerAttribute.cs" />
+    <Compile Include="Editor\Attribs\RangeAttribute.cs" />
+    <Compile Include="Editor\UI\Property\RangeDrawer.cs" />
+    <Compile Include="Editor\UI\Property\TextDrawer.cs" />
+    <Compile Include="Editor\UI\Property\Vector3Drawer.cs" />
     <Compile Include="SharpAsset\Recipe.cs" />
-    <Compile Include="SharpSL\SharpSL.BackendRenderers\UIRenderer.cs" />
+    <Compile Include="SharpSL\BackendRenderers\UIRenderer.cs" />
     <Compile Include="Windowing\TooltipWindow.cs" />
     <Compile Include="Windowing\VerticalSplitter.cs" />
     <Compile Include="Windowing\Window.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BasicVertexFormat.cs" />
-    <Compile Include="Sharp.Engine\Behaviour.cs" />
-    <Compile Include="Sharp.Engine\Components\Camera.cs" />
-    <Compile Include="Sharp.Engine\Component.cs" />
+    <Compile Include="Engine\Behaviour.cs" />
+    <Compile Include="Engine\Components\Camera.cs" />
+    <Compile Include="Engine\Component.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="Frustum.cs" />
     <Compile Include="Color.cs" />
     <Compile Include="InputHandler.cs" />
     <Compile Include="SharpAsset\Material.cs" />
-    <Compile Include="Sharp.Engine\Components\MeshRenderer.cs" />
+    <Compile Include="Engine\Components\MeshRenderer.cs" />
     <Compile Include="ObjectPlacement.cs" />
     <Compile Include="Player.cs" />
-    <Compile Include="Sharp.Engine\Renderer.cs" />
+    <Compile Include="Engine\Renderer.cs" />
     <Compile Include="Selection.cs" />
     <Compile Include="Main.cs" />
-    <Compile Include="Sharp.Editor\Manipulators.cs" />
-    <Compile Include="Sharp.Editor\DrawHelper.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\AssetsView.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\MainEditorView.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\SceneStructureView.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\SceneView.cs" />
-    <Compile Include="Sharp.Physic\ErrorOutput.cs" />
-    <Compile Include="Sharp.Engine\Components\Collider.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\View.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Views\InspectorView.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.Attribs\CustomInspectorAttribute.cs" />
-    <Compile Include="Sharp.Editor\ComponentDrawer.cs" />
-    <Compile Include="Sharp.Editor\Sharp.Editor.UI\DefaultComponentDrawer.cs" />
+    <Compile Include="Editor\Manipulators.cs" />
+    <Compile Include="Editor\DrawHelper.cs" />
+    <Compile Include="Editor\Views\AssetsView.cs" />
+    <Compile Include="Editor\Views\MainEditorView.cs" />
+    <Compile Include="Editor\Views\SceneStructureView.cs" />
+    <Compile Include="Editor\Views\SceneView.cs" />
+    <Compile Include="Physic\ErrorOutput.cs" />
+    <Compile Include="Engine\Components\Collider.cs" />
+    <Compile Include="Editor\Views\View.cs" />
+    <Compile Include="Editor\Views\InspectorView.cs" />
+    <Compile Include="Editor\Attribs\CustomInspectorAttribute.cs" />
+    <Compile Include="Editor\ComponentDrawer.cs" />
+    <Compile Include="Editor\UI\DefaultComponentDrawer.cs" />
     <Compile Include="SharpAsset\IAsset.cs" />
     <Compile Include="SharpAsset\Mesh.cs" />
     <Compile Include="SharpAsset\Shader.cs" />
@@ -229,10 +242,10 @@
     <Compile Include="BoundingBox.cs" />
     <Compile Include="Ray.cs" />
     <Compile Include="SharpSL\Work.cs" />
-    <Compile Include="SharpSL\SharpSL.BackendRenderers\IBackendRenderer.cs" />
-    <Compile Include="SharpSL\SharpSL.BackendRenderers\IEditorBackendRenderer.cs" />
-    <Compile Include="SharpSL\SharpSL.BackendRenderers\SharpSL.BackendRenderers.OpenGL\EditorOpenGLRenderer.cs" />
-    <Compile Include="SharpSL\SharpSL.BackendRenderers\SharpSL.BackendRenderers.OpenGL\OpenGLRenderer.cs" />
+    <Compile Include="SharpSL\BackendRenderers\IBackendRenderer.cs" />
+    <Compile Include="SharpSL\BackendRenderers\IEditorBackendRenderer.cs" />
+    <Compile Include="SharpSL\BackendRenderers\SharpSL.BackendRenderers.OpenGL\EditorOpenGLRenderer.cs" />
+    <Compile Include="SharpSL\BackendRenderers\SharpSL.BackendRenderers.OpenGL\OpenGLRenderer.cs" />
     <Compile Include="SharpAsset\CustomVertex\CustomConverter.cs" />
     <Compile Include="SharpAsset\CustomVertex\VertexType.cs" />
     <Compile Include="SharpAsset\Script.cs" />
@@ -240,10 +253,10 @@
     <Compile Include="SharpAsset\Skeleton.cs" />
     <Compile Include="SharpAsset\Pipeline\AnimationPipeline.cs" />
     <Compile Include="SharpAsset\Animation.cs" />
-    <Compile Include="Sharp.Engine\Components\SkeletonRenderer.cs" />
-    <Compile Include="Sharp.Engine\Components\SkinnedMeshRenderer.cs" />
+    <Compile Include="Engine\Components\SkeletonRenderer.cs" />
+    <Compile Include="Engine\Components\SkinnedMeshRenderer.cs" />
     <Compile Include="TagsContainer.cs" />
-    <Compile Include="Sharp.Engine\Components\Light.cs" />
+    <Compile Include="Engine\Components\Light.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -262,46 +275,46 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\duckCM.bmp" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\border.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\button_default.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\button_down.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\button_hot.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\checkbox_checked.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\checkbox_checked_hot.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\checkbox_default.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\checkbox_down.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\checkbox_hot.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_button_default.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_button_down.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_button_hot.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_default.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_down.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\combo_hot.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\frame.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\handleNE.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\handleNW.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscrollUp_default.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscrollUp_down.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscrollUp_hot.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscroll_button.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscroll_button_down.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscroll_button_hot.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\hscroll_track.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\icons1.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\input_default.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\input_focused.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\keyframe_button.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\minimap.jpg" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\paperdoll.jpg" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\SampleMap.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\vscrollUp_default.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\vscrollUp_down.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\vscrollUp_hot.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\vscroll_button.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\vscroll_button_down.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\vscroll_button_hot.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\vscroll_track.png" />
-    <Content Include="SharpSL\SharpSL.BackendRenderers\Content\window.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\border.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\button_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\button_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\button_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\checkbox_checked.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\checkbox_checked_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\checkbox_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\checkbox_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\checkbox_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_button_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_button_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_button_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\frame.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\handleNE.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\handleNW.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscrollUp_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscrollUp_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscrollUp_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscroll_button.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscroll_button_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscroll_button_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscroll_track.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\icons1.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\input_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\input_focused.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\keyframe_button.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\minimap.jpg" />
+    <Content Include="SharpSL\BackendRenderers\Content\paperdoll.jpg" />
+    <Content Include="SharpSL\BackendRenderers\Content\SampleMap.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscrollUp_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscrollUp_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscrollUp_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscroll_button.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscroll_button_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscroll_button_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscroll_track.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\window.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -334,16 +347,16 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\AssimpNet.3.3.2\build\AssimpNet.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\AssimpNet.3.3.2\build\AssimpNet.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Packaging.Tools.1.0.0-preview1-25301-01\build\Microsoft.Packaging.Tools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Packaging.Tools.1.0.0-preview1-25301-01\build\Microsoft.Packaging.Tools.targets'))" />
     <Error Condition="!Exists('..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.Dependencies.2.6\build\SharpFont.Dependencies.props'))" />
     <Error Condition="!Exists('..\packages\SharpFont.4.0.1\build\SharpFont.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpFont.4.0.1\build\SharpFont.props'))" />
     <Error Condition="!Exists('..\packages\TeximpNet.1.3.0\build\TeximpNet.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\TeximpNet.1.3.0\build\TeximpNet.targets'))" />
+    <Error Condition="!Exists('..\packages\AssimpNet.4.1.0\build\AssimpNet.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\AssimpNet.4.1.0\build\AssimpNet.targets'))" />
   </Target>
-  <Import Project="..\packages\AssimpNet.3.3.2\build\AssimpNet.targets" Condition="Exists('..\packages\AssimpNet.3.3.2\build\AssimpNet.targets')" />
   <PropertyGroup>
     <PreBuildEvent>XCOPY "$(SolutionDir)\Sharp\Content" "$(TargetDir)\Content" /E /Y /I</PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Microsoft.Packaging.Tools.1.0.0-preview1-25301-01\build\Microsoft.Packaging.Tools.targets" Condition="Exists('..\packages\Microsoft.Packaging.Tools.1.0.0-preview1-25301-01\build\Microsoft.Packaging.Tools.targets')" />
   <Import Project="..\packages\TeximpNet.1.3.0\build\TeximpNet.targets" Condition="Exists('..\packages\TeximpNet.1.3.0\build\TeximpNet.targets')" />
+  <Import Project="..\packages\AssimpNet.4.1.0\build\AssimpNet.targets" Condition="Exists('..\packages\AssimpNet.4.1.0\build\AssimpNet.targets')" />
 </Project>

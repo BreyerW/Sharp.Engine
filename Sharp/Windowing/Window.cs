@@ -143,26 +143,28 @@ namespace Sharp
 				InputHandler.ProcessMousePresses();
 
 				UI.TimeElapsed = Time.deltaTime;
-				UI.currentCanvas?.Update();//TODO: change it so that during dragging it will update both source and hovered window
+				//UI.currentCanvas?.Update();//TODO: change it so that during dragging it will update both source and hovered window
+				MainEditorView.currentMainView.OnInternalUpdate();
 				Coroutine.AdvanceInstructions(ref Coroutine.customInstructions);
-				Coroutine.AdvanceInstructions(ref Coroutine.endOfFrameInstructions);
+
 				onRenderFrame?.Invoke();
-
-				//onBeforeNextFrame?.Invoke();
-
 				if (UI.isDirty)
 				{
 					Selection.OnSelectionDirty?.Invoke(Selection.Asset);
 					UI.isDirty = false;
 				}
+				Coroutine.AdvanceInstructions(ref Coroutine.endOfFrameInstructions);
+				//onBeforeNextFrame?.Invoke();
+				
 				Time.SetTime();
 				Coroutine.AdvanceInstructions(ref Coroutine.timeInstructions);
 			}
 		}
-		
+
 		private void OnInternalRenderFrame()
 		{
 			MainWindow.backendRenderer.MakeCurrent(handle, contexts[0]);
+
 			OnRenderFrame();
 
 			var mainView = MainEditorView.mainViews[windowId];
@@ -180,6 +182,24 @@ namespace Sharp
 			switch (evnt.type)
 			{
 				case SDL.SDL_EventType.SDL_KEYDOWN:
+					bool combinationMet = true;
+					foreach (var command in InputHandler.menuCommands)
+					{
+						combinationMet = true;
+						foreach (var key in command.keyCombination)
+						{
+							switch (key)
+							{
+								case "CTRL": combinationMet = evnt.key.keysym.mod.HasFlag(SDL.SDL_Keymod.KMOD_LCTRL); break;
+								case "SHIFT": combinationMet = evnt.key.keysym.mod.HasFlag(SDL.SDL_Keymod.KMOD_LSHIFT) || evnt.key.keysym.mod.HasFlag(SDL.SDL_Keymod.KMOD_RSHIFT); break;
+								default:
+									combinationMet = evnt.key.keysym.sym == (SDL.SDL_Keycode)key.AsSpan()[0]; break;
+							}
+							if (!combinationMet) break;
+						}
+						if (combinationMet) { command.Execute(); return; }
+					}
+					InputHandler.ProcessKeyboard(); break;
 				case SDL.SDL_EventType.SDL_KEYUP:
 					// if (evnt.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE)
 					{
@@ -187,6 +207,7 @@ namespace Sharp
 						//  windows[FocusedWindowId].Close();
 					}
 					//Console.WriteLine("1 " + (uint)'1' + " : ! " + (uint)'!');
+
 					InputHandler.ProcessKeyboard();
 					break;
 
@@ -236,15 +257,18 @@ namespace Sharp
 			{
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE: if (evt.windowID == MainWindowId) quit = true; else windows[evt.windowID].Close(); break;
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
-					//case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
-					MainEditorView.mainViews[evt.windowID].OnResize(evt.data1, evt.data2);
+				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
+					MainEditorView.mainViews.TryGetValue(evt.windowID, out var mainView);
+					mainView.OnResize(evt.data1, evt.data2);
+					UI.currentCanvas?.Update();
 					break;
 
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_EXPOSED:
 					MainWindow.backendRenderer.EnableScissor();
-					//UI.currentCanvas?.Update();
+					if (MainEditorView.mainViews.TryGetValue(evt.windowID, out mainView))
+						UI.currentCanvas = mainView.desktop;
+					UI.currentCanvas?.Draw();
 					onRenderFrame?.Invoke();
-
 					//if (windows.Contains(evt.windowID))
 					{
 						//    windows[evt.windowID].OnInternalRenderFrame();
@@ -255,7 +279,7 @@ namespace Sharp
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_TAKE_FOCUS: AssetsView.CheckIfDirTreeChanged(); break;
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER:
 					UnderMouseWindowId = evt.windowID;
-					if (MainEditorView.mainViews.TryGetValue(evt.windowID, out var mainView))
+					if (MainEditorView.mainViews.TryGetValue(evt.windowID, out mainView))
 						UI.currentCanvas = mainView.desktop;
 					SDL.SDL_CaptureMouse(SDL.SDL_bool.SDL_FALSE); break;//convert to use getglobalmousestate when no events caputred?
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE:

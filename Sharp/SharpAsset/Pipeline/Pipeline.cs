@@ -55,7 +55,7 @@ namespace SharpAsset.Pipeline
             return allPipelines[extensionToTypeMapping[extension]];
         }
 
-        public static T GetPipeline<T>() where T : Pipeline
+        public static T Get<T>() where T : Pipeline
         {
             return allPipelines[typeof(T)] as T;
         }

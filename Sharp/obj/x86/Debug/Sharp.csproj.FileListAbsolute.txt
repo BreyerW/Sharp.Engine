@@ -65,3 +65,6 @@ B:\Sharp.Engine3\Sharp\bin\Debug\Delta.pdb
 B:\Sharp.Engine3\Sharp\bin\Debug\Delta.dll.config
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Threading.Tasks.Extensions.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\System.Threading.Tasks.Extensions.xml
+B:\Sharp.Engine3\Sharp\bin\Debug\Microsoft.Experimental.Collections.dll
+B:\Sharp.Engine3\Sharp\bin\Debug\Microsoft.Experimental.Collections.xml
+B:\Sharp.Engine3\Sharp\bin\Debug\SQUID.dll.config

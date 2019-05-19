@@ -59,7 +59,7 @@ namespace SharpAsset
 		{
 			get
 			{
-				return Pipeline.Pipeline.GetPipeline<ShaderPipeline>().GetAsset(shaderId);
+				return Pipeline.Pipeline.Get<ShaderPipeline>().GetAsset(shaderId);
 				/*     if (shader!=null)
                          return shader;
                  throw new IndexOutOfRangeException("Material dont point to any shader");
@@ -93,6 +93,7 @@ namespace SharpAsset
 		{
 			if (!localParams.ContainsKey(propName))
 			{
+
 				var param = pool.Rent(Unsafe.SizeOf<Matrix4x4>() + 1);
 				param[0] = MATRIX4X4;
 				//param.DataAddress = Unsafe.As<Matrix4x4, byte>(ref Unsafe.AsRef(data));
@@ -135,7 +136,7 @@ namespace SharpAsset
 				MainWindow.backendRenderer.SendUniform1(Shader.uniformArray["ambient"], ref Light.ambientCoefficient);
 				foreach (var light in Light.lights)
 				{
-					MainWindow.backendRenderer.SendUniform3(Shader.uniformArray["lights[" + idLight + "].position"], ref light.entityObject.position.X);
+					MainWindow.backendRenderer.SendUniform3(Shader.uniformArray["lights[" + idLight + "].position"], ref light.Parent.transform.position.X);
 					//GL.UniformMatrix4(mat.Shader.uniformArray[UniformType.FloatMat4]["lights[" + idLight + "].modelMatrix"],false,ref light.entityObject.ModelMatrix);
 					MainWindow.backendRenderer.SendUniform4(Shader.uniformArray["lights[" + idLight + "].color"], ref Unsafe.As<byte, float>(ref light.color.A));
 					MainWindow.backendRenderer.SendUniform1(Shader.uniformArray["lights[" + idLight + "].intensity"], ref light.intensity);
@@ -146,7 +147,7 @@ namespace SharpAsset
 			foreach (var (key, value) in localParams)
 			{
 				SendToGPU(key, value);
-				Console.WriteLine("test " + key);
+				//Console.WriteLine("test " + key);
 			}
 
 			foreach (var (key, value) in globalParams)

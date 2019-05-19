@@ -1,5 +1,4 @@
-﻿using Sharp.Editor.Views;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -10,10 +9,7 @@ namespace Sharp
 	[Serializable]
 	public class Entity : IEngineObject
 	{
-		public Vector3 position = Vector3.Zero;
-		internal Vector3 rotation = Vector3.Zero;
-		internal Vector3 scale = Vector3.One;
-
+		internal static bool undoRedoContext = false;
 		public Entity parent;
 		public Transform transform;
 		public List<Entity> childs = new List<Entity>();
@@ -37,32 +33,16 @@ namespace Sharp
 		private bool enabled = true;
 		private HashSet<int> tags = new HashSet<int>();
 
-		//public
-		private Matrix4x4 modelMatrix;
-
-		public ref readonly Matrix4x4 ModelMatrix
-		{
-			get { return ref modelMatrix; }
-		}
-
-		public Action onTransformChanged;
-
 		private List<Component> components = new List<Component>();
 
 		public Entity()
 		{
-			onTransformChanged += OnTransformChanged;
-			transform = AddComponent<Transform>();
-			SceneView.entities.AddEngineObject(this);
-			//id = ++lastId;
-			//lastId = id;
+			if (!undoRedoContext)
+			{
+				Extension.entities.AddEngineObject(this);
+				AddComponent<Transform>();
+			}
 		}
-
-		private void OnTransformChanged()
-		{
-			SetModelMatrix(); Console.WriteLine("transform changed");
-		}
-
 		public static Entity[] FindAllWithTags(bool activeOnly = true, params string[] lookupTags)
 		{
 			//find all entities with tags in scene
@@ -113,12 +93,6 @@ namespace Sharp
 			}
 		}
 
-		public void SetModelMatrix()
-		{
-			var angles = rotation * NumericsExtensions.Pi / 180f;
-			modelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
-		}
-
 		public Quaternion ToQuaterion(Vector3 angles)
 		{
 			// Assuming the angles are in radians.
@@ -153,7 +127,7 @@ namespace Sharp
 
 		public T GetComponent<T>() where T : Component
 		{
-			return (components.Find((obj) => obj is T)) as T;
+			return components.Find((obj) => obj is T) as T;
 		}
 
 		public Component GetComponent(Type type)
@@ -169,16 +143,14 @@ namespace Sharp
 			return components;
 		}
 
-		public T AddComponent<T>() where T : Component, new()
+		public T AddComponent<T>() where T : Component
 		{
-			return AddComponent(new T()) as T;
+			return AddComponent(typeof(T)) as T;
 		}
 
-		public Component AddComponent(Component comp)
+		public Component AddComponent(Type type)
 		{
-			//if (comp is Renderer renderer)
-			//    SceneView.renderers.Add(renderer);
-			comp.entityObject = this;
+			var comp = Activator.CreateInstance(type, this) as Component;
 			components.Add(comp);
 			return comp;
 		}
@@ -196,22 +168,27 @@ namespace Sharp
 			return components [comp.GetType()] as Renderer;
 		}*/
 
-		public void Instatiate()
+		/*public void Instatiate()
 		{
 			//lastId = id;
+			Instatiate(default, default, default);
 		}
 
 		public void Instatiate(Vector3 pos, Vector3 rot, Vector3 s)
 		{
-			scale = s;
-			position = pos;
-			rotation = rot;
-			Instatiate();
-		}
+			
+			transform.scale = s;
+			transform.position = pos;
+			transform.rotation = rot;
+		}*/
 
 		public void Destroy()
 		{
-			SceneView.entities.RemoveEngineObject(this);
+			foreach (var component in components)
+				component.Destroy();
+			foreach (var child in childs)
+				child.Destroy();
+			Extension.entities.RemoveEngineObject(this);
 		}
 
 		public override string ToString()

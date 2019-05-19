@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Fossil
 {
-  public class Delta
+  public static class Delta
   {
 	public static UInt16 NHASH = 16;
 	private static byte[] hashBuffer = new byte[NHASH];
@@ -372,7 +372,7 @@ namespace Fossil
 	}
 
 	//This method change Stream's content
-	public static void Apply(Stream origin, byte[] delta)
+	public static void Apply(Stream origin, byte[] delta, Stream output)
 	{
 	  uint limit, total = 0;
 	  uint lenSrc = (uint)origin.Length;
@@ -414,15 +414,13 @@ namespace Fossil
 			  break;
 
 			case ';':
-			  byte[] output = zOut.ToArray(out var bufferLength);
-			  if (cnt != Checksum(output, bufferLength))
+			  byte[] byteOutput = zOut.ToArray(out var bufferLength);
+			  if (cnt != Checksum(byteOutput, bufferLength))
 				throw new Exception("bad checksum");
 			  if (total != limit)
 				throw new Exception("generated size does not match predicted size");
-			  origin.Position = 0;
-			  origin.SetLength(bufferLength);
-			  origin.Write(output, 0, (int)bufferLength);
-			  origin.Position = 0;
+			  output.Write(byteOutput, 0, (int)bufferLength);
+			  output.Position = 0;
 			  return;
 
 			default:

@@ -8,6 +8,7 @@ using Sharp;
 using Sharp.Editor.Views;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace SharpAsset.Pipeline
 {
@@ -43,6 +44,7 @@ namespace SharpAsset.Pipeline
             internalMesh.FullPath = pathToFile;
             if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(vertType))
                 RegisterAsAttribute.ParseVertexFormat(vertType);
+			
             var vertex = Activator.CreateInstance(vertType);//RuntimeHelpers.GetUninitializedObject(type)
             var vertFormat = RegisterAsAttribute.registeredVertexFormats[vertType];
             var finalSupportedAttribs = supportedAttribs.Where((attrib) => vertFormat.ContainsKey(attrib) && scene.Meshes[0].HasAttribute(attrib));
@@ -53,12 +55,12 @@ namespace SharpAsset.Pipeline
             {
                 if (mesh.HasBones)
                 {
-                    GetPipeline<SkeletonPipeline>().scene = scene;
+                    Get<SkeletonPipeline>().scene = scene;
                     //foreach (var tree in AssetsView.tree.Values)
                     //tree.AddNode(GetPipeline<SkeletonPipeline>().Import(""));
                 }
                 var indices = mesh.GetUnsignedIndices();
-                internalMesh.Indices = indices.AsSpan().AsBytes().ToArray();
+                internalMesh.Indices =MemoryMarshal.AsBytes(indices.AsSpan()).ToArray();
                 //mesh.has
                 var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
                 var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
@@ -80,17 +82,17 @@ namespace SharpAsset.Pipeline
 
                 internalMesh.UsageHint = UsageHint.DynamicDraw;
                 internalMesh.stride = size;
-                internalMesh.vertType = vertType;
+                
                 if (indices[0].GetType() == typeof(ushort))
                     internalMesh.indiceType = IndiceType.UnsignedShort;
                 else if (indices[0].GetType() == typeof(uint))
                     internalMesh.indiceType = IndiceType.UnsignedInt;
                 if (!Mesh.sharedMeshes.ContainsKey(internalMesh.Name))
                     Mesh.sharedMeshes.Add(internalMesh.Name, vertices.ToArray());
-
                 bounds = new BoundingBox(min, max);
             }
-            internalMesh.bounds = bounds;
+			internalMesh.bounds = bounds;
+			internalMesh.VertType = vertType;
             return internalMesh;
         }
 
@@ -134,10 +136,10 @@ namespace SharpAsset.Pipeline
         {
             switch (vertAttrib)
             {
-                case VertexAttribute.POSITION: return mesh.Vertices.ToArray().AsSpan().AsBytes().ToArray();
-                case VertexAttribute.UV: return mesh.TextureCoordinateChannels[level].ToArray().AsSpan().AsBytes().ToArray();
-                case VertexAttribute.NORMAL: return mesh.Normals.ToArray().AsSpan().AsBytes().ToArray();
-                case VertexAttribute.COLOR: return mesh.VertexColorChannels[level].ToArray().AsSpan().AsBytes().ToArray();
+                case VertexAttribute.POSITION: return MemoryMarshal.AsBytes(mesh.Vertices.ToArray().AsSpan()).ToArray();
+                case VertexAttribute.UV: return MemoryMarshal.AsBytes(mesh.TextureCoordinateChannels[level].ToArray().AsSpan()).ToArray();
+                case VertexAttribute.NORMAL: return MemoryMarshal.AsBytes(mesh.Normals.ToArray().AsSpan()).ToArray();
+                case VertexAttribute.COLOR: return MemoryMarshal.AsBytes(mesh.VertexColorChannels[level].ToArray().AsSpan()).ToArray();
                 default: throw new NotSupportedException(vertAttrib + " attribute not supported");
             }
         }

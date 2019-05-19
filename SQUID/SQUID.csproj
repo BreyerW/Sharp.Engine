@@ -46,7 +46,19 @@
       <HintPath>..\packages\SharpDL.1.0.0.18\lib\net45\SharpDL.Shared.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard1.1\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics.Vectors, Version=4.1.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.0-preview5.19224.8\lib\portable-net45+win8+wp8+wpa81\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.6.0-preview6.19259.10\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,14 +72,18 @@
     <Compile Include="Controls\Control.cs" />
     <Compile Include="Controls\Desktop.cs" />
     <Compile Include="Controls\Dialog.cs" />
+    <Compile Include="Controls\DoubleField.cs" />
     <Compile Include="Controls\DropDownButton.cs" />
     <Compile Include="Controls\DropDownList.cs" />
+    <Compile Include="Controls\FloatField.cs" />
     <Compile Include="Controls\FlowLayoutFrame.cs" />
     <Compile Include="Controls\Frame.cs" />
     <Compile Include="Controls\ImageControl.cs" />
+    <Compile Include="Controls\IntField.cs" />
     <Compile Include="Controls\Label.cs" />
     <Compile Include="Controls\ListBox.cs" />
     <Compile Include="Controls\ListView.cs" />
+    <Compile Include="Controls\LongField.cs" />
     <Compile Include="Controls\Menu.cs" />
     <Compile Include="Controls\Panel.cs" />
     <Compile Include="Controls\RadioButton.cs" />
@@ -78,7 +94,7 @@
     <Compile Include="Controls\SplitContainer.cs" />
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\TextArea.cs" />
-    <Compile Include="Controls\TextBox.cs" />
+    <Compile Include="Controls\TextField.cs" />
     <Compile Include="Controls\Tooltip.cs" />
     <Compile Include="Controls\TreeView.cs" />
     <Compile Include="Controls\Window.cs" />
@@ -121,6 +137,7 @@
     <Compile Include="Xml\XmlWriter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

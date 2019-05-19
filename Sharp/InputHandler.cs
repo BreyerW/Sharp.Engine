@@ -31,12 +31,12 @@ namespace Sharp
 
 		private static readonly uint[] mouseCodes = new uint[] { SDL.SDL_BUTTON_LMASK, SDL.SDL_BUTTON_RMASK, SDL.SDL_BUTTON_MMASK, SDL.SDL_BUTTON_X1MASK, SDL.SDL_BUTTON_X2MASK };
 		private static readonly SDL.SDL_Scancode[] keyboardCodes = (SDL.SDL_Scancode[])Enum.GetValues(typeof(SDL.SDL_Scancode));
-		private static List<IMenuCommand> menuCommands = new List<IMenuCommand>();//keycombinations as key
+		internal static List<IMenuCommand> menuCommands = new List<IMenuCommand>();//keycombinations as key
 		private static SDL.SDL_Keymod modState;
 
 		static InputHandler()
 		{
-			Desktop.OnFocusChanged += (sender) => { if (sender is TextArea || sender is TextBox) SDL.SDL_StartTextInput(); else SDL.SDL_StopTextInput(); };
+			Desktop.OnFocusChanged += (sender) => { if (sender is TextArea || sender is TextField) SDL.SDL_StartTextInput(); else SDL.SDL_StopTextInput(); };
 			memAddrToKeyboard = SDL.SDL_GetKeyboardState(out int _);
 			var types = Assembly.GetExecutingAssembly().GetTypes();
 
@@ -100,25 +100,6 @@ namespace Sharp
 			Marshal.Copy(memAddrToKeyboard, curKeyState, 0, numKeys);
 			//if (Desktop.FocusedControl is TextBox || Desktop.FocusedControl is TextArea)
 			//  return;
-
-			bool combinationMet = true;
-			foreach (var command in menuCommands)
-			{
-				combinationMet = true;
-				foreach (var key in command.keyCombination)
-				{
-					switch (key)
-					{
-						case "CTRL": combinationMet = modState.HasFlag(SDL.SDL_Keymod.KMOD_LCTRL); break;
-						case "SHIFT": combinationMet = modState.HasFlag(SDL.SDL_Keymod.KMOD_LSHIFT) || modState.HasFlag(SDL.SDL_Keymod.KMOD_RSHIFT); break;
-						default:
-							var keyCode = (int)SDL.SDL_GetScancodeFromKey((SDL.SDL_Keycode)key.ToCharArray()[0]);
-							combinationMet = curKeyState[keyCode] is 1; break;
-					}
-					if (!combinationMet) break;
-				}
-				if (combinationMet) { command.Execute(); return; }
-			}
 			isKeyboardPressed = false;
 			foreach (var keyCode in keyboardCodes)
 			{

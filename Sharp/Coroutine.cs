@@ -19,8 +19,9 @@ namespace Sharp
 			var runNextFrame = new List<T>();
 			foreach (var coroutine in instructions)
 			{
+				var condition = coroutine.MoveNext();
 				var prev = coroutine.Current.GetType();
-				if (coroutine.MoveNext() is false)
+				if (condition is false)
 					continue;
 				else if (coroutine.Current.GetType() == prev)
 					runNextFrame.Add(coroutine);

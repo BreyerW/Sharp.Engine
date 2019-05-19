@@ -15,7 +15,18 @@ namespace SharpAsset
 	{
 		public int stride;//talk to vertex format to be able to query exact attribute
 
-		public Type vertType;
+		public Type VertType {
+			set {
+				if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(value))
+					RegisterAsAttribute.ParseVertexFormat(value);
+				MainWindow.backendRenderer.GenerateBuffers(ref VBO, ref EBO);
+				MainWindow.backendRenderer.BindBuffers(ref VBO, ref EBO);
+				MainWindow.backendRenderer.Allocate(ref UsageHint, ref SpanToMesh[0], ref Indices[0], SpanToMesh.Length, Indices.Length);
+
+				foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[value].Values)
+					MainWindow.backendRenderer.BindVertexAttrib(ref vertAttrib.type, vertAttrib.shaderLocation, vertAttrib.dimension, stride, vertAttrib.offset);
+			}
+		}
 		public IndiceType indiceType;
 
 		public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
@@ -73,7 +84,7 @@ namespace SharpAsset
 
 		public ref T ReadVertexAtIndex<T>(int index) where T : struct, IVertex
 		{
-			return ref Unsafe.As<byte, T>(ref SpanToMesh[index * stride]);
+			return ref Unsafe.As<byte, T>(ref SpanToMesh[index * stride]); //TODO: use Unsafe.Write to avoid unaligned issue ?
 		}
 
 		//public TExpected ReadVertexAttributeAtIndex<TExpected>(VertexAttribute attrib,int layer, int index) where TExpected : struct {
@@ -89,31 +100,26 @@ namespace SharpAsset
 			var condition = size > stride;
 			for (int i = 0; i < SpanToMesh.Length; i++)
 			{
-				tmpSpan[i] = Unsafe.As<byte, TTo>(ref SpanToMesh.Slice(i * stride, condition ? stride : size)[0]);//check for SpanExiensions.Read/Write
+				tmpSpan[i] = Unsafe.As<byte, TTo>(ref SpanToMesh.Slice(i * stride, condition ? stride : size)[0]);//check for SpanExiensions.Read/Write use Unsafe.Write to avoid unaligned issue?
 			}
 			return tmpSpan;
 			//Unsafe.As<byte[], TTo[]>(ref verts);
 		}
 
-		public void PlaceIntoScene(Entity context, Vector3 worldPos)//PlaceIntoView(View view,)
+		public void PlaceIntoScene(Entity context, Vector3 worldPos)//TODO: wyrzucic to do kodu edytora PlaceIntoView(View view,)
 		{
 			var eObject = new Entity();
 			eObject.transform.Position = worldPos;
-			var shader = (Shader)Pipeline.Pipeline.GetPipeline<ShaderPipeline>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\TextureOnlyShader.shader");
-			//Pipeline.Pipeline.GetPipeline<ShaderPipeline>().GetAsset("TextureOnlyShader");
-			var mat = new Material();
-			mat.Shader = shader;
-			var renderer = new MeshRenderer(ref this, mat);
 
-			eObject.AddComponent(renderer);
 
-			Pipeline.Pipeline.GetPipeline<TexturePipeline>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\duckCM.bmp");
+			var renderer = eObject.AddComponent<MeshRenderer>();
+			Pipeline.Pipeline.Get<TexturePipeline>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\duckCM.bmp");
 			//zamienic na ref loading pipeliny
-			renderer.material.BindProperty("MyTexture", ref Pipeline.Pipeline.GetPipeline<TexturePipeline>().GetAsset("duckCM"));
+			renderer.Mesh = this;
+			renderer.material.BindProperty("MyTexture", ref Pipeline.Pipeline.Get<TexturePipeline>().GetAsset("duckCM"));
 			if (context != null) //make as child of context?
 			{
 			}
-			eObject.Instatiate();
 		}
 	}
 

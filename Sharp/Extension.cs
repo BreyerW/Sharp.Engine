@@ -1,22 +1,42 @@
 ﻿using System;
 using System.Threading;
 using Sharp.Editor.Views;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Sharp
 {
 	public static class Extension
 	{
+		internal static Root entities = new Root();
+		//TODO: delete implicit id someday if someone really want to keep track of cyclic references and doesnt own source code
+		//they can wrap - or extend if not sealed - said class and implement IEngineObject
+		private static ConditionalWeakTable<object, byte[]> objectToIdMapping = new ConditionalWeakTable<object, byte[]>();
 		public static Guid GetInstanceID(this object obj)
 		{
-			if (!ThreadsafeReferenceResolver.objToGuidMapping.TryGetValue(obj, out var id))
-				ThreadsafeReferenceResolver.objToGuidMapping.Add(obj, id = Guid.NewGuid().ToString());
+
+			if (!objectToIdMapping.TryGetValue(obj, out var id))
+			{
+				objectToIdMapping.Add(obj, id = Guid.NewGuid().ToByteArray());
+			}
 			return new Guid(id);
 		}
 
-		public static T GetInstanceObject<T>(in this Guid id) where T : class
+		public static T GetInstanceObject<T>(in this Guid id)
 		{
-			SceneView.entities.allEngineObjects.TryGetValue(id, out var obj);
-			return obj as T;
+			entities.idToObjectMapping.TryGetValue(id, out var obj);
+			return (T)obj;
+		}
+		internal static void AddRestoredObject(this IEngineObject obj, in Guid id)
+		{
+			objectToIdMapping.Add(obj, id.ToByteArray());
+		}
+		public static TKey GetKey<TKey, TValue>(this Dictionary<TKey, TValue> dict, TValue val)
+		{
+			foreach (var pair in dict)
+				if (pair.Value.Equals(val))
+					return pair.Key;
+			return default;
 		}
 	}
 
@@ -26,6 +46,53 @@ namespace Sharp
 		{
 			var prev = Interlocked.Exchange(ref v1, v2);
 			Interlocked.Exchange(ref v2, prev);
+		}
+	}
+	[Serializable]
+	public class Root
+	{
+		internal List<Entity> root = new List<Entity>();
+		internal Dictionary<Guid, IEngineObject> idToObjectMapping = new Dictionary<Guid, IEngineObject>();
+		internal Action OnRenderFrame;
+
+		internal void AddEngineObject(Entity entity)
+		{
+			if (entity.parent is null)
+				root.Add(entity);
+			idToObjectMapping.Add(entity.GetInstanceID(), entity);
+			SceneView.onAddedEntity?.Invoke(entity);
+		}
+
+		internal void RemoveEngineObject(Entity entity)
+		{
+			if (entity.parent is null)
+				root.Remove(entity);
+			idToObjectMapping.Remove(entity.GetInstanceID());
+			SceneView.onRemovedEntity?.Invoke(entity);
+		}
+
+		internal void AddEngineObject(IEngineObject obj)
+		{
+			idToObjectMapping.Add(obj.GetInstanceID(), obj);
+			SceneView.onAddedEntity?.Invoke(obj);
+		}
+
+		internal void RemoveEngineObject(IEngineObject obj)
+		{
+			idToObjectMapping.Remove(obj.GetInstanceID());
+			SceneView.onRemovedEntity?.Invoke(obj);
+		}
+		internal void AddRestoredEngineObject(Entity obj, in Guid id)
+		{
+			if (obj.parent is null)
+				root.Add(obj);
+			idToObjectMapping.Add(id, obj);
+			SceneView.onAddedEntity?.Invoke(obj);
+		}
+		internal void AddRestoredEngineObject(IEngineObject obj, in Guid id)
+		{
+			idToObjectMapping.Add(id, obj);
+			SceneView.onAddedEntity?.Invoke(obj);
 		}
 	}
 }

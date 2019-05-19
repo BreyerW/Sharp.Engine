@@ -1179,7 +1179,7 @@ namespace Squid
             }
         }
 
-        protected override void DrawText(Style style, float opacity)
+        protected override void DrawText(Style style, float opacity,int charsToDraw)
         {
             if (IsDirty) UpdateText(style);
 

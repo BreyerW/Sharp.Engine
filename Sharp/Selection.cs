@@ -5,7 +5,6 @@ using Newtonsoft.Json.Serialization;
 using Sharp.Editor;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,22 +19,9 @@ namespace Sharp
 	{
 		private static Stack<object> assets = new Stack<object>();
 
-		private static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
-		{
-			ContractResolver = new DefaultContractResolver() { IgnoreSerializableAttribute = false },
-			Converters = new List<JsonConverter>() { new DelegateConverter(), new ListReferenceConverter() },
-			ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-			PreserveReferencesHandling = PreserveReferencesHandling.All,
-			ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-			TypeNameHandling = TypeNameHandling.All,
-			ObjectCreationHandling = ObjectCreationHandling.Auto,
-			ReferenceResolverProvider = () => new ThreadsafeReferenceResolver(),
-			//NullValueHandling = NullValueHandling.Ignore
-		};
 
-		private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
 		internal static Stream lastStructure;// memStream.GetStream();
-
+											 //private static Root cachedRoot = new Root();
 		public static object sync = new object();
 
 		public static object Asset
@@ -65,8 +51,8 @@ namespace Sharp
 		static Selection()
 		{
 			//memStream.AggressiveBufferReturn = true;
-			JsonConvert.DefaultSettings = () => serializerSettings;
-			lastStructure = memStream.GetStream();// new FileStream(tempPrevName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
+
+			//lastStructure = memStream.GetStream();// new FileStream(tempPrevName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
 		}
 
 		/*try
@@ -105,64 +91,70 @@ namespace Sharp
 				tempFile.Close();*/
 
 		public static void IsSelectionDirty(CancellationToken token)
-		{
-			lock (sync)
-			{
-				//var tmpdata = JsonConvert.SerializeObject(Editor.Views.SceneView.entities);
-				//var data = tmpdata.AsReadOnlySpan().AsBytes();
-				/*using (var sw = new StreamWriter(tempName, false))
-			{
-					using (var jsonWriter = new JsonTextWriter(sw))
-					{
-						serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
-					}
-				}*/
-				//var mem = new FileStream(tempCurrName, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
-				var serializer = JsonSerializer.CreateDefault();
-				var mem = memStream.GetStream();
+		{//produce component drawers and hide/detach them when not active for all object in scene and calculate diff for each property separately
+		 /*if ((InputHandler.isKeyboardPressed | InputHandler.isMouseDragging))//&& !(Editor.Views.SceneView.entities is null)
+		 {
+			 //Squid.UI.isDirty = true;
+			 return;
+		 }
+		 lock (sync)
+		 {
+			 //var tmpdata = JsonConvert.SerializeObject(Editor.Views.SceneView.entities);
+			 //var data = tmpdata.AsReadOnlySpan().AsBytes();
+			 /*using (var sw = new StreamWriter(tempName, false))
+		 {
+				 using (var jsonWriter = new JsonTextWriter(sw))
+				 {
+					 serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
+				 }
+			 }*
+			 //var mem = new FileStream(tempCurrName, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
+			 var serializer = JsonSerializer.CreateDefault();
+			 var mem = memStream.GetStream();
 
-				using (var sw = new StreamWriter(mem, System.Text.Encoding.UTF8, 4096, true))//
-				using (var jsonWriter = new JsonTextWriter(sw))
-				{
-					var watch = System.Diagnostics.Stopwatch.StartNew();
-					//sw.AutoFlush = true;
-					jsonWriter.ArrayPool = JsonArrayPool.Instance;
-					serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
+			 using (var sw = new StreamWriter(mem, System.Text.Encoding.UTF8, 4096, true))//
+			 using (var jsonWriter = new JsonTextWriter(sw))
+			 {
+				 var watch = System.Diagnostics.Stopwatch.StartNew();
+				 //sw.AutoFlush = true;
+				 jsonWriter.ArrayPool = JsonArrayPool.Instance;
+				 serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
 
-					watch.Stop();
-					//Console.WriteLine("cast: " + watch.ElapsedMilliseconds);
-				}
-				mem.Position = 0;
-				lastStructure.Position = 0;
-				var condition = mem.Length == lastStructure.Length;
-				//Console.WriteLine("serializedarr: " + System.Text.Encoding.UTF8.GetString(mem.ToArray()));
-				for (int i = 0, j = 0; j < lastStructure.Length && i < mem.Length && condition; i++, j++)
-				{
-					var b1 = lastStructure.ReadByte();
-					var b2 = mem.ReadByte();
-					//Console.WriteLine(b1 + " " + b2);
-					condition = !((b1 is -1 && b2 > -1) || (b2 is -1 && b1 > -1) || b1 != b2);
-				}
-				if (!condition)
-				{
-					//Console.WriteLine("current: " + tmpdata);
-					//Console.WriteLine("past: " + new string(Unsafe.As<byte[], char[]>(ref lastStructure), 0, lastStructure.Length / Unsafe.SizeOf<char>()));
-					Squid.UI.isDirty = true;
+				 watch.Stop();
+				 //Console.WriteLine("cast: " + watch.ElapsedMilliseconds);
+			 }
+			 mem.Position = 0;
+			 lastStructure.Position = 0;
+			 var condition = mem.Length == lastStructure.Length;
+			 //Console.WriteLine("serializedarr: " + System.Text.Encoding.UTF8.GetString(mem.ToArray()));
+			 for (int i = 0, j = 0; j < lastStructure.Length && i < mem.Length && condition; i++, j++)
+			 {
+				 var b1 = lastStructure.ReadByte();
+				 var b2 = mem.ReadByte();
+				 //Console.WriteLine(b1 + " " + b2);
+				 condition = !((b1 is -1 && b2 > -1) || (b2 is -1 && b1 > -1) || b1 != b2);
+			 }
+			 if (!condition)
+			 {
+				 //Console.WriteLine("current: " + tmpdata);
+				 //Console.WriteLine("past: " + new string(Unsafe.As<byte[], char[]>(ref lastStructure), 0, lastStructure.Length / Unsafe.SizeOf<char>()));
+				 Squid.UI.isDirty = true;
 
-					if (!(InputHandler.isKeyboardPressed | InputHandler.isMouseDragging) && !(Editor.Views.SceneView.entities is null))
-					{
-						//System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Editor.Views.SceneView.entities)); /*System.Text.Encoding.UTF8.GetBytes(// JSON.ToJSON(Editor.Views.SceneView.entities).AsReadOnlySpan().AsBytes().ToArray();//System.Text.Encoding.UTF8.GetBytes(JSON.ToJSON(Editor.Views.SceneView.entities));
 
-						CalculateHistoryDiff(mem);
-						lastStructure = mem;
-						//Utils.Swap(ref tempCurrName, ref tempPrevName);
-						Console.WriteLine("save");
-					}
-				}
-			}
+				 //System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Editor.Views.SceneView.entities)); /*System.Text.Encoding.UTF8.GetBytes(// JSON.ToJSON(Editor.Views.SceneView.entities).AsReadOnlySpan().AsBytes().ToArray();//System.Text.Encoding.UTF8.GetBytes(JSON.ToJSON(Editor.Views.SceneView.entities));
+
+				 //CalculateHistoryDiff(mem);
+				 lastStructure.Dispose();
+				 lastStructure = mem;
+				 //Utils.Swap(ref tempCurrName, ref tempPrevName);
+				 Console.WriteLine("save");//problemem jest camera jej zmiany triggeruja zapis
+			 }
+			 else
+				 mem.Dispose();
+		 }*/
 		}
 
-		private static void CalculateHistoryDiff(Stream currentStructure)
+		/*private static void CalculateHistoryDiff(Stream currentStructure)
 		{
 			currentStructure.Position = 0;
 			var backward = Delta.Create(currentStructure, lastStructure);
@@ -182,6 +174,7 @@ namespace Sharp
 			UndoCommand.snapshots.AddLast(new HistoryDiff() { downgrade = backward, selectedObject = Asset?.GetInstanceID() });
 			UndoCommand.currentHistory = UndoCommand.snapshots.Last;
 		}
+		*/
 
 		//static ManualResetEventSlim waiter = new ManualResetEventSlim();
 		public static async Task Repeat(Action<CancellationToken> doWork, int delayInMilis, int periodInMilis, CancellationToken cancellationToken, bool singleThreaded = false)
@@ -252,11 +245,15 @@ namespace Sharp
 			writer.WriteEndObject();
 		}
 	}
+	/*struct Root
+	{
+		public Entity root;
+	}*/
 
 	//TODO: removing component that doesnt exist after selection changed, smoothing out scenestructure rebuild after redo/undo, fix bug with ispropertydirty, add transform component
 	public class ThreadsafeReferenceResolver : IReferenceResolver
 	{
-		internal static ConditionalWeakTable<object, string> objToGuidMapping = new ConditionalWeakTable<object, string>();
+
 		//private static IDictionary<string, string> referenceToRoot = new Dictionary<string, string>();
 
 		//private static Dictionary<string, WeakReference<object>> guidToObjMapping = new Dictionary<string, WeakReference<object>>();
@@ -404,13 +401,11 @@ namespace Sharp
 		public static readonly JsonArrayPool Instance = new JsonArrayPool();
 
 		public char[] Rent(int minimumLength)
-
 		{
 			return ArrayPool<char>.Shared.Rent(minimumLength);
 		}
 
 		public void Return(char[] array)
-
 		{
 			ArrayPool<char>.Shared.Return(array);
 		}

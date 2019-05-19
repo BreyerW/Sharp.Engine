@@ -17,7 +17,7 @@ namespace Sharp
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
 
 			Pipeline.Initialize();
-			Pipeline.GetPipeline<FontPipeline>().Import(@"C:\Windows\Fonts\tahoma.ttf");
+			Pipeline.Get<FontPipeline>().Import(@"C:\Windows\Fonts\tahoma.ttf");
 			// OpenTK.Graphics.GraphicsContext.ShareContexts = false;
 			SDL.SDL_SetHint(SDL.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 			SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
@@ -33,24 +33,17 @@ namespace Sharp
 			MainWindow.backendRenderer.MakeCurrent += SDL.SDL_GL_MakeCurrent;
 			MainWindow.backendRenderer.SwapBuffers += SDL.SDL_GL_SwapWindow;
 
-			var e = new Entity();
-			e.transform.Rotation = new Vector3((float)Math.PI, 0f, 0f);
-			var cam = e.AddComponent<Camera>();
-			cam.SetModelviewMatrix();
-			cam.SetProjectionMatrix();
-			e.name = "Main Camera";
-			//e.OnTransformChanged += ((sender, evnt) => cam.SetModelviewMatrix());
-			Camera.main = cam;
 			var mWin = new MainWindow("test"); //Console.WriteLine("alpha: " + graphic.GraphicsMode.ColorFormat.Alpha);
 			mWin.Initialize(new AssetsView(mWin.windowId), new SceneView(mWin.windowId), new SceneStructureView(mWin.windowId), new InspectorView(mWin.windowId));
-			SDL.SDL_DestroyWindow(dummy);
-			//new FloatingWindow("", handle.t);
-			var mWin2 = new MainWindow("test2");
-			mWin2.Initialize(new AssetsView(mWin2.windowId));
 
+			//new FloatingWindow("", handle.t);
+			//var mWin2 = new MainWindow("test2");
+			//mWin2.Initialize(new AssetsView(mWin2.windowId));
+			SDL.SDL_DestroyWindow(dummy);
 			MainWindow.backendRenderer.EnableScissor();
 			Window.PollWindows();
 			SDL.SDL_Quit();
 		}
+
 	}
 }
