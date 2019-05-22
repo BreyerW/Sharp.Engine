@@ -68,3 +68,4 @@ B:\Sharp.Engine3\Sharp\bin\Debug\System.Threading.Tasks.Extensions.xml
 B:\Sharp.Engine3\Sharp\bin\Debug\Microsoft.Experimental.Collections.dll
 B:\Sharp.Engine3\Sharp\bin\Debug\Microsoft.Experimental.Collections.xml
 B:\Sharp.Engine3\Sharp\bin\Debug\SQUID.dll.config
+B:\Sharp.Engine3\Sharp\bin\Debug\FastMember.dll

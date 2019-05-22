@@ -30,7 +30,7 @@ namespace Sharp
 		{
 			get;
 			set;
-		} = 1;
+		} //= 1;
 
 		public string testStr
 		{

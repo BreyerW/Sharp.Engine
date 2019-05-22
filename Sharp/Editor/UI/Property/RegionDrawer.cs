@@ -47,7 +47,7 @@ namespace Sharp.Editor.UI.Property
 			}
 		}
 
-		public RegionDrawer(string name) : base(name)
+		public RegionDrawer(string name, MemberInfo memInfo) : base(name, memInfo)
 		{
 			var range = attributes?.OfType<CurveRangeAttribute>();
 			if (range != null && range.Any())

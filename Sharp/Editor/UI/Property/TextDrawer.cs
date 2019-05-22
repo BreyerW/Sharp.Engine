@@ -10,7 +10,7 @@ namespace Sharp.Editor.UI.Property
 	{
 		protected readonly TextField m_TextBox;
 
-		public TextDrawer(string name) : base(name)
+		public TextDrawer(string name, MemberInfo memInfo) : base(name, memInfo)
 		{
 			m_TextBox = new TextField();
 			m_TextBox.Position = new Point(label.Size.x, 0);

@@ -11,7 +11,7 @@ namespace Sharp.Editor.UI.Property
 	{
 		private CheckBox m_CheckBox;
 
-		public BooleanDrawer(string name) : base(name)
+		public BooleanDrawer(string name, MemberInfo memInfo) : base(name, memInfo)
 		{
 			m_CheckBox = new CheckBox();
 			m_CheckBox.Size = new Point(15, 15);

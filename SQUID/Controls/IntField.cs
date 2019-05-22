@@ -19,6 +19,7 @@ namespace Squid
 		public int precision = 0;
 		public IntField()
 		{
+			Value = default;
 			Mode = TextBoxMode.Numeric;
 			IsPassword = false;
 		}

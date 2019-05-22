@@ -19,6 +19,7 @@ namespace Squid
 		public int precision = 17;
 		public DoubleField()
 		{
+			Value = default;
 			Mode = TextBoxMode.Numeric;
 			IsPassword = false;
 		}

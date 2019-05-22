@@ -19,6 +19,7 @@ namespace Squid
 		public int precision = 9;
 		public FloatField()
 		{
+			Value = default;
 			Mode = TextBoxMode.Numeric;
 			IsPassword = false;
 		}

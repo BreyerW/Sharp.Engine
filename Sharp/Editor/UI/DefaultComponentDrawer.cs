@@ -10,10 +10,11 @@ namespace Sharp.Editor.UI
 	{
 		public override void OnInitializeGUI()//OnSelect
 		{
-			var props = Target.GetType().GetProperties().Where(p => p.CanRead && p.CanWrite);
+			var props = Target.GetType().GetProperties().Where(p => p.CanRead && (p.CanWrite || p.PropertyType.IsByRef));
 			//var props = Target.GetType().GetFields(BindingFlags.Instance|BindingFlags.NonPublic);
 			foreach (var prop in props)
 			{
+				Console.WriteLine(prop.Name);
 				if (prop.GetCustomAttribute<NonSerializableAttribute>(false) != null) continue;
 
 				var propDrawer = InspectorView.Add(prop.Name + ":", Target, prop);

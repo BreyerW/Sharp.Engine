@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Sharp.Editor.UI.Property
 {
-	public class RangeDrawer : PropertyDrawer<object>//valuetuple jako odpowiednik union?
+	/*public class RangeDrawer : PropertyDrawer<object>//valuetuple jako odpowiednik union?
 	{
 		private Slider slider;
 
@@ -22,5 +22,5 @@ namespace Sharp.Editor.UI.Property
 			get { return slider.Value; }
 			set { slider.Value = (float)value; }
 		}
-	}
+	}*/
 }

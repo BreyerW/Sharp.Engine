@@ -16,7 +16,10 @@ namespace Sharp
 			}
 		}
 
-		public Material material;
+		public Material material {
+			get;
+			set;
+		}
 
 		public MeshRenderer(Entity parent) : base(parent)
 		{

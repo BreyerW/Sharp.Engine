@@ -12,7 +12,7 @@ namespace Sharp.Editor.UI.Property
 		private FloatField posY;
 		private FloatField posZ;
 
-		public Vector3Drawer(string name) : base(name)
+		public Vector3Drawer(string name, MemberInfo memInfo) : base(name, memInfo)
 		{
 			layout.FlowDirection = FlowDirection.LeftToRight;
 			layout.Position = new Point(label.Size.x, 0);
@@ -61,9 +61,9 @@ namespace Sharp.Editor.UI.Property
 			}
 			set
 			{
-				posX.Value = value.X; //Math.Round(value.X, ).ToString();
-				posY.Value = value.Y;//Math.Round(value.Y, Application.roundingPrecision).ToString();
-				posZ.Value = value.Z; //Math.Round(value.Z, Application.roundingPrecision).ToString();
+				posX.Value = value.X;
+				posY.Value = value.Y;
+				posZ.Value = value.Z;
 			}
 		}
 	}

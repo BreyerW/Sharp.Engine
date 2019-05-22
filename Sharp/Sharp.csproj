@@ -63,6 +63,9 @@
     <Reference Include="BepuUtilities, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BepuUtilities.2.0.0-alpha\lib\netstandard2.0\BepuUtilities.dll</HintPath>
     </Reference>
+    <Reference Include="FastMember, Version=1.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastMember.Unofficial.1.4.2-pre\lib\net461\FastMember.dll</HintPath>
+    </Reference>
     <Reference Include="JsonDiffPatchDotNet, Version=2.1.0.0, Culture=neutral, PublicKeyToken=a407b9994a6d66d5, processorArchitecture=MSIL">
       <HintPath>..\packages\JsonDiffPatch.Net.2.1.0\lib\net45\JsonDiffPatchDotNet.dll</HintPath>
     </Reference>
@@ -153,6 +156,7 @@
     <Compile Include="CurveUtility.cs" />
     <Compile Include="DelegateGenerator.cs" />
     <Compile Include="DoubleConverter.cs" />
+    <Compile Include="Editor\UI\Property\InvisibleSentinel.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="IEngineObject.cs" />
     <Compile Include="NonSerializableAttribute.cs" />
@@ -183,7 +187,6 @@
     <Compile Include="Windowing\ISplitter.cs" />
     <Compile Include="Windowing\MainWindow.cs" />
     <Compile Include="Editor\UI\Property\ArrayDrawer.cs" />
-    <Compile Include="Editor\UI\Property\DefaultPropertyDrawer.cs" />
     <Compile Include="Editor\UI\Property\EventHandlerDrawer.cs" />
     <Compile Include="Editor\UI\Property\PropertyDrawer.cs" />
     <Compile Include="Editor\UI\Property\BooleanDrawer.cs" />

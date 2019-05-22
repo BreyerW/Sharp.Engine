@@ -221,20 +221,19 @@ namespace Sharp.Editor.Views
 																								// if (attrib is null)
 			{
 				if (mappedPropertyDrawers.ContainsKey(propertyInfo.GetUnderlyingType()))
-					prop = Activator.CreateInstance(mappedPropertyDrawers[propertyInfo.GetUnderlyingType()], label) as PropertyDrawer;
+					prop = Activator.CreateInstance(mappedPropertyDrawers[propertyInfo.GetUnderlyingType()], label,propertyInfo) as PropertyDrawer;
 				else if (propertyInfo.GetUnderlyingType().GetInterfaces()
 	.Any(i => i == typeof(IList)))//isassignablefrom?
 				{
-					prop = new ArrayDrawer(label);
+					prop = new ArrayDrawer(label,propertyInfo);
 				}
-				else return null;
+				else prop= new InvisibleSentinel(label,propertyInfo);
 				//    prop = Activator.CreateInstance(mappedPropertyDrawers[typeof(object)].type, label) as PropertyDrawer;
 			}
 			prop.attributes = attribs.ToArray();
 			prop.memberInfo = propertyInfo;
 			prop.AutoSize = AutoSize.Horizontal;
 			prop.Name = label;
-			prop.GenerateSetterGetter(instance);
 			return prop;
 		}
 

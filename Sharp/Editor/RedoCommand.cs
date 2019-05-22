@@ -52,7 +52,7 @@ namespace Sharp.Editor
 					if (keyword == "addedEntity")
 					{
 						Entity.undoRedoContext = true;
-						var entity = Activator.CreateInstance<Entity>();
+						var entity = new Entity();
 						Entity.undoRedoContext = false;
 						entity.AddRestoredObject(index);
 						Extension.entities.AddRestoredEngineObject(entity, index);
@@ -69,8 +69,9 @@ namespace Sharp.Editor
 				}
 				foreach (var (id, (type, guid)) in componentsToBeAdded)
 				{
+					var parent = guid.GetInstanceObject<Entity>();
 					Component.undoRedoContext = true;
-					var component = (Component)Activator.CreateInstance(Type.GetType(type), guid.GetInstanceObject<Entity>());
+					var component = parent.AddComponent(Type.GetType(type));
 					Component.undoRedoContext = false;
 					component.AddRestoredObject(id);
 					Extension.entities.AddRestoredEngineObject(component, id);

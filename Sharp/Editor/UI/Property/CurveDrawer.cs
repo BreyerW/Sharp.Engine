@@ -7,7 +7,7 @@ namespace Sharp.Editor.UI.Property
 {
     public class CurveDrawer : PropertyDrawer<Curve>
     {
-        public CurveDrawer(string name) : base(name)
+        public CurveDrawer(string name, MemberInfo memInfo) : base(name, memInfo)
 		{
         }
 
