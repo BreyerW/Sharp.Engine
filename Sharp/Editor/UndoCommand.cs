@@ -34,32 +34,10 @@ namespace Sharp.Editor
 
 		public void Execute(bool reverse = true)
 		{
-			/*if (done.Count is 0) return;
-            var toUndo = done.Peek();
-            toUndo.Execute(true);
-            RedoCommand.undone.Push(done.Pop());*/
-			//lock (Selection.sync)
-			//{
 			if (UndoCommand.currentHistory.Previous is null)
 				return;
-			Console.WriteLine("undo" + UndoCommand.currentHistory.Previous.Value.propertyMapping);
-			/*var undid=Selection.memStream.GetStream();
-			//Delta.Apply(Selection.lastStructure, UndoCommand.currentHistory.Value.downgrade,undid);
-			//Selection.lastStructure.Dispose();
-			//Selection.lastStructure = undid;
-			//Console.WriteLine("undo " + SceneView.entities.root[SceneView.entities.root.Count - 1].ModelMatrix);
-			//Console.WriteLine(System.Text.Encoding.Default.GetString(str)); /*new string(Unsafe.As<byte[], char[]>(ref str), 0, str.Length / Unsafe.SizeOf<char>()));*
-			var serializer = JsonSerializer.CreateDefault();
-			using (var sr = new StreamReader(Selection.lastStructure, System.Text.Encoding.UTF8, true, 4096, true))
-			using (var jsonReader = new JsonTextReader(sr))
-			{
-				jsonReader.ArrayPool = JsonArrayPool.Instance;
-				serializer.Populate(jsonReader, Extension.entities);
-				//SceneView.entities = serializer.Deserialize<Root>(jsonReader);
-			}*/
 			currentHistory = UndoCommand.currentHistory.Previous;
 
-			//Console.WriteLine("only addition? " + UndoCommand.currentHistory.Value.onlyAdditionOrSubtraction);
 			if (UndoCommand.currentHistory.Value.onlyAdditionOrSubtraction)
 			{
 				InspectorView.availableUndoRedo = currentHistory.Value.propertyMapping;

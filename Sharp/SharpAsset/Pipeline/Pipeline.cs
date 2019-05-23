@@ -5,73 +5,78 @@ using System.Linq;
 
 namespace SharpAsset.Pipeline
 {
-    public abstract class Pipeline<T> : Pipeline where T : IAsset
-    {
-        private static T[] assets = new T[2];
-        internal static List<string> nameToKey = new List<string>();
+	public abstract class Pipeline<T> : Pipeline where T : IAsset
+	{
+		private static T[] assets = new T[2];
+		internal static List<string> nameToKey = new List<string>();
 
-        protected ref T this[int index]
-        {
-            get
-            {
-                if (index > assets.Length - 1)
-                    Array.Resize(ref assets, assets.Length * 2);
-                return ref assets[index];
-            }
-        }
+		private protected Pipeline()
+		{
+			assetToPipelineMapping.Add(typeof(T), this);
+		}
 
-        public abstract ref T GetAsset(int index);
+		protected ref T this[int index]
+		{
+			get
+			{
+				if (index > assets.Length - 1)
+					Array.Resize(ref assets, assets.Length * 2);
+				return ref assets[index];
+			}
+		}
 
-        public ref T GetAsset(string name)
-        {
-            return ref GetAsset(nameToKey.IndexOf(name));
-        }
-    }
+		public abstract ref T GetAsset(int index);
 
-    public abstract class Pipeline
-    {
-        internal static Dictionary<Type, Pipeline> allPipelines = new Dictionary<Type, Pipeline>();
-        internal static Dictionary<string, Type> extensionToTypeMapping = new Dictionary<string, Type>();
+		public ref T GetAsset(string name)
+		{
+			return ref GetAsset(nameToKey.IndexOf(name));
+		}
+	}
 
-        public static void Initialize()
-        {
-            var type = typeof(Pipeline);
-            var subclasses = type.Assembly.GetTypes().Where(t => t.IsSubclassOf(type));
-            foreach (var subclass in subclasses)
-            {
-                if (!(subclass.GetCustomAttributes(typeof(SupportedFilesAttribute), false).FirstOrDefault() is SupportedFilesAttribute attr))
-                    continue;
-                var importer = Activator.CreateInstance(subclass) as Pipeline;
-                allPipelines.Add(importer.GetType(), importer);
-                foreach (var format in attr.supportedFileFormats)
-                {
-                    extensionToTypeMapping.Add(format, importer.GetType());
-                }
-            }
-        }
+	public abstract class Pipeline
+	{
+		internal static Dictionary<Type, Pipeline> allPipelines = new Dictionary<Type, Pipeline>();
+		internal static Dictionary<string, Type> extensionToTypeMapping = new Dictionary<string, Type>();
+		internal static Dictionary<Type, Pipeline> assetToPipelineMapping = new Dictionary<Type, Pipeline>();
+		public static void Initialize()
+		{
+			var type = typeof(Pipeline);
+			var subclasses = type.Assembly.GetTypes().Where(t => t.IsSubclassOf(type));
+			foreach (var subclass in subclasses)
+			{
+				if (!(subclass.GetCustomAttributes(typeof(SupportedFilesAttribute), false).FirstOrDefault() is SupportedFilesAttribute attr))
+					continue;
+				var importer = Activator.CreateInstance(subclass) as Pipeline;
+				allPipelines.Add(importer.GetType(), importer);
+				foreach (var format in attr.supportedFileFormats)
+				{
+					extensionToTypeMapping.Add(format, importer.GetType());
+				}
+			}
+		}
 
-        public static Pipeline GetPipeline(string extension)
-        {
-            return allPipelines[extensionToTypeMapping[extension]];
-        }
+		public static Pipeline GetPipeline(string extension)
+		{
+			return allPipelines[extensionToTypeMapping[extension]];
+		}
 
-        public static T Get<T>() where T : Pipeline
-        {
-            return allPipelines[typeof(T)] as T;
-        }
+		public static T Get<T>() where T : Pipeline
+		{
+			return allPipelines[typeof(T)] as T;
+		}
 
-        public static bool IsExtensionSupported(string extension)
-        {
-            return extensionToTypeMapping.ContainsKey(extension);
-        }
+		public static bool IsExtensionSupported(string extension)
+		{
+			return extensionToTypeMapping.ContainsKey(extension);
+		}
 
-        public static string[] GetSupportedExtensions()
-        {
-            return extensionToTypeMapping.Keys.ToArray();
-        }
+		public static string[] GetSupportedExtensions()
+		{
+			return extensionToTypeMapping.Keys.ToArray();
+		}
 
-        public abstract IAsset Import(string pathToFile);
+		public abstract IAsset Import(string pathToFile);
 
-        public abstract void Export(string pathToExport, string format);
-    }
+		public abstract void Export(string pathToExport, string format);
+	}
 }

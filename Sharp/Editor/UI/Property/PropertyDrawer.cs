@@ -60,9 +60,8 @@ namespace Sharp.Editor.UI.Property
 		};
 
 		private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
-		public Action<object, T> setter;
+		public RefAction<object, T> setter;
 		public Func<object, T> getter;
-		public TypeAccessor access;
 		public abstract T Value
 		{
 			get;
@@ -97,24 +96,27 @@ namespace Sharp.Editor.UI.Property
 				//var refC = TypedReference.MakeTypedReference(refComp, new FieldInfo[] { (FieldInfo)memberInfo });
 				//((FieldInfo)memberInfo).SetValueDirect(refC,Value);
 				prevValue = Value;// getter(refComp);
-				setter(refComp, prevValue);
+				setter(refComp,ref prevValue);
 
 				if ((refComp as Component).Parent.GetComponent<Camera>() != Camera.main)
 					isPropertyDirty = true;
 			}
-			if (InspectorView.availableUndoRedo is { }
+			if (InspectorView.availableUndoRedo is {  }
 			&& InspectorView.availableUndoRedo.TryGetValue((refComp.GetInstanceID(), Name), out var serializedObj))
 			{
 				var type = memberInfo.GetUnderlyingType();
 				type = type.IsByRef ? type.GetElementType() : type;
-				if (type == typeof(IEngineObject))
+				if (typeof(IEngineObject).IsAssignableFrom(type))
 					prevValue = new Guid(serializedObj).GetInstanceObject<T>();
-				else if (type == typeof(IAsset))
-					prevValue = (T)Pipeline.allPipelines[type].Import(serializedObj);
+				else if (typeof(IAsset).IsAssignableFrom(type))
+				{
+					Console.WriteLine("Iasset deserialized");
+					prevValue = (T)Pipeline.assetToPipelineMapping[type].Import(serializedObj);
+				}
 				else
 					prevValue = (T)JsonConvert.DeserializeObject(serializedObj, type, serializerSettings);
 				Value = prevValue;
-				setter(refComp, prevValue);
+				setter(refComp,ref prevValue);
 
 				//imagine a case where you rotate something in SceneView by hand and at the same time hit Undo/Redo shortcut then immediately stop rotating - in this case we dont want saving identical values.
 				//It is also useful when restoring objects from Undo/Redo stack since isPropertyDirty = true by default upon creation.
@@ -127,9 +129,9 @@ namespace Sharp.Editor.UI.Property
 				type = type.IsByRef ? type.GetElementType() : type;
 				if (InspectorView.saveState is null)
 					InspectorView.saveState = new Dictionary<(Guid, string), string>();
-				if (type == typeof(IEngineObject))
+				if (typeof(IEngineObject).IsAssignableFrom(type))
 					InspectorView.saveState.Add((refComp.GetInstanceID(), Name), Value.GetInstanceID().ToString());
-				else if (type == typeof(IAsset))
+				else if (typeof(IAsset).IsAssignableFrom(type))
 					InspectorView.saveState.Add((refComp.GetInstanceID(), Name), (Value as IAsset).FullPath);
 				else
 				{

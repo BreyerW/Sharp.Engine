@@ -20,28 +20,8 @@ namespace Sharp.Editor
 
 		public void Execute(bool reverse = false)
 		{
-			/*lock (Selection.sync)
-			{*/
 			if (UndoCommand.currentHistory.Next is null)
 				return;
-
-			Console.WriteLine("redo" + UndoCommand.currentHistory.Next.Value.propertyMapping);
-			/*var redid = Selection.memStream.GetStream();
-			Delta.Apply(Selection.lastStructure, UndoCommand.currentHistory.Value.upgrade,redid);
-			Selection.lastStructure.Dispose();
-			Selection.lastStructure = redid;
-			var serializer = JsonSerializer.CreateDefault();
-			using (var sr = new StreamReader(Selection.lastStructure, System.Text.Encoding.UTF8, true, 4096, true))
-			using (var jsonReader = new JsonTextReader(sr))
-			{
-				jsonReader.ArrayPool = JsonArrayPool.Instance;
-				serializer.Populate(jsonReader, Extension.entities);
-				//SceneView.entities = serializer.Deserialize<Root>(jsonReader);
-			}*/
-			//RuntimeHelpers.GetUninitializedObject();
-
-
-
 			if (UndoCommand.currentHistory.Value.onlyAdditionOrSubtraction || UndoCommand.currentHistory.Next.Value.onlyAdditionOrSubtraction)
 			{
 				var componentsToBeAdded = new Dictionary<Guid, (string, Guid)>();
@@ -54,6 +34,7 @@ namespace Sharp.Editor
 						Entity.undoRedoContext = true;
 						var entity = new Entity();
 						Entity.undoRedoContext = false;
+						entity.name = val;
 						entity.AddRestoredObject(index);
 						Extension.entities.AddRestoredEngineObject(entity, index);
 					}
@@ -80,8 +61,6 @@ namespace Sharp.Editor
 			UndoCommand.currentHistory = UndoCommand.currentHistory.Next;
 			InspectorView.availableUndoRedo = UndoCommand.currentHistory.Value.propertyMapping;
 			Squid.UI.isDirty = true;
-			/*Console.WriteLine("redo " + SceneView.entities.root[SceneView.entities.root.Count - 1].rotation); */
-			//}
 		}
 	}
 }

@@ -16,26 +16,26 @@ namespace Sharp
 		/// <typeparam name="T">Type of unbound instance</typeparam>
 		/// <param name="memberInfo">Field or property info</param>
 		/// <returns></returns>
-		public static Action<object, T> GenerateSetter<T>(MemberInfo memberInfo)//TODO: inject event calls?
+		public static RefAction<object, T> GenerateSetter<T>(MemberInfo memberInfo)//TODO: inject event calls?
 		{
 			//throw new NotSupportedException("Assign for ref getters is bugged with S.L.Expressions (PropertyInfo.CanWrite is set false for ref getters which is wrong)");
 			//parameter "target", the object on which to set the field `field`
 			if (memberInfo.GetUnderlyingType() is { IsByRef: true })
 			{
 				var generator = typeof(DelegateGenerator).GetMethod(nameof(RefGetterAsSetterHelper), BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(typeof(T), memberInfo.GetUnderlyingType().GetElementType(), memberInfo.DeclaringType);
-				var setter = (Action<object, T>)generator.Invoke(null, new[] { memberInfo });
+				var setter = (RefAction<object, T>)generator.Invoke(null, new[] { memberInfo });
 				return setter;
 			}
 			ParameterExpression targetExp = Expression.Parameter(typeof(object), "target");
 			(var assignExp, var valueExp) = SetterHelper<T>(targetExp, memberInfo);
 
 			//compile the whole thing
-			return Expression.Lambda<Action<object, T>>(assignExp, targetExp, valueExp).Compile();
+			return Expression.Lambda<RefAction<object, T>>(assignExp, targetExp, valueExp).Compile();
 		}
-		private static Action<object, TRequested> RefGetterAsSetterHelper<TRequested, TReal, TInstance>(MemberInfo memberInfo)
+		private static RefAction<object, TRequested> RefGetterAsSetterHelper<TRequested, TReal, TInstance>(MemberInfo memberInfo)
 		{
 			var getter = CreateRefGetter<TReal>(memberInfo) as RefFunc<TInstance, TReal>;
-			return (object instance, TRequested val) => { getter((TInstance)instance) = (TReal)(object)val; };
+			return (object instance, ref TRequested val) => { getter((TInstance)instance) = (TReal)(object)val; };
 		}
 		private static Func<object, TRequested> RefGetterHelper<TRequested, TReal, TInstance>(MemberInfo memberInfo)
 		{
@@ -110,7 +110,7 @@ namespace Sharp
 		{
 			var reqValType = typeof(T);
 			//parameter "value" the value to be set in the `field` on "target"
-			ParameterExpression valueExp = Expression.Parameter(reqValType, "value");
+			ParameterExpression valueExp = Expression.Parameter(reqValType.MakeByRefType(), "value");
 
 			//cast the target from object to its correct type
 			Expression castTartgetExp = CreateCastExpression(targetExp, memberInfo.DeclaringType);
@@ -118,11 +118,8 @@ namespace Sharp
 			Expression castValueExp = valueExp;
 			//cast the value to its correct type
 			var memberType = memberInfo.GetUnderlyingType();
-			//if (reqValType != memberType)
-			{
-				castValueExp = CreateCastExpression(valueExp, typeof(object));
-				castValueExp = CreateCastExpression(castValueExp, memberType);
-			}
+			if (reqValType != (memberType.IsByRef ? memberType.GetElementType() : memberType))
+				castValueExp = CreateCastExpression(valueExp, memberType);
 
 			//the field `field` on "target"
 			MemberExpression memberExp = CreateMemberExpression(castTartgetExp, memberInfo);
