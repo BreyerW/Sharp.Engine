@@ -22,29 +22,34 @@ namespace Sharp
 			//parameter "target", the object on which to set the field `field`
 			if (memberInfo.GetUnderlyingType() is { IsByRef: true })
 			{
-				var generator = typeof(DelegateGenerator).GetMethod(nameof(RefGetterAsSetterHelper), BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(typeof(T), memberInfo.GetUnderlyingType().GetElementType(), memberInfo.DeclaringType);
-				var setter = (RefAction<object, T>)generator.Invoke(null, new[] { memberInfo });
-				return setter;
+				var method = new DynamicMethod("", MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, null, new[] { typeof(object), typeof(T).MakeByRefType() }, memberInfo.DeclaringType, true);
+				var il = method.GetILGenerator();
+				var get = (memberInfo as PropertyInfo).GetGetMethod();
+				var memType = memberInfo.GetUnderlyingType().GetElementType();
+				il.DeclareLocal(memberInfo.DeclaringType);
+				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Castclass, memberInfo.DeclaringType);
+				il.Emit(OpCodes.Callvirt, get);
+				il.Emit(OpCodes.Ldarg_1);
+				il.Emit(OpCodes.Ldind_Ref);
+				if (memType.IsClass)
+				{
+					il.Emit(OpCodes.Castclass, memType);
+					il.Emit(OpCodes.Stind_Ref);
+				}
+				else
+				{
+					il.Emit(OpCodes.Unbox_Any, memType);
+					il.Emit(OpCodes.Stobj, memType);
+				}
+				il.Emit(OpCodes.Ret);
+				return method.CreateDelegate(typeof(RefAction<object, T>)) as RefAction<object, T>;
 			}
 			ParameterExpression targetExp = Expression.Parameter(typeof(object), "target");
 			(var assignExp, var valueExp) = SetterHelper<T>(targetExp, memberInfo);
 
 			//compile the whole thing
 			return Expression.Lambda<RefAction<object, T>>(assignExp, targetExp, valueExp).Compile();
-		}
-		private static RefAction<object, TRequested> RefGetterAsSetterHelper<TRequested, TReal, TInstance>(MemberInfo memberInfo)
-		{
-			var getter = CreateRefGetter<TReal>(memberInfo) as RefFunc<TInstance, TReal>;
-			return (object instance, ref TRequested val) => { getter((TInstance)instance) = (TReal)(object)val; };
-		}
-		private static Func<object, TRequested> RefGetterHelper<TRequested, TReal, TInstance>(MemberInfo memberInfo)
-		{
-			var getter = CreateRefGetter<TReal>(memberInfo) as RefFunc<TInstance, TReal>;
-			return (instance) => (TRequested)(object)getter((TInstance)instance);
-		}
-		private static Delegate CreateRefGetter<T>(MemberInfo memberInfo)
-		{
-			return Delegate.CreateDelegate(typeof(RefFunc<,>).MakeGenericType(memberInfo.DeclaringType, typeof(T)), (memberInfo as PropertyInfo).GetMethod);
 		}
 		/// <summary>
 		/// Generate open getter for field or property
@@ -56,8 +61,24 @@ namespace Sharp
 		{
 			if (memberInfo.GetUnderlyingType() is { IsByRef: true })
 			{
-				var generator = typeof(DelegateGenerator).GetMethod(nameof(RefGetterHelper), BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(typeof(T), memberInfo.GetUnderlyingType().GetElementType(), memberInfo.DeclaringType);
-				return (Func<object, T>)generator.Invoke(null, new[] { memberInfo });
+				var method = new DynamicMethod("", MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(T), new[] { typeof(object) }, memberInfo.DeclaringType, true);
+				var il = method.GetILGenerator();
+				var get = (memberInfo as PropertyInfo).GetGetMethod();
+				var type = memberInfo.GetUnderlyingType().GetElementType();
+				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Castclass, memberInfo.DeclaringType);
+				il.Emit(OpCodes.Callvirt, get);
+				if (type.IsClass)
+				{
+					il.Emit(OpCodes.Ldind_Ref);
+				}
+				else
+				{
+					il.Emit(OpCodes.Ldobj, type);
+					il.Emit(OpCodes.Box, type);
+				}
+				il.Emit(OpCodes.Ret);
+				return method.CreateDelegate(typeof(Func<object, T>)) as Func<object, T>;
 			}
 			ParameterExpression paramExpression = Expression.Parameter(typeof(object), "value");
 			var castValueExp = CreateCastExpression(paramExpression, memberInfo.DeclaringType);
