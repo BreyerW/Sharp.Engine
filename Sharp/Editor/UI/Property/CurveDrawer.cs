@@ -5,12 +5,12 @@ using System.Reflection;
 
 namespace Sharp.Editor.UI.Property
 {
-    public class CurveDrawer : PropertyDrawer<Curve>
-    {
-        public CurveDrawer(string name, MemberInfo memInfo) : base(name, memInfo)
+	public class CurveDrawer : PropertyDrawer<Curve>
+	{
+		public CurveDrawer(MemberInfo memInfo) : base(memInfo)
 		{
-        }
+		}
 
-        public override Curve Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-    }
+		public override Curve Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+	}
 }

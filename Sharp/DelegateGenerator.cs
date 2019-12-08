@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -10,6 +12,17 @@ namespace Sharp
 	internal delegate ref TResult RefFunc<T, TResult>(T instance);
 	internal static class DelegateGenerator
 	{
+		internal static Dictionary<(Type declaringType, string member), (Delegate getter, Delegate setter)> accessorsMapping = new Dictionary<(Type declaringType, string member), (Delegate getter, Delegate setter)>();
+
+		public static (Func<object, T> getter, RefAction<object, T> setter) GetAccessors<T>(MemberInfo memberInfo)
+		{
+			if (accessorsMapping.TryGetValue((memberInfo.DeclaringType, memberInfo.Name), out var accessors))
+				return (accessors.getter as Func<object, T>, accessors.setter as RefAction<object, T>);
+			var getter = GenerateGetter<T>(memberInfo);
+			var setter = GenerateSetter<T>(memberInfo);
+			accessorsMapping.Add((memberInfo.DeclaringType, memberInfo.Name), (getter, setter));
+			return (getter, setter);
+		}
 		/// <summary>
 		/// Generate open setter for field or property
 		/// </summary>
@@ -34,12 +47,14 @@ namespace Sharp
 				il.Emit(OpCodes.Ldind_Ref);
 				if (memType.IsClass)
 				{
-					il.Emit(OpCodes.Castclass, memType);
+					if (typeof(T) == typeof(object))
+						il.Emit(OpCodes.Castclass, memType);
 					il.Emit(OpCodes.Stind_Ref);
 				}
 				else
 				{
-					il.Emit(OpCodes.Unbox_Any, memType);
+					if (typeof(T) == typeof(object))
+						il.Emit(OpCodes.Unbox_Any, memType);
 					il.Emit(OpCodes.Stobj, memType);
 				}
 				il.Emit(OpCodes.Ret);
@@ -75,7 +90,8 @@ namespace Sharp
 				else
 				{
 					il.Emit(OpCodes.Ldobj, type);
-					il.Emit(OpCodes.Box, type);
+					if (typeof(T) == typeof(object))
+						il.Emit(OpCodes.Box, type);
 				}
 				il.Emit(OpCodes.Ret);
 				return method.CreateDelegate(typeof(Func<object, T>)) as Func<object, T>;

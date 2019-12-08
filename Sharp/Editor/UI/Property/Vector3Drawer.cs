@@ -12,7 +12,7 @@ namespace Sharp.Editor.UI.Property
 		private FloatField posY;
 		private FloatField posZ;
 
-		public Vector3Drawer(string name, MemberInfo memInfo) : base(name, memInfo)
+		public Vector3Drawer(MemberInfo memInfo) : base(memInfo)
 		{
 			layout.FlowDirection = FlowDirection.LeftToRight;
 			layout.Position = new Point(label.Size.x, 0);

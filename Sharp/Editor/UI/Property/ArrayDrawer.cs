@@ -7,7 +7,7 @@ namespace Sharp.Editor.UI.Property
 {
 	internal class ArrayDrawer : PropertyDrawer<IList>
 	{
-		public TreeView arrayTree;
+		public TreeView arrayTree = new TreeView() { Dock = DockStyle.Fill };
 
 		public override IList Value
 		{
@@ -32,11 +32,8 @@ namespace Sharp.Editor.UI.Property
 			}
 		}
 
-		public ArrayDrawer(string name, MemberInfo memInfo) : base(name, memInfo)
+		public ArrayDrawer(MemberInfo memInfo) : base(memInfo)
 		{
-			//Array.Resize(ref Value,)
-			arrayTree = new TreeView();
-			arrayTree.Dock = DockStyle.Fill;
 		}
 
 		private void IterateRecursively(IList list, TreeNode node, int depth)

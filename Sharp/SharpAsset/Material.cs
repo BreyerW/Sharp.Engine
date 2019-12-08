@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 /*[StructLayout(LayoutKind.Explicit, Pack = 2)]
 public struct Matrix4X4
@@ -41,15 +42,20 @@ namespace SharpAsset
 		private const byte VECTOR3 = 2;
 		private const byte MATRIX4X4 = 3;
 		private const byte TEXTURE = 4;
+		private const byte VECTOR1PTR = byte.MaxValue - 0;
+		private const byte VECTOR2PTR = byte.MaxValue - 1;
+		private const byte VECTOR3PTR = byte.MaxValue - 2;
+		private const byte MATRIX4X4PTR = byte.MaxValue - 3;
+		private const byte TEXTUREPTR = byte.MaxValue - 4;
 
-		public static ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+		private static ArrayPool<byte> pool = ArrayPool<byte>.Shared;
 
 		//private int lastSlot;
 		private int shaderId;
 
-		internal static Dictionary<string, byte[]> globalParams = new Dictionary<string, byte[]>();
+		private static Dictionary<string, byte[]> globalParams = new Dictionary<string, byte[]>();
 
-		internal Dictionary<string, byte[]> localParams;
+		private Dictionary<string, byte[]> localParams;
 		//internal Renderer attachedToRenderer;
 
 		//public event OnShaderChanged
@@ -74,8 +80,28 @@ namespace SharpAsset
 				}
 			}
 		}
-
-		public void BindProperty(string propName, ref Texture data, bool store = true)
+		public void BindUnmanagedProperty<T>(string propName, in T data) where T : unmanaged
+		{
+			IntPtr ptr;
+			unsafe
+			{
+				ptr = (IntPtr)Unsafe.AsPointer(ref Unsafe.AsRef(data));
+			}
+			if (!localParams.ContainsKey(propName))
+			{
+				var param = pool.Rent(Marshal.SizeOf<T>() + 1);
+				param[0] = data switch
+				{
+					Matrix4x4 _ => MATRIX4X4PTR,
+					_ => throw new NotSupportedException(typeof(T).Name)
+				};
+				Unsafe.WriteUnaligned(ref param[1], ptr);
+				localParams.Add(propName, param);
+			}
+			else
+				Unsafe.WriteUnaligned(ref localParams[propName][1], ptr);
+		}
+		public void BindProperty(string propName, ref Texture data)
 		{
 			if (!localParams.ContainsKey(propName))
 			{
@@ -161,8 +187,15 @@ namespace SharpAsset
 				case VECTOR1: break;
 				case VECTOR2: break;
 				case VECTOR3: break;
-				case MATRIX4X4: InternalSetProperty(prop, in Unsafe.As<byte, Matrix4x4>(ref data[1])); break;
+				case MATRIX4X4: MainWindow.backendRenderer.SendMatrix4(Shader.uniformArray[prop], ref Unsafe.As<byte, Matrix4x4>(ref data[1]).M11); break;
 				case TEXTURE: MainWindow.backendRenderer.SendTexture2D(Shader.uniformArray[prop], Unsafe.As<byte, int>(ref data[1])/*, Slot*/); break;
+
+
+				case VECTOR1PTR: break;
+				case VECTOR2PTR: break;
+				case VECTOR3PTR: break;
+				case MATRIX4X4PTR: unsafe { MainWindow.backendRenderer.SendMatrix4(Shader.uniformArray[prop], ref Unsafe.AsRef<Matrix4x4>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer()).M11); } break;
+				case TEXTUREPTR: MainWindow.backendRenderer.SendTexture2D(Shader.uniformArray[prop], Unsafe.As<byte, int>(ref data[1])/*, Slot*/); break;
 			}
 		}
 
@@ -179,8 +212,9 @@ namespace SharpAsset
 					foreach (var value in localParams.Values)
 						pool.Return(value);
 
-					foreach (var value in globalParams.Values)
-						pool.Return(value);
+					//TODO: move this to when application exit
+					//foreach (var value in globalParams.Values)
+					//	pool.Return(value);
 				}
 
 				// TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

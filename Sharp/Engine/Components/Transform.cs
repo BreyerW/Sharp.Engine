@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Sharp.Engine.Components
 {
 	public class Transform : Component//1 ui szablon dla roznych typow w inspectorze
 	{
+		private readonly static int mat4x4Stride = Marshal.SizeOf<Matrix4x4>();
 		[NonSerializable]
 		private Matrix4x4 modelMatrix;
 		internal Vector3 position = Vector3.Zero;
@@ -13,7 +16,10 @@ namespace Sharp.Engine.Components
 		[NonSerializable]
 		public ref readonly Matrix4x4 ModelMatrix
 		{
-			get { return ref modelMatrix; }
+			get
+			{ /*unsafe { return ref Unsafe.AsRef<Matrix4x4>(modelMatrix.ToPointer()); }*/
+				return ref modelMatrix;
+			}
 		}
 
 		public Action onTransformChanged;
@@ -62,10 +68,15 @@ namespace Sharp.Engine.Components
 		private void SetModelMatrix()
 		{
 			var angles = rotation * NumericsExtensions.Pi / 180f;
+			/*unsafe
+			{
+				Unsafe.AsRef<Matrix4x4>(modelMatrix.ToPointer()) = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
+			}*/
 			modelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
 		}
 		public Transform(Entity parent) : base(parent)
 		{
+			//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
 			parent.transform = this;
 		}
 	}

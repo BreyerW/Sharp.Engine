@@ -20,8 +20,8 @@ namespace Sharp.Editor.Views
 		private DropDownButton tagStrip = new DropDownButton();
 		private Dictionary<Guid, TreeView> idToViewMapping = new Dictionary<Guid, TreeView>();
 		internal static Dictionary<Type, Type> mappedPropertyDrawers = new Dictionary<Type, Type>();
-		internal static Dictionary<(Guid, string), string> availableUndoRedo;
-		internal static Dictionary<(Guid, string), string> saveState;
+		internal static Dictionary<Guid, Dictionary<string, string>> availableUndoRedo;
+		internal static Dictionary<Guid, Dictionary<string, string>> saveState = new Dictionary<Guid, Dictionary<string, string>>();
 		static InspectorView()
 		{
 			//var primitiveResult = Assembly.GetExecutingAssembly()
@@ -94,40 +94,30 @@ namespace Sharp.Editor.Views
 				yield return new WaitForEndOfFrame();
 				if (saveState is { })
 				{
+					/*if (saveState is null)
+						saveState = new Dictionary<Guid, Dictionary<string, string>>();
+					if (!saveState.ContainsKey(currentlyDrawedObject))
+						saveState.Add(currentlyDrawedObject, new Dictionary<string, string>());
+					saveState[currentlyDrawedObject].Add("selected", "");*/
 					SaveChanges(saveState);
 					saveState = null;
 				}
-				if (availableUndoRedo is { })
-				{
-					if (availableUndoRedo.ContainsValue("selection"))
-						Selection.Asset = Extension.entities.idToObjectMapping[availableUndoRedo.GetKey("selection").Item1];
-
-					availableUndoRedo = null;
-				}
+				availableUndoRedo = null;
 			}
 		}
-		private static void SaveChanges(Dictionary<(Guid, string), string> toBeSaved)
+		private static void SaveChanges(Dictionary<Guid, Dictionary<string, string>> toBeSaved)
 		{
-			if (UndoCommand.currentHistory is { })
+			if (UndoCommand.currentHistory is { } && UndoCommand.currentHistory.Next is { }) //TODO: this is bugged state on split is doubled for some reason
 			{
-				if (UndoCommand.currentHistory != UndoCommand.snapshots.Last)
-				{
-					UndoCommand.currentHistory.RemoveAllAfter();
-					Console.WriteLine("clear trailing history");
-				}
+				UndoCommand.currentHistory.RemoveAllAfter();
+				Console.WriteLine("clear trailing history");
 			}
-			var toBeSeparated = new Dictionary<(Guid, string), string>();
+			var finalSave = new Dictionary<Guid, Dictionary<string, string>>();
 			foreach (var (index, val) in toBeSaved)
-				if (index.Item2 == "addedEntity" || index.Item2 == "addedComponent" || index.Item2 == "addedSystem" || index.Item2 == "Parent")
-					toBeSeparated.Add(index, val);
-			Console.WriteLine("separate " + toBeSeparated.Any());
-			if (toBeSeparated.Any())
 			{
-				UndoCommand.snapshots.AddLast(new History() { propertyMapping = toBeSeparated, onlyAdditionOrSubtraction = true });
-				foreach (var (remove, _) in toBeSeparated)
-					toBeSaved.Remove(remove);
+				finalSave.Add(index, val);
 			}
-			UndoCommand.snapshots.AddLast(new History() { propertyMapping = toBeSaved });
+			UndoCommand.snapshots.AddLast(new History() { propertyMapping = finalSave });
 			UndoCommand.currentHistory = UndoCommand.snapshots.Last;
 		}
 		private void ItemAdded(IEngineObject sender)
@@ -143,11 +133,12 @@ namespace Sharp.Editor.Views
 			}
 			else if (sender is Component component)
 			{
-				idToViewMapping[component.Parent.GetInstanceID()].Nodes.Remove(idToViewMapping[component.Parent.GetInstanceID()].Nodes.Find((node) => (node as ComponentNode).referencedComponent == component));
+				idToViewMapping[component.Parent.GetInstanceID()].Nodes.Remove(idToViewMapping[component.Parent.GetInstanceID()].Nodes.Find((node) => ((node.Childs[2] as FlowLayoutFrame).Controls[0] as PropertyDrawer).target == component));
 			}
 		}
 		private void RegisterEngineObject(IEngineObject obj)
 		{
+
 			if (obj is Entity ent)
 			{
 				var ptree = new TreeView();
@@ -163,22 +154,27 @@ namespace Sharp.Editor.Views
 
 				ptree.IsVisible = false;
 				idToViewMapping.Add(ent.GetInstanceID(), ptree);
-				if (availableUndoRedo is null || !availableUndoRedo.ContainsKey((ent.GetInstanceID(), "addedEntity")))
+
+				if (availableUndoRedo is null || !availableUndoRedo.ContainsKey(ent.GetInstanceID()))
 				{
 					if (saveState is null)
-						saveState = new Dictionary<(Guid, string), string>();
-					saveState.Add((ent.GetInstanceID(), "addedEntity"), ent.name);//TODO: add IEnumerable for mass placing
+						saveState = new Dictionary<Guid, Dictionary<string, string>>();
+					if (!saveState.ContainsKey(ent.GetInstanceID()))
+						saveState.Add(ent.GetInstanceID(), new Dictionary<string, string>());
+					saveState[ent.GetInstanceID()].Add("addedEntity", ent.name);//TODO: add IEnumerable for mass placing
 				}
 			}
 			else if (obj is Component component)
 			{
 				idToViewMapping[component.Parent.GetInstanceID()].Nodes.Add(RenderComponent(component));
-				if (availableUndoRedo is null || !availableUndoRedo.ContainsKey((component.GetInstanceID(), "addedComponent")))
+				if (availableUndoRedo is null || !availableUndoRedo.ContainsKey(component.GetInstanceID()))
 				{
 					if (saveState is null)
-						saveState = new Dictionary<(Guid, string), string>();
-					saveState.Add((component.GetInstanceID(), "addedComponent"), component.GetType().AssemblyQualifiedName);
-					saveState.Add((component.GetInstanceID(), "Parent"), component.Parent.GetInstanceID().ToString());
+						saveState = new Dictionary<Guid, Dictionary<string, string>>();
+					if (!saveState.ContainsKey(component.GetInstanceID()))
+						saveState.Add(component.GetInstanceID(), new Dictionary<string, string>());
+					saveState[component.GetInstanceID()].Add("addedComponent", component.GetType().AssemblyQualifiedName);
+					saveState[component.GetInstanceID()].Add("Parent", component.Parent.GetInstanceID().ToString());
 				}
 			}
 			//else if(obj is System sys)//TODO: rewrite EC to ECS
@@ -189,7 +185,7 @@ namespace Sharp.Editor.Views
 			node.Label.Text = component.GetType().Name;
 			node.Name = component.GetType().Name;
 			node.Label.TextAlign = Alignment.MiddleLeft;
-			node.referencedComponent = component;
+
 			var inspector = new DefaultComponentDrawer();
 			inspector.properties = node;
 			inspector.getTarget = component;
@@ -214,25 +210,23 @@ namespace Sharp.Editor.Views
 
              base.Initialize();*/
 
-		public static PropertyDrawer Add(string label, object instance, MemberInfo propertyInfo)
+		public static PropertyDrawer Add(MemberInfo propertyInfo)
 		{
 			PropertyDrawer prop = null;
 			var attribs = propertyInfo.GetCustomAttributes<CustomPropertyDrawerAttribute>(true);//customattributes when supporting priority/overriding
 																								// if (attrib is null)
 			{
 				if (mappedPropertyDrawers.ContainsKey(propertyInfo.GetUnderlyingType()))
-					prop = Activator.CreateInstance(mappedPropertyDrawers[propertyInfo.GetUnderlyingType()], label, propertyInfo) as PropertyDrawer;
+					prop = Activator.CreateInstance(mappedPropertyDrawers[propertyInfo.GetUnderlyingType()], propertyInfo) as PropertyDrawer;
 				else if (propertyInfo.GetUnderlyingType().GetInterfaces()
 	.Any(i => i == typeof(IList)))//isassignablefrom?
 				{
-					prop = new ArrayDrawer(label, propertyInfo);
+					prop = new ArrayDrawer(propertyInfo);
 				}
-				else prop = new InvisibleSentinel(label, propertyInfo);
+				else prop = Activator.CreateInstance(typeof(InvisibleSentinel<>).MakeGenericType(propertyInfo.GetUnderlyingType().IsByRef ? propertyInfo.GetUnderlyingType().GetElementType() : propertyInfo.GetUnderlyingType()), propertyInfo) as PropertyDrawer;
 			}
 			prop.attributes = attribs.ToArray();
-			prop.memberInfo = propertyInfo;
 			prop.AutoSize = AutoSize.Horizontal;
-			prop.Name = label;
 			return prop;
 		}
 

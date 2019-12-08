@@ -2,9 +2,9 @@
 
 namespace Sharp.Editor.UI.Property
 {
-	class InvisibleSentinel : PropertyDrawer<object>
+	class InvisibleSentinel<T> : PropertyDrawer<T>
 	{
-		public InvisibleSentinel(string name, MemberInfo memInfo) : base(name, memInfo)
+		public InvisibleSentinel(MemberInfo memInfo) : base(memInfo)
 		{
 			NoEvents = true;
 			Style = "";
@@ -19,6 +19,6 @@ namespace Sharp.Editor.UI.Property
 		protected override void DrawBefore()
 		{
 		}
-		public override object Value { get => getter((Parent.Parent as ComponentNode).referencedComponent); set { return; } }
+		public override T Value { get => getter(target); set { return; } }
 	}
 }

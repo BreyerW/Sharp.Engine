@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Threading;
+using Sharp.Engine.Components;
 
 namespace Sharp.Editor.Views
 {
@@ -21,6 +21,7 @@ namespace Sharp.Editor.Views
 
 		public static Action OnUpdate;
 		public static List<Renderer> renderers = new List<Renderer>();
+		public static Queue<IStartableComponent> startables = new Queue<IStartableComponent>();
 		public static bool globalMode = false;
 
 		private static Point? locPos = null;
@@ -49,6 +50,7 @@ namespace Sharp.Editor.Views
 			e.name = "Main Camera";
 			//e.OnTransformChanged += ((sender, evnt) => cam.SetModelviewMatrix());
 			Camera.main = cam;
+			cam.active = true;
 			var eLight = new Entity();
 			eLight.name = "Directional Light";
 			eLight.transform.Position = Camera.main.Parent.transform.Position;
@@ -69,11 +71,6 @@ namespace Sharp.Editor.Views
 			Squid.UI.MouseUp += UI_MouseUp;
 			Button.Text = "Scene";
 			AllowFocus = true;
-		}
-
-		private void SceneView_Update(Control sender)
-		{
-			throw new NotImplementedException();
 		}
 
 		private void SceneView_KeyUp(Control sender, KeyEventArgs args)
@@ -195,12 +192,13 @@ namespace Sharp.Editor.Views
 					Pipeline.GetPipeline(extension).Import(name).PlaceIntoScene(null, orig + (Camera.main.ScreenToWorld(locPos.x, locPos.y, Size.x, Size.y) - orig).Normalize() * Camera.main.ZFar * 0.1f);
 				}
 		}
-
-		protected override void DrawBefore()
+		protected override void DrawAfter()
 		{
 			//if (!IsVisible) return;
 			//base.Render();
 			//if (Camera.main is null) return;
+			while (startables.Count != 0)
+				startables.Dequeue().Start();
 			MainWindow.backendRenderer.Viewport(Location.x, Camera.main.height - (Location.y + Size.y), Size.x, Size.y);
 			if (locPos.HasValue)
 			{
@@ -216,6 +214,7 @@ namespace Sharp.Editor.Views
 
 			//foreach (var renderer in renderers)
 			//   renderer.Render();
+
 			Extension.entities.OnRenderFrame?.Invoke();
 
 			if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)

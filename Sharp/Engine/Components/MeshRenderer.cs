@@ -1,11 +1,12 @@
 ﻿using SharpAsset;
 using SharpAsset.Pipeline;
 using System;
+using Sharp.Engine.Components;
 
 namespace Sharp
 {
 	[Serializable]
-	public class MeshRenderer : Renderer //where VertexFormat : struct, IVertex
+	public class MeshRenderer : Renderer, IStartableComponent //where VertexFormat : struct, IVertex
 	{
 		private Mesh mesh;
 		public ref Mesh Mesh
@@ -16,7 +17,8 @@ namespace Sharp
 			}
 		}
 
-		public Material material {
+		public Material material
+		{
 			get;
 			set;
 		}
@@ -47,11 +49,17 @@ namespace Sharp
 
 			MainWindow.backendRenderer.Use(shader.Program);
 
-			//entityObject.SetModelMatrix();
-			material.InternalSetProperty("model", Parent.transform.ModelMatrix);
+			//Parent.transform.SetModelMatrix();
 			material.SendData();
+			material.InternalSetProperty("model", Parent.transform.ModelMatrix);
 			MainWindow.backendRenderer.Use(ref Mesh.indiceType, Mesh.Indices.Length);
 			MainWindow.backendRenderer.ChangeShader();
+		}
+
+		public void Start()
+		{
+			Console.WriteLine("start meshrenderer");
+			//material.BindUnmanagedProperty("model", Parent.transform.ModelMatrix);
 		}
 	}
 }

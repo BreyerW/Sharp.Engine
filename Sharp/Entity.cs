@@ -9,7 +9,6 @@ namespace Sharp
 	[Serializable]
 	public class Entity : IEngineObject
 	{
-		internal static bool undoRedoContext = false;
 		public Entity parent;
 		public Transform transform;
 		public List<Entity> childs = new List<Entity>();
@@ -34,14 +33,18 @@ namespace Sharp
 		private HashSet<int> tags = new HashSet<int>();
 
 		private List<Component> components = new List<Component>();
-
+		private Entity(string name)
+		{
+			this.name = name;
+		}
 		public Entity()
 		{
-			if (!undoRedoContext)
-			{
-				Extension.entities.AddEngineObject(this);
-				AddComponent<Transform>();
-			}
+			Extension.entities.AddEngineObject(this);
+			AddComponent<Transform>();
+		}
+		internal static Entity CreateEntityForEditor()
+		{
+			return new Entity("Entity Object");
 		}
 		public static Entity[] FindAllWithTags(bool activeOnly = true, params string[] lookupTags)
 		{
@@ -154,7 +157,12 @@ namespace Sharp
 			components.Add(comp);
 			return comp;
 		}
-
+		internal Component AddComponent(Component comp)
+		{
+			comp.Parent = this;
+			components.Add(comp);
+			return comp;
+		}
 		/*private Behaviour AddComponent (Behaviour comp)
 		{
 		//assign behaviour specific events to scene view

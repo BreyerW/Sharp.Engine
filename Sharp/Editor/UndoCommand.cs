@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Reflection;
+using FastMember;
 
 namespace Sharp.Editor
 {
@@ -13,8 +15,7 @@ namespace Sharp.Editor
 	{
 		//public byte[] downgrade;
 		//public byte[] upgrade;
-		public Dictionary<(Guid, string), string> propertyMapping;
-		public bool onlyAdditionOrSubtraction;
+		public Dictionary<Guid, Dictionary<string, string>> propertyMapping;
 		//public Guid? selectedObject;
 	}
 
@@ -36,41 +37,49 @@ namespace Sharp.Editor
 		{
 			if (UndoCommand.currentHistory.Previous is null)
 				return;
-			currentHistory = UndoCommand.currentHistory.Previous;
-
-			if (UndoCommand.currentHistory.Value.onlyAdditionOrSubtraction)
+			var stop = false;
+			foreach (var (index, list) in UndoCommand.currentHistory.Value.propertyMapping)
 			{
-				InspectorView.availableUndoRedo = currentHistory.Value.propertyMapping;
-				foreach (var ((index, keyword), val) in UndoCommand.currentHistory.Value.propertyMapping)
+				if (list.ContainsKey("addedEntity"))
 				{
-					if (keyword == "addedEntity")
-					{
-						index.GetInstanceObject<Entity>()?.Destroy();
-					}
-					else if (keyword == "removedEntity")
-					{
-						//TODO: on .Net Core use RuntimeHelpers.GetUninitializedObject()
-						var entity = FormatterServices.GetUninitializedObject(typeof(Entity));//pseudodeserialization thats why we use this
-					}
-					else if (keyword == "addedComponent")
-					{
-						index.GetInstanceObject<Component>()?.Destroy();
-						//componentsToBeAdded.Add(index.Item1, val);
-					}
-					else if (keyword == "removedComponent")
-					{
-						//componentsToBeAdded.Add(index.Item1, val);
-					}
-					else if (keyword == "addedSystem")
-					{
-						throw new NotSupportedException("Systems are not implemented yet");
-					}
+					index.GetInstanceObject<Entity>()?.Destroy();
+					stop = true;
 				}
-				InspectorView.availableUndoRedo = null;
+				else if (list.ContainsKey("removedEntity"))
+				{
+					//TODO: on .Net Core use RuntimeHelpers.GetUninitializedObject()
+					var entity = FormatterServices.GetUninitializedObject(typeof(Entity));//pseudodeserialization thats why we use this
+					stop = true;
+				}
+				else if (list.ContainsKey("addedComponent"))
+				{
+					//InspectorView.saveState.Remove(index);
+					index.GetInstanceObject<Component>()?.Destroy();
+					//componentsToBeAdded.Add(index.Item1, val);
+					stop = true;
+				}
+				else if (list.ContainsKey("removedComponent"))
+				{
+					//componentsToBeAdded.Add(index.Item1, val);
+					stop = true;
+				}
+				else if (list.ContainsKey("addedSystem"))
+				{
+					stop = true;
+					throw new NotSupportedException("Systems are not implemented yet");
+
+				}
 			}
-			else
-				InspectorView.availableUndoRedo = currentHistory.Value.propertyMapping;
-			//var componentsToBeAdded = new Dictionary<Guid, string>();
+			currentHistory = UndoCommand.currentHistory.Previous;
+			if (stop) return;
+			foreach (var (index, list) in UndoCommand.currentHistory.Value.propertyMapping)
+			{
+				var obj = index.GetInstanceObject();
+				if (list.ContainsKey("selected"))
+					Selection.Asset = obj;
+				//if (obj is Camera cam && cam == Camera.main) continue;
+			}
+			InspectorView.availableUndoRedo = currentHistory.Value.propertyMapping;
 
 			Squid.UI.isDirty = true;
 		}

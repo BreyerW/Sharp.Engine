@@ -1,15 +1,28 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using SDL2;
 using Sharp.Editor.Views;
 using SharpAsset.Pipeline;
-using System;
+using System.Collections.Generic;
 using System.Globalization;
-using System.Numerics;
 using System.Threading;
 
 namespace Sharp
 {
 	internal class MainClass
 	{
+		internal static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
+		{
+			ContractResolver = new DefaultContractResolver() { IgnoreSerializableAttribute = false },
+			Converters = new List<JsonConverter>() { new DelegateConverter(), new ListReferenceConverter(), new IAssetConverter(), new IEngineConverter() },
+			ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+			PreserveReferencesHandling = PreserveReferencesHandling.All,
+			ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+			TypeNameHandling = TypeNameHandling.All,
+			ObjectCreationHandling = ObjectCreationHandling.Auto,
+			ReferenceResolverProvider = () => new ThreadsafeReferenceResolver(),
+			//NullValueHandling = NullValueHandling.Ignore
+		};
 		public static void Main(string[] args)
 		{
 			MainEditorView.editorBackendRenderer = new SharpSL.BackendRenderers.OpenGL.EditorOpenGLRenderer();

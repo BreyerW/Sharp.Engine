@@ -17,8 +17,8 @@ namespace Sharp.Editor.UI
 				Console.WriteLine(prop.Name);
 				if (prop.GetCustomAttribute<NonSerializableAttribute>(false) != null) continue;
 
-				var propDrawer = InspectorView.Add(prop.Name + ":", Target, prop);
-
+				var propDrawer = InspectorView.Add(prop);
+				propDrawer.target = Target as Component;
 				if (propDrawer != null)
 					properties.Frame.Controls.Add(propDrawer);
 			}

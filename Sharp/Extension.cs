@@ -3,6 +3,7 @@ using System.Threading;
 using Sharp.Editor.Views;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Sharp.Engine.Components;
 
 namespace Sharp
 {
@@ -26,6 +27,11 @@ namespace Sharp
 		{
 			entities.idToObjectMapping.TryGetValue(id, out var obj);
 			return (T)obj;
+		}
+		public static IEngineObject GetInstanceObject(in this Guid id)
+		{
+			entities.idToObjectMapping.TryGetValue(id, out var obj);
+			return obj;
 		}
 		internal static void AddRestoredObject(this IEngineObject obj, in Guid id)
 		{
@@ -75,6 +81,8 @@ namespace Sharp
 		{
 			idToObjectMapping.Add(obj.GetInstanceID(), obj);
 			SceneView.onAddedEntity?.Invoke(obj);
+			if (obj is IStartableComponent start)
+				SceneView.startables.Enqueue(start);
 		}
 
 		internal void RemoveEngineObject(IEngineObject obj)
@@ -93,6 +101,8 @@ namespace Sharp
 		{
 			idToObjectMapping.Add(id, obj);
 			SceneView.onAddedEntity?.Invoke(obj);
+			if (obj is IStartableComponent start)
+				SceneView.startables.Enqueue(start);
 		}
 	}
 }
