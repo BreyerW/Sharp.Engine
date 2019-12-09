@@ -24,7 +24,7 @@ namespace Sharp.Editor
 		internal static LinkedList<History> snapshots = new LinkedList<History>();
 
 		internal static LinkedListNode<History> currentHistory;
-
+		internal static Dictionary<Guid, Dictionary<string, string>> availableUndoRedo;
 		public string menuPath => "Undo";
 
 		public string[] keyCombination => new[] { "CTRL", "z" };//combine into menuPath+(combination)
@@ -79,7 +79,7 @@ namespace Sharp.Editor
 					Selection.Asset = obj;
 				//if (obj is Camera cam && cam == Camera.main) continue;
 			}
-			InspectorView.availableUndoRedo = currentHistory.Value.propertyMapping;
+			UndoCommand.availableUndoRedo = currentHistory.Value.propertyMapping;
 
 			Squid.UI.isDirty = true;
 		}

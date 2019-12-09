@@ -27,7 +27,7 @@ namespace Sharp.Editor
 
 			var componentsToBeAdded = new Dictionary<Guid, Dictionary<string, string>>();
 			UndoCommand.currentHistory = UndoCommand.currentHistory.Next;
-			InspectorView.availableUndoRedo = UndoCommand.currentHistory.Value.propertyMapping;
+			UndoCommand.availableUndoRedo = UndoCommand.currentHistory.Value.propertyMapping;
 			foreach (var (index, list) in UndoCommand.currentHistory.Value.propertyMapping)
 			{
 				if (list.ContainsKey("addedEntity"))
