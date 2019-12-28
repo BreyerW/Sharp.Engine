@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Typography-master(1)\Typography-master\Typography.OpenFont\Typography.OpenFont\Typography.OpenFont.csproj" />
+  </ItemGroup>
+
+</Project>

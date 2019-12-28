@@ -1,0 +1,150 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <StartupObject>Sharp.MainClass</StartupObject>
+    <ApplicationIcon />
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>false</Optimize>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>true</Optimize>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Content\duckCM.bmp" />
+    <None Remove="SharpSL\BackendRenderers\Content\border.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\button_default.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\button_down.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\button_hot.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\checkbox_checked.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\checkbox_checked_hot.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\checkbox_default.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\checkbox_down.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\checkbox_hot.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\combo_button_default.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\combo_button_down.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\combo_button_hot.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\combo_default.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\combo_down.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\combo_hot.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\frame.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\handleNE.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\handleNW.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\hscrollUp_default.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\hscrollUp_down.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\hscrollUp_hot.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\hscroll_button.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\hscroll_button_down.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\hscroll_button_hot.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\hscroll_track.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\icons1.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\input_default.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\input_focused.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\keyframe_button.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\minimap.jpg" />
+    <None Remove="SharpSL\BackendRenderers\Content\paperdoll.jpg" />
+    <None Remove="SharpSL\BackendRenderers\Content\SampleMap.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\vscrollUp_default.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\vscrollUp_down.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\vscrollUp_hot.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\vscroll_button.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\vscroll_button_down.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\vscroll_button_hot.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\vscroll_track.png" />
+    <None Remove="SharpSL\BackendRenderers\Content\window.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="C:\Users\Damian\.nuget\packages\sharpfont.dependencies\2.6.0\bin\msvc10\x86\freetype6.dll" Link="freetype6.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="C:\Users\Damian\.nuget\packages\sharpfont\4.0.1\config\SharpFont.dll.config" Link="SharpFont.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\duckCM.bmp" />
+    <Content Include="SharpSL\BackendRenderers\Content\border.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\button_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\button_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\button_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\checkbox_checked.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\checkbox_checked_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\checkbox_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\checkbox_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\checkbox_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_button_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_button_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_button_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\combo_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\frame.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\handleNE.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\handleNW.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscrollUp_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscrollUp_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscrollUp_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscroll_button.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscroll_button_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscroll_button_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\hscroll_track.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\icons1.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\input_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\input_focused.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\keyframe_button.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\minimap.jpg" />
+    <Content Include="SharpSL\BackendRenderers\Content\paperdoll.jpg" />
+    <Content Include="SharpSL\BackendRenderers\Content\SampleMap.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscrollUp_default.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscrollUp_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscrollUp_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscroll_button.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscroll_button_down.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscroll_button_hot.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\vscroll_track.png" />
+    <Content Include="SharpSL\BackendRenderers\Content\window.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Content\FogShader.shader" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AssimpNet" Version="4.1.0" />
+    <PackageReference Include="BepuPhysics" Version="2.0.0" />
+    <PackageReference Include="ColorSharp" Version="0.11.0.32448" />
+    <PackageReference Include="EditableStream" Version="0.3.0" />
+    <PackageReference Include="ExCSS.net40" Version="2.0.5" />
+    <PackageReference Include="FastMember" Version="1.5.0" />
+    <PackageReference Include="JsonDiffPatch.Net" Version="2.1.0" />
+    <PackageReference Include="Lidgren.Network.Portable" Version="1.0.1" />
+    <PackageReference Include="Microsoft.Experimental.Collections" Version="1.0.6-preview2-190117-2" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.2.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="OpenTK" Version="2.0.0" />
+    <PackageReference Include="Puresharp" Version="0.0.0" />
+    <PackageReference Include="SDL2-CS.NetCore" Version="2.0.8" />
+    <PackageReference Include="SharpAvi" Version="2.1.2" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0009" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.Shapes" Version="1.0.0-beta0009" />
+    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
+    <PackageReference Include="SmallBlockMemoryStream" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sharp.FossilDelta\Sharp.FossilDelta.csproj" />
+    <ProjectReference Include="..\Sharp.SQUID\Sharp.SQUID.csproj" />
+    <ProjectReference Include="..\Typography.MsdfGen.Core\Typography.MsdfGen.Core.csproj" />
+  </ItemGroup>
+
+</Project>
