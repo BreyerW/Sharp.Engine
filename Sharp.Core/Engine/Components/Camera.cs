@@ -71,7 +71,7 @@ namespace Sharp
                  // Material.BindGlobalProperty("camProjection", () => ref main.projectionMatrix);
              }*/
 		}
-
+	
 		private Matrix4x4 modelViewMatrix;
 		public Matrix4x4 ModelViewMatrix
 		{

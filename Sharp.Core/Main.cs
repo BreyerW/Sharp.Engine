@@ -5,8 +5,10 @@ using Sharp.Editor.Views;
 using SharpAsset;
 using SharpAsset.Pipeline;
 using SharpSL.BackendRenderers.OpenGL;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Sharp
@@ -15,8 +17,8 @@ namespace Sharp
 	{
 		internal static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
 		{
-			ContractResolver = new DefaultContractResolver() { IgnoreSerializableAttribute = false },
-			Converters = new List<JsonConverter>() { new DelegateConverter(), new ListReferenceConverter(), new IAssetConverter(), new IEngineConverter() },
+			ContractResolver = new UninitializedResolver() { IgnoreSerializableAttribute = false },
+			Converters = new List<JsonConverter>() { new DelegateConverter(), new ListReferenceConverter(), /*new IAssetConverter(), new IEngineConverter(),*/new PtrConverter() },
 			ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
 			PreserveReferencesHandling = PreserveReferencesHandling.All,
 			ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
@@ -63,5 +65,14 @@ namespace Sharp
 			SDL.SDL_Quit();
 		}
 
+	}
+	class UninitializedResolver : DefaultContractResolver
+	{
+		protected override JsonObjectContract CreateObjectContract(Type objectType)
+		{
+			JsonObjectContract contract = base.CreateObjectContract(objectType);
+			contract.DefaultCreator = () => RuntimeHelpers.GetUninitializedObject(objectType);
+			return contract;
+		}
 	}
 }

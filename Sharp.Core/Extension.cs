@@ -44,6 +44,23 @@ namespace Sharp
 					return pair.Key;
 			return default;
 		}
+		public static ref T ReadAs<T>(this in IntPtr ptr) where T : unmanaged
+		{
+			unsafe
+			{
+				ref var addr = ref Unsafe.AddByteOffset(ref Unsafe.AsRef<byte>(ptr.ToPointer()), (IntPtr)IntPtr.Size);
+				return ref Unsafe.As<byte, T>(ref addr);
+			}
+		}
+		public static ref T ReadAs<T>(this in IntPtr ptr, out IntPtr lengthInBytes) where T : unmanaged
+		{
+			unsafe
+			{
+				lengthInBytes = Unsafe.AsRef<IntPtr>(ptr.ToPointer());
+				ref var addr = ref Unsafe.AddByteOffset(ref Unsafe.AsRef<byte>(ptr.ToPointer()), (IntPtr)IntPtr.Size);
+				return ref Unsafe.As<byte, T>(ref addr);
+			}
+		}
 	}
 
 	public static class Utils

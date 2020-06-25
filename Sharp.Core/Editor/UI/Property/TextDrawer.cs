@@ -20,10 +20,11 @@ namespace Sharp.Editor.UI.Property
 		/// <summary>
 		/// Property value.
 		/// </summary>
-		public override string Value
-		{
-			get { return m_TextBox.Text; }
-			set { m_TextBox.Text = value; }
-		}
+		/*	public override string Value
+			{
+				get { return m_TextBox.Text; }
+				set { m_TextBox.Text = value; }
+			}
+		}*/
 	}
 }

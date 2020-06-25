@@ -1,4 +1,6 @@
-﻿using Sharp.Editor.Attribs;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Sharp.Editor.Attribs;
 using Sharp.Editor.Views;
 using Squid;
 using System;
@@ -34,10 +36,9 @@ namespace Sharp.Editor.UI.Property
 		internal Vector2[] region;
 
 		private uint curvesEditor;
-		private Curve[] curves;
 		public Frame curveFrame = new Frame();
 
-		public override Curve[] Value
+		/*public override Curve[] Value
 		{
 			get { return curves; }
 			set
@@ -45,7 +46,8 @@ namespace Sharp.Editor.UI.Property
 				Console.WriteLine("set");
 				curves = value;
 			}
-		}
+		}*/
+		internal Curve[] Value => SerializedObject.ToObject<Curve[]>(JsonSerializer.Create(MainClass.serializerSettings));
 
 		public RegionDrawer(MemberInfo memInfo) : base(memInfo)
 		{
@@ -62,7 +64,7 @@ namespace Sharp.Editor.UI.Property
 
 		private void RegionDrawer_MouseDown(Control sender, MouseEventArgs args)
 		{
-			if (!Window.windows.Contains(curvesEditor))
+			if (!Window.windows.ContainsKey(curvesEditor))
 			{
 				var win = new FloatingWindow("");
 				win.Size = (700, 500);
@@ -279,6 +281,7 @@ namespace Sharp.Editor.UI.Property
 
 		protected override void DrawAfter()
 		{
+			var curves = Value;
 			for (int i = 0; i < curves.Length; i += 2)
 				CreateRegion(curves[i], curves[i + 1]);
 			OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);

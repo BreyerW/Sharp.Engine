@@ -125,6 +125,12 @@ namespace Sharp
 				y = (float)Math.Atan2(-mat.M31, sy);
 				z = 0;
 			}
+			if (x is -0)
+				x = 0;
+			if (y is -0)
+				y = 0;
+			if (z is -0)
+				z = 0;
 			return new Vector3(x, y, z);
 		}
 

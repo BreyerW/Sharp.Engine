@@ -9,7 +9,7 @@ namespace Sharp.Editor.UI.Property
 	{
 		public TreeView arrayTree = new TreeView() { Dock = DockStyle.Fill };
 
-		public override IList Value
+	/*	public override IList Value
 		{
 			get => null;
 			set
@@ -30,7 +30,7 @@ namespace Sharp.Editor.UI.Property
 					}
 				}
 			}
-		}
+		}*/
 
 		public ArrayDrawer(MemberInfo memInfo) : base(memInfo)
 		{

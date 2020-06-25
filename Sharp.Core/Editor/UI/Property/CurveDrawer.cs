@@ -11,6 +11,6 @@ namespace Sharp.Editor.UI.Property
 		{
 		}
 
-		public override Curve Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		//public override Curve Value { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 	}
 }

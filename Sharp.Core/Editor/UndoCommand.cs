@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Reflection;
 using FastMember;
 
@@ -39,6 +38,8 @@ namespace Sharp.Editor
 			if (UndoCommand.currentHistory.Previous is null)
 				return;
 			isUndo = true;
+			//while (UndoCommand.currentHistory.Value.propertyMapping.ContainsKey(Camera.main.GetInstanceID()))
+			//	UndoCommand.currentHistory = UndoCommand.currentHistory.Previous;
 			foreach (var (index, list) in UndoCommand.currentHistory.Value.propertyMapping)
 			{
 				if (list.ContainsKey("addedEntity"))
@@ -48,7 +49,7 @@ namespace Sharp.Editor
 				else if (list.ContainsKey("removedEntity"))
 				{
 					//TODO: on .Net Core use RuntimeHelpers.GetUninitializedObject()
-					var entity = FormatterServices.GetUninitializedObject(typeof(Entity));//pseudodeserialization thats why we use this
+					var entity = RuntimeHelpers.GetUninitializedObject(typeof(Entity));//pseudodeserialization thats why we use this
 
 				}
 				else if (list.ContainsKey("addedComponent"))
@@ -75,16 +76,16 @@ namespace Sharp.Editor
 
 				}
 			}
-			
+
 			//foreach (var (index, list) in UndoCommand.currentHistory.Value.propertyMapping)
 			{
-				
+
 
 				//if (obj is Camera cam && cam == Camera.main) continue;
 			}
-			
+
 			UndoCommand.availableHistoryChanges = currentHistory.Value.propertyMapping;
-currentHistory = UndoCommand.currentHistory.Previous;
+			currentHistory = UndoCommand.currentHistory.Previous;
 			Squid.UI.isDirty = true;
 		}
 	}

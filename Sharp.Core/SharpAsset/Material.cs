@@ -1,4 +1,5 @@
-﻿using Sharp;
+﻿using Newtonsoft.Json;
+using Sharp;
 using SharpAsset.Pipeline;
 using SharpSL;
 using System;
@@ -55,8 +56,8 @@ namespace SharpAsset
 		private int shaderId;
 
 		private static Dictionary<string, byte[]> globalParams = new Dictionary<string, byte[]>();
-
-		private Dictionary<string, byte[]> localParams;
+		[JsonProperty]
+		internal Dictionary<string, byte[]> localParams;
 		//internal Renderer attachedToRenderer;
 		//TODO: split pipeline into importer/exporter?																								 //public RefAction<Material> onShaderDataRequest; //ref Material mat or shader visible in editor?
 

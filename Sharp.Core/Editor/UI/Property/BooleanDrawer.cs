@@ -1,4 +1,5 @@
-﻿using Squid;
+﻿using Newtonsoft.Json.Linq;
+using Squid;
 using System.Reflection;
 
 namespace Sharp.Editor.UI.Property
@@ -10,24 +11,35 @@ namespace Sharp.Editor.UI.Property
 	public class BooleanDrawer : PropertyDrawer<bool>
 	{
 		private CheckBox m_CheckBox;
-
 		public BooleanDrawer(MemberInfo memInfo) : base(memInfo)
 		{
-			m_CheckBox = new CheckBox();
-			m_CheckBox.Size = new Point(15, 15);
-			m_CheckBox.Position = new Point(label.Size.x + 1, 0);
-			Childs.Add(label);
-			Childs.Add(m_CheckBox);
-			m_CheckBox.Style = "checkBox";
+			Update += BooleanDrawer_Layout;
 		}
 
-		/// <summary>
-		/// Property value.
-		/// </summary>
-		public override bool Value
+		private void BooleanDrawer_Layout(Control sender)
 		{
-			get => m_CheckBox.IsChecked;
-			set { m_CheckBox.IsChecked = value; }
+			if (m_CheckBox is null)
+			{
+				m_CheckBox = new CheckBox();
+				m_CheckBox.Size = new Point(15, 15);
+				m_CheckBox.Position = new Point(label.Size.x + 1, 0);
+				Childs.Add(label);
+				Childs.Add(m_CheckBox);
+				m_CheckBox.Style = "checkBox";
+				//m_CheckBox.IsChecked = serializedObject.Value<bool>();
+				m_CheckBox.CheckedChanged += M_CheckBox_CheckedChanged;
+			}
+		}
+		protected override void OnUpdate()
+		{
+			if (m_CheckBox is { })
+				m_CheckBox.IsChecked = SerializedObject.Value<bool>();
+			base.OnUpdate();
+
+		}
+		private void M_CheckBox_CheckedChanged(Control sender)
+		{
+			SerializedObject = m_CheckBox.IsChecked;
 		}
 	}
 }

@@ -415,7 +415,7 @@ namespace Sharp.Editor.Views
 
         private void UI_MouseMove(Control sender, MouseEventArgs args)
         {
-            if (!Window.windows.Contains(attachedToWindow)) return;
+            if (!Window.windows.ContainsKey(attachedToWindow)) return;
             var mousePos = new Vector2(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y);
             if (tracking > -1)
             {

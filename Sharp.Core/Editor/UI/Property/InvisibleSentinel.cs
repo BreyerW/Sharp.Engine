@@ -19,6 +19,6 @@ namespace Sharp.Editor.UI.Property
 		protected override void DrawBefore()
 		{
 		}
-		public override T Value { get => getter(Target); set { return; } }
+		//public override T Value { get => getter(Target); set { return; } }
 	}
 }

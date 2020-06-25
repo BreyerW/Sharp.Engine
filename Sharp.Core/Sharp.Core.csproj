@@ -139,6 +139,7 @@
     <PackageReference Include="SixLabors.Shapes" Version="1.0.0-beta0009" />
     <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
     <PackageReference Include="SmallBlockMemoryStream" Version="1.0.0" />
+    <PackageReference Include="System.Text.Json" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>

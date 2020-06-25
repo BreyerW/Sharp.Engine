@@ -15,7 +15,7 @@ namespace Fossil
 
 			int lenOut = (int)target.Length;
 			int lenSrc = (int)origin.Length;
-			using (var zDelta = new Writer(target.Length > origin.Length ? lenOut : lenSrc))
+			using (var zDelta = new Writer())
 			{
 				int i, lastRead = -1;
 				uint deltaLength = 0;
@@ -32,7 +32,7 @@ namespace Fossil
 					zDelta.PutArray(target, 0, lenOut);
 					zDelta.PutInt(Checksum(target));
 					zDelta.PutChar(';');
-					return zDelta.ToArray(out deltaLength).AsSpan().Slice(0, (int)deltaLength).ToArray();
+					return zDelta.ToArray();
 				}
 				// Compute the hash table used to locate matching sections in the source.
 				int nHash = (int)lenSrc / NHASH;
@@ -196,7 +196,7 @@ namespace Fossil
 				// Output the final checksum record.
 				zDelta.PutInt(Checksum(target));
 				zDelta.PutChar(';');
-				return zDelta.ToArray(out deltaLength).AsSpan().Slice(0, (int)deltaLength).ToArray();
+				return zDelta.ToArray();
 			}
 		}
 
@@ -204,7 +204,7 @@ namespace Fossil
 		{
 			int lenOut = target.Length;
 			int lenSrc = origin.Length;
-			using (var zDelta = new Writer(target.Length > origin.Length ? lenOut : lenSrc))
+			using (var zDelta = new Writer())
 			{
 				int i, lastRead = -1;
 				uint deltaLength = 0;
@@ -222,7 +222,7 @@ namespace Fossil
 					zDelta.PutArray(target, 0, lenOut);
 					zDelta.PutInt(Checksum(target));
 					zDelta.PutChar(';');
-					return zDelta.ToArray(out deltaLength).AsSpan().Slice(0, (int)deltaLength).ToArray();
+					return zDelta.ToArray();
 				}
 
 				// Compute the hash table used to locate matching sections in the source.
@@ -367,7 +367,7 @@ namespace Fossil
 				// Output the final checksum record.
 				zDelta.PutInt(Checksum(target));
 				zDelta.PutChar(';');
-				return zDelta.ToArray(out deltaLength).AsSpan().Slice(0, (int)deltaLength).ToArray();
+				return zDelta.ToArray();
 			}
 		}
 
@@ -383,7 +383,7 @@ namespace Fossil
 			if (zDelta.GetChar() != '\n')
 				throw new Exception("size integer not terminated by \'\\n\'");
 
-			using (Writer zOut = new Writer((int)limit))
+			using (Writer zOut = new Writer())
 			{
 				while (zDelta.HaveBytes())
 				{
@@ -414,12 +414,12 @@ namespace Fossil
 							break;
 
 						case ';':
-							byte[] byteOutput = zOut.ToArray(out var bufferLength);
-							if (cnt != Checksum(byteOutput, bufferLength))
+							byte[] byteOutput = zOut.ToArray();
+							if (cnt != Checksum(byteOutput))
 								throw new Exception("bad checksum");
 							if (total != limit)
 								throw new Exception("generated size does not match predicted size");
-							output.Write(byteOutput, 0, (int)bufferLength);
+							output.Write(byteOutput, 0, byteOutput.Length);
 							output.Position = 0;
 							return;
 
@@ -442,7 +442,7 @@ namespace Fossil
 			if (zDelta.GetChar() != '\n')
 				throw new Exception("size integer not terminated by \'\\n\'");
 
-			using (Writer zOut = new Writer((int)limit))
+			using (Writer zOut = new Writer())
 			{
 				while (zDelta.HaveBytes())
 				{
@@ -474,12 +474,12 @@ namespace Fossil
 							break;
 
 						case ';':
-							byte[] output = zOut.ToArray(out var bufferLength);
-							if (cnt != Checksum(output, bufferLength))
+							byte[] output = zOut.ToArray();
+							if (cnt != Checksum(output))
 								throw new Exception("bad checksum");
 							if (total != limit)
 								throw new Exception("generated size does not match predicted size");
-							return output.AsSpan().Slice(0, (int)bufferLength).ToArray();
+							return output;
 
 						default:
 							throw new Exception("unknown delta operator");

@@ -68,7 +68,7 @@ namespace Sharp
 
 		public static void ProcessMouseMove()
 		{
-			if (!Window.windows.Contains(Window.UnderMouseWindowId)) return;
+			if (!Window.windows.ContainsKey(Window.UnderMouseWindowId)) return;
 			//var winPos = Window.windows[Window.UnderMouseWindowId].Position;
 			var button = SDL.SDL_GetGlobalMouseState(out globalMousePosition.x, out globalMousePosition.y);
 		}
@@ -114,7 +114,7 @@ namespace Sharp
 
 		public static void Update()
 		{
-			if (!Window.windows.Contains(Window.UnderMouseWindowId)) return;
+			if (!Window.windows.ContainsKey(Window.UnderMouseWindowId)) return;
 
 			var winPos = Window.windows[Window.UnderMouseWindowId].Position;
 			UI.SetMouse(globalMousePosition.x, globalMousePosition.y, winPos.x, winPos.y);

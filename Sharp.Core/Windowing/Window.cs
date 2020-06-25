@@ -123,7 +123,7 @@ namespace Sharp
 			else
 				handle = SDL.SDL_CreateWindowFrom(existingWin);
 			windowId = SDL.SDL_GetWindowID(handle);
-			windows.Add(this);
+			windows.Add(windowId,this);
 
 			new MainEditorView(windowId);
 			onRenderFrame += OnInternalRenderFrame;
@@ -140,7 +140,7 @@ namespace Sharp
 						windows[sdlEvent.window.windowID].OnEvent(sdlEvent);
 				}
 
-				Coroutine.AdvanceInstructions(ref Coroutine.startOfFrameInstructions);
+				Coroutine.AdvanceInstructions<WaitForStartOfFrame>(Coroutine.startOfFrameInstructions);
 
 				//Selection.IsSelectionDirty(System.Threading.CancellationToken.None);
 				/*  if (InputHandler.mustHandleKeyboard)
@@ -155,7 +155,7 @@ namespace Sharp
 				UI.TimeElapsed = Time.deltaTime;
 				//UI.currentCanvas?.Update();//TODO: change it so that during dragging it will update both source and hovered window
 				MainEditorView.currentMainView.OnInternalUpdate();
-				Coroutine.AdvanceInstructions(ref Coroutine.customInstructions);
+				Coroutine.AdvanceInstructions<IEnumerator>(Coroutine.customInstructions);
 
 				onRenderFrame?.Invoke();
 				if (UI.isDirty)
@@ -163,7 +163,7 @@ namespace Sharp
 					Selection.OnSelectionDirty?.Invoke(Selection.Asset);
 					UI.isDirty = false;
 				}
-				Coroutine.AdvanceInstructions(ref Coroutine.endOfFrameInstructions);
+				Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
 				//onBeforeNextFrame?.Invoke();
 				while (TexturePipeline.recentlyLoadedAssets.TryDequeue(out var i))
 				{
@@ -198,7 +198,7 @@ namespace Sharp
 					MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
 				}
 				Time.SetTime();
-				Coroutine.AdvanceInstructions(ref Coroutine.timeInstructions);
+				Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
 
 			}
 		}

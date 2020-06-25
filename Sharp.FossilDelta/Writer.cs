@@ -3,25 +3,24 @@ using System.Collections.Generic; using System.IO; using System.Buffers; u
 	{
 		private static readonly uint[] zDigits = { 			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 			'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 			'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_', 'a', 'b', 'c', 'd', 'e', 			'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 			't', 'u', 'v', 'w', 'x', 'y', 'z', '~' 		};
 
-		private byte[] a;
-		private uint pos = 0;
-		private uint[] zBuf = new uint[20];
+		private List<byte> a;
+		
 
-		public Writer(int expectedMaxSize)
+		public Writer()
 		{
-			this.a = ArrayPool<byte>.Shared.Rent(expectedMaxSize); //TODO: add arraypool<byte> instead of list<byte>
+			a = new List<byte>();
+			//this.a = ArrayPool<byte>.Shared.Rent(expectedMaxSize);
 		}
 
 		public void PutChar(char c)
 		{
-			this.a[pos] = (byte)c;
-			pos++;
+			this.a.Add((byte)c);
 		}
 
 		public void PutInt(uint v)
 		{
 			int i, j;
-
+			Span<uint> zBuf = stackalloc uint[20];
 			if (v == 0)
 			{
 				this.PutChar('0');
@@ -33,8 +32,7 @@ using System.Collections.Generic; using System.IO; using System.Buffers; u
 			}
 			for (j = i - 1; j >= 0; j--)
 			{
-				this.a[pos] = (byte)zBuf[j];
-				pos++;
+				this.a.Add((byte)zBuf[j]);
 			}
 		}
 
@@ -42,8 +40,7 @@ using System.Collections.Generic; using System.IO; using System.Buffers; u
 		{
 			for (var i = start; i < end; i++)
 			{
-				this.a[pos] = a[i];
-				pos++;
+				this.a.Add(a[i]);
 			}
 		}
 
@@ -52,15 +49,13 @@ using System.Collections.Generic; using System.IO; using System.Buffers; u
 			a.Position = start;
 			for (var i = start; i < end; i++)
 			{
-				this.a[pos] = (byte)a.ReadByte();
-				pos++;
+				this.a.Add((byte)a.ReadByte());
 			}
 		}
 
-		public byte[] ToArray(out uint bufferLength)
+		public byte[] ToArray()
 		{
-			bufferLength = pos;
-			return a;
+			return a.ToArray();
 		}
 
 		#region IDisposable Support 
@@ -70,7 +65,6 @@ using System.Collections.Generic; using System.IO; using System.Buffers; u
 			{
 				if (disposing)
 				{
-					ArrayPool<byte>.Shared.Return(a);
 				}
 				a = null;
 				disposedValue = true;

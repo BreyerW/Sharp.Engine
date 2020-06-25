@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -13,7 +14,7 @@ namespace Sharp.Engine.Components
 		internal Vector3 position = Vector3.Zero;
 		internal Vector3 rotation = Vector3.Zero;
 		internal Vector3 scale = Vector3.One;
-		[NonSerializable]
+		[NonSerializable,JsonIgnore]
 		public ref readonly Matrix4x4 ModelMatrix
 		{
 			get

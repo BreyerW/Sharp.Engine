@@ -9,37 +9,38 @@ namespace Sharp
 {
 	public static class Coroutine
 	{
-		internal static List<IEnumerator> customInstructions = new List<IEnumerator>();
-		internal static List<WaitForEndOfFrame> endOfFrameInstructions = new List<WaitForEndOfFrame>();
-		internal static List<WaitForStartOfFrame> startOfFrameInstructions = new List<WaitForStartOfFrame>();
-		internal static List<WaitForSeconds> timeInstructions = new List<WaitForSeconds>();
+		internal static Queue<IEnumerator> customInstructions = new Queue<IEnumerator>();
+		internal static Queue<IEnumerator> endOfFrameInstructions = new Queue<IEnumerator>();
+		internal static Queue<IEnumerator> startOfFrameInstructions = new Queue<IEnumerator>();
+		internal static Queue<IEnumerator> timeInstructions = new Queue<IEnumerator>();
 
-		internal static void AdvanceInstructions<T>(ref List<T> instructions) where T : IEnumerator
+		internal static void AdvanceInstructions<T>(Queue<IEnumerator> instructions) where T : IEnumerator
 		{
-			var runNextFrame = new List<T>();
-			foreach (var coroutine in instructions)
+			var len = instructions.Count;
+			var i = 0;
+			while (i < len)
 			{
-				var condition = coroutine.MoveNext();
-				if (coroutine.Current is null || condition is false)
+				var coroutine = instructions.Dequeue();
+				if (coroutine.MoveNext() is false)
+				{
+					i++;
 					continue;
-				var prev = coroutine.Current.GetType();
-				if (coroutine.Current.GetType() == prev)
-					runNextFrame.Add(coroutine);
-				else if (coroutine.Current is WaitForStartOfFrame waitStart)
-					startOfFrameInstructions.Add(waitStart);
-				else if (coroutine.Current is WaitForEndOfFrame waitEnd)
-					endOfFrameInstructions.Add(waitEnd);
-				else if (coroutine.Current is WaitForSeconds waitSeconds)
-					timeInstructions.Add(waitSeconds);
+				}
+				if (coroutine.Current is WaitForStartOfFrame)
+					startOfFrameInstructions.Enqueue(coroutine);
+				else if (coroutine.Current is WaitForEndOfFrame)
+					endOfFrameInstructions.Enqueue(coroutine);
+				else if (coroutine.Current is WaitForSeconds)
+					timeInstructions.Enqueue(coroutine);
 				else
-					customInstructions.Add(coroutine);
+					customInstructions.Enqueue(coroutine);
+				i++;
 			}
-			instructions = runNextFrame;
 		}
 
 		public static void Start(IEnumerator instruction)
 		{
-			customInstructions.Add(instruction);
+			customInstructions.Enqueue(instruction);
 		}
 
 	}

@@ -1,6 +1,7 @@
 ﻿using BepuUtilities.Memory;
 using FastMember;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Sharp.Editor.Attribs;
 using Sharp.Editor.Views;
@@ -18,6 +19,22 @@ using System.Threading.Tasks;
 
 namespace Sharp.Editor.UI.Property
 {
+	public class JTokenWrapper
+	{
+		private JToken token;
+		public JToken this[string s]
+		{
+			get => token[s];
+			set
+			{
+				if (s == string.Empty)
+					if (token == value) return;
+				if (token[s] == value) return;
+				token[s] = value;
+				ApplyChanges();
+			}
+		}
+	}
 	public abstract class PropertyDrawer : Control
 	{
 		protected internal static bool scanStarted = false;
@@ -35,8 +52,10 @@ namespace Sharp.Editor.UI.Property
 	/// </summary>
 	public abstract class PropertyDrawer<T> : PropertyDrawer//if u want support multiple types with same drawer use object, object have least priority compared to same attrib but specialized drawer
 	{
+		private bool isDirty = false;
+		//private static IEqualityComparer<T> defaultEquality=EqualityComparer<T>.Default;
 		private IEnumerator<bool> savingTask;
-		private T prevValue;
+		private JToken serializedObject;
 		public MemberInfo memberInfo;
 		public CustomPropertyDrawerAttribute[] attributes;
 		private Component target;
@@ -45,38 +64,59 @@ namespace Sharp.Editor.UI.Property
 		//private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
 		public RefAction<object, T> setter;
 		public Func<object, T> getter;
-		public abstract T Value
+		/*public abstract T Value
 		{
 			get;
 			set;
-		}
+		}*/
+
+		/*public virtual IEqualityComparer<T> Equality
+		{
+			get =>defaultEquality;
+		} */
 		public override Component Target
 		{
 			set
 			{
 				if (target == value) return;
+				//serializedObject = JToken.FromObject(getter(value), JsonSerializer.Create(MainClass.serializerSettings));
 				target = value;
-				if (UndoCommand.availableHistoryChanges is null || !UndoCommand.availableHistoryChanges.ContainsKey(target.GetInstanceID()))
-				{
-					if (saveState is null)
-						saveState = new Dictionary<Guid, Dictionary<string, (byte[] undo, byte[] redo)>>();
-					if (!saveState.ContainsKey(target.GetInstanceID()))
-						saveState.Add(target.GetInstanceID(), new Dictionary<string, (byte[] undo, byte[] redo)>());
-					else if (saveState[target.GetInstanceID()].ContainsKey("addedComponent")) return;
-					saveState[target.GetInstanceID()].Add("addedComponent", (null, Encoding.Default.GetBytes(target.GetType().AssemblyQualifiedName)));
-					saveState[target.GetInstanceID()].Add("Parent", (null, target.Parent.GetInstanceID().ToByteArray()));
-
-					if (!saveState.ContainsKey(target.Parent.GetInstanceID()))
-						saveState.Add(target.Parent.GetInstanceID(), new Dictionary<string, (byte[] undo, byte[] redo)>());
-					else if (saveState[target.Parent.GetInstanceID()].ContainsKey("addedEntity")) return;
-					saveState[target.Parent.GetInstanceID()].Add("addedEntity", (null, Encoding.Default.GetBytes(target.Parent.name)));
-				}
 			}
 			get => target;
+		}
+		public JToken SerializedObject
+		{
+			set
+			{
+				if (serializedObject == value) return;
+				serializedObject = value;
+				ApplyChanges();
+			}
+			get => serializedObject;
 		}
 		static PropertyDrawer()
 		{
 			if (scanStarted is true) return;
+			SceneView.onAddedEntity += (obj) =>
+			{
+				if (UndoCommand.availableHistoryChanges is { } && UndoCommand.availableHistoryChanges.ContainsKey(obj.GetInstanceID())) return;
+				if (saveState is null)
+					saveState = new Dictionary<Guid, Dictionary<string, (byte[] undo, byte[] redo)>>();
+
+				if (obj is Entity ent)
+				{
+					if (!saveState.ContainsKey(ent.GetInstanceID()))
+						saveState.Add(ent.GetInstanceID(), new Dictionary<string, (byte[] undo, byte[] redo)>());
+					saveState[ent.GetInstanceID()].Add("addedEntity", (null, Encoding.Unicode.GetBytes(ent.name)));
+				}
+				else if (obj is Component comp)
+				{
+					if (!saveState.ContainsKey(comp.GetInstanceID()))
+						saveState.Add(comp.GetInstanceID(), new Dictionary<string, (byte[] undo, byte[] redo)>());
+					saveState[comp.GetInstanceID()].Add("addedComponent", (null, Encoding.Unicode.GetBytes(comp.GetType().AssemblyQualifiedName)));
+					saveState[comp.GetInstanceID()].Add("Parent", (null, comp.Parent.GetInstanceID().ToByteArray()));
+				}
+			};
 			Selection.OnSelectionChange += (old, s) =>
 			{
 				if (s is IEngineObject o)
@@ -121,43 +161,69 @@ namespace Sharp.Editor.UI.Property
 				if (serializedObj.ContainsKey(Name))
 				{
 					var patch = UndoCommand.isUndo ? serializedObj[Name].undo : serializedObj[Name].redo;
+					T val = default;
 					if (UndoCommand.isUndo is false && serializedObj[Name].undo is null)
-						prevValue = (T)JsonConvert.DeserializeObject(Encoding.Default.GetString(serializedObj[Name].redo), propertyType, MainClass.serializerSettings);
+					{
+						var str = Encoding.Unicode.GetString(serializedObj[Name].redo);
+						val = JsonConvert.DeserializeObject<T>(str, MainClass.serializerSettings);
+					}
 					else
 					{
-						var objToBePatched = Encoding.Default.GetBytes(JsonConvert.SerializeObject(getter(target), propertyType, MainClass.serializerSettings));
-						prevValue = (T)JsonConvert.DeserializeObject(Encoding.Default.GetString(Fossil.Delta.Apply(objToBePatched, patch)), propertyType, MainClass.serializerSettings);
+						var objToBePatched = Encoding.Unicode.GetBytes(JToken.FromObject(getter(target), JsonSerializer.Create(MainClass.serializerSettings)).ToString());
+						val = JsonConvert.DeserializeObject<T>(Encoding.Unicode.GetString(Fossil.Delta.Apply(objToBePatched, patch)), MainClass.serializerSettings);
 					}
-					Value = prevValue;
-					//if (Name is "curves")
-					//	Console.WriteLine(prevValue);
-					setter(target, ref prevValue);
+					var t = JToken.FromObject(val, JsonSerializer.Create(MainClass.serializerSettings));
+					if (serializedObject is null)
+						serializedObject = t;
+					else
+					{
+						if (t is JValue v)
+							serializedObject = v;
+						else
+							foreach (var prop in t)
+								if (prop is JProperty p)
+									serializedObject[prop.Path] = p.Value;
+								else
+									serializedObject[prop.Path] = prop;
+					}
+					setter(target, ref val);
+
 				}
 				return;
 			}
-			var get = getter(target);
-			if (!get.Equals(prevValue))
+			var token = JToken.FromObject(getter(target), JsonSerializer.Create(MainClass.serializerSettings));
+			var get = token?.ToString();
+			if (((serializedObject is { } && token is null) || (token is { } && serializedObject is null)) || !MemoryExtensions.Equals(serializedObject.ToString().AsSpan(), get.AsSpan(), StringComparison.Ordinal))
 			{
-				Console.WriteLine("ui outdated");
-				if (savingTask is null && target.Parent.GetComponent<Camera>() != Camera.main)
-					savingTask = SaveState(false, Value).GetEnumerator();
-				prevValue = get;
-				Value = prevValue;
-			}
-			else if (!prevValue.Equals(Value))
-			{
-				Console.WriteLine("object outdated ");
-				//var refC = TypedReference.MakeTypedReference(refComp, new FieldInfo[] { (FieldInfo)memberInfo });
-				//((FieldInfo)memberInfo).SetValueDirect(refC,Value);
-				if (savingTask is null && target.Parent.GetComponent<Camera>() != Camera.main)
-					savingTask = SaveState(false, get).GetEnumerator();
-				prevValue = Value;// getter(refComp);
-				setter(target, ref prevValue);
+				if (isDirty is false)
+				{
+					if (savingTask is null && target.Parent.GetComponent<Camera>() != Camera.main)
+					{
+						savingTask = SaveState(serializedObject?.DeepClone()).GetEnumerator();
+						Console.WriteLine(" name " + Name + " target " + getter(target));
+					}
+					if (serializedObject is null)
+						serializedObject = token;
+					else
+						foreach (var prop in token)
+							if (prop is JProperty p)
+								serializedObject[prop.Path] = p.Value;
+							else
+								serializedObject[prop.Path] = prop;
+				}
+				else
+				{
+					if (savingTask is null && target.Parent.GetComponent<Camera>() != Camera.main)
+						savingTask = SaveState(token).GetEnumerator();
+					var val = serializedObject.ToObject<T>(JsonSerializer.Create(MainClass.serializerSettings));
+					setter(target, ref val);
+					isDirty = false;
+				}
 			}
 			if (!(savingTask is null) && savingTask.MoveNext() && savingTask.Current is true)
 				savingTask = null;
 		}
-		private IEnumerable<bool> SaveState(bool isObjectDirty, T value)
+		private IEnumerable<bool> SaveState(JToken value)
 		{
 			while (InputHandler.isKeyboardPressed || InputHandler.isMouseDragging)
 				yield return false;
@@ -167,20 +233,26 @@ namespace Sharp.Editor.UI.Property
 				saveState.Add(target.GetInstanceID(), new Dictionary<string, (byte[] undo, byte[] redo)>());
 			//MemoryMarshal.AsBytes();
 			//if(SpanHelper.IsPrimitive<T>())
-			var currObjInBytes = Encoding.Default.GetBytes(JsonConvert.SerializeObject(Value, propertyType, MainClass.serializerSettings));
+			//var currObjInBytes = Encoding.Default.GetBytes(JsonConvert.SerializeObject(Value, propertyType, MainClass.serializerSettings));
+			var str = serializedObject is JValue val ? val.ToString(Formatting.None) : serializedObject.ToString();
+			var currObjInBytes = Encoding.Unicode.GetBytes(str);
 			if (value is null || saveState[target.GetInstanceID()].ContainsKey("addedComponent"))
 				saveState[target.GetInstanceID()].Add(Name, (null, currObjInBytes));
 			else
 			{
-				var prevObjInBytes = Encoding.Default.GetBytes(JsonConvert.SerializeObject(value, propertyType, MainClass.serializerSettings));
+				var prevObjInBytes = Encoding.Unicode.GetBytes(value is JValue v ? v.ToString(Formatting.None) : value.ToString());
 				var delta2 = Fossil.Delta.Create(currObjInBytes, prevObjInBytes);
 				var delta1 = Fossil.Delta.Create(prevObjInBytes, currObjInBytes);
-				saveState[target.GetInstanceID()].Add(Name, isObjectDirty ? (delta1, delta2) : (delta2, delta1));
+				saveState[target.GetInstanceID()].Add(Name, (delta2, delta1));
 			}
 			//Console.WriteLine("resulting string " + JsonConvert.SerializeObject(Value, typeof(T), serializerSettings));
 			yield return true;
 		}
-
+		private void ApplyChanges()
+		{
+			if (savingTask is { }) return;
+			isDirty = true;
+		}
 		private static IEnumerator SaveChangesBeforeNextFrame()
 		{
 			while (true)
@@ -188,12 +260,6 @@ namespace Sharp.Editor.UI.Property
 				yield return new WaitForEndOfFrame();
 				if (saveState is { })
 				{
-					/*if (Selection.Asset is { })
-					{
-						if (!saveState.ContainsKey(Selection.Asset.GetInstanceID()))
-							saveState.Add(Selection.Asset.GetInstanceID(), new Dictionary<string, string>());
-						saveState[Selection.Asset.GetInstanceID()].Add("selected", "");
-					}*/
 					SaveChanges(saveState);
 					saveState = null;
 				}
@@ -210,18 +276,6 @@ namespace Sharp.Editor.UI.Property
 			var finalSave = new Dictionary<Guid, Dictionary<string, (byte[] undo, byte[] redo)>>();
 			foreach (var (index, val) in toBeSaved)
 			{
-				/*var o = index.GetInstanceObject();
-				if (o is Component c)
-					if (UndoCommand.currentHistory is { } && UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(c.Parent.GetInstanceID(), out var changes) && changes.ContainsKey("selected"))
-						if (UndoCommand.currentHistory.Previous.Value.propertyMapping.TryGetValue(index, out var prevChanges))
-						{
-							UndoCommand.currentHistory.Value.propertyMapping.Add(c.GetInstanceID(), new Dictionary<string, string>());
-							foreach (var i in val)
-							{
-								if (UndoCommand.currentHistory.Value.propertyMapping[c.GetInstanceID()].ContainsKey(i.Key)) continue;
-								UndoCommand.currentHistory.Value.propertyMapping[c.GetInstanceID()].Add(i.Key, prevChanges[i.Key]);
-							}
-						}*/
 				finalSave.Add(index, val);
 			}
 			UndoCommand.snapshots.AddLast(new History() { propertyMapping = finalSave });

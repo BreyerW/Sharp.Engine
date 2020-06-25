@@ -89,7 +89,7 @@ namespace Sharp.Editor.Views
 				}
 				Squid.UI.isDirty = true;
 			};
-
+			AllowFocus = true;
 			/*Selection.OnSelectionDirty += (sender) =>
 			{
 				//if (sender is Entity entity) RenderComponents(entity);

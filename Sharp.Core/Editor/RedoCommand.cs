@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using System.Text;
 
 namespace Sharp.Editor
@@ -28,13 +27,15 @@ namespace Sharp.Editor
 			UndoCommand.isUndo = false;
 			var componentsToBeAdded = new Dictionary<Guid, Dictionary<string, (byte[] undo,byte[] redo)>>();
 			UndoCommand.currentHistory = UndoCommand.currentHistory.Next;
+			//while(UndoCommand.currentHistory.Value.propertyMapping.ContainsKey(Camera.main.GetInstanceID()))
+			//	UndoCommand.currentHistory = UndoCommand.currentHistory.Next;
 			UndoCommand.availableHistoryChanges = UndoCommand.currentHistory.Value.propertyMapping;
 			foreach (var (index, list) in UndoCommand.currentHistory.Value.propertyMapping)
 			{
 				if (list.ContainsKey("addedEntity"))
 				{
 					var entity = Entity.CreateEntityForEditor();
-					entity.name = Encoding.Default.GetString(list["addedEntity"].redo);
+					entity.name = Encoding.Unicode.GetString(list["addedEntity"].redo);
 					entity.AddRestoredObject(index);
 					Extension.entities.AddRestoredEngineObject(entity, index);
 				}
@@ -53,10 +54,9 @@ namespace Sharp.Editor
 			foreach (var (id, list) in componentsToBeAdded)
 			{
 				var parent = new Guid(list["Parent"].redo).GetInstanceObject<Entity>();
-				var component = parent.AddComponent(FormatterServices.GetUninitializedObject(Type.GetType(Encoding.Default.GetString(list["addedComponent"].redo))) as Component);
+				var component = parent.AddComponent(RuntimeHelpers.GetUninitializedObject(Type.GetType(Encoding.Unicode.GetString(list["addedComponent"].redo))) as Component);
 				if (component is Transform tr)
 					parent.transform = tr;
-				//InspectorView.availableUndoRedo.Add(id, list);//block anything related to main camera?
 				component.AddRestoredObject(id);
 				Extension.entities.AddRestoredEngineObject(component, id);
 			}
