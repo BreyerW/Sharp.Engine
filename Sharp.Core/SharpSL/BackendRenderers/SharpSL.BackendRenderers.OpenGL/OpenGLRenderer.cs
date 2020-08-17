@@ -174,7 +174,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 			Console.WriteLine("cast: " + watch.ElapsedTicks);*/
 		}
 
-		public void Allocate(int Program, int VertexID, int FragmentID, string VertexSource, string FragmentSource, Dictionary<string, int> uniformArray)
+		public void Allocate(int Program, int VertexID, int FragmentID, string VertexSource, string FragmentSource, Dictionary<string, int> uniformArray, Dictionary<string, (int location,int size)> attribArray)
 		{
 			//if (shader.uniformArray.Count > 0)
 			//  return;
@@ -199,32 +199,41 @@ namespace SharpSL.BackendRenderers.OpenGL
 			if (status_code != 1)
 				throw new ApplicationException(info);
 
-			GL.AttachShader(Program, FragmentID); //support multiple vert/frag shaders via foreach vert/frag source
+			GL.AttachShader(Program, FragmentID); //TODO: support multiple vert/frag shaders via foreach vert/frag source
 			GL.AttachShader(Program, VertexID);
-			GL.BindAttribLocation(Program, 0, "vertex_position");
-			GL.BindAttribLocation(Program, 1, "vertex_color");
-			GL.BindAttribLocation(Program, 2, "vertex_texcoord");
-			GL.BindAttribLocation(Program, 3, "vertex_normal");
+
+			/*GL.BindAttribLocation(Program, 0, "vertex_position");
+			GL.BindAttribLocation(Program, 1, "vertex_texcoord");
+			GL.BindAttribLocation(Program, 2, "vertex_normal");
+			GL.BindAttribLocation(Program, 3, "prev_position");
+			GL.BindAttribLocation(Program, 4, "next_position");
+			GL.BindAttribLocation(Program, 5, "dir");*/
 			GL.LinkProgram(Program);
-			int numOfUniforms = 0;
-			GL.GetProgram(Program, GetProgramParameterName.ActiveUniforms, out numOfUniforms);
-			int num;
-			GL.GetProgram(Program, GetProgramParameterName.ActiveUniformMaxLength, out num);
-			StringBuilder stringBuilder = new StringBuilder((num == 0) ? 1 : num);
-			int size = 0;
+			GL.GetProgram(Program, GetProgramParameterName.ActiveAttributes, out var numOfAttribs);
+			GL.GetProgram(Program, GetProgramParameterName.ActiveAttributeMaxLength, out var numA);
+			StringBuilder stringBuilder = new StringBuilder((numA == 0) ? 1 : numA);
+			ActiveAttribType attribType;
+			Console.WriteLine("start attrib query");
+			for (int i = 0; i < numOfAttribs; i++)
+			{
+				GL.GetActiveAttrib(Program, i, stringBuilder.Capacity, out _, out var size, out attribType, stringBuilder);
+				Console.WriteLine(stringBuilder.ToString() + " " + attribType + " : " + size);
+				if (!attribArray.ContainsKey(stringBuilder.ToString()))
+					attribArray.Add(stringBuilder.ToString(), (GL.GetAttribLocation(Program, stringBuilder.ToString()),size)); //TODO: change to bindAttrib via parsing all vertex formats and binding all fields?
+			}
+
+			GL.GetProgram(Program, GetProgramParameterName.ActiveUniforms, out var numOfUniforms);
+			GL.GetProgram(Program, GetProgramParameterName.ActiveUniformMaxLength, out var numU);
+			stringBuilder = new StringBuilder((numU == 0) ? 1 : numU);
 			ActiveUniformType uniType;
 			Console.WriteLine("start uni query");
 			for (int i = 0; i < numOfUniforms; i++)
 			{
-				GL.GetActiveUniform(Program, i, stringBuilder.Capacity, out num, out size, out uniType, stringBuilder);
+				GL.GetActiveUniform(Program, i, stringBuilder.Capacity, out _, out var size, out uniType, stringBuilder);
 				Console.WriteLine(stringBuilder.ToString() + " " + uniType + " : " + size);
 				if (!uniformArray.ContainsKey(stringBuilder.ToString()))
 					uniformArray.Add(stringBuilder.ToString(), i);
 			}
-			//GL.UseProgram(Program);
-
-			//Console.WriteLine (attribType);
-			//GL.UseProgram(0);
 		}
 
 		public void Draw(IndiceType indiceType, int length)

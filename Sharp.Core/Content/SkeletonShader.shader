@@ -1,7 +1,7 @@
 ﻿#version 330
 
 #pragma vertex
-            attribute vec3 vertex_position;
+            in vec3 vertex_position;
 
             uniform mat4 mvp_matrix;
 

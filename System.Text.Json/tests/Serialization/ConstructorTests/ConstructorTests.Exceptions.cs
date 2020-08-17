@@ -1,0 +1,457 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace System.Text.Json.Serialization.Tests
+{
+    public abstract partial class ConstructorTests
+    {
+        [Fact]
+        public async Task MultipleProperties_Cannot_BindTo_TheSame_ConstructorParameter()
+        {
+            InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => Serializer.DeserializeWrapper<Point_MultipleMembers_BindTo_OneConstructorParameter>("{}"));
+
+            string exStr = ex.ToString();
+            Assert.Contains("'X'", exStr);
+            Assert.Contains("'x'", exStr);
+            Assert.Contains("(Int32, Int32)", exStr);
+            Assert.Contains("System.Text.Json.Serialization.Tests.Point_MultipleMembers_BindTo_OneConstructorParameter", exStr);
+
+            ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => Serializer.DeserializeWrapper<Point_MultipleMembers_BindTo_OneConstructorParameter_Variant>("{}"));
+
+            exStr = ex.ToString();
+            Assert.Contains("'X'", exStr);
+            Assert.Contains("'x'", exStr);
+            Assert.Contains("(Int32)", exStr);
+            Assert.Contains("Point_MultipleMembers_BindTo_OneConstructorParameter_Variant", exStr);
+
+            ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => Serializer.DeserializeWrapper<Url_BindTo_OneConstructorParameter>("{}"));
+
+            exStr = ex.ToString();
+            Assert.Contains("'URL'", exStr);
+            Assert.Contains("'Url'", exStr);
+            Assert.Contains("(Int32)", exStr);
+            Assert.Contains("Url_BindTo_OneConstructorParameter", exStr);
+        }
+
+        [Fact]
+        public async Task All_ConstructorParameters_MustBindTo_ObjectMembers()
+        {
+            InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => Serializer.DeserializeWrapper<Point_Without_Members>("{}"));
+
+            string exStr = ex.ToString();
+            Assert.Contains("(Int32, Int32)", exStr);
+            Assert.Contains("System.Text.Json.Serialization.Tests.Point_Without_Members", exStr);
+
+            ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => Serializer.DeserializeWrapper<Point_With_MismatchedMembers>("{}"));
+            exStr = ex.ToString();
+            Assert.Contains("(Int32, Int32)", exStr);
+            Assert.Contains("System.Text.Json.Serialization.Tests.Point_With_MismatchedMembers", exStr);
+
+            ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => Serializer.DeserializeWrapper<WrapperFor_Point_With_MismatchedMembers>(@"{""MyInt"":1,""MyPoint"":{}}"));
+            exStr = ex.ToString();
+            Assert.Contains("(Int32, Int32)", exStr);
+            Assert.Contains("System.Text.Json.Serialization.Tests.Point_With_MismatchedMembers", exStr);
+        }
+
+        [Fact]
+        public async Task LeadingReferenceMetadataNotSupported()
+        {
+            string json = @"{""$id"":""1"",""Name"":""Jet"",""Manager"":{""$ref"":""1""}}";
+
+            // Metadata ignored by default.
+            var employee = await Serializer.DeserializeWrapper<Employee>(json);
+
+            Assert.Equal("Jet", employee.Name);
+            Assert.Null(employee.Manager.Name); ;
+            Assert.Null(employee.Manager.Manager);
+
+            // Metadata not supported with preserve ref feature on.
+
+            var options = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.Preserve };
+
+            NotSupportedException ex = await Assert.ThrowsAsync<NotSupportedException>(
+                () => Serializer.DeserializeWrapper<Employee>(json, options));
+
+            string exStr = ex.ToString();
+            Assert.Contains("System.Text.Json.Serialization.Tests.ConstructorTests+Employee", exStr);
+            Assert.Contains("$.$id", exStr);
+        }
+
+        private class Employee
+        {
+            public string Name { get; }
+            public Employee Manager { get; set; }
+
+            public Employee(string name)
+            {
+                Name = name;
+            }
+        }
+
+        [Fact]
+        public async Task RandomReferenceMetadataNotSupported()
+        {
+            string json = @"{""Name"":""Jet"",""$random"":10}";
+
+            // Baseline, preserve ref feature off.
+
+            var employee = JsonSerializer.Deserialize<Employee>(json);
+
+            Assert.Equal("Jet", employee.Name);
+
+            // Metadata not supported with preserve ref feature on.
+
+            var options = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.Preserve };
+
+            NotSupportedException ex = await Assert.ThrowsAsync<NotSupportedException>(() => Serializer.DeserializeWrapper<Employee>(json, options));
+            string exStr = ex.ToString();
+            Assert.Contains("System.Text.Json.Serialization.Tests.ConstructorTests+Employee", exStr);
+            Assert.Contains("$.$random", exStr);
+        }
+
+        [Fact]
+        public async Task ExtensionDataProperty_CannotBindTo_CtorParam()
+        {
+            InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Serializer.DeserializeWrapper<Class_ExtData_CtorParam>("{}"));
+            string exStr = ex.ToString();
+            Assert.Contains("System.Collections.Generic.Dictionary`2[System.String,System.Text.Json.JsonElement] ExtensionData", exStr);
+            Assert.Contains("System.Text.Json.Serialization.Tests.ConstructorTests+Class_ExtData_CtorParam", exStr);
+            Assert.Contains("(System.Collections.Generic.Dictionary`2[System.String,System.Text.Json.JsonElement])", exStr);
+        }
+
+        public class Class_ExtData_CtorParam
+        {
+            [JsonExtensionData]
+            public Dictionary<string, JsonElement> ExtensionData { get; set; }
+
+            public Class_ExtData_CtorParam(Dictionary<string, JsonElement> extensionData) { }
+        }
+
+        [Fact]
+        public void AnonymousObject()
+        {
+            var obj = new { Prop = 5 };
+            Type objType = obj.GetType();
+
+            // 'Prop' property binds with a ctor arg called 'Prop'.
+
+            object newObj = JsonSerializer.Deserialize("{}", objType);
+            Assert.Equal(0, objType.GetProperty("Prop").GetValue(newObj));
+
+            newObj = JsonSerializer.Deserialize(@"{""Prop"":5}", objType);
+            Assert.Equal(5, objType.GetProperty("Prop").GetValue(newObj));
+        }
+
+        [Fact]
+        public void AnonymousObject_NamingPolicy()
+        {
+            const string Json = @"{""prop"":5}";
+
+            var obj = new { Prop = 5 };
+            Type objType = obj.GetType();
+
+            // 'Prop' property binds with a ctor arg called 'Prop'.
+
+            object newObj = JsonSerializer.Deserialize(Json, objType);
+            // Verify no match if no naming policy
+            Assert.Equal(0, objType.GetProperty("Prop").GetValue(newObj));
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            newObj = JsonSerializer.Deserialize(Json, objType, options);
+            // Verify match with naming policy
+            Assert.Equal(5, objType.GetProperty("Prop").GetValue(newObj));
+        }
+
+#if NETCOREAPP // These require the C# 9.0 "record" feature which is not available for all TFMs.
+        private record MyRecord(int Prop);
+
+        [Fact]
+        public void Record()
+        {
+            // 'Prop' property binds with a ctor arg called 'Prop'.
+            MyRecord obj = JsonSerializer.Deserialize<MyRecord>("{}");
+            Assert.Equal(0, obj.Prop);
+
+            obj = JsonSerializer.Deserialize<MyRecord>(@"{""Prop"":5}");
+            Assert.Equal(5, obj.Prop);
+        }
+
+        public record AgeRecord(int age)
+        {
+            public string Age { get; set; } = age.ToString();
+        }
+
+        [Fact]
+        public void RecordWithSamePropertyNameDifferentTypes()
+        {
+            AgeRecord obj = JsonSerializer.Deserialize<AgeRecord>(@"{""age"":1}");
+            Assert.Equal(1, obj.age);
+        }
+
+        private record MyRecordWithUnboundCtorProperty(int IntProp1, int IntProp2)
+        {
+            public string StringProp { get; set; }
+        }
+
+        [Fact]
+        public void RecordWithAdditionalProperty()
+        {
+            MyRecordWithUnboundCtorProperty obj = JsonSerializer.Deserialize<MyRecordWithUnboundCtorProperty>(
+                @"{""IntProp1"":1,""IntProp2"":2,""StringProp"":""hello""}");
+
+            Assert.Equal(1, obj.IntProp1);
+            Assert.Equal(2, obj.IntProp2);
+
+            // StringProp is not bound to any constructor property.
+            Assert.Equal("hello", obj.StringProp);
+        }
+
+        [Fact]
+        public void Record_NamingPolicy()
+        {
+            const string Json = @"{""prop"":5}";
+
+            // 'Prop' property binds with a ctor arg called 'Prop'.
+
+            // Verify no match if no naming policy
+            MyRecord obj = JsonSerializer.Deserialize<MyRecord>(Json);
+            Assert.Equal(0, obj.Prop);
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            // Verify match with naming policy
+            obj = JsonSerializer.Deserialize<MyRecord>(Json, options);
+            Assert.Equal(5, obj.Prop);
+        }
+#endif
+
+        [Fact]
+        public void PocoWithSamePropertyNameDifferentTypes()
+        {
+            AgePoco obj = JsonSerializer.Deserialize<AgePoco>(@"{""age"":1}");
+            Assert.Equal(1, obj.age);
+        }
+
+        private class AgePoco
+        {
+            public AgePoco(int age)
+            {
+                this.age = age;
+            }
+            public int age { get; set; }
+
+            public string Age { get; set; }
+        }
+
+        [Fact]
+        public async Task DeserializePathForObjectFails()
+        {
+            const string GoodJson = "{\"Property\u04671\":1}";
+            const string GoodJsonEscaped = "{\"Property\\u04671\":1}";
+            const string BadJson = "{\"Property\u04671\":bad}";
+            const string BadJsonEscaped = "{\"Property\\u04671\":bad}";
+            const string Expected = "$.Property\u04671";
+
+            ClassWithUnicodePropertyName obj;
+
+            // Baseline.
+            obj = await Serializer.DeserializeWrapper<ClassWithUnicodePropertyName>(GoodJson);
+            Assert.Equal(1, obj.Property\u04671);
+
+            obj = await Serializer.DeserializeWrapper<ClassWithUnicodePropertyName>(GoodJsonEscaped);
+            Assert.Equal(1, obj.Property\u04671);
+
+            JsonException e;
+
+            // Exception.
+            e = await Assert.ThrowsAsync<JsonException>(() => Serializer.DeserializeWrapper<ClassWithUnicodePropertyName>(BadJson));
+            Assert.Equal(Expected, e.Path);
+
+            e = await Assert.ThrowsAsync<JsonException>(() => Serializer.DeserializeWrapper<ClassWithUnicodePropertyName>(BadJsonEscaped));
+            Assert.Equal(Expected, e.Path);
+        }
+
+        private class ClassWithUnicodePropertyName
+        {
+            public int Property\u04671 { get; } // contains a trailing "1"
+
+            public ClassWithUnicodePropertyName(int property\u04671)
+            {
+                Property\u04671 = property\u04671;
+            }
+        }
+
+        [Fact]
+        public async Task PathForChildPropertyFails()
+        {
+            JsonException e = await Assert.ThrowsAsync<JsonException>(() => Serializer.DeserializeWrapper<RootClass>(@"{""Child"":{""MyInt"":bad]}"));
+            Assert.Equal("$.Child.MyInt", e.Path);
+        }
+
+        public class RootClass
+        {
+            public ChildClass Child { get; }
+
+            public RootClass(ChildClass child)
+            {
+                Child = child;
+            }
+        }
+
+        public class ChildClass
+        {
+            public int MyInt { get; set; }
+            public int[] MyIntArray { get; set; }
+            public Dictionary<string, ChildClass> MyDictionary { get; set; }
+            public ChildClass[] Children { get; set; }
+        }
+
+        [Fact]
+        public async Task PathForChildListFails()
+        {
+            JsonException e = await Assert.ThrowsAsync<JsonException>(() => Serializer.DeserializeWrapper<RootClass>(@"{""Child"":{""MyIntArray"":[1, bad]}"));
+            Assert.Contains("$.Child.MyIntArray", e.Path);
+        }
+
+        [Fact]
+        public async Task PathForChildDictionaryFails()
+        {
+            JsonException e = await Assert.ThrowsAsync<JsonException>(() => Serializer.DeserializeWrapper<RootClass>(@"{""Child"":{""MyDictionary"":{""Key"": bad]"));
+            Assert.Equal("$.Child.MyDictionary.Key", e.Path);
+        }
+
+        [Fact]
+        public async Task PathForSpecialCharacterFails()
+        {
+            JsonException e = await Assert.ThrowsAsync<JsonException>(() => Serializer.DeserializeWrapper<RootClass>(@"{""Child"":{""MyDictionary"":{""Key1"":{""Children"":[{""MyDictionary"":{""K.e.y"":"""));
+            Assert.Equal("$.Child.MyDictionary.Key1.Children[0].MyDictionary['K.e.y']", e.Path);
+        }
+
+        [Fact]
+        public async Task PathForSpecialCharacterNestedFails()
+        {
+            JsonException e = await Assert.ThrowsAsync<JsonException>(() => Serializer.DeserializeWrapper<RootClass>(@"{""Child"":{""Children"":[{}, {""MyDictionary"":{""K.e.y"": {""MyInt"":bad"));
+            Assert.Equal("$.Child.Children[1].MyDictionary['K.e.y'].MyInt", e.Path);
+        }
+
+        [Fact]
+        public async Task EscapingFails()
+        {
+            JsonException e = await Assert.ThrowsAsync<JsonException>(() => Serializer.DeserializeWrapper<Parameterized_ClassWithUnicodeProperty>("{\"A\u0467\":bad}"));
+            Assert.Equal("$.A\u0467", e.Path);
+        }
+
+        public class Parameterized_ClassWithUnicodeProperty
+        {
+            public int A\u0467 { get; }
+
+            public Parameterized_ClassWithUnicodeProperty(int a\u0467)
+            {
+                A\u0467 = a\u0467;
+            }
+        }
+
+        [Fact]
+        public async Task ExtensionPropertyRoundTripFails()
+        {
+            JsonException e = await Assert.ThrowsAsync<JsonException>(() =>
+                Serializer.DeserializeWrapper<Parameterized_ClassWithExtensionProperty>(@"{""MyNestedClass"":{""UnknownProperty"":bad}}"));
+
+            Assert.Equal("$.MyNestedClass.UnknownProperty", e.Path);
+        }
+
+        private class Parameterized_ClassWithExtensionProperty
+        {
+            public SimpleTestClass MyNestedClass { get; }
+            public int MyInt { get; }
+
+            [JsonExtensionData]
+            public IDictionary<string, JsonElement> MyOverflow { get; set; }
+
+            public Parameterized_ClassWithExtensionProperty(SimpleTestClass myNestedClass, int myInt)
+            {
+                MyNestedClass = myNestedClass;
+                MyInt = myInt;
+            }
+        }
+
+        [Fact]
+        public async Task CaseInsensitiveFails()
+        {
+            var options = new JsonSerializerOptions();
+            options.PropertyNameCaseInsensitive = true;
+
+            // Baseline (no exception)
+            {
+                var obj = await Serializer.DeserializeWrapper<ClassWithConstructor_SimpleAndComplexParameters>(@"{""mydecimal"":1}", options);
+                Assert.Equal(1, obj.MyDecimal);
+            }
+
+            {
+                var obj = await Serializer.DeserializeWrapper<ClassWithConstructor_SimpleAndComplexParameters>(@"{""MYDECIMAL"":1}", options);
+                Assert.Equal(1, obj.MyDecimal);
+            }
+
+            JsonException e;
+
+            e = await Assert.ThrowsAsync<JsonException>(() => Serializer.DeserializeWrapper<ClassWithConstructor_SimpleAndComplexParameters>(@"{""mydecimal"":bad}", options));
+            Assert.Equal("$.mydecimal", e.Path);
+
+            e = await Assert.ThrowsAsync<JsonException>(() => Serializer.DeserializeWrapper<ClassWithConstructor_SimpleAndComplexParameters>(@"{""MYDECIMAL"":bad}", options));
+            Assert.Equal("$.MYDECIMAL", e.Path);
+        }
+
+        [Fact]
+        public async Task ClassWithUnsupportedCollectionTypes()
+        {
+            Exception e;
+
+            e = await Assert.ThrowsAsync<NotSupportedException>(() => Serializer.DeserializeWrapper<ClassWithInvalidArray>(@"{""UnsupportedArray"":[]}"));
+            Assert.Contains("System.Int32[,]", e.ToString());
+            // The exception for element types do not contain the parent type and the property name
+            // since the verification occurs later and is no longer bound to the parent type.
+            Assert.DoesNotContain("ClassWithInvalidArray.UnsupportedArray", e.ToString());
+
+            e = await Assert.ThrowsAsync<NotSupportedException>(() => Serializer.DeserializeWrapper<ClassWithInvalidDictionary>(@"{""UnsupportedDictionary"":{}}"));
+            Assert.Contains("System.Int32[,]", e.ToString());
+            Assert.DoesNotContain("ClassWithInvalidDictionary.UnsupportedDictionary", e.ToString());
+        }
+
+        private class ClassWithInvalidArray
+        {
+            public int[,] UnsupportedArray { get; set; }
+
+            public ClassWithInvalidArray(int[,] unsupportedArray)
+            {
+                UnsupportedArray = unsupportedArray;
+            }
+        }
+
+        private class ClassWithInvalidDictionary
+        {
+            public Dictionary<string, int[,]> UnsupportedDictionary { get; set; }
+
+            public ClassWithInvalidDictionary(Dictionary<string, int[,]> unsupportedDictionary)
+            {
+                UnsupportedDictionary = unsupportedDictionary;
+            }
+        }
+    }
+}

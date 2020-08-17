@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Sharp.Editor.UI.Property
 {
-	public class JTokenWrapper
+	/*public class JTokenWrapper
 	{
 		private JToken token;
 		public JToken this[string s]
@@ -34,7 +34,7 @@ namespace Sharp.Editor.UI.Property
 				ApplyChanges();
 			}
 		}
-	}
+	}*/
 	public abstract class PropertyDrawer : Control
 	{
 		protected internal static bool scanStarted = false;
@@ -248,7 +248,7 @@ namespace Sharp.Editor.UI.Property
 			//Console.WriteLine("resulting string " + JsonConvert.SerializeObject(Value, typeof(T), serializerSettings));
 			yield return true;
 		}
-		private void ApplyChanges()
+		public void ApplyChanges()
 		{
 			if (savingTask is { }) return;
 			isDirty = true;

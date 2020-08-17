@@ -9,9 +9,9 @@ namespace Sharp.Editor
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct UIVertexFormat : IVertex
 	{
-		[RegisterAs(VertexAttribute.POSITION, AttributeType.Float)]
+		[RegisterAs(AttributeType.Float, "vertex_position")]//TODO: eliminate VertexAttribute and Attribute type and rely on typeof()?
 		public Vector3 position;
-		[RegisterAs(VertexAttribute.UV, AttributeType.Float)]
+		[RegisterAs(AttributeType.Float, "vertex_texcoord")]
 		public Vector2 texcoords;
 	}
 }

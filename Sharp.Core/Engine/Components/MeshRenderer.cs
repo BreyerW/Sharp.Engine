@@ -21,7 +21,9 @@ namespace Sharp
 		};
 		public MeshRenderer(Entity parent) : base(parent)
 		{
-			var shader = (Shader)Pipeline.Get<Shader>().Import(@"B:\Sharp.Engine3\Sharp.Core\bin\Debug\netcoreapp3.1\Content\TextureOnlyShader.shader");
+			var rootDir = System.Reflection.Assembly.GetExecutingAssembly().Location;
+			Console.WriteLine(rootDir);
+			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath+@"\Content\TextureOnlyShader.shader");
 			material = new Material();
 			material.Shader = shader;
 		}

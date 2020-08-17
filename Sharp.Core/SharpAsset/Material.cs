@@ -39,7 +39,7 @@ namespace SharpAsset
 {
 	[Serializable]
 	public class Material : IDisposable//IAsset
-	{
+	{//TODO: load locations lazily LoadLocation on IBackendRenderer when binding property? and when constructing material for global props  
 		private const byte FLOAT = 0;
 		private const byte VECTOR2 = 1;
 		private const byte VECTOR3 = 2;
@@ -51,7 +51,18 @@ namespace SharpAsset
 		private const byte COLOR4PTR = byte.MaxValue - 1;
 
 		private static ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-
+		private static Dictionary<Type, int> sizeTable = new Dictionary<Type, int>()
+		{
+			[typeof(Vector2)] = Marshal.SizeOf<Vector2>(),
+			[typeof(Vector3)] = Marshal.SizeOf<Vector3>(),
+			[typeof(Vector4)] = Marshal.SizeOf<Vector4>(),
+			[typeof(Matrix4x4)] = Marshal.SizeOf<Matrix4x4>(),
+			[typeof(Texture)] = Marshal.SizeOf<int>(),
+			[typeof(Mesh)] = Marshal.SizeOf<int>(),
+			[typeof(Color)] = Marshal.SizeOf<Color>(),
+			[typeof(IntPtr)] = Marshal.SizeOf<IntPtr>(),
+			[typeof(float)] = Marshal.SizeOf<float>(),
+		};
 		//private int lastSlot;
 		private int shaderId;
 
@@ -89,7 +100,7 @@ namespace SharpAsset
 			}
 			if (!localParams.ContainsKey(propName))
 			{
-				var param = pool.Rent(Marshal.SizeOf<T>() + 1);
+				var param = pool.Rent(sizeTable[typeof(IntPtr)] + 1);
 				param[0] = data switch
 				{
 					Matrix4x4 _ => MATRIX4X4PTR,
@@ -109,20 +120,20 @@ namespace SharpAsset
 			else
 			{
 				//lastSlot = ++lastSlot;
-				var param = new byte[Marshal.SizeOf<int>() + 1];
+				var param = new byte[sizeTable[data.GetType()] + 1];
 				param[0] = TEXTURE;
 				Unsafe.WriteUnaligned(ref param[1], i);
 				localParams.Add(propName, param);
 			}
 		}
-		public void BindProperty(string propName, ref Color data)
+		public void BindProperty(string propName, in Color data)
 		{
 			if (localParams.TryGetValue(propName, out var addr))
 				Unsafe.WriteUnaligned(ref addr[1], data);
 			else
 			{
 				//lastSlot = ++lastSlot;
-				var param = new byte[Marshal.SizeOf<Color>() + 1];
+				var param = new byte[sizeTable[data.GetType()] + 1];
 				param[0] = COLOR4;
 				Unsafe.WriteUnaligned(ref param[1], data);
 				localParams.Add(propName, param);
@@ -135,20 +146,20 @@ namespace SharpAsset
 			else
 			{
 				//lastSlot = ++lastSlot;
-				var param = new byte[Marshal.SizeOf<float>() + 1];
+				var param = new byte[sizeTable[data.GetType()] + 1];
 				param[0] = FLOAT;
 				Unsafe.WriteUnaligned(ref param[1], data);
 				localParams.Add(propName, param);
 			}
 		}
-		internal void BindProperty(string propName, in Mesh data)
+		internal void BindProperty(string propName, in Mesh data)//TODO: change to BindMesh without property name?
 		{
 			var i = MeshPipeline.nameToKey.IndexOf(data.Name);
 			if (localParams.TryGetValue(propName, out var addr))
 				Unsafe.WriteUnaligned(ref addr[1], i);
 			else
 			{
-				var param = new byte[Marshal.SizeOf<int>() + 1];
+				var param = new byte[sizeTable[data.GetType()] + 1];
 				param[0] = MESH;
 				Unsafe.WriteUnaligned(ref param[1], i);
 				localParams.Add(propName, param);
@@ -159,8 +170,34 @@ namespace SharpAsset
 			if (!localParams.ContainsKey(propName))
 			{
 
-				var param = pool.Rent(Unsafe.SizeOf<Matrix4x4>() + 1);
+				var param = pool.Rent(sizeTable[data.GetType()] + 1);
 				param[0] = MATRIX4X4;
+				Unsafe.WriteUnaligned(ref param[1], data);
+				localParams.Add(propName, param);
+			}
+			else
+				Unsafe.WriteUnaligned(ref localParams[propName][1], data);
+		}
+		public void BindProperty(string propName, in Vector3 data)
+		{
+			if (!localParams.ContainsKey(propName))
+			{
+
+				var param = pool.Rent(sizeTable[data.GetType()] + 1);
+				param[0] = VECTOR3;
+				Unsafe.WriteUnaligned(ref param[1], data);
+				localParams.Add(propName, param);
+			}
+			else
+				Unsafe.WriteUnaligned(ref localParams[propName][1], data);
+		}
+		public void BindProperty(string propName, in Vector2 data)
+		{
+			if (!localParams.ContainsKey(propName))
+			{
+
+				var param = pool.Rent(sizeTable[data.GetType()] + 1);
+				param[0] = VECTOR2;
 				Unsafe.WriteUnaligned(ref param[1], data);
 				localParams.Add(propName, param);
 			}
@@ -197,11 +234,11 @@ namespace SharpAsset
 			if (Shader.IsAllocated)
 				MainWindow.backendRenderer.SendTexture2D(Shader.uniformArray[propName], ref Unsafe.As<int, byte>(ref Unsafe.AsRef(data).TBO));
 		}
-		public static void SetGlobalProperty(string propName, ref Matrix4x4 data/*, bool store = true*/)
+		public static void BindGlobalProperty(string propName, in Matrix4x4 data/*, bool store = true*/)
 		{
 			if (!globalParams.ContainsKey(propName))
 			{
-				var param = pool.Rent(Unsafe.SizeOf<Matrix4x4>() + 1);
+				var param = pool.Rent(sizeTable[data.GetType()] + 1);
 				param[0] = MATRIX4X4;
 				//param.DataAddress = Unsafe.As<Matrix4x4, byte>(ref data);
 				Unsafe.WriteUnaligned(ref param[1], data);
@@ -213,7 +250,22 @@ namespace SharpAsset
 
 			//Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
 		}
+		public static void BindGlobalProperty(string propName, in Vector2 data/*, bool store = true*/)
+		{
+			if (!globalParams.ContainsKey(propName))
+			{
+				var param = pool.Rent(sizeTable[data.GetType()] + 1);
+				param[0] = VECTOR2;
+				//param.DataAddress = Unsafe.As<Matrix4x4, byte>(ref data);
+				Unsafe.WriteUnaligned(ref param[1], data);
+				//Unsafe.CopyBlock(ref param.dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
+				globalParams.Add(propName, param);
+			}
+			else
+				Unsafe.WriteUnaligned(ref globalParams[propName][1], data);
 
+			//Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
+		}
 		internal void SendData()
 		{
 			if (Shader.IsAllocated is false) return;
@@ -242,13 +294,15 @@ namespace SharpAsset
 			if (TryGetProperty("mesh", out Mesh mesh) is false) return;
 
 			MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
-			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].Values)
-				MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, vertAttrib.shaderLocation, vertAttrib.dimension, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
-
+			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].attribs)
+			{
+				if (Shader.attribArray.TryGetValue(vertAttrib.shaderLocation, out var attrib))
+					MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, attrib.location, vertAttrib.size, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
+			}
 			MainWindow.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
 			MainWindow.backendRenderer.Draw(mesh.indiceType, mesh.Indices.Length);
 			var tbo = 0;
-			MainWindow.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));
+			MainWindow.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));//TODO: generalize this
 		}
 
 		private void SendToGPU(string prop, byte[] data)
@@ -257,8 +311,8 @@ namespace SharpAsset
 				switch (data[0])
 				{
 					case FLOAT: MainWindow.backendRenderer.SendUniform1(Shader.uniformArray[prop], ref data[1]); break;
-					case VECTOR2: break;
-					case VECTOR3: break;
+					case VECTOR2: MainWindow.backendRenderer.SendUniform2(Shader.uniformArray[prop], ref data[1]); break;
+					case VECTOR3: MainWindow.backendRenderer.SendUniform3(Shader.uniformArray[prop], ref data[1]); break;
 					case COLOR4: MainWindow.backendRenderer.SendUniform4(Shader.uniformArray[prop], ref data[1]); break;
 					case MATRIX4X4: MainWindow.backendRenderer.SendMatrix4(Shader.uniformArray[prop], ref data[1]); break;
 					case TEXTURE:

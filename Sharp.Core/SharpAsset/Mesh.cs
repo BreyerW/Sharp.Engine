@@ -16,9 +16,9 @@ namespace SharpAsset
 	{
 		public int stride;//talk to vertex format to be able to query exact attribute
 
-		public Type VertType
+		public Type VertType //TODO: make LoadVertices<T> where T: struct, IVertex on Mesh and here set up VertType same for indices LoadIndices(); 
 		{
-			set
+			internal set
 			{
 				if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(value))
 					RegisterAsAttribute.ParseVertexFormat(value);
@@ -28,8 +28,8 @@ namespace SharpAsset
 		}
 		public IndiceType indiceType;
 		public Type vertsType;
-		public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
-		public string Extension { get { return Path.GetExtension(FullPath); } set { } }
+		public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } }
+		public string Extension { get { return Path.GetExtension(FullPath); } }
 		public string FullPath { get; set; }
 		public UsageHint UsageHint;
 
@@ -104,15 +104,30 @@ namespace SharpAsset
 			return tmpSpan;
 			//Unsafe.As<byte[], TTo[]>(ref verts);
 		}
+		public void LoadVertices<T>(Span<T> vertices) where T : struct, IVertex
+		{
+			VertType = typeof(T);
+			verts = MemoryMarshal.AsBytes(vertices).ToArray();
+		}
+		public void LoadIndices<T>(Span<T> indices) where T : struct
+		{
+			if (typeof(T) == typeof(ushort))
+				indiceType = IndiceType.UnsignedShort;
+			else if (typeof(T) == typeof(uint))
+				indiceType = IndiceType.UnsignedInt;
+			else if (typeof(T) == typeof(sbyte))
+				indiceType = IndiceType.UnsignedByte;
+			Indices = MemoryMarshal.AsBytes(indices).ToArray();
+		}
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)//TODO: wyrzucic to do kodu edytora PlaceIntoView(View view,)
 		{
 			var eObject = new Entity();
 			eObject.transform.Position = worldPos;
-			
+
 			var renderer = eObject.AddComponent<MeshRenderer>();
-			var texture=(Texture)Pipeline.Pipeline.Get<Texture>().Import(@"B:\Sharp.Engine3\Sharp\bin\Debug\Content\duckCM.bmp");
+			var texture = (Texture)Pipeline.Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\duckCM.bmp");
 			//zamienic na ref loading pipeliny
-			renderer.material.BindProperty("mesh",this);
+			renderer.material.BindProperty("mesh", this);
 			renderer.material.BindProperty("MyTexture", ref texture);
 			if (context != null) //make as child of context?
 			{

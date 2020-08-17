@@ -11,73 +11,58 @@ namespace SharpAsset
 	[AttributeUsage(AttributeTargets.Field)]
 	public class RegisterAsAttribute : Attribute
 	{
-		public static Dictionary<Type, Dictionary<VertexAttribute, RegisterAsAttribute>> registeredVertexFormats = new Dictionary<Type, Dictionary<VertexAttribute, RegisterAsAttribute>>();
-
+		public static Dictionary<string, VertexAttribute> specialPropertyNames = new Dictionary<string, VertexAttribute>()
+		{
+			["vertex_position"] = VertexAttribute.POSITION,
+			["vertex_texcoord"] = VertexAttribute.UV,
+			["vertex_normal"] = VertexAttribute.NORMAL,
+			["vertex_color"] = VertexAttribute.COLOR4,
+		};
+		public static Dictionary<Type, (List<RegisterAsAttribute> attribs, Dictionary<VertexAttribute, RegisterAsAttribute> supportedSpecialAttribs)> registeredVertexFormats = new Dictionary<Type, (List<RegisterAsAttribute> attribs, Dictionary<VertexAttribute, RegisterAsAttribute> supportedSpecialAttribs)>();
+		public string shaderLocation;
 		public int offset;
-		public int dimension;
 		public int stride;
-		public int shaderLocation;
-		public VertexAttribute format;
+		public int size;
 		public AttributeType type;
 		//public List<Action<IVertex, object>> generatedFillers = new List<Action<IVertex, object>>();
 
-		public RegisterAsAttribute(VertexAttribute Format, AttributeType Type)
+		public RegisterAsAttribute(AttributeType Type, string customAttributeLocation = "")
 		{
-			format = Format;
-
-			switch (format)
-			{
-				case VertexAttribute.POSITION:
-					shaderLocation = 0;
-					dimension = 3;
-					break;
-
-				case VertexAttribute.COLOR4:
-					shaderLocation = 1;
-					dimension = 4;
-					break;
-
-				case VertexAttribute.UV:
-					shaderLocation = 2;
-					dimension = 2;
-					break;
-
-				case VertexAttribute.NORMAL:
-					shaderLocation = 3;
-					dimension = 3;
-					break;
-					//case default: throw new InvalidOperationException(nameof(format) + " have wrong value"); break;
-			}
+			shaderLocation = customAttributeLocation;
 			type = Type;
 		}
-
 		public static void ParseVertexFormat(Type type)
 		{
 			var fields = type.GetFields().Where(
 				p => p.GetCustomAttribute<RegisterAsAttribute>() != null);
-			int? lastFormat = null;
-			var vertFormat = new Dictionary<VertexAttribute, RegisterAsAttribute>();
-
+			var vertFormat = new List<RegisterAsAttribute>();
+			var supportedSpecialAttribs = new Dictionary<VertexAttribute, RegisterAsAttribute>();
 			foreach (var field in fields)
 			{
 				var attrib = field.GetCustomAttribute<RegisterAsAttribute>();
-				if (lastFormat != (int)attrib.format)
+				attrib.shaderLocation = attrib.shaderLocation is "" ? field.Name : attrib.shaderLocation;
+				attrib.stride = Marshal.SizeOf(field.FieldType);
+				attrib.offset = Marshal.OffsetOf(type, field.Name).ToInt32();
+				var isSepecial = specialPropertyNames.TryGetValue(attrib.shaderLocation, out var specialProperty);
+				if (isSepecial)
 				{
-					lastFormat = (int)attrib.format;
-					attrib.stride = Marshal.SizeOf(field.FieldType);
-					attrib.offset = Marshal.OffsetOf(type, field.Name).ToInt32();
-					//attrib.generatedFillers = new List<Action<IVertex, object>>() { DelegateGenerator.GenerateSetter<IVertex>(field) };
-					vertFormat.Add(attrib.format, attrib);
+					attrib.size = specialProperty switch
+					{
+						VertexAttribute.POSITION => 3,
+						VertexAttribute.COLOR4 => 4,
+						VertexAttribute.UV => 2,
+						VertexAttribute.NORMAL => 3,
+						_ => 1,
+					};
+					supportedSpecialAttribs.Add(specialProperty, attrib);
 				}
-				else if (attrib.format == VertexAttribute.POSITION)
-				{
-					//	dim++; //error prone
-					//vertFormat[attrib.format].generatedFillers.Add(DelegateGenerator.GenerateSetter<IVertex>(field));
-				}
-				//else if (attrib.format == VertexAttribute.UV)
-				//	numOfUV++;
+				else
+					attrib.size = 1;
+				//attrib.generatedFillers = new List<Action<IVertex, object>>() { DelegateGenerator.GenerateSetter<IVertex>(field) };
+				vertFormat.Add(attrib);
+
 			}
-			registeredVertexFormats.Add(type, vertFormat);
+			registeredVertexFormats.Add(type, (vertFormat, supportedSpecialAttribs));
 		}
 	}
 }

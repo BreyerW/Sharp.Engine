@@ -14,7 +14,7 @@ namespace Sharp.Engine.Components
 		internal Vector3 position = Vector3.Zero;
 		internal Vector3 rotation = Vector3.Zero;
 		internal Vector3 scale = Vector3.One;
-		[NonSerializable,JsonIgnore]
+		[NonSerializable, JsonIgnore]
 		public ref readonly Matrix4x4 ModelMatrix
 		{
 			get
@@ -73,7 +73,7 @@ namespace Sharp.Engine.Components
 			{
 				Unsafe.AsRef<Matrix4x4>(modelMatrix.ToPointer()) = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
 			}*/
-			modelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
+			modelMatrix = Matrix4x4.CreateTranslation(position) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateScale(scale);
 		}
 		public Transform(Entity parent) : base(parent)
 		{

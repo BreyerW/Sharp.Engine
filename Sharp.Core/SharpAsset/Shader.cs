@@ -23,7 +23,7 @@ namespace SharpAsset
 		internal int Program;
 
 		internal Dictionary<string, int> uniformArray;//=new Dictionary<UniformType, Dictionary<string, int>> ();
-
+		internal Dictionary<string, (int location, int size)> attribArray;
 		//internal static Dictionary<string, int> globalUniformArray;
 
 		public override string ToString()

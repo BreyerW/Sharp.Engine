@@ -14,6 +14,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.Shapes;
+using System.IO;
 
 namespace SharpSL.BackendRenderers
 {
@@ -27,28 +28,11 @@ namespace SharpSL.BackendRenderers
 		private static Sharp.Color fontColor = Sharp.Color.White;
 		static UIRenderer()
 		{
-			var shader = (Shader)Pipeline.Get<Shader>().Import(@"B:\Sharp.Engine3\Sharp.Core\Content\SDFShader.shader");
+ 			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath+@"\Content\SDFShader.shader");
 			material = new Material();
 			material.Shader = shader;
-			material.BindProperty("color", ref fontColor);
-
-			var mData = new UIVertexFormat[4] {
-						new UIVertexFormat(){ position=new Vector3(0,0,0),texcoords=new Vector2(0,0) },
-						new UIVertexFormat(){ position=new Vector3(0,1,0),texcoords=new Vector2(0,1) },
-						new UIVertexFormat(){ position=new Vector3(1,1,0),texcoords=new Vector2(1,1) },
-						new UIVertexFormat(){ position=new Vector3(1,0,0),texcoords=new Vector2(1,0) }
-					}.AsSpan();
-			var data = MemoryMarshal.AsBytes(mData).ToArray();
-			var indices = MemoryMarshal.AsBytes(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan()).ToArray();
-			var Mesh = new Mesh();
-			Mesh.verts = data;
-			Mesh.Indices = indices;
-			Mesh.indiceType = IndiceType.UnsignedShort;
-			Mesh.VertType = typeof(UIVertexFormat);
-			Mesh.UsageHint = UsageHint.StaticDraw;
-			Pipeline.Get<Mesh>().Register(ref Mesh);
-			material.BindProperty("mesh", Mesh);
-
+			material.BindProperty("color", fontColor);
+			material.BindProperty("mesh",Pipeline.Get<Mesh>().GetAsset("square"));
 		}
 		public void DrawBox(int x, int y, int width, int height, int color)//DrawMesh?
 		{
@@ -333,7 +317,7 @@ namespace SharpSL.BackendRenderers
 
 		public int GetTexture(string name)
 		{
-			Pipeline.Get<Texture>().Import(@"B:\Sharp.Engine3\Sharp.Core\SharpSL\BackendRenderers\Content\" + name);
+			Pipeline.Get<Texture>().Import(Application.projectPath+@"\SharpSL\BackendRenderers\Content\" + name);
 			return TexturePipeline.nameToKey.IndexOf(System.IO.Path.GetFileNameWithoutExtension(name));
 		}
 

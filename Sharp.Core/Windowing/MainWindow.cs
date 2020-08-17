@@ -7,6 +7,9 @@ using SharpSL.BackendRenderers;
 using Sharp.Windowing;
 using Squid;
 using SharpAsset.Pipeline;
+using Sharp.Editor;
+using System.Runtime.InteropServices;
+using SharpAsset;
 
 namespace Sharp
 {

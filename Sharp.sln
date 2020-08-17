@@ -20,6 +20,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Typography.MsdfGen.Core", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Typography.OpenFont", "Typography-master(1)\Typography-master\Typography.OpenFont\Typography.OpenFont\Typography.OpenFont.csproj", "{A012875D-A81B-4943-967B-E8570DE262AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Text.Json", "System.Text.Json\System.Text.Json.csproj", "{81AEA99F-4103-4F8B-A446-5F8394D627A0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,24 @@ Global
 		{A012875D-A81B-4943-967B-E8570DE262AB}.Release|x64.Build.0 = Release|Any CPU
 		{A012875D-A81B-4943-967B-E8570DE262AB}.Release|x86.ActiveCfg = Release|Any CPU
 		{A012875D-A81B-4943-967B-E8570DE262AB}.Release|x86.Build.0 = Release|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Debug|x64.Build.0 = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Debug|x86.Build.0 = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.DebugFormat|Any CPU.ActiveCfg = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.DebugFormat|Any CPU.Build.0 = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.DebugFormat|x64.ActiveCfg = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.DebugFormat|x64.Build.0 = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.DebugFormat|x86.ActiveCfg = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.DebugFormat|x86.Build.0 = Debug|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Release|x64.ActiveCfg = Release|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Release|x64.Build.0 = Release|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Release|x86.ActiveCfg = Release|Any CPU
+		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

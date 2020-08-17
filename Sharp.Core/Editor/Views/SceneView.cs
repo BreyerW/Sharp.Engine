@@ -130,7 +130,7 @@ namespace Sharp.Editor.Views
 			Camera.main.AspectRatio = (float)Size.x / Size.y;
 			Camera.main.SetProjectionMatrix();
 			Camera.main.SetOrthoMatrix(Canvas.Size.x, Canvas.Size.y);
-			Camera.main.frustum = new Frustum(Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix);
+			Camera.main.frustum = new Frustum(Camera.main.ViewMatrix * Camera.main.ProjectionMatrix);
 		}
 
 		private void SceneView_KeyDown(Control sender, KeyEventArgs args)
@@ -209,7 +209,7 @@ namespace Sharp.Editor.Views
 			//MainWindow.backendRenderer.ClearBuffer();
 
 			MainWindow.backendRenderer.SetStandardState();
-			var projMat = Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+			var projMat = Camera.main.ViewMatrix * Camera.main.ProjectionMatrix;
 			DrawHelper.DrawGrid(Color.White, Camera.main.Parent.transform.Position, cell_size, grid_size, ref projMat);
 
 			//foreach (var renderer in renderers)
@@ -224,10 +224,10 @@ namespace Sharp.Editor.Views
 					Matrix4x4.Decompose(globalMode ? entity.transform.ModelMatrix.Inverted() : entity.transform.ModelMatrix, out _, out var rot, out var trans);
 					var mvpMat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans) * projMat; //Matrix4x4.CreateFromYawPitchRoll(NumericsExtensions.Deg2Rad * entity.rotation.X, NumericsExtensions.Deg2Rad * entity.rotation.Y, NumericsExtensions.Deg2Rad * entity.rotation.Z) * Matrix4x4.CreateTranslation(entity.position) * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;//TODO: check if properly hit, probably trans first, quat later
 
-					MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
+					//MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
 					MainWindow.backendRenderer.ClearDepth();
-					Manipulators.DrawCombinedGizmos(entity);
-					MainEditorView.editorBackendRenderer.UnloadMatrix();
+					Manipulators.DrawCombinedGizmos(entity, new Vector2(Size.x, Size.y));
+					//MainEditorView.editorBackendRenderer.UnloadMatrix();
 					/*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
                     if (renderer != null)
                     {
@@ -300,11 +300,11 @@ namespace Sharp.Editor.Views
 				if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 				{
 					Matrix4x4.Decompose(globalMode ? entity.transform.ModelMatrix.Inverted() : entity.transform.ModelMatrix, out _, out var rot, out var trans);
-					var mvpMat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans) * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+					var mvpMat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans) * Camera.main.ViewMatrix * Camera.main.ProjectionMatrix;
 
 					MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
 
-					Manipulators.DrawCombinedGizmos(entity, xColor, yColor, zColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
+					Manipulators.DrawCombinedGizmos(entity,new Vector2(Size.x,Size.y), xColor, yColor, zColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
 
 					MainEditorView.editorBackendRenderer.UnloadMatrix();
 				}

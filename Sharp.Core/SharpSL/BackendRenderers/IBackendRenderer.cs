@@ -17,7 +17,7 @@ namespace SharpSL.BackendRenderers
 		//void Do<IndexType> (Work whatToDo,ref Mesh<IndexType> mesh) where IndexType: struct, IConvertible;
 		void Allocate(Target target, UsageHint usageHint, ref byte addr, int length, bool reuse = false);
 
-		void Allocate(int Program, int VertexID, int FragmentID, string VertexSource, string FragmentSource, Dictionary<string, int> uniformArray);
+		void Allocate(int Program, int VertexID, int FragmentID, string VertexSource, string FragmentSource, Dictionary<string, int> uniformArray, Dictionary<string, (int location, int size)> attribArray);
 
 		void Allocate(ref byte bitmap, int width, int height, TextureFormat pixelFormat);
 

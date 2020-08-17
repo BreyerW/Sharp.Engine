@@ -35,7 +35,7 @@ namespace Sharp
 			{
 				projectionMatrix = value;
 				if (main != null)
-					Material.SetGlobalProperty("camProjection", ref main.projectionMatrix);
+					Material.BindGlobalProperty("camProjection", main.projectionMatrix);
 				// else
 				//     Material.SetGlobalProperty("camProjection", ref projectionMatrix);
 			}
@@ -71,9 +71,9 @@ namespace Sharp
                  // Material.BindGlobalProperty("camProjection", () => ref main.projectionMatrix);
              }*/
 		}
-	
+
 		private Matrix4x4 modelViewMatrix;
-		public Matrix4x4 ModelViewMatrix
+		public Matrix4x4 ViewMatrix
 		{
 			get
 			{
@@ -83,7 +83,10 @@ namespace Sharp
 			{
 				modelViewMatrix = value;
 				if (main != null)
-					Material.SetGlobalProperty("camView", ref main.modelViewMatrix);
+				{
+					Material.BindGlobalProperty("camView", main.modelViewMatrix);
+					Material.BindGlobalProperty("camWorldView", main.modelViewMatrix.Inverted());
+				}
 				// else
 				//   Material.SetGlobalProperty("camView", ref modelViewMatrix);
 			}
@@ -171,10 +174,10 @@ namespace Sharp
 		public void SetModelviewMatrix()
 		{
 			var translationMatrix = Matrix4x4.CreateTranslation(-Parent.transform.Position);
-			var angles = Parent.transform.Rotation * NumericsExtensions.Pi / 180f;
+			var angles = Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
 			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
 			//modelViewMatrix = rotationMatrix*translationMatrix; orbit
-			ModelViewMatrix = translationMatrix * rotationMatrix; //pan
+			ViewMatrix = translationMatrix * rotationMatrix; //pan
 		}
 
 		private static bool WithinEpsilon(float a, float b)
@@ -227,7 +230,10 @@ namespace Sharp
 			vec.Y = -(2.0f * y / (float)height - 1);
 			return vec;
 		}
-
+		public Vector2 NDCToScreen(Vector2 pos, int width, int height)
+		{
+			return NDCToScreen(pos.X, pos.Y, width, height);
+		}
 		public Vector2 NDCToScreen(float x, float y, int width, int height)
 		{
 			Vector2 vec;
@@ -303,7 +309,7 @@ namespace Sharp
 		/// <param name="time">
 		/// A <see cref="System.Double"/> containing the time since the last update
 		/// </param>
-		public void Move(float x, float y, float z, float time = 1f)
+		public void Move(float x, float y, float z, float time = 0.2f)
 		{
 			Movement.X = 0;
 			Movement.Y = 0;

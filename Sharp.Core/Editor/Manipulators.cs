@@ -28,15 +28,15 @@ namespace Sharp.Editor
 		internal static Matrix4x4 startMat;
 		internal static ChangeValueCommand newCommand;
 
-		public static void DrawCombinedGizmos(Entity entity)
+		public static void DrawCombinedGizmos(Entity entity, Vector2 winSize)
 		{
-			DrawCombinedGizmos(entity, (selectedAxisId == 1 ? selectedColor : xColor), (selectedAxisId == 2 ? selectedColor : yColor), (selectedAxisId == 3 ? selectedColor : zColor), (selectedAxisId == 4 ? selectedColor : xColor), (selectedAxisId == 5 ? selectedColor : yColor), (selectedAxisId == 6 ? selectedColor : zColor), (selectedAxisId == 7 ? selectedColor : xColor), (selectedAxisId == 8 ? selectedColor : yColor), (selectedAxisId == 9 ? selectedColor : zColor), 3f);
+			DrawCombinedGizmos(entity, winSize, (selectedAxisId == 1 ? selectedColor : xColor), (selectedAxisId == 2 ? selectedColor : yColor), (selectedAxisId == 3 ? selectedColor : zColor), (selectedAxisId == 4 ? selectedColor : xColor), (selectedAxisId == 5 ? selectedColor : yColor), (selectedAxisId == 6 ? selectedColor : zColor), (selectedAxisId == 7 ? selectedColor : xColor), (selectedAxisId == 8 ? selectedColor : yColor), (selectedAxisId == 9 ? selectedColor : zColor), 3f);
 		}
 
-		public static void DrawCombinedGizmos(Entity entity, Color xColor, Color yColor, Color zColor, Color xRotColor, Color yRotColor, Color zRotColor, Color xScaleColor, Color yScaleColor, Color zScaleColor, float thickness = 5f)
+		public static void DrawCombinedGizmos(Entity entity, Vector2 winSize, Color xColor, Color yColor, Color zColor, Color xRotColor, Color yRotColor, Color zRotColor, Color xScaleColor, Color yScaleColor, Color zScaleColor, float thickness = 5f)
 		{
-			float scale = (Camera.main.Parent.transform.Position - entity.transform.Position).Length() / 25f;
-			DrawHelper.DrawTranslationGizmo(thickness, scale, xColor, yColor, zColor);
+			float scale = (Camera.main.Parent.transform.Position - entity.transform.Position).Length() / 100.0f;
+			DrawHelper.DrawTranslationGizmo(entity, winSize, thickness, scale, xColor, yColor, zColor);
 			DrawHelper.DrawRotationGizmo(thickness, scale, xRotColor, yRotColor, zRotColor);
 			DrawHelper.DrawScaleGizmo(thickness, scale, xScaleColor, yScaleColor, zScaleColor, scaleOffset);
 			if (rotVectSource.HasValue)
@@ -53,9 +53,9 @@ namespace Sharp.Editor
 				}
 				Matrix4x4.Decompose(startMat, out _, out var r, out _);
 				var rot = Matrix4x4.CreateFromQuaternion(Quaternion.Inverse(r));
-				var mat = rot * startMat * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
+				var mat = rot * startMat * Camera.main.ViewMatrix * Camera.main.ProjectionMatrix;
 				var fill = new Color(fillColor.R, fillColor.G, fillColor.B, fillColor.A);
-				DrawHelper.DrawFilledPolyline(thickness, 3f * scale, fill, ref mat, ref vectors);
+				//DrawHelper.DrawFilledPolyline(thickness, 3f * scale, fill, ref mat, ref vectors);
 			}
 		}
 

@@ -64,12 +64,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="C:\Users\Damian\.nuget\packages\sharpfont.dependencies\2.6.0\bin\msvc10\x86\freetype6.dll" Link="freetype6.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="C:\Users\Damian\.nuget\packages\sharpfont\4.0.1\config\SharpFont.dll.config" Link="SharpFont.dll.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Content\duckCM.bmp" />
     <Content Include="SharpSL\BackendRenderers\Content\border.png" />
     <Content Include="SharpSL\BackendRenderers\Content\button_default.png" />
@@ -126,12 +120,13 @@
     <PackageReference Include="FastMember" Version="1.5.0" />
     <PackageReference Include="JsonDiffPatch.Net" Version="2.1.0" />
     <PackageReference Include="Lidgren.Network.Portable" Version="1.0.1" />
-    <PackageReference Include="Microsoft.Experimental.Collections" Version="1.0.6-preview2-190117-2" />
+    <PackageReference Include="Microsoft.Experimental.Collections" Version="1.0.6-e190117-3" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.2.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="OpenTK" Version="2.0.0" />
     <PackageReference Include="Puresharp" Version="0.0.0" />
     <PackageReference Include="SDL2-CS.NetCore" Version="2.0.8" />
+    <PackageReference Include="SDL2.Core" Version="2.2.0" />
     <PackageReference Include="SharpAvi" Version="2.1.2" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0009" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />

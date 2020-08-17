@@ -69,11 +69,14 @@ namespace SharpAsset.Pipeline
 			string vertexShader, fragmentShader;
 			ProcessIncludes(vertexShaderBuffer, out vertexShader);
 			ProcessIncludes(fragmentShaderBuffer, out fragmentShader);
-			var shader = new Shader();
-			shader.uniformArray = new Dictionary<string, int>();
-			shader.FullPath = name;
-			shader.VertexSource = vertexShader;
-			shader.FragmentSource = fragmentShader;
+			var shader = new Shader()
+			{
+				uniformArray = new Dictionary<string, int>(),
+				attribArray = new Dictionary<string, (int, int)>(),
+				FullPath = name,
+				VertexSource = vertexShader,
+				FragmentSource = fragmentShader,
+			};
 			return shader;
 		}
 
