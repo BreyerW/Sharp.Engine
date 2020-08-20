@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Reflection;
-using Sharp;
-using System.Runtime.CompilerServices;
 
 namespace SharpAsset
 {
@@ -24,7 +22,6 @@ namespace SharpAsset
 		public int stride;
 		public int size;
 		public AttributeType type;
-		//public List<Action<IVertex, object>> generatedFillers = new List<Action<IVertex, object>>();
 
 		public RegisterAsAttribute(AttributeType Type, string customAttributeLocation = "")
 		{
@@ -58,7 +55,6 @@ namespace SharpAsset
 				}
 				else
 					attrib.size = 1;
-				//attrib.generatedFillers = new List<Action<IVertex, object>>() { DelegateGenerator.GenerateSetter<IVertex>(field) };
 				vertFormat.Add(attrib);
 
 			}

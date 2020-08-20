@@ -95,7 +95,7 @@ namespace SharpAsset.Pipeline
 			internalMesh.VertType = vertType;
 			internalMesh.VBO = -1;
 			internalMesh.EBO = -1;
-			return this[Register(ref internalMesh)];
+			return this[Register(internalMesh)];
 		}
 
 		private void CopyBytes(RegisterAsAttribute format, int index, ref byte[] attribBytes, ref Span<byte> vertBytes)

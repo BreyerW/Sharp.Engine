@@ -221,13 +221,8 @@ namespace Sharp.Editor.Views
 			{
 				//foreach (var selected in SceneStructureView.tree.SelectedChildren)
 				{
-					Matrix4x4.Decompose(globalMode ? entity.transform.ModelMatrix.Inverted() : entity.transform.ModelMatrix, out _, out var rot, out var trans);
-					var mvpMat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans) * projMat; //Matrix4x4.CreateFromYawPitchRoll(NumericsExtensions.Deg2Rad * entity.rotation.X, NumericsExtensions.Deg2Rad * entity.rotation.Y, NumericsExtensions.Deg2Rad * entity.rotation.Z) * Matrix4x4.CreateTranslation(entity.position) * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;//TODO: check if properly hit, probably trans first, quat later
-
-					//MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
 					MainWindow.backendRenderer.ClearDepth();
 					Manipulators.DrawCombinedGizmos(entity, new Vector2(Size.x, Size.y));
-					//MainEditorView.editorBackendRenderer.UnloadMatrix();
 					/*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
                     if (renderer != null)
                     {
@@ -240,13 +235,15 @@ namespace Sharp.Editor.Views
 
 			//GL.DebugMessageCallback(DebugCallbackInstance, IntPtr.Zero);
 			MainWindow.backendRenderer.Viewport(0, 0, Canvas.Size.x, Canvas.Size.y);
+			//TODO: skip buffer swap when rendering picking? and add fragment shader with editorPickColor to every shader but only in editor?
+			//MainWindow.backendRenderer.ChangeShader();
 		}
 
 		private bool PickTestForGizmo()
 		{
 			//MainWindow.backendRenderer.ClearBuffer();
 			MainWindow.backendRenderer.SetFlatColorState();
-			MainWindow.backendRenderer.ChangeShader();
+			//MainWindow.backendRenderer.ChangeShader();
 			if (SceneStructureView.tree.SelectedNode != null)
 			{
 				Color xColor = Color.Red, yColor = Color.LimeGreen, zColor = Color.Blue;
@@ -299,16 +296,9 @@ namespace Sharp.Editor.Views
 				//foreach (var selected in SceneStructureView.tree.SelectedNode)
 				if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 				{
-					Matrix4x4.Decompose(globalMode ? entity.transform.ModelMatrix.Inverted() : entity.transform.ModelMatrix, out _, out var rot, out var trans);
-					var mvpMat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans) * Camera.main.ViewMatrix * Camera.main.ProjectionMatrix;
-
-					MainEditorView.editorBackendRenderer.LoadMatrix(ref mvpMat);
-
-					Manipulators.DrawCombinedGizmos(entity,new Vector2(Size.x,Size.y), xColor, yColor, zColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
-
-					MainEditorView.editorBackendRenderer.UnloadMatrix();
+					Manipulators.DrawCombinedGizmos(entity, new Vector2(Size.x, Size.y), xColor, yColor, zColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
 				}
-				MainWindow.backendRenderer.FinishCommands();
+				//MainWindow.backendRenderer.FinishCommands();
 				if (locPos.HasValue)
 				{
 					var pixel = MainWindow.backendRenderer.ReadPixels(Squid.UI.MousePosition.x, Camera.main.height - Squid.UI.MousePosition.y - 1 /*locPos.Value.y - 64*/, 1, 1);

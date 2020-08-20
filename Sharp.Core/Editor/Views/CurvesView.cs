@@ -692,7 +692,7 @@ namespace Sharp.Editor.Views
 
         protected override void DrawBefore()
         {
-            MainWindow.backendRenderer.ChangeShader();
+           // MainWindow.backendRenderer.ChangeShader();
             OnGUI();
         }
 

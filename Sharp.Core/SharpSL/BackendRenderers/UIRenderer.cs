@@ -237,7 +237,7 @@ namespace SharpSL.BackendRenderers
 					};
 					//var bitmap = new Span<byte>(bytes, width * height).ToArray();
 
-					Pipeline.Get<Texture>().Register(ref tex);
+					Pipeline.Get<Texture>().Register(tex);
 				}
 			}
 			f.metrics.Add(c, (tex, PixelToPointSize(glyph.Instance.LeftSideBearing), PixelToPointSize(glyph.Instance.AdvanceWidth)));

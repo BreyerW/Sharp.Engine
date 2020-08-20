@@ -28,7 +28,7 @@ namespace SharpAsset.Pipeline
 				}
 				var shader = SplitShaders(shaderStringBuffer, ref pathToFile);
 				shader.Program = -1;
-				return this[Register(ref shader)];
+				return this[Register(shader)];
 			}
 		}
 

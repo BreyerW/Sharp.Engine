@@ -34,7 +34,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public void FinishCommands()
 		{
-			GL.Flush();
+			//GL.Flush();
 			//GL.Finish();
 			// GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
 		}
@@ -174,7 +174,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 			Console.WriteLine("cast: " + watch.ElapsedTicks);*/
 		}
 
-		public void Allocate(int Program, int VertexID, int FragmentID, string VertexSource, string FragmentSource, Dictionary<string, int> uniformArray, Dictionary<string, (int location,int size)> attribArray)
+		public void Allocate(int Program, int VertexID, int FragmentID, string VertexSource, string FragmentSource, Dictionary<string, int> uniformArray, Dictionary<string, (int location, int size)> attribArray)
 		{
 			//if (shader.uniformArray.Count > 0)
 			//  return;
@@ -219,7 +219,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 				GL.GetActiveAttrib(Program, i, stringBuilder.Capacity, out _, out var size, out attribType, stringBuilder);
 				Console.WriteLine(stringBuilder.ToString() + " " + attribType + " : " + size);
 				if (!attribArray.ContainsKey(stringBuilder.ToString()))
-					attribArray.Add(stringBuilder.ToString(), (GL.GetAttribLocation(Program, stringBuilder.ToString()),size)); //TODO: change to bindAttrib via parsing all vertex formats and binding all fields?
+					attribArray.Add(stringBuilder.ToString(), (GL.GetAttribLocation(Program, stringBuilder.ToString()), size)); //TODO: change to bindAttrib via parsing all vertex formats and binding all fields?
 			}
 
 			GL.GetProgram(Program, GetProgramParameterName.ActiveUniforms, out var numOfUniforms);

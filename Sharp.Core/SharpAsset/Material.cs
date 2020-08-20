@@ -50,6 +50,7 @@ namespace SharpAsset
 		private const byte MATRIX4X4PTR = byte.MaxValue;
 		private const byte COLOR4PTR = byte.MaxValue - 1;
 
+		private static int lastShaderUsed = -1;
 		private static ArrayPool<byte> pool = ArrayPool<byte>.Shared;
 		private static Dictionary<Type, int> sizeTable = new Dictionary<Type, int>()
 		{
@@ -65,7 +66,6 @@ namespace SharpAsset
 		};
 		//private int lastSlot;
 		private int shaderId;
-
 		private static Dictionary<string, byte[]> globalParams = new Dictionary<string, byte[]>();
 		[JsonProperty]
 		internal Dictionary<string, byte[]> localParams;
@@ -154,7 +154,7 @@ namespace SharpAsset
 		}
 		internal void BindProperty(string propName, in Mesh data)//TODO: change to BindMesh without property name?
 		{
-			var i = MeshPipeline.nameToKey.IndexOf(data.Name);
+			var i = MeshPipeline.nameToKey.IndexOf(data.Name);//TODO: change to rely on pinned heap object and intptr?
 			if (localParams.TryGetValue(propName, out var addr))
 				Unsafe.WriteUnaligned(ref addr[1], i);
 			else
@@ -224,16 +224,6 @@ namespace SharpAsset
 			data = default;
 			return false;
 		}
-		internal void InternalSetProperty(string propName, in Matrix4x4 data)
-		{
-			if (Shader.IsAllocated)
-				MainWindow.backendRenderer.SendMatrix4(Shader.uniformArray[propName], ref Unsafe.As<float, byte>(ref Unsafe.AsRef(data).M11));
-		}
-		internal void InternalSetProperty(string propName, in Texture data)
-		{
-			if (Shader.IsAllocated)
-				MainWindow.backendRenderer.SendTexture2D(Shader.uniformArray[propName], ref Unsafe.As<int, byte>(ref Unsafe.AsRef(data).TBO));
-		}
 		public static void BindGlobalProperty(string propName, in Matrix4x4 data/*, bool store = true*/)
 		{
 			if (!globalParams.ContainsKey(propName))
@@ -268,8 +258,13 @@ namespace SharpAsset
 		}
 		internal void SendData()
 		{
-			if (Shader.IsAllocated is false) return;
 
+			if (Shader.IsAllocated is false) return;
+			if (Material.lastShaderUsed != Shader.Program)
+			{
+				MainWindow.backendRenderer.Use(Shader.Program);
+				lastShaderUsed = Shader.Program;
+			}
 			var idLight = 0;
 			if (Shader.uniformArray.ContainsKey("ambient"))
 			{
@@ -294,12 +289,20 @@ namespace SharpAsset
 			if (TryGetProperty("mesh", out Mesh mesh) is false) return;
 
 			MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
+
 			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].attribs)
 			{
 				if (Shader.attribArray.TryGetValue(vertAttrib.shaderLocation, out var attrib))
 					MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, attrib.location, vertAttrib.size, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
 			}
+
 			MainWindow.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
+			if (mesh.UsageHint is UsageHint.DynamicDraw)
+			{
+				MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
+				MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
+				//mesh.needUpdate = false;
+			}
 			MainWindow.backendRenderer.Draw(mesh.indiceType, mesh.Indices.Length);
 			var tbo = 0;
 			MainWindow.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));//TODO: generalize this

@@ -22,7 +22,7 @@ namespace SharpAsset.Pipeline
 				return this[nameToKey.IndexOf(name)];
 			var font = new Font() { metrics = new Dictionary<uint, (Texture tex, float bearing, float advance)>() };
 			font.FullPath = pathToFile;
-			return this[Register(ref font)];
+			return this[Register(font)];
 		}
 	}
 }

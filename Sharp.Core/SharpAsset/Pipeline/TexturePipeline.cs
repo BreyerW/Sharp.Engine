@@ -31,7 +31,7 @@ namespace SharpAsset.Pipeline
 				texture.FullPath = pathToFile;
 				texture.bitmap = MemoryMarshal.AsBytes(image.GetPixelSpan()).ToArray();
 			}
-			return this[Register(ref texture)];
+			return this[Register(texture)];
 		}
 
 		private static bool IsPowerOfTwo(int x)

@@ -33,8 +33,8 @@ namespace SharpAsset
 		public string FullPath { get; set; }
 		public UsageHint UsageHint;
 
-		public byte[] Indices;
-		public byte[] verts;
+		internal byte[] Indices;
+		internal byte[] verts;
 
 		public BoundingBox bounds;
 
@@ -42,6 +42,7 @@ namespace SharpAsset
 
 		internal int VBO;
 		internal int EBO;
+		//internal bool needUpdate;
 
 		public Span<byte> SpanToMesh
 		{
@@ -104,10 +105,21 @@ namespace SharpAsset
 			return tmpSpan;
 			//Unsafe.As<byte[], TTo[]>(ref verts);
 		}
+		public void LoadVertices(byte[] vertices)
+		{
+			verts = vertices;
+			// = true;
+		}
+		public void LoadIndices(byte[] indices)
+		{
+			Indices = indices;
+			//needUpdate = true;
+		}
 		public void LoadVertices<T>(Span<T> vertices) where T : struct, IVertex
 		{
 			VertType = typeof(T);
 			verts = MemoryMarshal.AsBytes(vertices).ToArray();
+			//needUpdate = true;
 		}
 		public void LoadIndices<T>(Span<T> indices) where T : struct
 		{
@@ -118,6 +130,7 @@ namespace SharpAsset
 			else if (typeof(T) == typeof(sbyte))
 				indiceType = IndiceType.UnsignedByte;
 			Indices = MemoryMarshal.AsBytes(indices).ToArray();
+			//needUpdate = true;
 		}
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)//TODO: wyrzucic to do kodu edytora PlaceIntoView(View view,)
 		{

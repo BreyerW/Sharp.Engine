@@ -1,5 +1,7 @@
 ﻿using Sharp.Commands;
 using Sharp.Editor.Views;
+using SharpAsset;
+using SharpAsset.Pipeline;
 using System;
 using System.Numerics;
 
@@ -14,6 +16,7 @@ namespace Sharp.Editor
 		public static readonly Color yColor = new Color(0xFF00AA00);
 		public static readonly Color zColor = new Color(0xFFAA0000);
 
+		internal static Material discMaterial;
 		internal static int selectedAxisId = 0;
 		internal static float? rotAngleOrigin;
 		internal static float angle;
@@ -28,6 +31,20 @@ namespace Sharp.Editor
 		internal static Matrix4x4 startMat;
 		internal static ChangeValueCommand newCommand;
 
+		static Manipulators()
+		{
+			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GizmoShader.shader");
+			discMaterial = new Material();
+			discMaterial.Shader = shader;
+			CreatePrimitiveMesh.numVertices = halfCircleSegments;
+			var disc = CreatePrimitiveMesh.GenerateEditorDisc(Vector3.UnitY, Vector3.UnitX);
+
+			disc.UsageHint = UsageHint.DynamicDraw;
+			Pipeline.Get<Mesh>().Register(disc);
+			discMaterial.BindProperty("mesh", disc);
+			discMaterial.BindProperty("len", new Vector2(3));
+		}
+
 		public static void DrawCombinedGizmos(Entity entity, Vector2 winSize)
 		{
 			DrawCombinedGizmos(entity, winSize, (selectedAxisId == 1 ? selectedColor : xColor), (selectedAxisId == 2 ? selectedColor : yColor), (selectedAxisId == 3 ? selectedColor : zColor), (selectedAxisId == 4 ? selectedColor : xColor), (selectedAxisId == 5 ? selectedColor : yColor), (selectedAxisId == 6 ? selectedColor : zColor), (selectedAxisId == 7 ? selectedColor : xColor), (selectedAxisId == 8 ? selectedColor : yColor), (selectedAxisId == 9 ? selectedColor : zColor), 3f);
@@ -36,26 +53,38 @@ namespace Sharp.Editor
 		public static void DrawCombinedGizmos(Entity entity, Vector2 winSize, Color xColor, Color yColor, Color zColor, Color xRotColor, Color yRotColor, Color zRotColor, Color xScaleColor, Color yScaleColor, Color zScaleColor, float thickness = 5f)
 		{
 			float scale = (Camera.main.Parent.transform.Position - entity.transform.Position).Length() / 100.0f;
-			DrawHelper.DrawTranslationGizmo(entity, winSize, thickness, scale, xColor, yColor, zColor);
-			DrawHelper.DrawRotationGizmo(thickness, scale, xRotColor, yRotColor, zRotColor);
-			DrawHelper.DrawScaleGizmo(thickness, scale, xScaleColor, yScaleColor, zScaleColor, scaleOffset);
+			Matrix4x4.Decompose(SceneView.globalMode ? entity.transform.ModelMatrix.Inverted() : entity.transform.ModelMatrix, out _, out var rot, out var trans);
+
+			var scaleMat = Matrix4x4.CreateScale(scale, scale, scale);
+			var mat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans);
+			Material.BindGlobalProperty("viewPort", winSize);
+
+			var rotationX = Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, NumericsExtensions.Deg2Rad * 90);
+			var rotationY = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, -NumericsExtensions.Deg2Rad * 90);
+			var rotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, NumericsExtensions.Deg2Rad * 90);
+
+
+			DrawHelper.DrawRotationGizmo(scaleMat * rotationX * mat, scaleMat * rotationY * mat, scaleMat * rotationZ * mat, xRotColor, yRotColor, zRotColor);
+			DrawHelper.DrawScaleGizmo(scaleMat * rotationX * mat, scaleMat * rotationY * mat, scaleMat * rotationZ * mat, xScaleColor, yScaleColor, zScaleColor, scaleOffset);
+			DrawHelper.DrawTranslationGizmo(scaleMat * rotationX * mat, scaleMat * rotationY * mat, scaleMat * rotationZ * mat, xColor, yColor, zColor);
 			if (rotVectSource.HasValue)
 			{
 				var cross = Vector3.Cross(startAxis, currentAngle).Normalize();
 				var fullAngle = NumericsExtensions.CalculateAngle(startAxis, currentAngle);
-				var incAngle = fullAngle / halfCircleSegments;
-				var vectors = new Vector3[halfCircleSegments + 1];
-				vectors[0] = new Vector3(0, 0, 0);
-				for (uint i = 1; i < halfCircleSegments + 1; i++)
-				{
-					var rotateMat = Matrix4x4.CreateFromAxisAngle(cross, incAngle * (i - 1));
-					vectors[i] = startAxis.Transformed(rotateMat) * 3f * scale;
-				}
+				CreatePrimitiveMesh.numVertices = halfCircleSegments;
+				CreatePrimitiveMesh.totalAngleDeg = fullAngle * NumericsExtensions.Rad2Deg;
+				var disc = CreatePrimitiveMesh.GenerateEditorDisc(startAxis, currentAngle);
+				ref var origDisc = ref Pipeline.Get<Mesh>().GetAsset("editor_disc");
+				origDisc.LoadVertices(disc.verts);
+				origDisc.LoadIndices(disc.Indices);
+
 				Matrix4x4.Decompose(startMat, out _, out var r, out _);
-				var rot = Matrix4x4.CreateFromQuaternion(Quaternion.Inverse(r));
-				var mat = rot * startMat * Camera.main.ViewMatrix * Camera.main.ProjectionMatrix;
-				var fill = new Color(fillColor.R, fillColor.G, fillColor.B, fillColor.A);
-				//DrawHelper.DrawFilledPolyline(thickness, 3f * scale, fill, ref mat, ref vectors);
+				var startRot = Matrix4x4.CreateFromQuaternion(Quaternion.Inverse(r));
+				var sMat = startRot * startMat;
+				discMaterial.BindProperty("model", scaleMat * sMat);
+				discMaterial.BindProperty("color", fillColor);
+
+				discMaterial.SendData();
 			}
 		}
 

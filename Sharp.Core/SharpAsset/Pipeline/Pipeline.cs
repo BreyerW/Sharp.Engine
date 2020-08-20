@@ -28,7 +28,7 @@ namespace SharpAsset.Pipeline
 		{
 			return ref this[index];
 		}
-		public int Register(ref T asset)
+		public int Register(in T asset)
 		{
 			nameToKey.Add(asset.Name);
 			var i = nameToKey.IndexOf(asset.Name);

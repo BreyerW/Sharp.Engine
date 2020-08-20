@@ -45,12 +45,11 @@ namespace Sharp
 			//if (!IsLoaded) return;
 
 			var shader = material.Shader;
-			MainWindow.backendRenderer.Use(shader.Program);
 
-			material.InternalSetProperty("model", Parent.transform.ModelMatrix);
+			material.BindProperty("model", Parent.transform.ModelMatrix);
 
 			material.SendData();
-			MainWindow.backendRenderer.ChangeShader();
+			//MainWindow.backendRenderer.ChangeShader();
 		}
 
 		public void Start()
