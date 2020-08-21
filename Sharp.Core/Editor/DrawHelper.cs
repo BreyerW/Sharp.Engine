@@ -47,7 +47,7 @@ namespace Sharp.Editor
 			lineMaterial.BindProperty("len", 15);
 
 			FillMaterial(out gridLineMaterial, ref lineMesh, ref newShader);
-			gridLineMaterial.BindProperty("width", 2f);
+			gridLineMaterial.BindProperty("width", 1f);
 			gridLineMaterial.BindProperty("len", gridSize);
 			gridLineMaterial.BindProperty("color", Color.White);
 		}
@@ -59,8 +59,7 @@ namespace Sharp.Editor
 		}
 		public static void DrawGrid(Vector3 pos)
 		{
-			float scale = (Camera.main.Parent.transform.Position - new Vector3(0, 0, 0)).Length() / 100.0f;
-			var scaleMat = Matrix4x4.CreateScale(scale, scale, scale);
+
 			var s = Matrix4x4.CreateScale(Vector3.One);
 			int num = (int)Math.Round((double)(pos.X / (float)cellSize)) * cellSize;
 			int num2 = (int)Math.Round((double)(pos.Y / (float)cellSize)) * cellSize;
@@ -75,6 +74,8 @@ namespace Sharp.Editor
 				var zLineMat = s * rotation * Matrix4x4.CreateTranslation(globalTranslateX + num4, 0, -globalTranslateZ);
 				gridLineMaterial.BindProperty("model", zLineMat);
 				gridLineMaterial.SendData();
+
+
 				var xLineMat = s * Matrix4x4.CreateTranslation(globalTranslateX, 0, globalTranslateZ + num4);
 				gridLineMaterial.BindProperty("model", xLineMat);
 				gridLineMaterial.SendData();

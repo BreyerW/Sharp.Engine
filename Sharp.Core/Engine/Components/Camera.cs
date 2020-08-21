@@ -86,8 +86,6 @@ namespace Sharp
 					Material.BindGlobalProperty("camView", main.modelViewMatrix);
 					Material.BindGlobalProperty("camWorldView", main.modelViewMatrix.Inverted());
 				}
-				// else
-				//   Material.SetGlobalProperty("camView", ref modelViewMatrix);
 			}
 		}
 
@@ -148,13 +146,6 @@ namespace Sharp
 
 		#region Public Methods
 
-		public void Update()
-		{
-			/*if (TargetPosition !=entityObject.Position)
-            {
-                entityObject.Position = Vector3.Lerp(entityObject.Position, TargetPosition, 1);
-            }*/
-		}
 
 		public void SetProjectionMatrix()
 		{

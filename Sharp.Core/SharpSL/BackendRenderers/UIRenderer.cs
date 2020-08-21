@@ -79,7 +79,6 @@ namespace SharpSL.BackendRenderers
 			underrun = 0;
 			overrun = 0;
 			var shader = sdfMaterial.Shader;
-			//MainWindow.backendRenderer.Use(shader.Program);
 			for (int i = 0; i < chars.Length; i++)
 			{
 
@@ -153,7 +152,6 @@ namespace SharpSL.BackendRenderers
 
 				#endregion Draw glyph
 			}
-			//MainWindow.backendRenderer.ChangeShader();
 		}
 
 		private void GenerateTextureForChar(char c, ref Font f)

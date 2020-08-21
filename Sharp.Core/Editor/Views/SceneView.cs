@@ -44,13 +44,14 @@ namespace Sharp.Editor.Views
 		private static void LoadScene()
 		{
 			var e = new Entity();
-			e.transform.Rotation = new Vector3((float)Math.PI, 0f, 0f);
+			e.transform.position = new Vector3(0f, 10f, 0f);
 			var cam = e.AddComponent<Camera>();
+			Camera.main = cam;
 			cam.SetModelviewMatrix();
 			cam.SetProjectionMatrix();
 			e.name = "Main Camera";
 			//e.OnTransformChanged += ((sender, evnt) => cam.SetModelviewMatrix());
-			Camera.main = cam;
+			
 			cam.active = true;
 			var eLight = new Entity();
 			eLight.name = "Directional_Light";//TODO: Text renderer bugs out on white space sometimes check it
