@@ -57,19 +57,18 @@ namespace Sharp
 		}
 
 		private Matrix4x4 orthoLeftBottomMatrix;
-		[JsonIgnore]
-		public ref Matrix4x4 OrthoLeftBottomMatrix
+		public Matrix4x4 OrthoLeftBottomMatrix
 		{
 			get
 			{
-				return ref orthoLeftBottomMatrix;
+				return orthoLeftBottomMatrix;
 			}
-			/* set
-             {
-                 orthoLeftBottomMatrix = value;
-                 //if (main != null)
-                 // Material.BindGlobalProperty("camProjection", () => ref main.projectionMatrix);
-             }*/
+			set
+			{
+				orthoLeftBottomMatrix = value;
+				if (main != null)
+					Material.BindGlobalProperty("camOrtho", main.orthoLeftBottomMatrix);
+			}
 		}
 
 		private Matrix4x4 modelViewMatrix;

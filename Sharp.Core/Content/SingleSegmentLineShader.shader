@@ -29,8 +29,8 @@ vec3 getCameraDir() {
 }
 void main(void) {
 	
-	vec2 aspectVec = vec2(viewPort.x/viewPort.y, 1.0);
-	/*mat4 projViewModel = camProjection * camView * model;
+	/*vec2 aspectVec = vec2(viewPort.x/viewPort.y, 1.0);
+	mat4 projViewModel = camProjection * camView * model;
 	vec4 previousProjected = projViewModel * vec4(prev_position*len, 1.0);
 	vec4 currentProjected = projViewModel * vec4(vertex_position*len, 1.0);
 	vec4 nextProjected = projViewModel * vec4(next_position*len, 1.0);
@@ -39,23 +39,23 @@ void main(void) {
 	vec2 currentScreen = currentProjected.xy / currentProjected.w * aspectVec;
 	vec2 previousScreen = previousProjected.xy / previousProjected.w * aspectVec;
 	vec2 nextScreen = nextProjected.xy / nextProjected.w * aspectVec;
-
+	float depth = currentProjected.z / currentProjected.w;
 	float orientation = dir;
 
 	//starting point uses (next - current)
-	vec2 dir = vec2(0.0);
+	vec2 direction = vec2(0.0);
 	if (currentScreen == previousScreen) {
-		dir = normalize(nextScreen - currentScreen);
+		direction = normalize(nextScreen - currentScreen);
 	}
 	//ending point uses (current - previous)
 	else if (currentScreen == nextScreen) {
-		dir = normalize(currentScreen - previousScreen);
+		direction = normalize(currentScreen - previousScreen);
 	}
 	//somewhere in middle, needs a join
 	else {
 		//get directions from (C - B) and (B - A)
 		vec2 dirA = normalize((currentScreen - previousScreen));
-		if (miter == 1) {
+		/*if (miter == 1) {
 			vec2 dirB = normalize((nextScreen - currentScreen));
 			//now compute the miter join normal and length
 			vec2 tangent = normalize(dirA + dirB);
@@ -64,17 +64,17 @@ void main(void) {
 			dir = tangent;
 			len = width / dot(miter, perp);
 		}
-		else {
-			dir = dirA;
+		else {*
+			direction = dirA;
 		//}
 	}
-	vec2 normal = vec2(-dir.y,dir.x);
-	normal *= width/viewPort;
+	vec2 normal = vec2(-direction.y,direction.x);
+	normal *= width;
 	normal.x /= aspectVec.x;
 
-	vec4 offset = vec4(normal * orientation, 0.0, 1.0);
+	vec4 offset = vec4(normal * orientation, 0.0, 0.0);
 	gl_Position = currentProjected + offset;
-*/
+	*/
 	/*mat4 s = model*0;
 	s[0][0] = scale;
 	s[1][1] = scale;
@@ -89,7 +89,7 @@ void main(void) {
 	vec2 start2d =start.xy/start.w;
 	vec2 end2d = end.xy/end.w;
 
-	vec2 dir2d = normalize(mix(start2d - end2d, end2d - start2d,isLastPoint))* start.w;
+	vec2 dir2d = normalize(mix(start2d - end2d, end2d - start2d,isLastPoint));
 
 	vec3 middlepoint = normalize((start.xyz + end.xyz) / 2.0);
 	vec3 lineoffset = end.xyz - start.xyz;
@@ -98,12 +98,12 @@ void main(void) {
 	texcoef = max(((texcoef - 1) * ((len / viewPort.x) / (width / viewPort.y))) + 1, 0);
 	start.xy = ((texcoef * (width / viewPort) *-dir) * dir2d.xy) + start.xy;
 
-	dir2d = dir * dir2d * (width/viewPort.yx);
+	dir2d = dir * dir2d * (width/viewPort.yx)* start.w;
 
 	start.x -= dir2d.y; // vertical x
 	start.y += dir2d.x; // vertical y
 	
-	gl_Position = start;
+	gl_Position =vec4(start.xyzw);
 }
 
 #pragma fragment

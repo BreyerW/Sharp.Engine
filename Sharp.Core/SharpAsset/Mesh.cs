@@ -23,6 +23,7 @@ namespace SharpAsset
 				if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(value))
 					RegisterAsAttribute.ParseVertexFormat(value);
 				vertsType = value;
+				
 			}
 			get => vertsType;
 		}
@@ -31,7 +32,7 @@ namespace SharpAsset
 		public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } }
 		public string Extension { get { return Path.GetExtension(FullPath); } }
 		public string FullPath { get; set; }
-		public UsageHint UsageHint;
+		public UsageHint UsageHint; //TODO: make enum flag with dynamic/static size & attributes static size but dynamic attrib mean unchanging indices but changing vertexes themselves
 
 		internal byte[] Indices;
 		internal byte[] verts;
@@ -84,7 +85,7 @@ namespace SharpAsset
 
 		public ref T ReadVertexAtIndex<T>(int index) where T : struct, IVertex
 		{
-			return ref Unsafe.As<byte, T>(ref SpanToMesh[index * stride]); //TODO: use Unsafe.Write to avoid unaligned issue ?
+			return ref Unsafe.As<byte,T>(ref verts[index * stride]);
 		}
 
 		//public TExpected ReadVertexAttributeAtIndex<TExpected>(VertexAttribute attrib,int layer, int index) where TExpected : struct {
@@ -117,6 +118,7 @@ namespace SharpAsset
 		}
 		public void LoadVertices<T>(Span<T> vertices) where T : struct, IVertex
 		{
+			stride = Unsafe.SizeOf<T>();
 			VertType = typeof(T);
 			verts = MemoryMarshal.AsBytes(vertices).ToArray();
 			//needUpdate = true;
@@ -141,7 +143,7 @@ namespace SharpAsset
 			var texture = (Texture)Pipeline.Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\duckCM.bmp");
 			//zamienic na ref loading pipeliny
 			renderer.material.BindProperty("mesh", this);
-			renderer.material.BindProperty("MyTexture", ref texture);
+			renderer.material.BindProperty("MyTexture", texture);
 			if (context != null) //make as child of context?
 			{
 			}

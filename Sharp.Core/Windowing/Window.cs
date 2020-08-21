@@ -120,20 +120,7 @@ namespace Sharp
 		public Window(string title, SDL.SDL_WindowFlags windowFlags, IntPtr existingWin = default)
 		{
 			Pipeline.Initialize();
-			var mData = new UIVertexFormat[4] {
-						new UIVertexFormat(){ position=new Vector3(0,0,0),texcoords=new Vector2(0,0) },
-						new UIVertexFormat(){ position=new Vector3(0,1,0),texcoords=new Vector2(0,1) },
-						new UIVertexFormat(){ position=new Vector3(1,1,0),texcoords=new Vector2(1,1) },
-						new UIVertexFormat(){ position=new Vector3(1,0,0),texcoords=new Vector2(1,0) }
-					}.AsSpan();
-			var Mesh = new Mesh
-			{
-				FullPath = "square",
-				UsageHint = UsageHint.StaticDraw
-			};
-			Mesh.LoadVertices(mData);
-			Mesh.LoadIndices(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan());
-			Pipeline.Get<Mesh>().Register(Mesh);
+
 			var lineData = new LineVertexFormat[4] {
 						new LineVertexFormat(){ vertex_position=new Vector3(0,0,0),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=-1 },
 						new LineVertexFormat(){ vertex_position=new Vector3(0,0,0),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=1 },
@@ -155,7 +142,10 @@ namespace Sharp
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCone());
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCube());
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateTorus());
-
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateSquare());
+			var dSquare = CreatePrimitiveMesh.GenerateSquare("dynamic_square");
+			dSquare.UsageHint = UsageHint.DynamicDraw;
+			Pipeline.Get<Mesh>().Register(dSquare);
 			Pipeline.Get<SharpAsset.Font>().Import(@"C:\Windows\Fonts\times.ttf");
 			if (existingWin == default)
 				handle = SDL.SDL_CreateWindow(title, SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 1000, 700, windowFlags);

@@ -74,6 +74,7 @@ namespace Sharp.Editor.UI.Property
 		{
 			get =>defaultEquality;
 		} */
+
 		public override Component Target
 		{
 			set
@@ -93,6 +94,13 @@ namespace Sharp.Editor.UI.Property
 				ApplyChanges();
 			}
 			get => serializedObject;
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static int DangerousGetObjectDataByteOffset(object obj, FieldInfo field)
+		{
+			var rawObj = Unsafe.As<object, IntPtr>(ref obj);
+
+			return rawObj.ToInt32() - field.FieldHandle.Value.ToInt32();
 		}
 		static PropertyDrawer()
 		{

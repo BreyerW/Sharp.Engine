@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Sharp.Engine.Components;
+using SharpAsset;
 
 namespace Sharp.Editor.Views
 {
@@ -131,6 +132,7 @@ namespace Sharp.Editor.Views
 			Camera.main.SetProjectionMatrix();
 			Camera.main.SetOrthoMatrix(Canvas.Size.x, Canvas.Size.y);
 			Camera.main.frustum = new Frustum(Camera.main.ViewMatrix * Camera.main.ProjectionMatrix);
+			Material.BindGlobalProperty("viewPort", new Vector2(Size.x, Size.y));
 		}
 
 		private void SceneView_KeyDown(Control sender, KeyEventArgs args)
@@ -194,12 +196,14 @@ namespace Sharp.Editor.Views
 		}
 		protected override void DrawAfter()
 		{
+
 			//if (!IsVisible) return;
 			//base.Render();
 			//if (Camera.main is null) return;
 			while (startables.Count != 0)
 				startables.Dequeue().Start();
 			MainWindow.backendRenderer.Viewport(Location.x, Camera.main.height - (Location.y + Size.y), Size.x, Size.y);
+
 			if (locPos.HasValue)
 			{
 				if (!PickTestForGizmo())
@@ -209,8 +213,9 @@ namespace Sharp.Editor.Views
 			//MainWindow.backendRenderer.ClearBuffer();
 
 			MainWindow.backendRenderer.SetStandardState();
-			var projMat = Camera.main.ViewMatrix * Camera.main.ProjectionMatrix;
-			DrawHelper.DrawGrid(Color.White, Camera.main.Parent.transform.Position, cell_size, grid_size, ref projMat);
+
+			//MainWindow.backendRenderer.ClearDepth();
+			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
 
 			//foreach (var renderer in renderers)
 			//   renderer.Render();
@@ -236,7 +241,7 @@ namespace Sharp.Editor.Views
 			//GL.DebugMessageCallback(DebugCallbackInstance, IntPtr.Zero);
 			MainWindow.backendRenderer.Viewport(0, 0, Canvas.Size.x, Canvas.Size.y);
 			//TODO: skip buffer swap when rendering picking? and add fragment shader with editorPickColor to every shader but only in editor?
-			//MainWindow.backendRenderer.ChangeShader();
+
 		}
 
 		private bool PickTestForGizmo()

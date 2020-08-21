@@ -12,14 +12,13 @@ namespace Sharp.Editor
 		private static Shader shader;
 		private static Material planeMaterial;
 		private static Material lineMaterial;
+		private static Material gridLineMaterial;
 		private static Material coneMaterial;
 		private static Material cubeMaterial;
 		private static Material circleMaterial;
-		/*private static readonly Color selectedColor = new Color(0xFF1080FF);
-		private static readonly Color fillColor = new Color(0x801080FF);
-		private static readonly Color xColor = new Color(0xFF0000AA);
-		private static readonly Color yColor = new Color(0xFF00AA00);
-		private static readonly Color zColor = new Color(0xFFAA0000);*/
+		public static int gridSize = 256;
+		public static int cellSize = 16;
+
 
 		static DrawHelper()
 		{
@@ -46,6 +45,11 @@ namespace Sharp.Editor
 			FillMaterial(out lineMaterial, ref lineMesh, ref newShader);
 			lineMaterial.BindProperty("width", 3f);
 			lineMaterial.BindProperty("len", 15);
+
+			FillMaterial(out gridLineMaterial, ref lineMesh, ref newShader);
+			gridLineMaterial.BindProperty("width", 2f);
+			gridLineMaterial.BindProperty("len", gridSize);
+			gridLineMaterial.BindProperty("color", Color.White);
 		}
 		private static void FillMaterial(out Material mat, ref Mesh m, ref Shader s)
 		{
@@ -53,9 +57,29 @@ namespace Sharp.Editor
 			mat.Shader = s;
 			mat.BindProperty("mesh", m);
 		}
-		public static void DrawGrid(Color color, Vector3 pos, float X, float Y, ref Matrix4x4 projMat, int cell_size = 16, int grid_size = 2560)
+		public static void DrawGrid(Vector3 pos)
 		{
-			MainEditorView.editorBackendRenderer.DrawGrid(ref color.r, pos, X, Y, ref projMat, cell_size, grid_size);
+			float scale = (Camera.main.Parent.transform.Position - new Vector3(0, 0, 0)).Length() / 100.0f;
+			var scaleMat = Matrix4x4.CreateScale(scale, scale, scale);
+			var s = Matrix4x4.CreateScale(Vector3.One);
+			int num = (int)Math.Round((double)(pos.X / (float)cellSize)) * cellSize;
+			int num2 = (int)Math.Round((double)(pos.Y / (float)cellSize)) * cellSize;
+			int num3 = gridSize / cellSize;
+			int num5;
+			var globalTranslateX = (float)num - (float)gridSize / 2f;
+			var globalTranslateZ = (float)num2 - (float)gridSize / 2f;
+			var rotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, 90f * NumericsExtensions.Deg2Rad);
+			for (int i = 0; i < num3 + 1; i = num5 + 1)
+			{
+				int num4 = i * cellSize;
+				var zLineMat = s * rotation * Matrix4x4.CreateTranslation(globalTranslateX + num4, 0, -globalTranslateZ);
+				gridLineMaterial.BindProperty("model", zLineMat);
+				gridLineMaterial.SendData();
+				var xLineMat = s * Matrix4x4.CreateTranslation(globalTranslateX, 0, globalTranslateZ + num4);
+				gridLineMaterial.BindProperty("model", xLineMat);
+				gridLineMaterial.SendData();
+				num5 = i;
+			}
 		}
 
 		public static void DrawTranslationGizmo(in Matrix4x4 xRotAndScaleMat, in Matrix4x4 yRotAndScaleMat, in Matrix4x4 zRotAndScaleMat, Color xColor, Color yColor, Color zColor)
@@ -69,7 +93,7 @@ namespace Sharp.Editor
 			planeMaterial.BindProperty("color", yColor);
 			planeMaterial.SendData();
 			var antiRotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, -NumericsExtensions.Deg2Rad * 90);
-			planeMaterial.BindProperty("model", planeTranslation *antiRotationZ* zRotAndScaleMat);
+			planeMaterial.BindProperty("model", planeTranslation * antiRotationZ * zRotAndScaleMat);
 			planeMaterial.BindProperty("color", zColor);
 			planeMaterial.SendData();
 
@@ -113,7 +137,7 @@ namespace Sharp.Editor
 			circleMaterial.BindProperty("color", yColor);
 			circleMaterial.SendData();
 
-			circleMaterial.BindProperty("model",zRotAndScaleMat);
+			circleMaterial.BindProperty("model", zRotAndScaleMat);
 			circleMaterial.BindProperty("color", zColor);
 			circleMaterial.SendData();
 		}
@@ -132,11 +156,6 @@ namespace Sharp.Editor
 			cubeMaterial.BindProperty("model", cubeTranslation * yRotAndScaleMat);
 			cubeMaterial.BindProperty("color", zColor);
 			cubeMaterial.SendData();
-		}
-
-		public static void DrawFilledPolyline(float size, float lineWidth, Color color, ref Matrix4x4 mat, ref Vector3[] vecArray, bool fan = true)
-		{
-			MainEditorView.editorBackendRenderer.DrawFilledPolyline(size, lineWidth, ref color.r, ref mat, ref vecArray, fan);
 		}
 	}
 }

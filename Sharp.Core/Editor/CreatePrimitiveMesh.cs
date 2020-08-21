@@ -15,6 +15,24 @@ public static class CreatePrimitiveMesh
 	public static bool outside = true;
 	public static bool inside = false;
 
+	public static Mesh GenerateSquare(string name = "square")
+	{
+		var mData = new UIVertexFormat[4] {
+						new UIVertexFormat(){ position=new Vector3(0,0,0),texcoords=new Vector2(0,0) },
+						new UIVertexFormat(){ position=new Vector3(0,1,0),texcoords=new Vector2(0,1) },
+						new UIVertexFormat(){ position=new Vector3(1,1,0),texcoords=new Vector2(1,1) },
+						new UIVertexFormat(){ position=new Vector3(1,0,0),texcoords=new Vector2(1,0) }
+					}.AsSpan();
+		var Mesh = new Mesh
+		{
+			FullPath = name,
+			UsageHint = UsageHint.StaticDraw
+		};
+		Mesh.LoadVertices(mData);
+		Mesh.LoadIndices(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan());
+		return Mesh; ;
+	}
+
 	public static Mesh GenerateCylinder(string meshName = "cylinder")
 	{
 		Vector3 end_point = Vector3.Zero;

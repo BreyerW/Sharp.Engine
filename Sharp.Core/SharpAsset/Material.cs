@@ -112,7 +112,7 @@ namespace SharpAsset
 			else
 				Unsafe.WriteUnaligned(ref localParams[propName][1], ptr);
 		}
-		public void BindProperty(string propName, ref Texture data)
+		public void BindProperty(string propName, in Texture data)
 		{
 			var i = TexturePipeline.nameToKey.IndexOf(data.Name);
 			if (localParams.TryGetValue(propName, out var addr))

@@ -39,79 +39,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.LineWidth(1);
 		}
 
-		public void DrawSlicedQuad(float x1, float y1, float x2, float y2, float left, float right, float top, float bottom, ref float unColor)
-		{
-			GL.Color4(ref unColor);
-			GL.Begin(BeginMode.Quads);
-
-			GL.TexCoord2(left, top);
-			GL.Vertex3(x1, y1, 0);
-
-			GL.TexCoord2(left, bottom);
-			GL.Vertex3(x1, y2, 0);
-
-			GL.TexCoord2(right, bottom);
-			GL.Vertex3(x2, y2, 0);
-
-			GL.TexCoord2(right, top);
-			GL.Vertex3(x2, y1, 0);
-			GL.End();
-			GL.Color4((byte)0, (byte)0, (byte)0, (byte)255);
-
-			/*
-            *+---+----------------------+---+
-            *| 3 |          4           | 7 |
-            *+---+----------------------+---+
-            *|   |                      |   |
-            *| 2 |          5           | 8 |
-            *|   |                      |   |
-            *+---+----------------------+---+
-            *| 1 |          6           | 9 |
-            *+---+----------------------+---+
-            */
-
-
-		}
-
-		public void DrawTexturedQuad(float x1, float y1, float x2, float y2, ref float unColor)
-		{
-			GL.UseProgram(3);
-			GL.Color4(ref unColor);
-
-			GL.Begin(BeginMode.Quads);
-
-			GL.TexCoord2(0, 0);
-			GL.Vertex3(x1, y1, 0);
-
-			GL.TexCoord2(0, 1);
-			GL.Vertex3(x1, y2, 0);
-
-			GL.TexCoord2(1, 1);
-			GL.Vertex3(x2, y2, 0);
-
-			GL.TexCoord2(1, 0);
-			GL.Vertex3(x2, y1, 0);
-
-			GL.End();
-			GL.Color4((byte)0, (byte)0, (byte)0, (byte)255);
-		}
-
-		public void DrawQuad(float x1, float y1, float x2, float y2, ref float unColor)
-		{
-			GL.Color4(ref unColor);
-			GL.Begin(BeginMode.Quads);
-
-			GL.Vertex3(x1, y1, 0);
-
-			GL.Vertex3(x1, y2, 0);
-
-			GL.Vertex3(x2, y2, 0);
-
-			GL.Vertex3(x2, y1, 0);
-			GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
-			GL.End();
-		}
-
+		
 		public void DrawLine(Vector3 v1, Vector3 v2, ref float color)
 		{
 			GL.Enable(EnableCap.Blend);
@@ -162,35 +90,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.DebugMessageCallback(debugDelegate, nullptr);
 		}
 
-		public void DrawGrid(ref float color, Vector3 pos, float X, float Y, ref Matrix4x4 projMat, int cell_size = 16, int grid_size = 2560)
-		{
-			GL.UseProgram(0);
-			int num = (int)Math.Round((double)(pos.X / (float)cell_size)) * cell_size;
-			int num2 = (int)Math.Round((double)(pos.Y / (float)cell_size)) * cell_size;
-			int num3 = grid_size / cell_size;
-			GL.Disable(EnableCap.Texture2D);
-			GL.LoadMatrix(ref projMat.M11);
-			GL.PushMatrix();
-			GL.Translate((float)num - (float)grid_size / 2f, 0f, (float)num2 - (float)grid_size / 2f);
-
-			GL.Begin(PrimitiveType.Lines);
-			GL.Color4(ref color);
-			int num5;
-			for (int i = 0; i < num3 + 1; i = num5 + 1)
-			{
-				int num4 = i * cell_size;
-				GL.Vertex3(num4, 0, 0);
-				GL.Vertex3(num4, 0, grid_size);
-				GL.Vertex3(0, 0, num4);
-				GL.Vertex3(grid_size, 0, num4);
-				num5 = i;
-			}
-			GL.Enable(EnableCap.Texture2D);
-			GL.Color4(0, 0, 0, 0);
-			GL.End();
-			GL.PopMatrix();
-		}
-
+		
 		private void bvh_to_vertices(Bone joint, ref List<Vector4> vertices,
 			ref List<ushort> indices, ref List<Matrix4x4> matrices,
 			ushort parentIndex = 0)

@@ -15,6 +15,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.Shapes;
 using System.IO;
+using BepuUtilities;
 
 namespace SharpSL.BackendRenderers
 {
@@ -24,25 +25,36 @@ namespace SharpSL.BackendRenderers
 		//Typeface face = default;
 		//private static StbTrueType.stbtt_fontinfo face = new StbTrueType.stbtt_fontinfo();
 		private static SixLabors.Fonts.Font face;
-		private static Material material;
+		private static Material sdfMaterial;
+		private static Material squareMaterial;
+		private static Material texturedSquareMaterial;
 		private static Sharp.Color fontColor = Sharp.Color.White;
 		static UIRenderer()
 		{
- 			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath+@"\Content\SDFShader.shader");
-			material = new Material();
-			material.Shader = shader;
-			material.BindProperty("color", fontColor);
-			material.BindProperty("mesh",Pipeline.Get<Mesh>().GetAsset("square"));
+			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\SDFShader.shader");
+			sdfMaterial = new Material();
+			sdfMaterial.Shader = shader;
+			sdfMaterial.BindProperty("color", fontColor);
+			sdfMaterial.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("square"));
+
+			squareMaterial = new Material();
+			squareMaterial.Shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ColoredEditorShader.shader");
+			squareMaterial.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("square"));
+			squareMaterial.BindProperty("len", Vector2.One);
+
+			var square = Pipeline.Get<Mesh>().GetAsset("dynamic_square");
+
+			texturedSquareMaterial = new Material();
+			texturedSquareMaterial.Shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TexturedEditorShader.shader");
+			texturedSquareMaterial.BindProperty("mesh", square);
 		}
 		public void DrawBox(int x, int y, int width, int height, int color)//DrawMesh?
 		{
-			OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
 			var col = new Sharp.Color((uint)color);
-			var mat = Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
-			MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
-			MainEditorView.editorBackendRenderer.DrawQuad(0, 0, width, height, ref col.r);
-			MainEditorView.editorBackendRenderer.UnloadMatrix();
-			OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
+			var mat = Matrix4x4.CreateScale(width, height, 1) * Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
+			squareMaterial.BindProperty("model", mat);
+			squareMaterial.BindProperty("color", col);
+			squareMaterial.SendData();
 		}
 		//float PointToPixelSize(float pt)
 		//{
@@ -66,8 +78,8 @@ namespace SharpSL.BackendRenderers
 			float kern = 0;
 			underrun = 0;
 			overrun = 0;
-			var shader = material.Shader;
-			MainWindow.backendRenderer.Use(shader.Program);
+			var shader = sdfMaterial.Shader;
+			//MainWindow.backendRenderer.Use(shader.Program);
 			for (int i = 0; i < chars.Length; i++)
 			{
 
@@ -106,9 +118,9 @@ namespace SharpSL.BackendRenderers
 					var bottomRight = texChar.width;
 					var mat = Matrix4x4.CreateScale(bottomRight, topRight, 0) * Matrix4x4.CreateTranslation(x + bottomLeft, y + topLeft, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
 
-					material.BindProperty("model", mat);
-					material.BindProperty("msdf", ref texChar);
-					material.SendData();
+					sdfMaterial.BindProperty("model", mat);
+					sdfMaterial.BindProperty("msdf", texChar);
+					sdfMaterial.SendData();
 				}
 				var m = realFont.metrics[chars[i]];
 				#region Overrun
@@ -141,7 +153,7 @@ namespace SharpSL.BackendRenderers
 
 				#endregion Draw glyph
 			}
-			MainWindow.backendRenderer.ChangeShader();
+			//MainWindow.backendRenderer.ChangeShader();
 		}
 
 		private void GenerateTextureForChar(char c, ref Font f)
@@ -249,15 +261,32 @@ namespace SharpSL.BackendRenderers
 			ref var texture2d = ref Pipeline.Get<Texture>().GetAsset(texture);
 			var col = new Sharp.Color((uint)color);
 
-			var mat = Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
+			var mat = Matrix4x4.CreateScale(width, height, 1) * Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
 
-			MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
-			MainWindow.backendRenderer.Allocate(ref texture2d.bitmap[0], texture2d.width, texture2d.height, texture2d.format);
+			//MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
+			//MainWindow.backendRenderer.Allocate(ref texture2d.bitmap[0], texture2d.width, texture2d.height, texture2d.format);
+			ref var mesh = ref Pipeline.Get<Mesh>().GetAsset("dynamic_square");
 			if (source.Left > 0 || source.Right > 0 || source.Top > 0 || source.Bottom > 0)
-				MainEditorView.editorBackendRenderer.DrawSlicedQuad(0, 0, width, height, (float)source.Left / texture2d.width, (float)source.Right / texture2d.width, (float)source.Top / texture2d.height, (float)source.Bottom / texture2d.height, ref col.r);
+			{
+				mesh.ReadVertexAtIndex<UIVertexFormat>(0).texcoords = new Vector2((float)source.Left / texture2d.width, (float)source.Top / texture2d.height);
+				mesh.ReadVertexAtIndex<UIVertexFormat>(1).texcoords = new Vector2((float)source.Left / texture2d.width, (float)source.Bottom / texture2d.height);
+				mesh.ReadVertexAtIndex<UIVertexFormat>(2).texcoords = new Vector2((float)source.Right / texture2d.width, (float)source.Bottom / texture2d.height);
+				mesh.ReadVertexAtIndex<UIVertexFormat>(3).texcoords = new Vector2((float)source.Right /texture2d.width, (float)source.Top / texture2d.height);
+
+			}
 			else
-				MainEditorView.editorBackendRenderer.DrawTexturedQuad(0, 0, width, height, ref col.r);
-			MainEditorView.editorBackendRenderer.UnloadMatrix();
+			{
+				mesh.ReadVertexAtIndex<UIVertexFormat>(0).texcoords = new Vector2(0, 0);
+				mesh.ReadVertexAtIndex<UIVertexFormat>(1).texcoords = new Vector2(0, 1);
+				mesh.ReadVertexAtIndex<UIVertexFormat>(2).texcoords = new Vector2(1, 1);
+				mesh.ReadVertexAtIndex<UIVertexFormat>(3).texcoords = new Vector2(1, 0);
+			}
+			texturedSquareMaterial.BindProperty("model", mat);
+			texturedSquareMaterial.BindProperty("tex", texture2d);
+			texturedSquareMaterial.BindProperty("tint", col);
+			texturedSquareMaterial.SendData();
+			//MainEditorView.editorBackendRenderer.DrawSlicedQuad(0, 0, width, height, (float)source.Left / texture2d.width, (float)source.Right / texture2d.width, (float)source.Top / texture2d.height, (float)source.Bottom / texture2d.height, ref col.r);
+
 		}
 
 		public void StartBatch()//OnPreRender
@@ -317,7 +346,7 @@ namespace SharpSL.BackendRenderers
 
 		public int GetTexture(string name)
 		{
-			Pipeline.Get<Texture>().Import(Application.projectPath+@"\SharpSL\BackendRenderers\Content\" + name);
+			Pipeline.Get<Texture>().Import(Application.projectPath + @"\SharpSL\BackendRenderers\Content\" + name);
 			return TexturePipeline.nameToKey.IndexOf(System.IO.Path.GetFileNameWithoutExtension(name));
 		}
 

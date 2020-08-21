@@ -42,7 +42,7 @@ namespace Sharp.Editor
 			disc.UsageHint = UsageHint.DynamicDraw;
 			Pipeline.Get<Mesh>().Register(disc);
 			discMaterial.BindProperty("mesh", disc);
-			discMaterial.BindProperty("len", new Vector2(3));
+			discMaterial.BindProperty("len", new Vector2(17.5f));
 		}
 
 		public static void DrawCombinedGizmos(Entity entity, Vector2 winSize)
@@ -57,7 +57,6 @@ namespace Sharp.Editor
 
 			var scaleMat = Matrix4x4.CreateScale(scale, scale, scale);
 			var mat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans);
-			Material.BindGlobalProperty("viewPort", winSize);
 
 			var rotationX = Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, NumericsExtensions.Deg2Rad * 90);
 			var rotationY = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, -NumericsExtensions.Deg2Rad * 90);
@@ -73,6 +72,7 @@ namespace Sharp.Editor
 				var fullAngle = NumericsExtensions.CalculateAngle(startAxis, currentAngle);
 				CreatePrimitiveMesh.numVertices = halfCircleSegments;
 				CreatePrimitiveMesh.totalAngleDeg = fullAngle * NumericsExtensions.Rad2Deg;
+				CreatePrimitiveMesh.innerRadius = 0.80f;
 				var disc = CreatePrimitiveMesh.GenerateEditorDisc(startAxis, currentAngle);
 				ref var origDisc = ref Pipeline.Get<Mesh>().GetAsset("editor_disc");
 				origDisc.LoadVertices(disc.verts);
