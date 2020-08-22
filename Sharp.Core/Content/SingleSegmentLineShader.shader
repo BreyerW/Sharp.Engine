@@ -28,12 +28,14 @@ vec3 getCameraDir() {
 	return vec3(m[2][0], m[2][1], m[2][2]);
 }
 void main(void) {
-	
-	vec2 aspectVec = vec2(viewPort.x/viewPort.y, 1.0);
+
+	/*vec2 aspectVec = vec2(viewPort.x/viewPort.y, 1.0);
 	mat4 projViewModel = camProjection * camView * model;
 	vec4 previousProjected = projViewModel * vec4(prev_position*len, 1.0);
 	vec4 currentProjected = projViewModel * vec4(vertex_position*len, 1.0);
 	vec4 nextProjected = projViewModel * vec4(next_position*len, 1.0);
+
+	
 
 	//get 2D screen space with W divide and aspect correction
 	vec2 currentScreen = currentProjected.xy / currentProjected.w * aspectVec;
@@ -63,7 +65,7 @@ void main(void) {
 			dir = tangent;
 			len = width / dot(miter, perp);
 		}
-		else {*/
+		else {*
 			direction = dirA;
 		//}
 	}
@@ -72,14 +74,14 @@ void main(void) {
 	normal.x /= aspectVec.x;
 
 	vec4 offset = vec4(normal * orientation, 0.0, 0.0);
-	gl_Position = currentProjected + offset;
+	gl_Position = currentProjected + offset; */
 	
 	/*mat4 s = model*0;
 	s[0][0] = scale;
 	s[1][1] = scale;
 	s[2][2] = scale;
 	s[3][3] = 1;*/
-	/*float isLastPoint =sign(length(vertex_position-next_position));
+	float isLastPoint =sign(length(vertex_position-next_position));
 	vec3 next_v = mix(prev_position, next_position,isLastPoint);
 	mat4 m=camProjection * camView * model;
 	vec4 start =  m*vec4(vertex_position*len, 1);
@@ -102,7 +104,7 @@ void main(void) {
 	start.x -= dir2d.y; // vertical x
 	start.y += dir2d.x; // vertical y
 	
-	gl_Position =vec4(start.xyzw);*/
+	gl_Position =vec4(start.xyzw);
 }
 
 #pragma fragment

@@ -123,8 +123,8 @@ namespace Sharp
 
 			var lineData = new LineVertexFormat[4] {
 						new LineVertexFormat(){ vertex_position=new Vector3(0,0,0),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=-1 },
-						new LineVertexFormat(){ vertex_position=new Vector3(0,0,0),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=1 },
-						new LineVertexFormat(){ vertex_position=new Vector3(1,0,0),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=1 },
+						new LineVertexFormat(){ vertex_position=new Vector3(0,0,0f),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=1 },
+						new LineVertexFormat(){ vertex_position=new Vector3(1,0,0f),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=1 },
 						new LineVertexFormat(){ vertex_position=new Vector3(1,0,0),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=-1 },
 
 					}.AsSpan();

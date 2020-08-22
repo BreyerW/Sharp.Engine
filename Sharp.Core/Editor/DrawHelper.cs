@@ -4,6 +4,7 @@ using System.Numerics;
 using SharpSL;
 using SharpAsset;
 using SharpAsset.Pipeline;
+using OpenTK.Graphics.OpenGL;
 
 namespace Sharp.Editor
 {
@@ -43,13 +44,15 @@ namespace Sharp.Editor
 			ref var lineMesh = ref Pipeline.Get<Mesh>().GetAsset("line");
 			var newShader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\SingleSegmentLineShader.shader");
 			FillMaterial(out lineMaterial, ref lineMesh, ref newShader);
-			lineMaterial.BindProperty("width", 3f);
+			lineMaterial.BindProperty("width", 10f);
 			lineMaterial.BindProperty("len", 15);
+			var gridShader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\LineEditorShader.shader");
 
-			FillMaterial(out gridLineMaterial, ref lineMesh, ref newShader);
-			gridLineMaterial.BindProperty("width", 1f);
+			FillMaterial(out gridLineMaterial, ref mesh, ref gridShader);
+			gridLineMaterial.BindProperty("width", 2f);
 			gridLineMaterial.BindProperty("len", gridSize);
 			gridLineMaterial.BindProperty("color", Color.White);
+			//gridLineMaterial.BindProperty("blend", 2f);
 		}
 		private static void FillMaterial(out Material mat, ref Mesh m, ref Shader s)
 		{
@@ -60,7 +63,7 @@ namespace Sharp.Editor
 		public static void DrawGrid(Vector3 pos)
 		{
 
-			var s = Matrix4x4.CreateScale(Vector3.One);
+			/*var s = Matrix4x4.CreateScale(Vector3.One);
 			int num = (int)Math.Round((double)(pos.X / (float)cellSize)) * cellSize;
 			int num2 = (int)Math.Round((double)(pos.Y / (float)cellSize)) * cellSize;
 			int num3 = gridSize / cellSize;
@@ -68,6 +71,11 @@ namespace Sharp.Editor
 			var globalTranslateX = (float)num - (float)gridSize / 2f;
 			var globalTranslateZ = (float)num2 - (float)gridSize / 2f;
 			var rotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, 90f * NumericsExtensions.Deg2Rad);
+			GL.Enable(EnableCap.LineSmooth);
+			GL.Enable(EnableCap.Blend);
+			GL.DepthMask(false);
+			//GL.LineWidth(10f);
+			//GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
 			for (int i = 0; i < num3 + 1; i = num5 + 1)
 			{
 				int num4 = i * cellSize;
@@ -81,6 +89,15 @@ namespace Sharp.Editor
 				gridLineMaterial.SendData();
 				num5 = i;
 			}
+			
+			//GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+GL.Disable(EnableCap.Blend);
+			GL.DepthMask(true);*/
+			var gridMat = Matrix4x4.CreateTranslation(-gridSize/2, 0, -gridSize / 2);
+			GL.Enable(EnableCap.Blend);
+			gridLineMaterial.BindProperty("model", gridMat);
+			gridLineMaterial.SendData();
+			GL.Disable(EnableCap.Blend);
 		}
 
 		public static void DrawTranslationGizmo(in Matrix4x4 xRotAndScaleMat, in Matrix4x4 yRotAndScaleMat, in Matrix4x4 zRotAndScaleMat, Color xColor, Color yColor, Color zColor)
