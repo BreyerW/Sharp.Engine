@@ -14,6 +14,7 @@ uniform float len;
             void main(void)
             {
 				vec4 pp =camProjection*camView*model* vec4(vertex_position.xz*len, vertex_position.y * len, 1.0);
+				pp.z =1.0e-6f; //pp.w - 1.0e-6f; reverse-z or traditional z depth
 				gl_Position = pp;
 				v_texcoord = vertex_texcoord*len;
 				v_pos = (model * vec4(vertex_position.xz * len, vertex_position.y * len,1.0f)).xyz;
@@ -51,7 +52,7 @@ uniform float len;
 			void main(void)
 			{
 				// UV is grid space coordinate of pixel.
-				vec2 uv = v_texcoord;
+				vec2 uv =abs(v_texcoord-vec2(len)/2f);
 
 				// Find screen-space derivates of grid space. [1]
 				vec2 dudv = vec2(length(vec2(dFdx(uv.x), dFdy(uv.x))),
@@ -74,7 +75,7 @@ uniform float len;
 				float lod2_cs = lod1_cs * 10.f;
 
 				// Allow each anti-aliased line to cover up to 2 pixels. 
-				dudv *= 2f;
+				dudv *= width;
 
 				// Calculate unsigned distance to cell line center for each lod [3]
 				vec2 lod0_cross_a = 1.f - abs(saturate(fmod(uv, lod0_cs) / dudv) * 2 - 1.f);
@@ -94,13 +95,13 @@ uniform float len;
 				vec3 cam_pos = getCameraPos();
 				// Calculate opacity falloff based on distance to grid extents and gracing angle. [5]
 				vec3 view_dir = normalize((camView * vec4(0f, 0f, 1f, 1f)).xyz);
-				float op_gracing = 1.f - pow(1.f - abs(dot(view_dir, normalize(camView * model * vec4(0f, 0f, 1f, 1f)).xyz)), 16);
-				float op_distance =1.f- distance(cam_pos.xz,v_pos.xz)/(abs(cam_pos.y)*3f+25f);
+				//float op_gracing = 1.f - pow(1.f - abs(dot(view_dir, normalize(camView * model * vec4(0f, 0f, 1f, 1f)).xyz)), 16);
+				float op_distance =1.f- saturate(distance(cam_pos.xz,v_pos.xz)/(abs(cam_pos.y)*1000f * 0.005f +1000f*0.25f)); //1000f zfar of camera
 				float op = op_distance;
 
 				// Blend between LOD level alphas and scale with opacity falloff. [6]
 				c.a *= (lod2_a > 0 ? lod2_a : lod1_a > 0 ? lod1_a : (lod0_a * (1f - lod_fade))) * op;
-
+				
 				frag_color = c;
 
 			}

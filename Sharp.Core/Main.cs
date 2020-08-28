@@ -25,7 +25,7 @@ namespace Sharp
 			TypeNameHandling = TypeNameHandling.All,
 			ObjectCreationHandling = ObjectCreationHandling.Auto,
 			ReferenceResolverProvider = () => new ThreadsafeReferenceResolver(),
-			//NullValueHandling = NullValueHandling.Ignore
+			NullValueHandling = NullValueHandling.Ignore
 		};
 		public static void Main(string[] args)
 		{
@@ -33,13 +33,28 @@ namespace Sharp
 			MainWindow.backendRenderer = new OpenGLRenderer();
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
 
-			
+			Pipeline.Initialize();
+			CreatePrimitiveMesh.numVertices = 33;
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCylinder());
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCone());
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCube());
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateTorus());
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateSquare(center: new System.Numerics.Vector2(0.5f)));
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateSquare("negative_square"));
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateLine());
+			var dSquare = CreatePrimitiveMesh.GenerateSquare("dynamic_square", new System.Numerics.Vector2(0.5f));
+			dSquare.UsageHint = UsageHint.DynamicDraw;
+			Pipeline.Get<Mesh>().Register(dSquare);
+			Pipeline.Get<Font>().Import(@"C:\Windows\Fonts\times.ttf");
+
+
+
 			// OpenTK.Graphics.GraphicsContext.ShareContexts = false;
 			SDL.SDL_SetHint(SDL.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 			SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
 			//SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
 			//SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, (int)SDL.SDL_GLcontext.);
-			
+
 			MainWindow.backendRenderer.Start();
 
 			var dummy = SDL.SDL_CreateWindow("", 0, 0, 1, 1, SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN | SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL); //convert dummy to splash screen?
@@ -47,12 +62,12 @@ namespace Sharp
 			SDL.SDL_GL_CreateContext(dummy);
 			var id = MainWindow.backendRenderer.CreateContext(SDL.SDL_GL_GetProcAddress, SDL.SDL_GL_GetCurrentContext);
 			MainWindow.contexts.Add(id);
-			
+
 			MainWindow.backendRenderer.MakeCurrent += SDL.SDL_GL_MakeCurrent;
 			MainWindow.backendRenderer.SwapBuffers += SDL.SDL_GL_SwapWindow;
-			
+
 			var mWin = new MainWindow("test"); //Console.WriteLine("alpha: " + graphic.GraphicsMode.ColorFormat.Alpha);
-			
+
 			mWin.Initialize(new AssetsView(mWin.windowId), new SceneView(mWin.windowId), new SceneStructureView(mWin.windowId), new InspectorView(mWin.windowId));
 
 			//new FloatingWindow("", handle.t);
@@ -60,7 +75,7 @@ namespace Sharp
 			//mWin2.Initialize(new AssetsView(mWin2.windowId));
 			SDL.SDL_DestroyWindow(dummy);
 			MainWindow.backendRenderer.EnableScissor();
-			
+
 			Window.PollWindows();
 			SDL.SDL_Quit();
 		}

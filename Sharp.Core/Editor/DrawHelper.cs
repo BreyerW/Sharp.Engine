@@ -17,8 +17,8 @@ namespace Sharp.Editor
 		private static Material coneMaterial;
 		private static Material cubeMaterial;
 		private static Material circleMaterial;
-		public static int gridSize = 256;
-		public static int cellSize = 16;
+		public static float gridSize = 256;
+		public static float cellSize = 16;
 
 
 		static DrawHelper()
@@ -44,15 +44,14 @@ namespace Sharp.Editor
 			ref var lineMesh = ref Pipeline.Get<Mesh>().GetAsset("line");
 			var newShader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\SingleSegmentLineShader.shader");
 			FillMaterial(out lineMaterial, ref lineMesh, ref newShader);
-			lineMaterial.BindProperty("width", 10f);
+			lineMaterial.BindProperty("width", 3f);
 			lineMaterial.BindProperty("len", 15);
-			var gridShader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\LineEditorShader.shader");
+			var gridShader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GridEditorShader.shader");
 
-			FillMaterial(out gridLineMaterial, ref mesh, ref gridShader);
+			ref var gridMesh = ref Pipeline.Get<Mesh>().GetAsset("negative_square");
+			FillMaterial(out gridLineMaterial, ref gridMesh, ref gridShader);
 			gridLineMaterial.BindProperty("width", 2f);
-			gridLineMaterial.BindProperty("len", gridSize);
-			gridLineMaterial.BindProperty("color", Color.White);
-			//gridLineMaterial.BindProperty("blend", 2f);
+
 		}
 		private static void FillMaterial(out Material mat, ref Mesh m, ref Shader s)
 		{
@@ -62,39 +61,12 @@ namespace Sharp.Editor
 		}
 		public static void DrawGrid(Vector3 pos)
 		{
-
-			/*var s = Matrix4x4.CreateScale(Vector3.One);
-			int num = (int)Math.Round((double)(pos.X / (float)cellSize)) * cellSize;
-			int num2 = (int)Math.Round((double)(pos.Y / (float)cellSize)) * cellSize;
-			int num3 = gridSize / cellSize;
-			int num5;
-			var globalTranslateX = (float)num - (float)gridSize / 2f;
-			var globalTranslateZ = (float)num2 - (float)gridSize / 2f;
-			var rotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, 90f * NumericsExtensions.Deg2Rad);
-			GL.Enable(EnableCap.LineSmooth);
+			var scale = MathF.Abs(Camera.main.Parent.transform.position.Y);
+			gridSize = Camera.main.ZFar * (scale / 100f + 1);
+			var gridMat = Matrix4x4.CreateTranslation(0, 0, 0);
 			GL.Enable(EnableCap.Blend);
-			GL.DepthMask(false);
-			//GL.LineWidth(10f);
-			//GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-			for (int i = 0; i < num3 + 1; i = num5 + 1)
-			{
-				int num4 = i * cellSize;
-				var zLineMat = s * rotation * Matrix4x4.CreateTranslation(globalTranslateX + num4, 0, -globalTranslateZ);
-				gridLineMaterial.BindProperty("model", zLineMat);
-				gridLineMaterial.SendData();
 
-
-				var xLineMat = s * Matrix4x4.CreateTranslation(globalTranslateX, 0, globalTranslateZ + num4);
-				gridLineMaterial.BindProperty("model", xLineMat);
-				gridLineMaterial.SendData();
-				num5 = i;
-			}
-			
-			//GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-GL.Disable(EnableCap.Blend);
-			GL.DepthMask(true);*/
-			var gridMat = Matrix4x4.CreateTranslation(-gridSize/2, 0, -gridSize / 2);
-			GL.Enable(EnableCap.Blend);
+			gridLineMaterial.BindProperty("len", gridSize);
 			gridLineMaterial.BindProperty("model", gridMat);
 			gridLineMaterial.SendData();
 			GL.Disable(EnableCap.Blend);

@@ -15,13 +15,31 @@ public static class CreatePrimitiveMesh
 	public static bool outside = true;
 	public static bool inside = false;
 
-	public static Mesh GenerateSquare(string name = "square")
+	public static Mesh GenerateLine()
+	{
+		var lineData = new LineVertexFormat[4] {
+						new LineVertexFormat(){ vertex_position=new Vector3(0,0,0),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=-1 },
+						new LineVertexFormat(){ vertex_position=new Vector3(0,0,0f),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=1 },
+						new LineVertexFormat(){ vertex_position=new Vector3(1,0,0f),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=1 },
+						new LineVertexFormat(){ vertex_position=new Vector3(1,0,0),prev_position=new Vector3(0,0,0),next_position=new Vector3(1,0,0),dir=-1 },
+
+					}.AsSpan();
+		var newMesh = new Mesh
+		{
+			FullPath = "line",
+			UsageHint = UsageHint.StaticDraw
+		};
+		newMesh.LoadVertices(lineData);
+		newMesh.LoadIndices(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan());
+		return newMesh;
+	}
+	public static Mesh GenerateSquare(string name = "square", Vector2 center = default)
 	{
 		var mData = new UIVertexFormat[4] {
-						new UIVertexFormat(){ position=new Vector3(0,0,0),texcoords=new Vector2(0,0) },
-						new UIVertexFormat(){ position=new Vector3(0,1,0),texcoords=new Vector2(0,1) },
-						new UIVertexFormat(){ position=new Vector3(1,1,0),texcoords=new Vector2(1,1) },
-						new UIVertexFormat(){ position=new Vector3(1,0,0),texcoords=new Vector2(1,0) }
+						new UIVertexFormat(){ position=new Vector3(center.X-0.5f,center.Y-0.5f,0),texcoords=new Vector2(0,0) },
+						new UIVertexFormat(){ position= new Vector3(center.X-0.5f,center.Y+0.5f,0),texcoords=new Vector2(0,1) },
+						new UIVertexFormat(){ position=new Vector3(center.X+0.5f,center.Y+0.5f,0),texcoords=new Vector2(1,1) },
+						new UIVertexFormat(){ position= new Vector3(center.X+0.5f,center.Y-0.5f,0),texcoords=new Vector2(1,0) }
 					}.AsSpan();
 		var Mesh = new Mesh
 		{

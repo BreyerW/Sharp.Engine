@@ -284,7 +284,7 @@ namespace Sharp.Editor.UI.Property
 			var curves = Value;
 			for (int i = 0; i < curves.Length; i += 2)
 				CreateRegion(curves[i], curves[i + 1]);
-			OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
+			//OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
 			var p = curveFrame.Location;
 
 			var max = curvesRange.height + (curvesRange.y < 0 ? curvesRange.y : 0);
@@ -314,7 +314,7 @@ namespace Sharp.Editor.UI.Property
 					MainEditorView.editorBackendRenderer.DrawLine(start.X, start.Y, 0, end.X, end.Y, 0, ref c.r);
 				}
 			}
-			OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
+			//OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
 		}
 	}
 

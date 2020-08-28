@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using System;
 using SharpSL.BackendRenderers;
-using System.Runtime.InteropServices;
-using SharpAsset.Pipeline;
-using SharpAsset;
 
 namespace Sharp.Editor.Views
 {

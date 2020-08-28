@@ -2,6 +2,7 @@
 using System;
 using Sharp;
 using System.Linq;
+using OpenTK.Graphics.ES10;
 
 namespace SharpAsset.Pipeline
 {
@@ -51,6 +52,7 @@ namespace SharpAsset.Pipeline
 
 		public static void Initialize()
 		{
+			if (allPipelines.Any()) return;
 			var type = typeof(Pipeline);
 			var subclasses = type.Assembly.GetTypes().Where(t => t.IsSubclassOf(type));
 			foreach (var subclass in subclasses)

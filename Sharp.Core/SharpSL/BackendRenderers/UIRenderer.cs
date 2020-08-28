@@ -142,16 +142,17 @@ namespace SharpSL.BackendRenderers
 				#region Kerning (for NEXT character)
 
 				// Adjust for kerning between this character and the next.
-				var kerning = chars.Length - 1 == i ? 0 : face.Instance.GetOffset(face.GetGlyph(chars[i]).Instance, face.GetGlyph(chars[i + 1]).Instance).X;
-				if (kerning > 0)
-					Console.WriteLine("stop");
+				var kerning = i is 0 ? 0 : face.Instance.GetOffset(face.GetGlyph(chars[i]).Instance, face.GetGlyph(chars[i - 1]).Instance).X;
 				//kern = 0;
-				penX += kerning;
+				penX += kerning / 100f; //TODO: figure out number to scale kerning
 
 				#endregion Kerning (for NEXT character)
 
 				#endregion Draw glyph
+				if (text is "11")
+					Console.WriteLine();
 			}
+
 		}
 
 		private void GenerateTextureForChar(char c, ref Font f)
@@ -269,7 +270,7 @@ namespace SharpSL.BackendRenderers
 				mesh.ReadVertexAtIndex<UIVertexFormat>(0).texcoords = new Vector2((float)source.Left / texture2d.width, (float)source.Top / texture2d.height);
 				mesh.ReadVertexAtIndex<UIVertexFormat>(1).texcoords = new Vector2((float)source.Left / texture2d.width, (float)source.Bottom / texture2d.height);
 				mesh.ReadVertexAtIndex<UIVertexFormat>(2).texcoords = new Vector2((float)source.Right / texture2d.width, (float)source.Bottom / texture2d.height);
-				mesh.ReadVertexAtIndex<UIVertexFormat>(3).texcoords = new Vector2((float)source.Right /texture2d.width, (float)source.Top / texture2d.height);
+				mesh.ReadVertexAtIndex<UIVertexFormat>(3).texcoords = new Vector2((float)source.Right / texture2d.width, (float)source.Top / texture2d.height);
 
 			}
 			else
@@ -307,7 +308,7 @@ namespace SharpSL.BackendRenderers
 			return name is "default" ? 0 : FontPipeline.nameToKey.IndexOf(name);
 		}
 
-		public Squid.Point GetTextSize(string text, int font, float fontSize, int position = -1)
+		public Point GetTextSize(string text, int font, float fontSize, int position = -1)
 		{
 			ref var f = ref Pipeline.Get<Font>().GetAsset(font);
 			var v = Vector2.Zero;
@@ -319,7 +320,7 @@ namespace SharpSL.BackendRenderers
 
 			foreach (var c in text)
 			{
-
+				if (position == i) break;
 				if (c == '\n')
 				{
 					yoffset += 3;
@@ -329,8 +330,9 @@ namespace SharpSL.BackendRenderers
 				if (!f.metrics.ContainsKey(c))
 					GenerateTextureForChar(c, ref f);
 				var g = f.metrics[c];
-				//var kerning = span.Length - 1 == i ? 0 : StbTrueType.stbtt_GetCodepointKernAdvance(info, c, span[i + 1]);
-				xoffset += /*kerning +*/ g.advance + 1;
+				var kerning = i is 0 ? 0 : face.Instance.GetOffset(face.GetGlyph(span[i]).Instance, face.GetGlyph(span[i - 1]).Instance).X;
+
+				xoffset += kerning / 100f + g.advance + 1;
 				newHeight = g.tex.height + yoffset;
 				if (newHeight > v.Y)
 				{
@@ -339,7 +341,7 @@ namespace SharpSL.BackendRenderers
 				if (xoffset > v.X) v.X = xoffset;
 				i++;
 			}
-			return new Squid.Point((int)v.X + 6, (int)v.Y);
+			return new Point((int)v.X, (int)v.Y);
 		}
 
 		public int GetTexture(string name)
@@ -348,10 +350,10 @@ namespace SharpSL.BackendRenderers
 			return TexturePipeline.nameToKey.IndexOf(System.IO.Path.GetFileNameWithoutExtension(name));
 		}
 
-		public Squid.Point GetTextureSize(int texture)
+		public Point GetTextureSize(int texture)
 		{
 			ref var texture2d = ref Pipeline.Get<Texture>().GetAsset(texture);
-			return new Squid.Point(texture2d.width, texture2d.height);
+			return new Point(texture2d.width, texture2d.height);
 		}
 
 		public void Scissor(int x, int y, int width, int height)

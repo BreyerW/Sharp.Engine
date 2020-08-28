@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sharp
 {
-    public class Light : Component
+    public class Light : Component//TODO: renderer?
     {
         internal Color color = Color.White;
         internal float intensity = 1f;

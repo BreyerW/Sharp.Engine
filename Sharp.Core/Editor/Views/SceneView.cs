@@ -211,18 +211,15 @@ namespace Sharp.Editor.Views
 					PickTestForObject();
 				locPos = null;
 			}
-			//MainWindow.backendRenderer.ClearBuffer();
 
 			MainWindow.backendRenderer.SetStandardState();
 
-			//MainWindow.backendRenderer.ClearDepth();
-			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
 
 			//foreach (var renderer in renderers)
 			//   renderer.Render();
 
 			Extension.entities.OnRenderFrame?.Invoke();
-
+			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
 			if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 			{
 				//foreach (var selected in SceneStructureView.tree.SelectedChildren)
@@ -249,7 +246,6 @@ namespace Sharp.Editor.Views
 		{
 			//MainWindow.backendRenderer.ClearBuffer();
 			MainWindow.backendRenderer.SetFlatColorState();
-			//MainWindow.backendRenderer.ChangeShader();
 			if (SceneStructureView.tree.SelectedNode != null)
 			{
 				Color xColor = Color.Red, yColor = Color.LimeGreen, zColor = Color.Blue;
