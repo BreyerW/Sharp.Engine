@@ -31,7 +31,7 @@ namespace Sharp
 			{
 				return projectionMatrix;
 			}
-			set
+			private set
 			{
 				projectionMatrix = value;
 				if (main != null)
@@ -48,26 +48,11 @@ namespace Sharp
 			{
 				return orthoMatrix;
 			}
-			set
+			private set
 			{
 				orthoMatrix = value;
-				//if (main != null)
-				// Material.BindGlobalProperty("camProjection", () => ref main.projectionMatrix);
-			}
-		}
-
-		private Matrix4x4 orthoLeftBottomMatrix;
-		public Matrix4x4 OrthoLeftBottomMatrix
-		{
-			get
-			{
-				return orthoLeftBottomMatrix;
-			}
-			set
-			{
-				orthoLeftBottomMatrix = value;
 				if (main != null)
-					Material.BindGlobalProperty("camOrtho", main.orthoLeftBottomMatrix);
+					Material.BindGlobalProperty("camOrtho", main.orthoMatrix);
 			}
 		}
 
@@ -78,7 +63,7 @@ namespace Sharp
 			{
 				return modelViewMatrix;
 			}
-			set
+			private set
 			{
 				modelViewMatrix = value;
 				if (main != null)
@@ -154,8 +139,7 @@ namespace Sharp
 
 		public void SetOrthoMatrix(int width, int height)
 		{
-			OrthoMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, 0, height, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
-			OrthoLeftBottomMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
+			OrthoMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
 
 			this.width = width;
 			this.height = height;

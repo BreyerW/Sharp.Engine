@@ -194,11 +194,13 @@ namespace Sharp
 					//foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].Values)
 					//	MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, Shader.attribArray[vertAttrib.shaderLocation], vertAttrib.dimension, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
 
-					MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
-
 					MainWindow.backendRenderer.GenerateBuffers(Target.Indices, out mesh.EBO);
 					MainWindow.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
-					MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
+					if (mesh.Indices is { } && mesh.Indices.Length > 0)
+					{
+						MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
+						MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
+					}
 				}
 				Time.SetTime();
 				Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
@@ -208,6 +210,7 @@ namespace Sharp
 
 		private void OnInternalRenderFrame()
 		{
+			MainWindow.backendRenderer.currentWindow = windowId;
 			MainWindow.backendRenderer.MakeCurrent(handle, contexts[0]);
 
 			OnRenderFrame();

@@ -1,74 +1,15 @@
 ﻿using System;
 using System.Numerics;
-using Sharp;
-
-//using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using SharpAsset;
 using SharpAsset.Pipeline;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 
 namespace SharpSL.BackendRenderers.OpenGL
 {
 	public class EditorOpenGLRenderer : IEditorBackendRenderer
 	{
-		public void UnloadMatrix()
-		{
-			GL.PopMatrix();
-		}
-
-		public void LoadMatrix(ref Matrix4x4 mat)
-		{
-			GL.LoadMatrix(ref mat.M11);
-			GL.PushMatrix();
-		}
-
-		public void DrawLine(float v1x, float v1y, float v1z, float v2x, float v2y, float v2z, ref float unColor, float width = 1f)
-		{
-			GL.Color4(ref unColor);
-			GL.LineWidth(width);
-			// GL.Enable(EnableCap.Blend);
-			//GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-			GL.Begin(PrimitiveType.Lines);
-			GL.Vertex3(v1x, v1y, v1z);
-			GL.Vertex3(v2x, v2y, v2z);
-			//GL.Disable(EnableCap.Blend);
-			GL.End();
-			GL.LineWidth(1);
-		}
-
-		
-		public void DrawLine(Vector3 v1, Vector3 v2, ref float color)
-		{
-			GL.Enable(EnableCap.Blend);
-
-			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);//one|dstcolor, oneminusscrcolor|dstcolor,srcalpha|dstcolor,oneminussrcalpha|dstcolor
-			DrawLine(v1.X, v1.Y, v1.Z, v2.X, v2.Y, v2.Z, ref color);
-		}
-
-		public void DrawFilledPolyline(float size, float lineWidth, ref float color, ref Matrix4x4 mat, ref Vector3[] vecArray, bool fan = true)
-		{
-			//TurnOnDebugging();
-
-			GL.Enable(EnableCap.Blend);
-
-			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-			GL.LoadIdentity();
-			GL.LoadMatrix(ref mat.M11);
-			GL.PushMatrix();
-			GL.Color4(ref color);
-			GL.Begin(fan ? PrimitiveType.TriangleFan : PrimitiveType.Triangles);
-
-			foreach (var vec in vecArray)
-			{
-				GL.Vertex3(vec.X, vec.Y, vec.Z);
-			}
-
-			GL.End();
-			GL.PopMatrix();
-		}
 
 		private static GCHandle _logCallbackHandle;
 
@@ -90,7 +31,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.DebugMessageCallback(debugDelegate, nullptr);
 		}
 
-		
+
 		private void bvh_to_vertices(Bone joint, ref List<Vector4> vertices,
 			ref List<ushort> indices, ref List<Matrix4x4> matrices,
 			ushort parentIndex = 0)

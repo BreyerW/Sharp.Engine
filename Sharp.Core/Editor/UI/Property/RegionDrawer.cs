@@ -2,6 +2,8 @@
 using Newtonsoft.Json.Linq;
 using Sharp.Editor.Attribs;
 using Sharp.Editor.Views;
+using SharpAsset;
+using SharpAsset.Pipeline;
 using Squid;
 using System;
 using System.Collections.Generic;
@@ -31,6 +33,8 @@ namespace Sharp.Editor.UI.Property
 		internal Color curveColor = Color.Red;
 		private Vector2 scale = Vector2.One;
 		private Vector2 translation;
+		internal static Material line2dMat;
+		internal static Material polyfill2dMat;
 		internal (float x, float y, float width, float height) curvesRange = (-10, -10, 150, 20);
 		internal Vector2[][] lines;
 		internal Vector2[] region;
@@ -48,6 +52,26 @@ namespace Sharp.Editor.UI.Property
 			}
 		}*/
 		internal Curve[] Value => SerializedObject.ToObject<Curve[]>(JsonSerializer.Create(MainClass.serializerSettings));
+		static RegionDrawer()
+		{
+			var mesh = new Mesh();
+			mesh.UsageHint = UsageHint.DynamicDraw;
+			mesh.FullPath = "dynamic_curve";
+			Pipeline.Get<Mesh>().Register(mesh);
+
+			var polyfill = new Mesh();
+			polyfill.UsageHint = UsageHint.DynamicDraw;
+			polyfill.FullPath = "dynamic_polyfill";
+			Pipeline.Get<Mesh>().Register(polyfill);
+
+			polyfill2dMat = new Material();
+			polyfill2dMat.Shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\Polyfill2dEditorShader.shader");
+			polyfill2dMat.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("dynamic_polyfill"));
+
+			line2dMat = new Material();
+			line2dMat.Shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\LineShader.shader");
+			line2dMat.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("dynamic_curve"));
+		}
 
 		public RegionDrawer(MemberInfo memInfo) : base(memInfo)
 		{
@@ -57,9 +81,10 @@ namespace Sharp.Editor.UI.Property
 			curveFrame.Style = "textbox";
 			curveFrame.NoEvents = false;
 			curveFrame.Position = new Point(label.Size.x, 0);
+			curveFrame.MouseUp += RegionDrawer_MouseDown;
 			Scissor = true;
 			Childs.Add(curveFrame);
-			curveFrame.MouseUp += RegionDrawer_MouseDown;
+
 		}
 
 		private void RegionDrawer_MouseDown(Control sender, MouseEventArgs args)
@@ -67,11 +92,11 @@ namespace Sharp.Editor.UI.Property
 			if (!Window.windows.ContainsKey(curvesEditor))
 			{
 				var win = new FloatingWindow("");
-				win.Size = (700, 500);
 				curvesEditor = win.windowId;
 				var curvesView = new CurvesView(curvesEditor, this);
-				CurvesView.drawer = this;
 				Window.OpenView(curvesView, MainEditorView.mainViews[curvesEditor].desktop);
+				win.Size = (700, 500);
+				CurvesView.drawer = this;
 			}
 			Window.windows[curvesEditor].OnFocus();
 		}
@@ -198,6 +223,11 @@ namespace Sharp.Editor.UI.Property
 						list.RemoveAt(j);
 						j--;
 					}
+					else if (list[j] == list[j - 1])
+					{
+						list.RemoveAt(j);
+						j--;
+					}
 				}
 			}
 			return list.ToArray();
@@ -284,7 +314,6 @@ namespace Sharp.Editor.UI.Property
 			var curves = Value;
 			for (int i = 0; i < curves.Length; i += 2)
 				CreateRegion(curves[i], curves[i + 1]);
-			//OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
 			var p = curveFrame.Location;
 
 			var max = curvesRange.height + (curvesRange.y < 0 ? curvesRange.y : 0);
@@ -293,28 +322,76 @@ namespace Sharp.Editor.UI.Property
 			translation = new Vector2(-curvesRange.x * scale.X + 1 + p.x, curveFrame.Size.y - 1 - curvesRange.y * scale.Y + p.y);
 			var color = PrepareColorForRegion(curveColor);
 
-			var canvas = Canvas;
+			polyfill2dMat.BindProperty("color", color);
 
-			var mat = Matrix4x4.CreateOrthographicOffCenter(0, canvas.Size.x, canvas.Size.y, 0, -1, 1);
-			var array = new Vector3[region.Length];
+			ref var polyfill = ref Pipeline.Get<Mesh>().GetAsset("dynamic_polyfill");
+			var array = new Basic2dVertexFormat[region.Length];
+			var indices = new ushort[region.Length];
 			for (int i = 0; i < region.Length; i++)
-				array[i] = new Vector3(CurveToViewSpace(region[i], scale, translation), 0);
+			{
+				indices[i] = (ushort)i;
+				array[i].vertex_position = CurveToViewSpace(region[i], scale, translation);
+			}
 
-			MainEditorView.editorBackendRenderer.DrawFilledPolyline(3, 3, ref color.r, ref mat, ref array, false);
+			polyfill.LoadVertices<Basic2dVertexFormat>(array);
+			polyfill.LoadIndices<ushort>(indices);
+			polyfill2dMat.SendData();
 
 			var c = new Color(curveColor.R, curveColor.G, curveColor.B, (byte)(curveColor.A * 0.75f));
+			ref var mesh = ref Pipeline.Get<Mesh>().GetAsset("dynamic_curve");
 
+			line2dMat.BindProperty("width", 2f);
 			for (int j = 0; j < 2; j++)
 			{
 				c = PrepareColorForCurve(c, j);
+				line2dMat.BindProperty("color", c);
+
+				Line2dVertexFormat[] verts = new Line2dVertexFormat[lines[j].Length * 4];
+				indices = new ushort[lines[j].Length * 6];
 				for (int i = 0; i < lines[j].Length - 1; i++)
 				{
 					var start = CurveToViewSpace(lines[j][i], scale, translation);
 					var end = CurveToViewSpace(lines[j][i + 1], scale, translation);
-					MainEditorView.editorBackendRenderer.DrawLine(start.X, start.Y, 0, end.X, end.Y, 0, ref c.r);
+					GenerateCurveMesh(verts.AsSpan()[(i * 4)..], indices.AsSpan()[(i * 6)..], i * 4, start, end);
 				}
+				mesh.LoadIndices<ushort>(indices);
+				mesh.LoadVertices<Line2dVertexFormat>(verts);
+				line2dMat.SendData();
 			}
-			//OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
+
+		}
+		public static void GenerateCurveMesh(Span<Line2dVertexFormat> verts, Span<ushort> indices, int i, Vector2 start, Vector2 end)
+		{
+			verts[0] = new Line2dVertexFormat()
+			{
+				vertex_position = new Vector2(start.X, start.Y),
+				dir = start - end,
+				miter = -1f
+			};
+			verts[1] = new Line2dVertexFormat()
+			{
+				vertex_position = new Vector2(start.X, start.Y),
+				dir = start - end,
+				miter = 1f
+			};
+			verts[2] = new Line2dVertexFormat()
+			{
+				vertex_position = new Vector2(end.X, end.Y),
+				dir = start - end,
+				miter = 1f
+			};
+			verts[3] = new Line2dVertexFormat()
+			{
+				vertex_position = new Vector2(end.X, end.Y),
+				dir = start - end,
+				miter = -1f
+			};
+			indices[0] = (ushort)(i);
+			indices[1] = (ushort)(i + 1);
+			indices[2] = (ushort)(i + 2);
+			indices[3] = (ushort)(i);
+			indices[4] = (ushort)(i + 2);
+			indices[5] = (ushort)(i + 3);
 		}
 	}
 

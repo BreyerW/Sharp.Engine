@@ -15,6 +15,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public Func<IntPtr, IntPtr, int> MakeCurrent { get; set; }
 		public Action<IntPtr> SwapBuffers { get; set; }
+		public uint currentWindow { get; set; }
 
 		public OpenGLRenderer()
 		{

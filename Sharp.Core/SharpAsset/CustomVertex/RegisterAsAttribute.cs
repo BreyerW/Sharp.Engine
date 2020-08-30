@@ -40,21 +40,15 @@ namespace SharpAsset
 				attrib.shaderLocation = attrib.shaderLocation is "" ? field.Name : attrib.shaderLocation;
 				attrib.stride = Marshal.SizeOf(field.FieldType);
 				attrib.offset = Marshal.OffsetOf(type, field.Name).ToInt32();
-				var isSepecial = specialPropertyNames.TryGetValue(attrib.shaderLocation, out var specialProperty);
-				if (isSepecial)
-				{
-					attrib.size = specialProperty switch
-					{
-						VertexAttribute.POSITION => 3,
-						VertexAttribute.COLOR4 => 4,
-						VertexAttribute.UV => 2,
-						VertexAttribute.NORMAL => 3,
-						_ => 1,
-					};
+
+				if (specialPropertyNames.TryGetValue(attrib.shaderLocation, out var specialProperty))
 					supportedSpecialAttribs.Add(specialProperty, attrib);
-				}
-				else
-					attrib.size = 1;
+
+				attrib.size = attrib.type switch
+				{
+					AttributeType.Float => attrib.stride / Marshal.SizeOf<float>(),
+					_ => 1,
+				};
 				vertFormat.Add(attrib);
 
 			}

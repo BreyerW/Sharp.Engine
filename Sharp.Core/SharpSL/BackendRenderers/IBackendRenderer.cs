@@ -6,6 +6,7 @@ namespace SharpSL.BackendRenderers
 {
 	public interface IBackendRenderer
 	{
+		uint currentWindow { get; set; }
 		IntPtr CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext);
 
 		Func<IntPtr, IntPtr, int> MakeCurrent { get; set; }
@@ -40,6 +41,7 @@ namespace SharpSL.BackendRenderers
 
 		void SendUniform4(int location, ref byte data);//TODO: int stride to differentiate floats ints etc?
 
+		//void StoreGlobalUniform4(int location, ref byte data); //TODO: move shader and material storage to backend renderer?
 		void GenerateBuffers(Target target, out int id);
 
 		void BindBuffers(Target target, int TBO);

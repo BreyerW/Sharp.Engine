@@ -66,7 +66,7 @@ namespace SharpAsset
 		};
 		//private int lastSlot;
 		private int shaderId;
-		private static Dictionary<string, byte[]> globalParams = new Dictionary<string, byte[]>();
+		private static Dictionary<(uint winId, string property), byte[]> globalParams = new Dictionary<(uint winId, string property), byte[]>();
 		[JsonProperty]
 		internal Dictionary<string, byte[]> localParams;
 		//internal Renderer attachedToRenderer;
@@ -226,33 +226,33 @@ namespace SharpAsset
 		}
 		public static void BindGlobalProperty(string propName, in Matrix4x4 data/*, bool store = true*/)
 		{
-			if (!globalParams.ContainsKey(propName))
+			if (!globalParams.ContainsKey((MainWindow.backendRenderer.currentWindow, propName)))
 			{
 				var param = pool.Rent(sizeTable[data.GetType()] + 1);
 				param[0] = MATRIX4X4;
 				//param.DataAddress = Unsafe.As<Matrix4x4, byte>(ref data);
 				Unsafe.WriteUnaligned(ref param[1], data);
 				//Unsafe.CopyBlock(ref param.dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
-				globalParams.Add(propName, param);
+				globalParams.Add((MainWindow.backendRenderer.currentWindow, propName), param);
 			}
 			else
-				Unsafe.WriteUnaligned(ref globalParams[propName][1], data);
+				Unsafe.WriteUnaligned(ref globalParams[(MainWindow.backendRenderer.currentWindow, propName)][1], data);
 
 			//Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
 		}
 		public static void BindGlobalProperty(string propName, in Vector2 data/*, bool store = true*/)
 		{
-			if (!globalParams.ContainsKey(propName))
+			if (!globalParams.ContainsKey((MainWindow.backendRenderer.currentWindow, propName)))
 			{
 				var param = pool.Rent(sizeTable[data.GetType()] + 1);
 				param[0] = VECTOR2;
 				//param.DataAddress = Unsafe.As<Matrix4x4, byte>(ref data);
 				Unsafe.WriteUnaligned(ref param[1], data);
 				//Unsafe.CopyBlock(ref param.dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
-				globalParams.Add(propName, param);
+				globalParams.Add((MainWindow.backendRenderer.currentWindow, propName), param);
 			}
 			else
-				Unsafe.WriteUnaligned(ref globalParams[propName][1], data);
+				Unsafe.WriteUnaligned(ref globalParams[(MainWindow.backendRenderer.currentWindow, propName)][1], data);
 
 			//Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
 		}
@@ -285,7 +285,8 @@ namespace SharpAsset
 			}
 
 			foreach (var (key, value) in globalParams)
-				SendToGPU(key, value);
+				if (key.winId == MainWindow.backendRenderer.currentWindow)
+					SendToGPU(key.property, value);
 			if (TryGetProperty("mesh", out Mesh mesh) is false) return;
 
 			MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);

@@ -51,7 +51,7 @@ namespace SharpSL.BackendRenderers
 		public void DrawBox(int x, int y, int width, int height, int color)//DrawMesh?
 		{
 			var col = new Sharp.Color((uint)color);
-			var mat = Matrix4x4.CreateScale(width, height, 1) * Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
+			var mat = Matrix4x4.CreateScale(width, height, 1) * Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoMatrix;
 			squareMaterial.BindProperty("model", mat);
 			squareMaterial.BindProperty("color", col);
 			squareMaterial.SendData();
@@ -115,7 +115,7 @@ namespace SharpSL.BackendRenderers
 					var topLeft = (float)Math.Floor((penY) * scale.y);
 					var topRight = texChar.height;
 					var bottomRight = texChar.width;
-					var mat = Matrix4x4.CreateScale(bottomRight, topRight, 0) * Matrix4x4.CreateTranslation(x + bottomLeft, y + topLeft, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
+					var mat = Matrix4x4.CreateScale(bottomRight, topRight, 0) * Matrix4x4.CreateTranslation(x + bottomLeft, y + topLeft, 0) * MainEditorView.currentMainView.camera.OrthoMatrix;
 
 					sdfMaterial.BindProperty("model", mat);
 					sdfMaterial.BindProperty("msdf", texChar);
@@ -260,7 +260,7 @@ namespace SharpSL.BackendRenderers
 			ref var texture2d = ref Pipeline.Get<Texture>().GetAsset(texture);
 			var col = new Sharp.Color((uint)color);
 
-			var mat = Matrix4x4.CreateScale(width, height, 1) * Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoLeftBottomMatrix;
+			var mat = Matrix4x4.CreateScale(width, height, 1) * Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoMatrix;
 
 			//MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
 			//MainWindow.backendRenderer.Allocate(ref texture2d.bitmap[0], texture2d.width, texture2d.height, texture2d.format);
