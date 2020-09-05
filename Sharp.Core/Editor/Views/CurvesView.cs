@@ -8,6 +8,8 @@ using SharpAsset;
 using SharpAsset.Pipeline;
 using Squid;
 using OpenTK.Graphics.OpenGL;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Sharp.Editor.Views
 {
@@ -93,6 +95,7 @@ namespace Sharp.Editor.Views
 			curveSettings.hTickStyle.centerLabel = true;
 
 			MouseUp += Panel_MouseUp;
+			MouseDown += CurvesView_MouseDown;
 			SizeChanged += CurvesView_SizeChanged;
 			KeyUp += CurvesView_KeyDown;
 			AllowFocus = true;
@@ -131,14 +134,54 @@ namespace Sharp.Editor.Views
 
 			Padding = new Margin(32, 33, 32, 32);
 			badge.BringToFront();
-
+			ref var curves = ref drawer.Value;
 			Color c = new Color(drawer.curveColor.R, drawer.curveColor.G, drawer.curveColor.B, (byte)(drawer.curveColor.A * 0.75f));
 			for (int j = 0; j < 2; j++)
 			{
 				c = PrepareColorForCurve(c, j);
-				foreach (var (key, keyframe) in drawer.Value[j].keys.Indexed())
+
+				foreach (var (key, keyframe) in curves[j].keys.Indexed())
 				{
 					AddButtonsForNewKey(keyframe, j, ref c);
+				}
+			}
+		}
+
+		private void CurvesView_MouseDown(Control sender, MouseEventArgs args)
+		{
+			var mousePos = new Vector2(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y);
+			var pos = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);
+			var rightClick = args.Button is 1;
+			if (rightClick) return;
+			var checkMousePos = new bool[drawer.Value.Length];
+			var checkIfOutsideRegion = new bool[drawer.Value.Length / 2];
+			ref var curves = ref drawer.Value;
+			foreach (var (id, curve) in curves.Indexed())
+			{
+				checkMousePos[id] = Math.Abs(curve.Evaluate(pos.X) - pos.Y) < 1f;
+				if ((id & 1) is 0)
+					checkIfOutsideRegion[id / 2] = (curves[id / 2].Evaluate(pos.X) < pos.Y && curves[id / 2 + 1].Evaluate(pos.X) < pos.Y) || (curves[id / 2].Evaluate(pos.X) > pos.Y && curves[id / 2 + 1].Evaluate(pos.X) > pos.Y);
+			}
+			foreach (var child in Childs)
+			{
+				if (child.Name != "inTan" && child.Name != "outTan" && child is DraggableButton button)
+				{
+					var (_, l, _, _) = (ValueTuple<float, int, DraggableButton, DraggableButton>)button.UserData;
+					if (checkIfOutsideRegion[l / 2])
+						continue;
+
+					if (checkMousePos[l])
+					{
+						draggingCurveId = l;
+						button.StartDrag();
+						Desktop.CurrentCursor = CursorNames.SizeNS;
+					}
+					else if (!checkMousePos[(l & 1) is 0 ? l + 1 : l - 1])
+					{
+						draggingCurveId = -(l / 2) - 2;
+						button.StartDrag();
+						Desktop.CurrentCursor = CursorNames.SizeNS;
+					}
 				}
 			}
 		}
@@ -187,9 +230,10 @@ namespace Sharp.Editor.Views
 			var mousePosCS = RegionDrawer.ViewToCurveSpace(new Vector2(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y), scale, translation);
 			var (time, l, outTan, inTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)selectedControl.UserData;
 			var key = FindKeyframe(time, l);
-			ref var value = ref drawer.Value[l].keys[key];
+			ref var curves = ref drawer.Value;
+			var value = curves[l].keys[key];
 			var keyframePos = new Vector2(value.time, value.value);
-			if (sender.Name == "inTan")
+			if (sender.Name is "inTan")
 			{
 				Vector2 vector2 = mousePosCS - keyframePos;
 				if (vector2.X < -0.0001f)
@@ -233,9 +277,8 @@ namespace Sharp.Editor.Views
 					CalcTangentForButton(inTan, selectedControl, ref value);
 				}
 			}
-			drawer.Value[l].MoveKey(key, ref value);
-			CurveUtility.UpdateTangentsFromModeSurrounding(drawer.Value[l], key);
-
+			curves[l].MoveKey(key, ref value);
+			CurveUtility.UpdateTangentsFromModeSurrounding(curves[l], key);
 			selectedControl.UserData = ((value.time, l, outTan, inTan));
 			Squid.UI.isDirty = true;
 		}
@@ -256,7 +299,8 @@ namespace Sharp.Editor.Views
 		{
 			var (time, l, sentOutTan, sentInTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)sender.UserData;
 			var key = FindKeyframe(time, l);
-			ref var value = ref drawer.Value[l].keys[key];
+			ref var curves = ref drawer.Value;
+			var value = curves[l].keys[key];
 
 			if (args.Button is 1)
 			{
@@ -273,7 +317,7 @@ namespace Sharp.Editor.Views
 				delButton.Text = "Delete Key" /*+ (clickedKeyframe[0].Count + clickedKeyframe[1].Count > 1 ? "s" : "")*/;
 				delButton.UserData = new Control[] { sender };
 
-				CurveMenuManager.AddTangentMenuItems(editMenu, drawer.Value);
+				CurveMenuManager.AddTangentMenuItems(editMenu, curves);
 
 				editMenu.Position = new Point(sender.Position.x + 6, sender.Position.y + 6);
 				editMenu.IsVisible = true;
@@ -292,19 +336,22 @@ namespace Sharp.Editor.Views
 
 		private bool IsOutTanVisible(int curveId, int key)
 		{
-			var tanMode = CurveUtility.GetKeyTangentMode(ref drawer.Value[curveId].keys[key], 1);
-			return key < drawer.Value[curveId].keys.Length - 1 && (tanMode == TangentMode.Editable || tanMode == TangentMode.Smooth);
+			ref var curves = ref drawer.Value;
+			var tanMode = CurveUtility.GetKeyTangentMode(ref curves[curveId].keys[key], 1);
+			return key < curves[curveId].keys.Length - 1 && (tanMode == TangentMode.Editable || tanMode == TangentMode.Smooth);
 		}
 
 		private bool IsInTanVisible(int curveId, int key)
 		{
-			var tanMode = CurveUtility.GetKeyTangentMode(ref drawer.Value[curveId].keys[key], 0);
+			ref var curves = ref drawer.Value;
+			var tanMode = CurveUtility.GetKeyTangentMode(ref curves[curveId].keys[key], 0);
 			return key > 0 && (tanMode == TangentMode.Editable || tanMode == TangentMode.Smooth);
 		}
 
 		private int FindKeyframe(float time, int curveId)
 		{
-			return Array.FindIndex(drawer.Value[curveId].keys, keyframe => time == keyframe.time);
+			ref var curves = ref drawer.Value;
+			return Array.FindIndex(curves[curveId].keys, keyframe => time == keyframe.time);
 		}
 
 		private void CurvesView_SizeChanged(Control sender)
@@ -317,14 +364,14 @@ namespace Sharp.Editor.Views
 			scale = new Vector2(swatchArea.width / (drawer.curvesRange.width), -swatchArea.height / (drawer.curvesRange.height));//max-drawer.curvesRange.y
 			translation = new Vector2(-drawer.curvesRange.x * scale.X + swatchArea.x, swatchArea.height - drawer.curvesRange.y * scale.Y + swatchArea.y);
 			mainView.camera.SetOrthoMatrix(size.width, size.height);
-
+			ref var curves = ref drawer.Value;
 			foreach (var child in Childs)
 			{
 				if (child.Name != "inTan" && child.Name != "outTan" && child is DraggableButton button)
 				{
 					var (time, l, outTan, inTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)child.UserData;
 					var key = FindKeyframe(time, l);
-					ref var value = ref drawer.Value[l].keys[key];
+					var value = curves[l].keys[key];
 					var point = RegionDrawer.CurveToViewSpace(new Vector2(value.time, value.value), scale, translation);
 					ChangePositionWithoutEvent(button, new Point((int)point.X - 10, (int)point.Y - Location.y - 6));
 					var outPos = new Point(button.Position.x + 6, button.Position.y + 6) + (Point)outTan.UserData;
@@ -346,7 +393,8 @@ namespace Sharp.Editor.Views
 		{
 			var (time, l, outTan, inTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)sender.UserData;
 			var key = FindKeyframe(time, l);
-			ref var value = ref drawer.Value[l].keys[key];
+			ref var curves = ref drawer.Value;
+			var value = curves[l].keys[key];
 			var newPos = draggingCurveId is -1 ? RegionDrawer.ViewToCurveSpace(new Vector2(sender.Position.x + 10, sender.Position.y + Location.y + 6), scale, translation) :
 					 new Vector2(value.time, RegionDrawer.ViewToCurveSpace(new Vector2(sender.Position.x + 10, sender.Position.y + Location.y + 6), scale, translation).Y);
 
@@ -356,27 +404,27 @@ namespace Sharp.Editor.Views
 
 			if (key < 0)
 			{
-				showDrag = drawer.Value[l].AddKey(ref newKeyFr);
+				showDrag = curves[l].AddKey(ref newKeyFr);
 				if (showDrag < 0)
 				{
 					showDrag = 0;
 				}
 			}
 			else
-				showDrag = drawer.Value[l].MoveKey(key, ref newKeyFr);
+				showDrag = curves[l].MoveKey(key, ref newKeyFr);
 
 			while (showDrag == -1)
 			{
 				showDrag = Squid.UI.MouseDelta.x < 0 ? key - 1 : key;
-				drawer.Value[l].RemoveKey(showDrag);
-				showDrag = drawer.Value[l].AddKey(ref newKeyFr);
+				curves[l].RemoveKey(showDrag);
+				showDrag = curves[l].AddKey(ref newKeyFr);
 			}
 
 			if (showDrag != -1)
 			{
 				//Console.WriteLine("update");
 				//CurveUtility.UpdateTangentsFromMode(drawer.Value[l], showDrag);
-				CurveUtility.UpdateTangentsFromModeSurrounding(drawer.Value[l], showDrag);
+				CurveUtility.UpdateTangentsFromModeSurrounding(curves[l], showDrag);
 			}
 			if (draggingCurveId != -1)
 			{
@@ -393,8 +441,7 @@ namespace Sharp.Editor.Views
 			}
 			if (outTan.IsVisible) CalcTangentForButton(outTan, sender, ref value);
 			if (inTan.IsVisible) CalcTangentForButton(inTan, sender, ref value);
-			sender.UserData = ((drawer.Value[l].keys[showDrag].time, l, outTan, inTan));
-
+			sender.UserData = ((curves[l].keys[showDrag].time, l, outTan, inTan));
 			Squid.UI.isDirty = true;
 		}
 
@@ -422,12 +469,13 @@ namespace Sharp.Editor.Views
 			if (tracking > -1)
 			{
 				var x = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation).X;
-				var keyInCV = new Vector2(x, drawer.Value[tracking].Evaluate(x));
+				ref var curve = ref drawer.Value[tracking];
+				var keyInCV = new Vector2(x, curve.Evaluate(x));
 				CheckIfOutsideArea(ref keyInCV);
 				var keyInVS = RegionDrawer.CurveToViewSpace(keyInCV, scale, translation);
 
 				badge.Position = new Point((int)keyInVS.X, (int)keyInVS.Y - 15);
-				badge.Text = $"{x:F3}, {drawer.Value[tracking].Evaluate(x):F3}";
+				badge.Text = $"{x:F3}, {curve.Evaluate(x):F3}";
 				// badge.SizeToContents();
 				badge.IsVisible = true;
 				return;
@@ -459,32 +507,38 @@ namespace Sharp.Editor.Views
 			int curveId = (int)data[0];
 			float time = (float)data[1];
 			var startAngle = EvaluateCurveDeltaSlow(time, curveId);
-			var newPoint = new Vector2(time, drawer.Value[curveId].Evaluate(time));
+			//var curve = drawer.Value[curveId].ToObject<Curve>(JsonSerializer.Create(MainClass.serializerSettings));
+			ref var curve = ref drawer.Value[curveId];
+			var newPoint = new Vector2(time, curve.Evaluate(time));
 			CheckIfOutsideArea(ref newPoint);
 			var newkeyfr = new Keyframe(newPoint.X, newPoint.Y, startAngle, startAngle);
-			var keyId = drawer.Value[curveId].AddKey(ref newkeyfr);
+			var keyId = curve.AddKey(ref newkeyfr);
 			Color c = new Color(drawer.curveColor.R, drawer.curveColor.G, drawer.curveColor.B, (byte)(drawer.curveColor.A * 0.75f));
 			c = PrepareColorForCurve(c, curveId);
 			AddButtonsForNewKey(newkeyfr, curveId, ref c);
 			CurvesView_SizeChanged(this);
+
 			Squid.UI.isDirty = true;
 		}
 
 		private void DelButton_MouseClick(Control sender, MouseEventArgs args)
 		{
 			var data = sender.UserData as Control[];
+			ref var curves = ref drawer.Value;
 			foreach (var toDelete in data)
 			{
 				var (time, l, outTan, inTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)toDelete.UserData;
 				var key = FindKeyframe(time, l);
-				ref var value = ref drawer.Value[l].keys[key];
-				drawer.Value[l].RemoveKey(Array.IndexOf(drawer.Value[l].keys, value));
+				var value = curves[l].keys[key];
+				curves[l].RemoveKey(Array.IndexOf(curves[l].keys, value));
 				Childs.Remove(toDelete);
 				Childs.Remove(inTan);
 				Childs.Remove(outTan);
 				if (toDelete == selectedControl)
 					selectedControl = null;
+
 			}
+
 			Squid.UI.isDirty = true;
 		}
 
@@ -494,12 +548,10 @@ namespace Sharp.Editor.Views
 			var pos = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);
 			var rightClick = args.Button is 1;
 			var checkMousePos = new bool[drawer.Value.Length];
-			var checkIfOutsideRegion = new bool[drawer.Value.Length / 2];
-			foreach (var (id, curve) in drawer.Value.Indexed())
+			ref var curves = ref drawer.Value;
+			foreach (var (id, curve) in curves.Indexed())
 			{
-				checkMousePos[id] = Math.Abs(curve.Evaluate(pos.X) - pos.Y) < 0.5f;
-				if ((id & 1) is 0)
-					checkIfOutsideRegion[id / 2] = (drawer.Value[id / 2].Evaluate(pos.X) < pos.Y && drawer.Value[id / 2 + 1].Evaluate(pos.X) < pos.Y) || (drawer.Value[id / 2].Evaluate(pos.X) > pos.Y && drawer.Value[id / 2 + 1].Evaluate(pos.X) > pos.Y);
+				checkMousePos[id] = Math.Abs(curve.Evaluate(pos.X) - pos.Y) < 1f;
 			}
 
 			if (rightClick)
@@ -520,32 +572,6 @@ namespace Sharp.Editor.Views
 					menu.Position = new Point((int)mousePos.X - Location.x, (int)mousePos.Y - Location.y);
 					menu.IsVisible = true;
 					menu.Open();
-				}
-				return;
-			}
-			else
-			{
-				foreach (var child in Childs)
-				{
-					if (child.Name != "inTan" && child.Name != "outTan" && child is DraggableButton button)
-					{
-						var (_, l, _, _) = (ValueTuple<float, int, DraggableButton, DraggableButton>)button.UserData;
-						if (checkIfOutsideRegion[l / 2])
-							continue;
-
-						if (checkMousePos[l])
-						{
-							draggingCurveId = l;
-							button.StartDrag();
-							Desktop.CurrentCursor = CursorNames.SizeNS;
-						}
-						else if (!checkMousePos[(l & 1) is 0 ? l + 1 : l - 1])
-						{
-							draggingCurveId = -(l / 2) - 2;
-							button.StartDrag();
-							Desktop.CurrentCursor = CursorNames.SizeNS;
-						}
-					}
 				}
 				return;
 			}
@@ -934,7 +960,8 @@ namespace Sharp.Editor.Views
 		public float EvaluateCurveDeltaSlow(float time, int curveId)
 		{
 			float num = 0.0001f;
-			return (drawer.Value[curveId].Evaluate(time + num) - drawer.Value[curveId].Evaluate(time - num)) / (num * 2f);
+			ref var curve = ref drawer.Value[curveId];
+			return (curve.Evaluate(time + num) - curve.Evaluate(time - num)) / (num * 2f);
 		}
 
 		private Vector2 GetAxisUiScalars(Curve[] curvesWithSameParameterSpace)
@@ -947,7 +974,7 @@ namespace Sharp.Editor.Views
 				Vector2 vector = Vector2.One;
 				for (int i = 0; i < drawer.Value.Length; i++)
 				{
-					Curve curveWrapper = drawer.Value[i];
+					//Curve curveWrapper = drawer.Value[i].ToObject<Curve>();
 					Vector2 vector2 = Vector2.One;
 					if (i == 0)
 					{

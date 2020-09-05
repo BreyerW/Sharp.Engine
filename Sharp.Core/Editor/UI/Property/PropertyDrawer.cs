@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Sharp.Editor.Attribs;
 using Sharp.Editor.Views;
+using Sharp.Engine.Components;
 using SharpAsset;
 using SharpAsset.Pipeline;
 using Squid;
@@ -50,10 +51,10 @@ namespace Sharp.Editor.UI.Property
 	/// <summary>
 	/// Base control for property entry.
 	/// </summary>
-	public abstract class PropertyDrawer<T> : PropertyDrawer//if u want support multiple types with same drawer use object, object have least priority compared to same attrib but specialized drawer
+	public abstract class PropertyDrawer<T> : PropertyDrawer
 	{
-		private bool isDirty = false;
-		//private static IEqualityComparer<T> defaultEquality=EqualityComparer<T>.Default;
+		private bool isDirty = false; //TODO: make json-byte diff when true dont make comparision and call everything in CallWhenChangedAttribute, comparision is necessary only for global IsDirty
+									  //private static IEqualityComparer<T> defaultEquality=EqualityComparer<T>.Default;
 		private IEnumerator<bool> savingTask;
 		private JToken serializedObject;
 		public MemberInfo memberInfo;
@@ -62,8 +63,7 @@ namespace Sharp.Editor.UI.Property
 		protected Label label = new Label();
 		protected Type propertyType;
 		//private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
-		public RefAction<object, T> setter;
-		public Func<object, T> getter;
+		private RefFunc<object, T> getter;
 		/*public abstract T Value
 		{
 			get;
@@ -93,8 +93,9 @@ namespace Sharp.Editor.UI.Property
 				serializedObject = value;
 				ApplyChanges();
 			}
-			get => serializedObject;
+			get => serializedObject.SelectToken("$values") ?? serializedObject;
 		}
+		public ref T Value => ref getter(target);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int DangerousGetObjectDataByteOffset(object obj, FieldInfo field)
 		{
@@ -144,7 +145,7 @@ namespace Sharp.Editor.UI.Property
 		public PropertyDrawer(MemberInfo memInfo)
 		{
 			memberInfo = memInfo;
-			(getter, setter) = DelegateGenerator.GetAccessors<T>(memberInfo);
+			(getter, _) = DelegateGenerator.GetAccessors<T>(memberInfo);
 			//Scissor = true;
 			//Size = new Point(0, 20);
 			Name = memberInfo.Name;
@@ -194,8 +195,9 @@ namespace Sharp.Editor.UI.Property
 								else
 									serializedObject[prop.Path] = prop;
 					}
-					setter(target, ref val);
-
+					getter(target) = val;
+					if (target is Transform tr) //TODO: generalize it to field-only attribute CallWhenChangedAttribute(string) with limitation that method must have no params
+						tr.SetModelMatrix();
 				}
 				return;
 			}
@@ -224,7 +226,10 @@ namespace Sharp.Editor.UI.Property
 					if (savingTask is null && target.Parent.GetComponent<Camera>() != Camera.main)
 						savingTask = SaveState(token).GetEnumerator();
 					var val = serializedObject.ToObject<T>(JsonSerializer.Create(MainClass.serializerSettings));
-					setter(target, ref val);
+					getter(target) = val;
+					if (target is Transform t) //TODO: generalize it to field-only attribute CallWhenChangedAttribute(string) with limitation that method must have no params
+						t.SetModelMatrix();
+
 					isDirty = false;
 				}
 			}

@@ -10,8 +10,8 @@ namespace Sharp.Editor.UI
 	{
 		public override void OnInitializeGUI()//OnSelect
 		{
-			var props = Target.GetType().GetProperties().Where(p => p.CanRead && (p.CanWrite || p.PropertyType.IsByRef));
-			//var props = Target.GetType().GetFields(BindingFlags.Instance|BindingFlags.NonPublic);
+			var props = Target.GetType().GetFields().Where(p => !p.IsStatic);//.Where(p => p.CanRead && (p.CanWrite || p.PropertyType.IsByRef));
+																			 //var props = Target.GetType().GetFields(BindingFlags.Instance|BindingFlags.NonPublic);
 			foreach (var prop in props)
 			{
 				Console.WriteLine(prop.Name);

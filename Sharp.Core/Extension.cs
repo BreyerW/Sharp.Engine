@@ -23,7 +23,7 @@ namespace Sharp
 			return new Guid(id);
 		}
 
-		public static T GetInstanceObject<T>(in this Guid id) where T: class
+		public static T GetInstanceObject<T>(in this Guid id) where T : class
 		{
 			entities.idToObjectMapping.TryGetValue(id, out var obj);
 			return (T)obj;
@@ -60,6 +60,16 @@ namespace Sharp
 				ref var addr = ref Unsafe.AddByteOffset(ref Unsafe.AsRef<byte>(ptr.ToPointer()), (IntPtr)IntPtr.Size);
 				return ref Unsafe.As<byte, T>(ref addr);
 			}
+		}
+		public static int FindIndex<T>(this IEnumerable<T> items, Func<T, bool> predicate)
+		{
+			int index = 0;
+			foreach (var item in items)
+			{
+				if (predicate(item)) return index;
+				index++;
+			}
+			return -1;
 		}
 	}
 

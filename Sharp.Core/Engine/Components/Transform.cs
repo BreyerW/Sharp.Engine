@@ -11,9 +11,9 @@ namespace Sharp.Engine.Components
 		private readonly static int mat4x4Stride = Marshal.SizeOf<Matrix4x4>();
 		[NonSerializable]
 		private Matrix4x4 modelMatrix;
-		internal Vector3 position = Vector3.Zero;
-		internal Vector3 rotation = Vector3.Zero;
-		internal Vector3 scale = Vector3.One;
+		public Vector3 position = Vector3.Zero;
+		public Vector3 rotation = Vector3.Zero;
+		public Vector3 scale = Vector3.One;
 		[NonSerializable, JsonIgnore]
 		public ref readonly Matrix4x4 ModelMatrix
 		{
@@ -22,7 +22,7 @@ namespace Sharp.Engine.Components
 				return ref modelMatrix;
 			}
 		}
-
+		[NonSerializable, JsonIgnore]
 		public Action onTransformChanged;
 
 		public Vector3 Position
@@ -66,7 +66,7 @@ namespace Sharp.Engine.Components
 				onTransformChanged?.Invoke();
 			}
 		}
-		private void SetModelMatrix()
+		internal void SetModelMatrix()
 		{
 			var angles = rotation * NumericsExtensions.Pi / 180f;
 			/*unsafe

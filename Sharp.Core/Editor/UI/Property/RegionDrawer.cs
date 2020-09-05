@@ -51,7 +51,11 @@ namespace Sharp.Editor.UI.Property
 				curves = value;
 			}
 		}*/
-		internal Curve[] Value => SerializedObject.ToObject<Curve[]>(JsonSerializer.Create(MainClass.serializerSettings));
+		/*internal JArray Value
+		{
+			get => SerializedObject as JArray;
+			set => SerializedObject = value;
+		}*/
 		static RegionDrawer()
 		{
 			var mesh = new Mesh();
@@ -202,7 +206,7 @@ namespace Sharp.Editor.UI.Property
 		private Vector2[] GetPoints(float minTime, float maxTime, int curveId)
 		{
 			List<Vector2> list = new List<Vector2>();
-			if (Value.Length == 0)
+			if (Value is null)
 			{
 				return list.ToArray();
 			}
@@ -236,15 +240,17 @@ namespace Sharp.Editor.UI.Property
 		private void AddPoints(ref List<Vector2> points, float minTime, float maxTime, float visibleMinTime, float visibleMaxTime, int curveId)
 		{
 			var maxX = curvesRange.width + (curvesRange.x < 0 ? curvesRange.x : 0);
-			if (Value[curveId].keys[0].time > minTime)
+			//var curve = Value.ToObject<Curve[]>(JsonSerializer.Create(MainClass.serializerSettings))[curveId];
+			var keys = Value[curveId].keys;
+			if (keys[0].time > minTime)
 			{
 				points.Add(new Vector2(curvesRange.x, Value[curveId].Evaluate(curvesRange.x)));
-				points.Add(new Vector2(Value[curveId].keys[0].time, Value[curveId].keys[0].value));//TODO: bug in corners or with evaluate?
+				points.Add(new Vector2(keys[0].time, keys[0].value));//TODO: bug in corners or with evaluate?
 			}
-			for (int i = 0; i < Value[curveId].keys.Length - 1; i++)
+			for (int i = 0; i < keys.Length - 1; i++)
 			{
-				Keyframe keyframe = Value[curveId].keys[i];
-				Keyframe keyframe2 = Value[curveId].keys[i + 1];
+				Keyframe keyframe = keys[i];
+				Keyframe keyframe2 = keys[i + 1];
 				if (keyframe2.time >= minTime && keyframe.time <= maxTime)
 				{
 					points.Add(new Vector2(keyframe.time, keyframe.value));
@@ -262,10 +268,10 @@ namespace Sharp.Editor.UI.Property
 					points.Add(new Vector2(num, keyframe2.value));
 				}
 			}
-			if (Value[curveId].keys[Value[curveId].keys.Length - 1].time <= maxTime)
+			if (keys[keys.Length - 1].time <= maxTime)
 			{
-				points.Add(new Vector2(Value[curveId].keys[Value[curveId].keys.Length - 1].time, Value[curveId].keys[Value[curveId].keys.Length - 1].value));
-				points.Add(new Vector2(maxX, Value[curveId].keys[Value[curveId].keys.Length - 1].value));
+				points.Add(new Vector2(keys[keys.Length - 1].time, keys[keys.Length - 1].value));
+				points.Add(new Vector2(maxX, keys[keys.Length - 1].value));
 			}
 		}
 
@@ -311,7 +317,8 @@ namespace Sharp.Editor.UI.Property
 
 		protected override void DrawAfter()
 		{
-			var curves = Value;
+			//var curves = Value.ToObject<Curve[]>(JsonSerializer.Create(MainClass.serializerSettings));
+			ref var curves = ref Value;
 			for (int i = 0; i < curves.Length; i += 2)
 				CreateRegion(curves[i], curves[i + 1]);
 			var p = curveFrame.Location;

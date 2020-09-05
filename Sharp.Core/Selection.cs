@@ -332,7 +332,9 @@ namespace Sharp
 			if (reader.TokenType == JsonToken.Null)
 				return null;
 			var obj = JToken.Load(reader);
-			var refId = (string)obj[refProperty] ?? (string)obj[idProperty]; //?? (string)obj[idProperty] was added because we need persistence between Serialize() calls and it is possible that one object can be serialized in multiple places with $id rather than $ref
+			//for (var i = 0; i < obj.Type == JTokenType.Array ? obj.Children().Count() : 1; i++)
+
+			var refId = objectType.IsArray ? null : (string)obj[refProperty] ?? (string)obj[idProperty]; //?? (string)obj[idProperty] was added because we need persistence between Serialize() calls and it is possible that one object can be serialized in multiple places with $id rather than $ref
 			if (refId != null)
 			{
 				var reference = serializer.ReferenceResolver.ResolveReference(serializer, refId);
@@ -349,7 +351,7 @@ namespace Sharp
 			var value = Array.CreateInstance(elementType, count) as IList;
 			if (!objectType.IsArray)
 				value = Activator.CreateInstance(objectType, value) as IList;
-			var objId = (string)obj[idProperty];
+			var objId = objectType.IsArray ? null : (string)obj[idProperty];
 			if (objId != null)
 			{
 				// Add the empty array into the reference table BEFORE populating it,
@@ -362,7 +364,6 @@ namespace Sharp
 				value[id] = serializer.Deserialize(token.CreateReader(), elementType);
 				id++;
 			}
-
 			existingValue = value;
 
 			return existingValue;

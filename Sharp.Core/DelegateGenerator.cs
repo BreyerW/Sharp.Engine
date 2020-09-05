@@ -9,15 +9,15 @@ using System.Runtime.CompilerServices;
 namespace Sharp
 {
 	public delegate void RefAction<T1, T2>(T1 instance, ref T2 value);
-	internal delegate ref TResult RefFunc<T, TResult>(T instance);
+	public delegate ref TResult RefFunc<T, TResult>(T instance);
 	internal static class DelegateGenerator
 	{
 		internal static Dictionary<(Type declaringType, string member), (Delegate getter, Delegate setter)> accessorsMapping = new Dictionary<(Type declaringType, string member), (Delegate getter, Delegate setter)>();
 
-		public static (Func<object, T> getter, RefAction<object, T> setter) GetAccessors<T>(MemberInfo memberInfo)
+		public static (RefFunc<object, T> getter, RefAction<object, T> setter) GetAccessors<T>(MemberInfo memberInfo)
 		{
 			if (accessorsMapping.TryGetValue((memberInfo.DeclaringType, memberInfo.Name), out var accessors))
-				return (accessors.getter as Func<object, T>, accessors.setter as RefAction<object, T>);
+				return (accessors.getter as RefFunc<object, T>, accessors.setter as RefAction<object, T>);
 			var getter = GenerateGetter<T>(memberInfo);
 			var setter = GenerateSetter<T>(memberInfo);
 			accessorsMapping.Add((memberInfo.DeclaringType, memberInfo.Name), (getter, setter));
@@ -72,9 +72,9 @@ namespace Sharp
 		/// <typeparam name="T">Type of unbound instance</typeparam>
 		/// <param name="memberInfo">Field or property info</param>
 		/// <returns></returns>
-		public static Func<object, T> GenerateGetter<T>(MemberInfo memberInfo)
+		public static RefFunc<object, T> GenerateGetter<T>(MemberInfo memberInfo)
 		{
-			if (memberInfo.GetUnderlyingType() is { IsByRef: true })
+			/*if (memberInfo.GetUnderlyingType() is { IsByRef: true })
 			{
 				var method = new DynamicMethod("", MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(T), new[] { typeof(object) }, memberInfo.DeclaringType, true);
 				var il = method.GetILGenerator();
@@ -102,7 +102,21 @@ namespace Sharp
 
 			if (typeof(T) != memberInfo.GetUnderlyingType())
 				memberExp = CreateCastExpression(memberExp, typeof(T));
-			return Expression.Lambda<Func<object, T>>(memberExp, paramExpression).Compile();
+			return Expression.Lambda<Func<object, T>>(memberExp, paramExpression).Compile();*/
+			var asmName = new AssemblyName("WidgetDynamicAssembly." + Guid.NewGuid().ToString());
+			var asmBuilder = AssemblyBuilder.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndCollect);
+			var moduleBuilder = asmBuilder.DefineDynamicModule("<Module>");
+			var typeBuilder = moduleBuilder.DefineType("WidgetHelper");
+			var methodBuilder = typeBuilder.DefineMethod("GetFieldByRef", MethodAttributes.Static | MethodAttributes.Public, memberInfo.GetUnderlyingType().MakeByRefType(), new[] { typeof(object) });
+			var ilGen = methodBuilder.GetILGenerator();
+			ilGen.Emit(OpCodes.Ldarg_0);
+			ilGen.Emit(OpCodes.Castclass, memberInfo.DeclaringType);
+			ilGen.Emit(OpCodes.Ldflda, memberInfo as FieldInfo);
+			ilGen.Emit(OpCodes.Ret);
+			var type = typeBuilder.CreateType();
+			var mi = type.GetMethod(methodBuilder.Name);
+			var del = (RefFunc<object, T>)mi.CreateDelegate(typeof(RefFunc<object, T>));
+			return del;
 		}
 
 		/// <summary>
