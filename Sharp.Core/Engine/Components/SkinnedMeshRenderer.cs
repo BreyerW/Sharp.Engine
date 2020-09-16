@@ -7,9 +7,5 @@ namespace Sharp
     {
         private Skeleton skeleton;
 
-        public SkinnedMeshRenderer(ref Mesh meshToRender, Material mat, Skeleton skele): base(null)
-        {
-            skeleton = skele;
-        }
     }
 }

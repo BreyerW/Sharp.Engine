@@ -78,7 +78,6 @@ namespace SharpSL.BackendRenderers
 			float kern = 0;
 			underrun = 0;
 			overrun = 0;
-			var shader = sdfMaterial.Shader;
 			for (int i = 0; i < chars.Length; i++)
 			{
 
@@ -149,8 +148,6 @@ namespace SharpSL.BackendRenderers
 				#endregion Kerning (for NEXT character)
 
 				#endregion Draw glyph
-				if (text is "11")
-					Console.WriteLine();
 			}
 
 		}

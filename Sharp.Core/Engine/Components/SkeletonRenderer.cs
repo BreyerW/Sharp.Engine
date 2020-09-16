@@ -15,9 +15,6 @@ namespace Sharp
             Allocate();
         }
 
-		public SkeletonRenderer(Entity parent) : base(parent)
-		{
-		}
 
 		private void Allocate()
         {

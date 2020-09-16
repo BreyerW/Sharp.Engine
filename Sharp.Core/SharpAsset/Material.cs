@@ -38,8 +38,10 @@ private byte isUnmanaged;
 namespace SharpAsset
 {
 	[Serializable]
-	public class Material : IDisposable//IAsset
+	public class Material : IDisposable, IEngineObject//IAsset
 	{//TODO: load locations lazily LoadLocation on IBackendRenderer when binding property? and when constructing material for global props  
+		
+
 		private const byte FLOAT = 0;
 		private const byte VECTOR2 = 1;
 		private const byte VECTOR3 = 2;
@@ -51,7 +53,7 @@ namespace SharpAsset
 		private const byte COLOR4PTR = byte.MaxValue - 1;
 
 		private static int lastShaderUsed = -1;
-		private static ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+		//private static ArrayPool<byte> pool = ArrayPool<byte>.Shared;
 		private static Dictionary<Type, int> sizeTable = new Dictionary<Type, int>()
 		{
 			[typeof(Vector2)] = Marshal.SizeOf<Vector2>(),
@@ -65,13 +67,11 @@ namespace SharpAsset
 			[typeof(float)] = Marshal.SizeOf<float>(),
 		};
 		//private int lastSlot;
+		[JsonProperty]
 		private int shaderId;
 		private static Dictionary<(uint winId, string property), byte[]> globalParams = new Dictionary<(uint winId, string property), byte[]>();
 		[JsonProperty]
 		internal Dictionary<string, byte[]> localParams;
-		//internal Renderer attachedToRenderer;
-		//TODO: split pipeline into importer/exporter?																								 //public RefAction<Material> onShaderDataRequest; //ref Material mat or shader visible in editor?
-
 		public Shader Shader
 		{
 			get
@@ -100,7 +100,7 @@ namespace SharpAsset
 			}
 			if (!localParams.ContainsKey(propName))
 			{
-				var param = pool.Rent(sizeTable[typeof(IntPtr)] + 1);
+				var param = new byte[sizeTable[typeof(IntPtr)] + 1];
 				param[0] = data switch
 				{
 					Matrix4x4 _ => MATRIX4X4PTR,
@@ -170,7 +170,7 @@ namespace SharpAsset
 			if (!localParams.ContainsKey(propName))
 			{
 
-				var param = pool.Rent(sizeTable[data.GetType()] + 1);
+				var param = new byte[sizeTable[data.GetType()] + 1];
 				param[0] = MATRIX4X4;
 				Unsafe.WriteUnaligned(ref param[1], data);
 				localParams.Add(propName, param);
@@ -183,7 +183,7 @@ namespace SharpAsset
 			if (!localParams.ContainsKey(propName))
 			{
 
-				var param = pool.Rent(sizeTable[data.GetType()] + 1);
+				var param = new byte[sizeTable[data.GetType()] + 1];
 				param[0] = VECTOR3;
 				Unsafe.WriteUnaligned(ref param[1], data);
 				localParams.Add(propName, param);
@@ -196,7 +196,7 @@ namespace SharpAsset
 			if (!localParams.ContainsKey(propName))
 			{
 
-				var param = pool.Rent(sizeTable[data.GetType()] + 1);
+				var param = new byte[sizeTable[data.GetType()] + 1];
 				param[0] = VECTOR2;
 				Unsafe.WriteUnaligned(ref param[1], data);
 				localParams.Add(propName, param);
@@ -228,7 +228,7 @@ namespace SharpAsset
 		{
 			if (!globalParams.ContainsKey((MainWindow.backendRenderer.currentWindow, propName)))
 			{
-				var param = pool.Rent(sizeTable[data.GetType()] + 1);
+				var param = new byte[sizeTable[data.GetType()] + 1];
 				param[0] = MATRIX4X4;
 				//param.DataAddress = Unsafe.As<Matrix4x4, byte>(ref data);
 				Unsafe.WriteUnaligned(ref param[1], data);
@@ -244,7 +244,7 @@ namespace SharpAsset
 		{
 			if (!globalParams.ContainsKey((MainWindow.backendRenderer.currentWindow, propName)))
 			{
-				var param = pool.Rent(sizeTable[data.GetType()] + 1);
+				var param = new byte[sizeTable[data.GetType()] + 1];
 				param[0] = VECTOR2;
 				//param.DataAddress = Unsafe.As<Matrix4x4, byte>(ref data);
 				Unsafe.WriteUnaligned(ref param[1], data);
@@ -335,8 +335,8 @@ namespace SharpAsset
 			{
 				if (disposing)
 				{
-					foreach (var value in localParams.Values)
-						pool.Return(value);
+					//foreach (var value in localParams.Values)
+					//pool.Return(value);
 
 					//TODO: move this to when application exit
 					//foreach (var value in globalParams.Values)
@@ -359,6 +359,7 @@ namespace SharpAsset
 		// This code added to correctly implement the disposable pattern.
 		public void Dispose()
 		{
+			Extension.objectToIdMapping.Remove(this);
 			// Do not change this code. Put cleanup code in Dispose(bool disposing) above.
 			Dispose(true);
 			// TODO: uncomment the following line if the finalizer is overridden above.

@@ -82,7 +82,7 @@ namespace Sharp
 		{
 		}
 
-		public Camera(Entity entity) : base(entity)
+		public Camera()
 		{
 			Speed = 50.0f;
 			//TargetPosition =  new Vector3();
@@ -173,7 +173,7 @@ namespace Sharp
 			var projInv = main.projectionMatrix.Inverted();
 			vec.Transform(projInv).Transform(viewInv);
 
-			if (vec.W > 0.000001f || vec.W < -0.000001f)
+			if (vec.W is > 0.000001f or < -0.000001f)
 			{
 				vec.X /= vec.W;
 				vec.Y /= vec.W;

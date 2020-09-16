@@ -4,29 +4,23 @@ using System;
 using Sharp.Engine.Components;
 using SharpSL;
 using System.Runtime.InteropServices;
+using Newtonsoft.Json;
 
 namespace Sharp
 {
-	[Serializable]
 	public class MeshRenderer : Renderer, IStartableComponent //where VertexFormat : struct, IVertex
 	{
-		public Material material;
 		public Curve[] curves = new Curve[2] {
 			new Curve() { keys = new Keyframe[] { new Keyframe() { time = 0.1f, value = -10f }, new Keyframe() { time = 120f, value = 10f } } },
 			new Curve() { keys = new Keyframe[] { new Keyframe() { time = 0.4f, value = 0f }, new Keyframe() { time = 60f, value = 1f } } }
 		};
-		public MeshRenderer(Entity parent) : base(parent)
-		{
-			var rootDir = System.Reflection.Assembly.GetExecutingAssembly().Location;
-			Console.WriteLine(rootDir);
-			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TextureOnlyShader.shader");
-			material = new Material();
-			material.Shader = shader;
-		}
+		public Material material;
+
 
 		public override void Render()
 		{
 			material.TryGetProperty("mesh", out Mesh Mesh);
+			material.BindProperty("model", Parent.transform.ModelMatrix);
 			if (Camera.main.frustum.Intersect(Mesh.bounds, Parent.transform.ModelMatrix) == 0)
 			{
 				//Console.WriteLine("cull");
@@ -34,18 +28,7 @@ namespace Sharp
 			}
 			//Console.WriteLine ("no-cull ");
 
-			//int current = GL.GetInteger (GetPName.CurrentProgram);
-			//GL.ValidateProgram (material.shaderId);
-			//if (current != material.shaderId) {
-			//}
-			//if (!IsLoaded) return;
-
-			var shader = material.Shader;
-
-			material.BindProperty("model", Parent.transform.ModelMatrix);
-
 			material.SendData();
-			//MainWindow.backendRenderer.ChangeShader();
 		}
 
 		public void Start()

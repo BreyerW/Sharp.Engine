@@ -13,8 +13,6 @@ using System.Text;
 using SharpAsset.Pipeline;
 using SharpSL;
 using Microsoft.Collections.Extensions;
-using Sharp.Editor;
-using System.Numerics;
 
 namespace Sharp
 {
@@ -135,13 +133,13 @@ namespace Sharp
 			SDL.SDL_Event sdlEvent;
 			while (!quit)
 			{
+				Coroutine.AdvanceInstructions<WaitForStartOfFrame>(Coroutine.startOfFrameInstructions);
+				Coroutine.AdvanceInstructions<IEnumerator>(Coroutine.customInstructions);
 				while (SDL.SDL_PollEvent(out sdlEvent) != 0)
 				{
 					if (windows.ContainsKey(sdlEvent.window.windowID))
 						windows[sdlEvent.window.windowID].OnEvent(sdlEvent);
 				}
-
-				Coroutine.AdvanceInstructions<WaitForStartOfFrame>(Coroutine.startOfFrameInstructions);
 
 				//Selection.IsSelectionDirty(System.Threading.CancellationToken.None);
 				/*  if (InputHandler.mustHandleKeyboard)
@@ -155,8 +153,11 @@ namespace Sharp
 
 				UI.TimeElapsed = Time.deltaTime;
 				//UI.currentCanvas?.Update();//TODO: change it so that during dragging it will update both source and hovered window
-				MainEditorView.currentMainView.OnInternalUpdate();
-				Coroutine.AdvanceInstructions<IEnumerator>(Coroutine.customInstructions);
+				var copy = new MainEditorView[MainEditorView.mainViews.Values.Count];
+				MainEditorView.mainViews.Values.CopyTo(copy, 0);
+				foreach (var mainV in copy)
+					mainV.OnInternalUpdate();
+
 
 				onRenderFrame?.Invoke();
 				if (UI.isDirty)
@@ -165,7 +166,6 @@ namespace Sharp
 					UI.isDirty = false;
 				}
 				Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
-				//onBeforeNextFrame?.Invoke();
 				//foreach(var pipeline in Pipeline.allPipelines.Values)
 				//	while(pipeline.recentlyLoadedAssets.TryDequeue(out var i)) //TODO
 				while (TexturePipeline.recentlyLoadedAssets.TryDequeue(out var i))
@@ -196,7 +196,7 @@ namespace Sharp
 
 					MainWindow.backendRenderer.GenerateBuffers(Target.Indices, out mesh.EBO);
 					MainWindow.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
-					if (mesh.Indices is { } && mesh.Indices.Length > 0)
+					if (mesh.Indices is not null && mesh.Indices.Length > 0)
 					{
 						MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
 						MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
@@ -204,7 +204,10 @@ namespace Sharp
 				}
 				Time.SetTime();
 				Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
-
+				//IdReferenceResolver._objectsToId.Clear();
+				//IdReferenceResolver._idToObjects.Clear();
+				Root.removedEntities.Clear();
+				Root.addedEntities.Clear();
 			}
 		}
 
@@ -236,13 +239,12 @@ namespace Sharp
 						combinationMet = true;
 						foreach (var key in command.keyCombination)
 						{
-							switch (key)
+							combinationMet = (key) switch
 							{
-								case "CTRL": combinationMet = evnt.key.keysym.mod.HasFlag(SDL.SDL_Keymod.KMOD_LCTRL); break;
-								case "SHIFT": combinationMet = evnt.key.keysym.mod.HasFlag(SDL.SDL_Keymod.KMOD_LSHIFT) || evnt.key.keysym.mod.HasFlag(SDL.SDL_Keymod.KMOD_RSHIFT); break;
-								default:
-									combinationMet = evnt.key.keysym.sym == (SDL.SDL_Keycode)key.AsSpan()[0]; break;
-							}
+								"CTRL" => evnt.key.keysym.mod.HasFlag(SDL.SDL_Keymod.KMOD_LCTRL),
+								"SHIFT" => evnt.key.keysym.mod.HasFlag(SDL.SDL_Keymod.KMOD_LSHIFT) || evnt.key.keysym.mod.HasFlag(SDL.SDL_Keymod.KMOD_RSHIFT),
+								_ => evnt.key.keysym.sym == (SDL.SDL_Keycode)key.AsSpan()[0]
+							};
 							if (!combinationMet) break;
 						}
 						if (combinationMet) { command.Execute(); return; }
@@ -308,14 +310,23 @@ namespace Sharp
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
 					MainEditorView.mainViews.TryGetValue(evt.windowID, out var mainView);
 					mainView.OnResize(evt.data1, evt.data2);
-					UI.currentCanvas?.Update();
+					foreach (var (_, mainV) in MainEditorView.mainViews)
+						mainV.desktop.Update();
+					Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
+					Root.removedEntities.Clear();
+					Root.addedEntities.Clear();
+					Time.SetTime();
+					Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
+					//IdReferenceResolver._objectsToId.Clear();
+					//IdReferenceResolver._idToObjects.Clear();
 					break;
 
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_EXPOSED:
 					MainWindow.backendRenderer.EnableScissor();
 					if (MainEditorView.mainViews.TryGetValue(evt.windowID, out mainView))
 						UI.currentCanvas = mainView.desktop;
-					UI.currentCanvas?.Draw();
+					foreach (var (_, mainV) in MainEditorView.mainViews)
+						mainV.desktop.Draw();
 					onRenderFrame?.Invoke();
 					//if (windows.Contains(evt.windowID))
 					{

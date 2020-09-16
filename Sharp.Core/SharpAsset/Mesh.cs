@@ -23,7 +23,7 @@ namespace SharpAsset
 				if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(value))
 					RegisterAsAttribute.ParseVertexFormat(value);
 				vertsType = value;
-				
+
 			}
 			get => vertsType;
 		}
@@ -85,7 +85,7 @@ namespace SharpAsset
 
 		public ref T ReadVertexAtIndex<T>(int index) where T : struct, IVertex
 		{
-			return ref Unsafe.As<byte,T>(ref verts[index * stride]);
+			return ref Unsafe.As<byte, T>(ref verts[index * stride]);
 		}
 
 		//public TExpected ReadVertexAttributeAtIndex<TExpected>(VertexAttribute attrib,int layer, int index) where TExpected : struct {
@@ -138,8 +138,10 @@ namespace SharpAsset
 		{
 			var eObject = new Entity();
 			eObject.transform.Position = worldPos;
-
 			var renderer = eObject.AddComponent<MeshRenderer>();
+			var shader = (Shader)Pipeline.Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TextureOnlyShader.shader");
+			renderer.material = new Material();
+			renderer.material.Shader = shader;
 			var texture = (Texture)Pipeline.Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\duckCM.bmp");
 			//zamienic na ref loading pipeliny
 			renderer.material.BindProperty("mesh", this);
@@ -147,6 +149,7 @@ namespace SharpAsset
 			if (context != null) //make as child of context?
 			{
 			}
+
 		}
 	}
 

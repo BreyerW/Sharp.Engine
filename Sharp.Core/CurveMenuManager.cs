@@ -312,11 +312,11 @@ namespace Sharp
                         CurveUtility.SetKeyTangentMode(ref keyframe, 1 - leftRight, TangentMode.Editable);
                     }
                 }
-                if (mode == TangentMode.Stepped && (leftRight == 0 || leftRight == 2))
+                if (mode == TangentMode.Stepped && (leftRight is 0 or 2))
                 {
                     keyframe.inTangent = float.PositiveInfinity;
                 }
-                if (mode == TangentMode.Stepped && (leftRight == 1 || leftRight == 2))
+                if (mode == TangentMode.Stepped && (leftRight is 1 or 2))
                 {
                     keyframe.outTangent = float.PositiveInfinity;
                 }

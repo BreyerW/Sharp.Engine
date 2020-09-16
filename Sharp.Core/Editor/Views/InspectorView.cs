@@ -14,11 +14,11 @@ namespace Sharp.Editor.Views
 	public class InspectorView : View
 	{
 		//private TreeView ptree = new TreeView();
-		internal Guid currentlyDrawedObject = default;
+		internal object currentlyDrawedObject;
 
 		//private ListBox tagStrip = new ListBox();
 		private DropDownButton tagStrip = new DropDownButton();
-		private Dictionary<Guid, TreeView> idToViewMapping = new Dictionary<Guid, TreeView>();
+		private Dictionary<Entity, TreeView> idToViewMapping = new Dictionary<Entity, TreeView>();
 		internal static Dictionary<Type, Type> mappedPropertyDrawers = new Dictionary<Type, Type>();
 
 		static InspectorView()
@@ -54,34 +54,23 @@ namespace Sharp.Editor.Views
 			button.Parent = tagStrip.Dropdown;
 			button.Dock = DockStyle.FillX;
 			button.TextAlign = Alignment.MiddleLeft;*/ //make it as component
-			if (idToViewMapping.Count is 0)
-				foreach (var entity in Extension.entities.root)
-				{
-					RegisterEngineObject(entity);
-					var comps = entity.GetAllComponents();
-					if (comps is { })
-						foreach (var component in comps)
-						{
-							RegisterEngineObject(component);
-						}
-				}
 
 
 			Selection.OnSelectionChange += (old, @new) =>
 			{
 				Console.WriteLine("SelectionChange" + @new);
-				if (@new is IEngineObject obj)
+				if (@new is Entity obj)
 				{
-					if (idToViewMapping.TryGetValue(currentlyDrawedObject, out var oldSelected))
+					if (currentlyDrawedObject is not null && idToViewMapping.TryGetValue(currentlyDrawedObject as Entity, out var oldSelected))
 					{
 						oldSelected.IsVisible = false;
 					}
-					currentlyDrawedObject = @new.GetInstanceID();
-					idToViewMapping[currentlyDrawedObject].IsVisible = true;
+					currentlyDrawedObject = @new;
+					idToViewMapping[currentlyDrawedObject as Entity].IsVisible = true;
 				}
 				else if (@new is null)
 				{
-					if (idToViewMapping.TryGetValue(currentlyDrawedObject, out var oldSelected))
+					if (idToViewMapping.TryGetValue(currentlyDrawedObject as Entity, out var oldSelected))
 					{
 						oldSelected.IsVisible = false;
 					}
@@ -95,29 +84,30 @@ namespace Sharp.Editor.Views
 				//if (sender is Entity entity) RenderComponents(entity);
 			};*/
 			Button.Text = "Inspector";
-			SceneView.onAddedEntity += ItemAdded;
-			SceneView.onRemovedEntity += ItemRemoved;
 		}
-		private void ItemAdded(IEngineObject sender)
+		protected override void OnLateUpdate()
 		{
-			RegisterEngineObject(sender);
-		}
-		private void ItemRemoved(IEngineObject sender)
-		{
-			if (sender is Entity ent)
+			base.OnLateUpdate();
+			if (Root.addedEntities.Count > 0)
+				foreach (var added in Root.addedEntities)
+					RegisterEngineObject(added);
+			if (Root.removedEntities.Count > 0)
 			{
-				idToViewMapping[ent.GetInstanceID()].Parent = null;
-				idToViewMapping.Remove(ent.GetInstanceID());
+				foreach (var removal in Root.removedEntities)
+					if (removal is Entity ent)
+					{
+						idToViewMapping[ent].Parent = null;
+						idToViewMapping.Remove(ent);
+					}
+					else if (removal is Component component)
+						idToViewMapping[component.Parent].Nodes.Remove(idToViewMapping[component.Parent].Nodes.Find((node) => ((node.Childs[2] as FlowLayoutFrame).Controls[0] as PropertyDrawer).Target == component));
 			}
-			else if (sender is Component component)
-				idToViewMapping[component.Parent.GetInstanceID()].Nodes.Remove(idToViewMapping[component.Parent.GetInstanceID()].Nodes.Find((node) => ((node.Childs[2] as FlowLayoutFrame).Controls[0] as PropertyDrawer).Target == component));
-
 		}
 		private void RegisterEngineObject(IEngineObject obj)
 		{
-
 			if (obj is Entity ent)
 			{
+				//if (idToViewMapping.ContainsKey(ent.GetInstanceID())) return;
 				var ptree = new TreeView();
 				ptree.Dock = DockStyle.Fill;
 				ptree.Margin = new Margin(0, 25, 0, 0);
@@ -125,10 +115,12 @@ namespace Sharp.Editor.Views
 				ptree.Scrollbar.Size = new Point(0, 0);
 				ptree.Scissor = false;
 				ptree.IsVisible = false;
-				idToViewMapping.Add(ent.GetInstanceID(), ptree);
+				idToViewMapping.TryAdd(ent, ptree);
 			}
 			else if (obj is Component component)
-				idToViewMapping[component.Parent.GetInstanceID()].Nodes.Add(RenderComponent(component));
+			{
+				idToViewMapping[component.Parent].Nodes.Add(RenderComponent(component));
+			}
 			//else if(obj is System sys)//TODO: rewrite EC to ECS
 		}
 		private ComponentNode RenderComponent(Component component)

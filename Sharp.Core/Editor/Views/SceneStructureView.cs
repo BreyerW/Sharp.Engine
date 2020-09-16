@@ -16,8 +16,6 @@ namespace Sharp.Editor.Views
 			tree.Dock = DockStyle.Fill;
 			tree.SelectedNodeChanged += Tree_SelectedNodeChanged;
 
-			SceneView.onAddedEntity += (entity) => { if (entity is Entity ent) RegisterEntity(ent, false); };
-			SceneView.onRemovedEntity += (entity) => ReconstructTree(null);
 			Selection.OnSelectionChange += (old, n) =>
 			{
 				tree.SelectedNodeChanged -= Tree_SelectedNodeChanged;
@@ -25,7 +23,6 @@ namespace Sharp.Editor.Views
 				tree.SelectedNodeChanged += Tree_SelectedNodeChanged;
 			};
 			Button.Text = "Scene Structure";
-			ReconstructTree(null);
 		}
 
 		private void Tree_SelectedNodeChanged(Control sender, TreeNode value)
@@ -43,10 +40,19 @@ namespace Sharp.Editor.Views
 			flattenedTree.Clear();
 			tree.SelectedNode = null;
 			//RegisterEntity(Camera.main.entityObject, Camera.main.entityObject == obj);
-			foreach (var entity in Extension.entities.root)
+			foreach (var entity in Root.root)
 				RegisterEntity(entity, entity == obj);
 		}
-
+		protected override void OnLateUpdate()
+		{
+			base.OnLateUpdate();
+			if (Root.addedEntities.Count > 0)
+				foreach (var added in Root.addedEntities)
+					if (added is Entity e)
+						RegisterEntity(e, false);
+			if (Root.removedEntities.Count > 0)
+				ReconstructTree(tree.SelectedNode?.UserData as Entity);
+		}
 		private static void RegisterEntity(Entity ent, bool selected)
 		{
 			//var id=SceneView.entities.IndexOf (ent);

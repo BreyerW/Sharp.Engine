@@ -15,8 +15,6 @@ namespace Sharp.Editor.Views
 		private int cell_size = 32;
 		private int grid_size = 4096;
 
-		public static Action<IEngineObject> onAddedEntity;
-		public static Action<IEngineObject> onRemovedEntity;
 		//public static Scene physScene;
 		//public static Physics physEngine;
 
@@ -51,7 +49,7 @@ namespace Sharp.Editor.Views
 			cam.SetProjectionMatrix();
 			e.name = "Main Camera";
 			//e.OnTransformChanged += ((sender, evnt) => cam.SetModelviewMatrix());
-			
+
 			cam.active = true;
 			var eLight = new Entity();
 			eLight.name = "Directional_Light";//TODO: Text renderer bugs out on white space sometimes check it
@@ -215,10 +213,11 @@ namespace Sharp.Editor.Views
 			MainWindow.backendRenderer.SetStandardState();
 
 
-			//foreach (var renderer in renderers)
-			//   renderer.Render();
+			foreach (var renderer in Extension.entities.renderers)
+				if (renderer.enabled)
+					renderer.Render();
 
-			Extension.entities.OnRenderFrame?.Invoke();
+			//Extension.entities.OnRenderFrame?.Invoke();
 			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
 			if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 			{
@@ -324,11 +323,11 @@ namespace Sharp.Editor.Views
 			var end = Camera.main.ScreenToWorld(locPos.Value.x, locPos.Value.y, Size.x, Size.y);
 			var ray = new Ray(orig, (end - orig).Normalize());
 			var hitList = new SortedList<Vector3, Guid>(new OrderByDistanceToCamera());
-			foreach (var ent in Extension.entities.root)
+			foreach (var ent in Root.root)
 			{
 				var render = ent.GetComponent<MeshRenderer>();
 				Vector3 hitPoint = Vector3.Zero;
-				if (render != null && render.material.TryGetProperty("mesh", out SharpAsset.Mesh Mesh) && Mesh.bounds.Intersect(ray, ent.transform.ModelMatrix, out hitPoint))
+				if (render != null && render.material.TryGetProperty("mesh", out Mesh Mesh) && Mesh.bounds.Intersect(ray, ent.transform.ModelMatrix, out hitPoint))
 				{
 					//Console.WriteLine("Select " + ent.name + ent.Id);
 					if (!hitList.ContainsKey(hitPoint))
@@ -338,7 +337,7 @@ namespace Sharp.Editor.Views
 			}
 			if (hitList.Count > 0)
 			{
-				var entity = Extension.entities.root.First((ent) => ent.GetInstanceID() == hitList.Values[0]);
+				var entity = Root.root.First((ent) => ent.GetInstanceID() == hitList.Values[0]);
 				Console.WriteLine("Select " + entity.name + entity.GetInstanceID());
 				Selection.Asset = entity;
 				SceneStructureView.tree.SelectedNode = SceneStructureView.flattenedTree[entity.GetInstanceID()];

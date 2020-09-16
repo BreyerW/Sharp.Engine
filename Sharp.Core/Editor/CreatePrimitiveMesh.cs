@@ -56,7 +56,7 @@ public static class CreatePrimitiveMesh
 		Vector3 end_point = Vector3.Zero;
 		Vector3 axis = Vector3.UnitX;
 		Vector3 v1;
-		if ((axis.Z < -0.01) || (axis.Z > 0.01))
+		if (axis.Z is < -0.01f or > 0.01f)
 			v1 = new Vector3(axis.Z, axis.Z, -axis.X - axis.Y);
 		else
 			v1 = new Vector3(-axis.Y - axis.Z, axis.X, axis.X);

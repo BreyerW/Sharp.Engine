@@ -159,13 +159,19 @@ namespace Sharp
 
 		public Component AddComponent(Type type)
 		{
-			var comp = Activator.CreateInstance(type, this) as Component;
+			var comp = Activator.CreateInstance(type) as Component;
+			comp.Parent = this;
+			comp.active = true;
+			if (comp is Transform t)
+				transform = t;
 			components.Add(comp);
 			return comp;
 		}
 		internal Component AddComponent(Component comp)
 		{
 			comp.Parent = this;
+			if (comp is Transform t)
+				transform = t;
 			components.Add(comp);
 			return comp;
 		}
@@ -196,13 +202,14 @@ namespace Sharp
 			transform.rotation = rot;
 		}*/
 
-		public void Destroy()
+		public void Dispose()
 		{
 			foreach (var component in components)
-				component.Destroy();
+				component.Dispose();
 			foreach (var child in childs)
-				child.Destroy();
+				child.Dispose();
 			Extension.entities.RemoveEngineObject(this);
+			Extension.objectToIdMapping.Remove(this);
 		}
 
 		public override string ToString()

@@ -18,14 +18,15 @@ namespace Sharp
 		internal static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
 		{
 			ContractResolver = new UninitializedResolver() { IgnoreSerializableAttribute = false },
-			Converters = new List<JsonConverter>() { new DelegateConverter(), new ListReferenceConverter(), /*new IAssetConverter(), new IEngineConverter(),*/new PtrConverter() },
+			Converters = new List<JsonConverter>() {new EntityConverter(), new DelegateConverter(), new ListReferenceConverter(),/*new IAssetConverter(), new IEngineConverter(),*/new PtrConverter(), new ReferenceConverter() },
 			ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
 			PreserveReferencesHandling = PreserveReferencesHandling.All,
 			ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
 			TypeNameHandling = TypeNameHandling.All,
-			ObjectCreationHandling = ObjectCreationHandling.Auto,
-			ReferenceResolverProvider = () => new ThreadsafeReferenceResolver(),
-			NullValueHandling = NullValueHandling.Ignore
+			ObjectCreationHandling = ObjectCreationHandling.Reuse,
+			ReferenceResolverProvider = () => new IdReferenceResolver(),
+			NullValueHandling = NullValueHandling.Ignore,
+			//DefaultValueHandling = DefaultValueHandling.Populate
 		};
 		public static void Main(string[] args)
 		{
@@ -86,7 +87,10 @@ namespace Sharp
 		protected override JsonObjectContract CreateObjectContract(Type objectType)
 		{
 			JsonObjectContract contract = base.CreateObjectContract(objectType);
-			contract.DefaultCreator = () => RuntimeHelpers.GetUninitializedObject(objectType);
+			contract.DefaultCreator = () =>
+			{
+				return RuntimeHelpers.GetUninitializedObject(objectType);
+			};
 			return contract;
 		}
 	}

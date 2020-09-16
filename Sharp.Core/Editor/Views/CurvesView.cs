@@ -93,11 +93,7 @@ namespace Sharp.Editor.Views
 			curveSettings.hTickStyle.labelColor = new Color(0, 0, 0, 0.32f);
 			curveSettings.hTickStyle.distLabel = 30;
 			curveSettings.hTickStyle.centerLabel = true;
-
-			MouseUp += Panel_MouseUp;
-			MouseDown += CurvesView_MouseDown;
-			SizeChanged += CurvesView_SizeChanged;
-			KeyUp += CurvesView_KeyDown;
+			
 			AllowFocus = true;
 
 			menu = new Menu(new Squid.Window());
@@ -136,13 +132,64 @@ namespace Sharp.Editor.Views
 			badge.BringToFront();
 			ref var curves = ref drawer.Value;
 			Color c = new Color(drawer.curveColor.R, drawer.curveColor.G, drawer.curveColor.B, (byte)(drawer.curveColor.A * 0.75f));
-			for (int j = 0; j < 2; j++)
+			foreach (var j in ..curves.Length)
 			{
 				c = PrepareColorForCurve(c, j);
 
 				foreach (var (key, keyframe) in curves[j].keys.Indexed())
 				{
 					AddButtonsForNewKey(keyframe, j, ref c);
+				}
+			}
+			Update += CurvesView_Update;
+			MouseUp += Panel_MouseUp;
+			MouseDown += CurvesView_MouseDown;
+			SizeChanged += CurvesView_SizeChanged;
+			KeyUp += CurvesView_KeyDown;
+		}
+		private void CurvesView_Update(Control sender)
+		{
+			ref var curves = ref drawer.Value;
+
+			Color c = new Color(drawer.curveColor.R, drawer.curveColor.G, drawer.curveColor.B, (byte)(drawer.curveColor.A * 0.75f));
+			foreach (var j in ..curves.Length)
+			{
+				c = PrepareColorForCurve(c, j);
+				var draggableButtons = Childs.FindAll(
+					(item) =>
+					{
+						return item is { UserData: (_, int id, _, _) } && id == j;
+					});
+				if (draggableButtons.Count != curves[j].keys.Length)
+				{
+					foreach (var button in draggableButtons)
+					{
+						(_, _, var inTan, var outTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)button.UserData;
+						Childs.Remove(button);
+						Childs.Remove(inTan);
+						Childs.Remove(outTan);
+					}
+					foreach (var (key, keyframe) in curves[j].keys.Indexed())
+					{
+						AddButtonsForNewKey(keyframe, j, ref c);
+					}
+				}
+				else
+				{
+					var keyId = 0;
+					foreach (var button in draggableButtons)
+					{
+						var keyframe=curves[j].keys[keyId];
+						var keyframePos = new Vector2(keyframe.time, keyframe.value);
+						var point = RegionDrawer.CurveToViewSpace(keyframePos, scale, translation);
+						(_, _, var inTan, var outTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)button.UserData;
+						ChangePositionWithoutEvent(button, new Point((int)point.X - 10, (int)point.Y - Location.y - 6));
+						var outPos = new Point(button.Position.x + 6, button.Position.y + 6) + (Point)outTan.UserData;
+						ChangePositionWithoutEvent(outTan, new Point(outPos.x - 6, outPos.y - 6));
+						var inPos = new Point(button.Position.x + 6, button.Position.y + 6) + (Point)inTan.UserData;
+						ChangePositionWithoutEvent(inTan, new Point(inPos.x - 6, inPos.y - 6));
+						keyId++;
+					}
 				}
 			}
 		}
@@ -189,14 +236,16 @@ namespace Sharp.Editor.Views
 		private void AddButtonsForNewKey(Keyframe keyframe, int curveId, ref Color c)
 		{
 			var keyframePos = new Vector2(keyframe.time, keyframe.value);
+			var point = RegionDrawer.CurveToViewSpace(keyframePos, scale, translation);
 			var draggableButton = new DraggableButton();
 			draggableButton.ConfineToParent = true;
 			draggableButton.Tint = (int)c.PackedValue;
 			draggableButton.Size = new Point(11, 11);
 			//draggableButton.AllowFocus = true;
+
 			draggableButton.PositionChanged += DraggableButton_PositionChanged;
 			draggableButton.MouseDown += DraggableButton_MouseDown;
-			var col = new Color(190, 200, 200, 200);
+			var col = c;// new Color(190, 200, 200, 200);
 			if (false/*base.settings.useFocusColors && !hasFocus*/)
 			{
 				col = new Color((int)(col.A * 0.5f), (int)(col.R * 0.5f), (int)(col.G * 0.5f), (int)(col.B * 0.5f));
@@ -220,6 +269,11 @@ namespace Sharp.Editor.Views
 			inTanButton.PositionChanged += TanButton_PositionChanged;
 			draggableButton.UserData = ((keyframe.time, curveId, outTanButton, inTanButton));
 
+			ChangePositionWithoutEvent(draggableButton, new Point((int)point.X - 10, (int)point.Y - Location.y - 6));
+			var outPos = new Point(draggableButton.Position.x + 6, draggableButton.Position.y + 6) + (Point)outTanButton.UserData;
+			ChangePositionWithoutEvent(outTanButton, new Point(outPos.x - 6, outPos.y - 6));
+			var inPos = new Point(draggableButton.Position.x + 6, draggableButton.Position.y + 6) + (Point)inTanButton.UserData;
+			ChangePositionWithoutEvent(inTanButton, new Point(inPos.x - 6, inPos.y - 6));
 			Childs.Add(outTanButton);
 			Childs.Add(inTanButton);
 			Childs.Add(draggableButton);
@@ -338,14 +392,14 @@ namespace Sharp.Editor.Views
 		{
 			ref var curves = ref drawer.Value;
 			var tanMode = CurveUtility.GetKeyTangentMode(ref curves[curveId].keys[key], 1);
-			return key < curves[curveId].keys.Length - 1 && (tanMode == TangentMode.Editable || tanMode == TangentMode.Smooth);
+			return key < curves[curveId].keys.Length - 1 && (tanMode is TangentMode.Editable or TangentMode.Smooth);
 		}
 
 		private bool IsInTanVisible(int curveId, int key)
 		{
 			ref var curves = ref drawer.Value;
 			var tanMode = CurveUtility.GetKeyTangentMode(ref curves[curveId].keys[key], 0);
-			return key > 0 && (tanMode == TangentMode.Editable || tanMode == TangentMode.Smooth);
+			return key > 0 && (tanMode is TangentMode.Editable or TangentMode.Smooth);
 		}
 
 		private int FindKeyframe(float time, int curveId)
@@ -507,7 +561,6 @@ namespace Sharp.Editor.Views
 			int curveId = (int)data[0];
 			float time = (float)data[1];
 			var startAngle = EvaluateCurveDeltaSlow(time, curveId);
-			//var curve = drawer.Value[curveId].ToObject<Curve>(JsonSerializer.Create(MainClass.serializerSettings));
 			ref var curve = ref drawer.Value[curveId];
 			var newPoint = new Vector2(time, curve.Evaluate(time));
 			CheckIfOutsideArea(ref newPoint);
@@ -516,7 +569,7 @@ namespace Sharp.Editor.Views
 			Color c = new Color(drawer.curveColor.R, drawer.curveColor.G, drawer.curveColor.B, (byte)(drawer.curveColor.A * 0.75f));
 			c = PrepareColorForCurve(c, curveId);
 			AddButtonsForNewKey(newkeyfr, curveId, ref c);
-			CurvesView_SizeChanged(this);
+			//CurvesView_SizeChanged(this);
 
 			Squid.UI.isDirty = true;
 		}

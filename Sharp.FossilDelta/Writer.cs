@@ -1,15 +1,26 @@
-using System.Collections.Generic; using System.IO; using System.Buffers; using System;  namespace Fossil {
+using System.Collections.Generic;
+using System.IO;
+using System.Buffers;
+using System;
+
+namespace Fossil
+{
 	public class Writer : IDisposable
 	{
-		private static readonly uint[] zDigits = { 			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 			'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 			'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_', 'a', 'b', 'c', 'd', 'e', 			'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 			't', 'u', 'v', 'w', 'x', 'y', 'z', '~' 		};
+		private static readonly uint[] zDigits = {
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
+			'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+			'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_', 'a', 'b', 'c', 'd', 'e',
+			'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+			't', 'u', 'v', 'w', 'x', 'y', 'z', '~'
+		};
 
 		private List<byte> a;
-		
+
 
 		public Writer()
 		{
 			a = new List<byte>();
-			//this.a = ArrayPool<byte>.Shared.Rent(expectedMaxSize);
 		}
 
 		public void PutChar(char c)
@@ -58,8 +69,11 @@ using System.Collections.Generic; using System.IO; using System.Buffers; u
 			return a.ToArray();
 		}
 
-		#region IDisposable Support 
-		private bool disposedValue = false; // To detect redundant calls  	protected virtual void Dispose(bool disposing)
+		#region IDisposable Support
+
+		private bool disposedValue = false; // To detect redundant calls
+
+		protected virtual void Dispose(bool disposing)
 		{
 			if (!disposedValue)
 			{
@@ -78,4 +92,6 @@ using System.Collections.Generic; using System.IO; using System.Buffers; u
 			Dispose(true);
 		}
 
-		#endregion IDisposable Support   } }
+		#endregion IDisposable Support
+	}
+}

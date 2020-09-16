@@ -23,8 +23,8 @@ namespace Sharp
                 new Vector4(vp.M13, vp.M23, vp.M33, vp.M43),
                 new Vector4(vp.M14 - vp.M13, vp.M24 - vp.M23, vp.M34 - vp.M33, vp.M44 - vp.M43)
             };
-            for (int i = 0; i < _frustum.Length; i++)
-            {
+			foreach (var i in .._frustum.Length)
+			{
                 _frustum[i].Normalize();
             }
         }
@@ -37,7 +37,7 @@ namespace Sharp
         {
             int result = 2;
 
-            for (uint i = 0; i < 6; i++)
+            foreach(var i in ..6)
             {
                 float pos = _frustum[i].W;
                 var normal = new Vector3(_frustum[i].X, _frustum[i].Y, _frustum[i].Z);

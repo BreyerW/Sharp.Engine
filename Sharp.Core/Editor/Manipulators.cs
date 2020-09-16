@@ -108,11 +108,11 @@ namespace Sharp.Editor
 
 		private static Vector3 GetAxis()
 		{
-			if (selectedAxisId == 1 || selectedAxisId == 4 || selectedAxisId == 7)
+			if (selectedAxisId is 1 or 4 or 7)
 			{
 				return Vector3.UnitX;
 			}
-			else if (selectedAxisId == 2 || selectedAxisId == 5 || selectedAxisId == 8)
+			else if (selectedAxisId is 2 or 5 or 8)
 			{
 				return Vector3.UnitY;
 			}

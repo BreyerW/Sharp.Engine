@@ -12,30 +12,30 @@ namespace Sharp
 		internal static Root entities = new Root();
 		//TODO: delete implicit id someday if someone really want to keep track of cyclic references and doesnt own source code
 		//they can wrap - or extend if not sealed - said class and implement IEngineObject
-		private static ConditionalWeakTable<object, byte[]> objectToIdMapping = new ConditionalWeakTable<object, byte[]>();
-		public static Guid GetInstanceID(this object obj)
+		internal static Dictionary<object, Guid> objectToIdMapping = new Dictionary<object, Guid>();//TODO: remove on destroy?
+		public static Guid GetInstanceID<T>(this T obj) where T : class
 		{
-
 			if (!objectToIdMapping.TryGetValue(obj, out var id))
 			{
-				objectToIdMapping.Add(obj, id = Guid.NewGuid().ToByteArray());
+				objectToIdMapping.Add(obj, id = Guid.NewGuid());
+				//throw new InvalidOperationException("attempted to add new entity this shouldnt be happening");
 			}
-			return new Guid(id);
+			return id;
 		}
 
 		public static T GetInstanceObject<T>(in this Guid id) where T : class
 		{
-			entities.idToObjectMapping.TryGetValue(id, out var obj);
+			Root.idToObjectMapping.TryGetValue(id, out var obj);
 			return (T)obj;
 		}
 		public static IEngineObject GetInstanceObject(in this Guid id)
 		{
-			entities.idToObjectMapping.TryGetValue(id, out var obj);
+			Root.idToObjectMapping.TryGetValue(id, out var obj);
 			return obj;
 		}
-		internal static void AddRestoredObject(this IEngineObject obj, in Guid id)
+		internal static void AddRestoredObject<T>(this T obj, in Guid id) where T : class
 		{
-			objectToIdMapping.Add(obj, id.ToByteArray());
+			objectToIdMapping.Add(obj, id);
 		}
 		public static TKey GetKey<TKey, TValue>(this Dictionary<TKey, TValue> dict, TValue val)
 		{
@@ -84,52 +84,50 @@ namespace Sharp
 	[Serializable]
 	public class Root
 	{
-		internal List<Entity> root = new List<Entity>();
-		internal Dictionary<Guid, IEngineObject> idToObjectMapping = new Dictionary<Guid, IEngineObject>();
-		internal Action OnRenderFrame;
-
-		internal void AddEngineObject(Entity entity)
-		{
-			if (entity.parent is null)
-				root.Add(entity);
-			idToObjectMapping.Add(entity.GetInstanceID(), entity);
-			SceneView.onAddedEntity?.Invoke(entity);
-		}
-
-		internal void RemoveEngineObject(Entity entity)
-		{
-			if (entity.parent is null)
-				root.Remove(entity);
-			idToObjectMapping.Remove(entity.GetInstanceID());
-			SceneView.onRemovedEntity?.Invoke(entity);
-		}
+		public static HashSet<IEngineObject> addedEntities = new HashSet<IEngineObject>();
+		public static HashSet<IEngineObject> removedEntities = new HashSet<IEngineObject>();
+		internal static List<Entity> root = new List<Entity>();
+		internal static Dictionary<Guid, IEngineObject> idToObjectMapping = new Dictionary<Guid, IEngineObject>();
+		internal List<Renderer> renderers = new List<Renderer>();
 
 		internal void AddEngineObject(IEngineObject obj)
 		{
 			idToObjectMapping.Add(obj.GetInstanceID(), obj);
-			SceneView.onAddedEntity?.Invoke(obj);
+			addedEntities.Add(obj);
+			if (obj is Entity e && e.parent is null)
+			{
+				root.Add(e);
+				return;
+			}
 			if (obj is IStartableComponent start)
 				SceneView.startables.Enqueue(start);
+			if (obj is Renderer r)
+				renderers.Add(r);
 		}
 
 		internal void RemoveEngineObject(IEngineObject obj)
 		{
-			idToObjectMapping.Remove(obj.GetInstanceID());
-			SceneView.onRemovedEntity?.Invoke(obj);
-		}
-		internal void AddRestoredEngineObject(Entity obj, in Guid id)
-		{
-			if (obj.parent is null)
-				root.Add(obj);
-			idToObjectMapping.Add(id, obj);
-			SceneView.onAddedEntity?.Invoke(obj);
+			if (obj is Entity e && e.parent is null)
+				root.Remove(e);
+			removedEntities.Add(obj);
+			var id = obj.GetInstanceID();
+			idToObjectMapping.Remove(id);
+			if (obj is Renderer r)
+				renderers.Remove(r);
 		}
 		internal void AddRestoredEngineObject(IEngineObject obj, in Guid id)
 		{
 			idToObjectMapping.Add(id, obj);
-			SceneView.onAddedEntity?.Invoke(obj);
+			addedEntities.Add(obj);
+			if (obj is Entity e && e.parent is null)
+			{
+				root.Add(e);
+				return;
+			}
 			if (obj is IStartableComponent start)
 				SceneView.startables.Enqueue(start);
+			if (obj is Renderer r)
+				renderers.Add(r);
 		}
 	}
 }

@@ -13,20 +13,9 @@ namespace Sharp.Core.Editor.UI.Property
 
 		public FloatDrawer(MemberInfo memInfo) : base(memInfo)
 		{
-			this.Layout += (evt) =>
-			{
-				if (fl is null)
-				{
-					fl = new FloatField(SerializedObject);
-					fl.TextChanged += Fl_TextChanged;
-					Childs.Add(fl);
-				}
-			};
-		}
 
-		private void Fl_TextChanged(Squid.Control sender)
-		{
-			ApplyChanges();
+			fl = new FloatField(() => ref Value);
+			Childs.Add(fl);
 		}
 	}
 }

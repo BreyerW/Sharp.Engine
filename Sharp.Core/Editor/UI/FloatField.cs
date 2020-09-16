@@ -5,20 +5,26 @@ using Squid;
 
 namespace Sharp.Editor.UI
 {
+	public delegate ref TResult RefFunc<TResult>();
 	public class FloatField : TextField
 	{
-		private string loc;
-		private JToken property;
+		private RefFunc<float> getter;
 		public int precision = 9;
-		public FloatField(JToken prop)
+		public float Value
 		{
-			loc = prop.Path;
-			property = prop switch
+			set
 			{
-				{ Parent: JProperty p } => p.Parent,
-				{ Parent: null } => prop,
-				_ => prop.Parent
-			};
+				Text = value.ToString("R"/*"g17"*/, CultureInfo.InvariantCulture.NumberFormat);
+			}
+			get
+			{
+				return float.TryParse(_text.AsSpan(), NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out var x) ? x : 0;
+			}
+		}
+		public FloatField(RefFunc<float> getter)
+		{
+			this.getter = getter;
+			//Value = getter();
 			Mode = TextBoxMode.Numeric;
 			IsPassword = false;
 			this.TextChanged += FloatField_TextChanged;
@@ -26,19 +32,18 @@ namespace Sharp.Editor.UI
 
 		private void FloatField_TextChanged(Control sender)
 		{
-			if (loc is "")
-				property = _text;
-			else
-				property[loc] = _text;
+			getter() = Value;
 		}
 
 		protected override void DrawText(Style style, float opacity, int charsToDraw)
 		{
-
-			_text = (loc is "" ? property : property[loc]).Value<string>();//set top (null parent but possibly bad idea for jvalue?) JToken dirty and here check if property is dirty this will avoid unnecessary deserializations
 			var dotPos = _text.AsSpan().IndexOf('.');
 			charsToDraw = dotPos is -1 ? _text.Length : _text.AsSpan().IndexOf('.') + precision + 1;
 			base.DrawText(style, opacity, charsToDraw);
+		}
+		protected override void OnLateUpdate()
+		{
+			Value = getter();
 		}
 	}
 }

@@ -7,6 +7,14 @@ using System.Runtime.CompilerServices;
 using System.IO;
 using System.Reflection;
 using FastMember;
+using System.Collections;
+using System.Text;
+using Microsoft.Collections.Extensions;
+using System.Numerics;
+using Sharp.Engine.Components;
+using Newtonsoft.Json.Linq;
+using System.Linq;
+using SixLabors.Shapes;
 
 namespace Sharp.Editor
 {
@@ -14,66 +22,93 @@ namespace Sharp.Editor
 	{
 		//public byte[] downgrade;
 		//public byte[] upgrade;
-		public Dictionary<Guid, Dictionary<string, (byte[] undo, byte[] redo)>> propertyMapping;
+		public Dictionary<Guid, (string label, byte[] undo, byte[] redo)> propertyMapping;
 		//public Guid? selectedObject;
 	}
 
 	public class UndoCommand : IMenuCommand
 	{
+		private static Dictionary<Guid, (string label, byte[] undo, byte[] redo)> saveState = new Dictionary<Guid, (string label, byte[] undo, byte[] redo)>();
+		internal static DictionarySlim<Component, string> prevStates = new DictionarySlim<Component, string>();
 		internal static LinkedList<History> snapshots = new LinkedList<History>();
 
 		internal static LinkedListNode<History> currentHistory;
-		internal static Dictionary<Guid, Dictionary<string, (byte[] undo, byte[] redo)>> availableHistoryChanges;
 		internal static bool isUndo = false;
 		public string menuPath => "Undo";
-
+		internal static bool historyMoved = false;
 		public string[] keyCombination => new[] { "CTRL", "z" };//combine into menuPath+(combination)
 
 		public string Indentifier { get => menuPath; }
 
 		//public static Stack<ICommand> done = new Stack<ICommand>();
+		static UndoCommand()
+		{
+			Selection.OnSelectionChange += (old, s) =>
+			{
+				if (s is IEngineObject o && historyMoved is false)
+				{
+					if (saveState is null)
+						saveState = new Dictionary<Guid, (string label, byte[] undo, byte[] redo)>();
 
+					saveState[o.GetInstanceID()] = ("selected", old is null ? null : old.GetInstanceID().ToByteArray(), s is null ? null : s.GetInstanceID().ToByteArray());
+				}
+			};
+			Coroutine.Start(SaveChangesBeforeNextFrame());
+		}
 		public void Execute(bool reverse = true)
 		{
 			if (UndoCommand.currentHistory.Previous is null)
 				return;
+			historyMoved = true;
 			isUndo = true;
-			//while (UndoCommand.currentHistory.Value.propertyMapping.ContainsKey(Camera.main.GetInstanceID()))
-			//	UndoCommand.currentHistory = UndoCommand.currentHistory.Previous;
-			foreach (var (index, list) in UndoCommand.currentHistory.Value.propertyMapping)
+			foreach (var (index, (label, undo, _)) in UndoCommand.currentHistory.Value.propertyMapping)
 			{
-				if (list.ContainsKey("addedEntity"))
+				if (label is "addedEntity")
 				{
-					index.GetInstanceObject<Entity>()?.Destroy();
+					index.GetInstanceObject<Entity>()?.Dispose();
 				}
-				else if (list.ContainsKey("removedEntity"))
+				else if (label is "removedEntity")
 				{
-					//TODO: on .Net Core use RuntimeHelpers.GetUninitializedObject()
 					var entity = RuntimeHelpers.GetUninitializedObject(typeof(Entity));//pseudodeserialization thats why we use this
-
 				}
-				else if (list.ContainsKey("addedComponent"))
+				else if (label is "addedComponent")
 				{
 					//InspectorView.saveState.Remove(index);
-					index.GetInstanceObject<Component>()?.Destroy();
+					index.GetInstanceObject<Component>()?.Dispose();
 					//componentsToBeAdded.Add(index.Item1, val);
-
 				}
-				else if (list.ContainsKey("removedComponent"))
+				else if (label is "removedComponent")
 				{
 					//componentsToBeAdded.Add(index.Item1, val);
 
 				}
-				else if (list.ContainsKey("addedSystem"))
+				else if (label is "addedSystem")
 				{
 					throw new NotSupportedException("Systems are not implemented yet");
 
 				}
-				if (list.ContainsKey("selected"))
+				else if (label is "changed")
 				{
-					var obj = list["selected"].undo is null ? null : new Guid(list["selected"].undo).GetInstanceObject();
-					Selection.Asset = obj;
+					var obj = index.GetInstanceObject<Component>();
+					ref var patched = ref prevStates.GetOrAddValueRef(obj);
+					var objToBePatched = Encoding.Unicode.GetBytes(patched);
+					patched = Encoding.Unicode.GetString(Delta.Apply(objToBePatched, undo));
+					JsonConvert.DeserializeObject(patched, obj.GetType(), MainClass.serializerSettings);
 
+					/*getter(target) = val;
+				if (val is Material m)
+				{
+					target.Parent.transform.SetModelMatrix();
+					Matrix4x4.Decompose(target.Parent.transform.ModelMatrix, out _, out var trot, out var tpos);
+					Console.WriteLine("transform mat: " + tpos + " " + trot);
+					Matrix4x4.Decompose(Unsafe.As<byte, Matrix4x4>(ref m.localParams["model"][0]), out _, out var rot, out var pos);
+					Console.WriteLine("material mat: " + pos + " " + rot);
+				}*/
+				}
+				if (label is "selected")
+				{
+					var obj = undo is null ? null : new Guid(undo).GetInstanceObject();
+					Selection.Asset = obj;
 				}
 			}
 
@@ -83,10 +118,123 @@ namespace Sharp.Editor
 
 				//if (obj is Camera cam && cam == Camera.main) continue;
 			}
-
-			UndoCommand.availableHistoryChanges = currentHistory.Value.propertyMapping;
 			currentHistory = UndoCommand.currentHistory.Previous;
 			Squid.UI.isDirty = true;
+		}
+		private static IEnumerator SaveChangesBeforeNextFrame()
+		{
+			while (true)
+			{
+				yield return new WaitForEndOfFrame();
+				if (Root.addedEntities.Count > 0 && historyMoved is false)
+					foreach (var added in Root.addedEntities)
+					{
+						if (saveState is null)
+							saveState = new Dictionary<Guid, (string, byte[] undo, byte[] redo)>();
+
+						if (added is Entity ent)
+						{
+							saveState[ent.GetInstanceID()] = ("addedEntity", null, Encoding.Unicode.GetBytes(ent.name));
+						}
+						else if (added is Component comp)
+						{
+							if (prevStates.TryGetValue(comp, out _)) throw new InvalidOperationException("unexpected add to already existing key");
+							
+							prevStates.GetOrAddValueRef(comp) = JsonConvert.SerializeObject(comp, comp.GetType(), MainClass.serializerSettings);
+								saveState[comp.GetInstanceID()] = ("addedComponent", Encoding.Unicode.GetBytes(comp.GetType().AssemblyQualifiedName), Encoding.Unicode.GetBytes(prevStates.GetOrAddValueRef(comp)));
+						}
+					};
+				if (Root.removedEntities.Count > 0)
+					foreach (var removed in Root.removedEntities)
+						if (removed is Component comp)
+							prevStates.Remove(comp);
+				if (historyMoved is false && !InputHandler.isKeyboardPressed && !InputHandler.isMouseDragging)//TODO: change to on mouse up/keyboard up?
+				{
+					foreach (var (comp, state) in prevStates)
+					{
+						var token = JsonConvert.SerializeObject(comp, comp.GetType(), MainClass.serializerSettings);
+
+						if (!state.AsSpan().SequenceEqual(token.AsSpan()))
+						{
+							if (comp.Parent.GetComponent<Camera>() != Camera.main)
+							{
+								Console.WriteLine(" name " + /*Name + */" target " + comp);
+								if (saveState is null)
+									saveState = new Dictionary<Guid, (string, byte[] undo, byte[] redo)>();
+								//MemoryMarshal.AsBytes();
+								//if(SpanHelper.IsPrimitive<T>())
+								var str = token;
+								var currObjInBytes = Encoding.Unicode.GetBytes(str);
+								if (state is null /*|| saveState[comp.GetInstanceID()].ContainsKey("addedComponent")*/)
+									saveState[comp.GetInstanceID()] = ("changed", null, currObjInBytes);
+								else
+								{
+									var prevObjInBytes = Encoding.Unicode.GetBytes(state);
+									var delta2 = Delta.Create(currObjInBytes, prevObjInBytes);
+									var delta1 = Delta.Create(prevObjInBytes, currObjInBytes);
+									saveState[comp.GetInstanceID()] = ("changed", delta2, delta1);
+								}
+							}
+							/*if (comp is MeshRenderer)
+							{
+								var oldmatrix = Unsafe.As<byte, Matrix4x4>(ref JToken.Parse(state)["material"]["localParams"]["model"]["$values"].ToObject<byte[]>()[0]);
+								Matrix4x4.Decompose(oldmatrix, out _, out var oldrot, out var oldpos);
+								Console.WriteLine("transform mat: " + oldpos + " " + (ToEulerAngles(oldrot) * NumericsExtensions.Rad2Deg));
+
+								var matrix = Unsafe.As<byte, Matrix4x4>(ref JToken.Parse(token)["material"]["localParams"]["model"]["$values"].ToObject<byte[]>()[0]);
+								Matrix4x4.Decompose(matrix, out _, out var rot, out var pos);
+								Console.WriteLine("material mat: " + pos + " " +(ToEulerAngles(rot)*NumericsExtensions.Rad2Deg));
+							}*/
+							prevStates.GetOrAddValueRef(comp) = token;
+						}
+					}
+				}
+				if (saveState is not null && historyMoved is false)
+				{
+					SaveChanges(saveState);
+					saveState = null;
+				}
+				historyMoved = false;
+			}
+		}
+
+		public static Vector3 ToEulerAngles(Quaternion q)
+		{
+			Vector3 angles = new Vector3();
+
+			// roll (x-axis rotation)
+			float sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
+			float cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
+			angles.X = MathF.Atan2(sinr_cosp, cosr_cosp);
+
+			// pitch (y-axis rotation)
+			float sinp = 2 * (q.W * q.Y - q.Z * q.X);
+			if (MathF.Abs(sinp) >= 1)
+				angles.Y = MathF.CopySign(MathF.PI / 2, sinp); // use 90 degrees if out of range
+			else
+				angles.Z = MathF.Asin(sinp);
+
+			// yaw (z-axis rotation)
+			float siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
+			float cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
+			angles.Z = MathF.Atan2(siny_cosp, cosy_cosp);
+
+			return angles;
+		}
+		private static void SaveChanges(Dictionary<Guid, (string, byte[] undo, byte[] redo)> toBeSaved)
+		{
+			if (UndoCommand.currentHistory is not null && UndoCommand.currentHistory.Next is not null) //TODO: this is bugged state on split is doubled for some reason
+			{
+				UndoCommand.currentHistory.RemoveAllAfter();
+				Console.WriteLine("clear trailing history");
+			}
+			var finalSave = new Dictionary<Guid, (string, byte[] undo, byte[] redo)>();
+			foreach (var (index, val) in toBeSaved)
+			{
+				finalSave.Add(index, val);
+			}
+			UndoCommand.snapshots.AddLast(new History() { propertyMapping = finalSave });
+			UndoCommand.currentHistory = UndoCommand.snapshots.Last;
 		}
 	}
 }

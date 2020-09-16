@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Sharp.Core.Editor;
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -66,7 +67,7 @@ namespace Sharp.Engine.Components
 				onTransformChanged?.Invoke();
 			}
 		}
-		internal void SetModelMatrix()
+		public void SetModelMatrix()
 		{
 			var angles = rotation * NumericsExtensions.Pi / 180f;
 			/*unsafe
@@ -75,10 +76,7 @@ namespace Sharp.Engine.Components
 			}*/
 			modelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
 		}
-		public Transform(Entity parent) : base(parent)
-		{
 			//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
-			parent.transform = this;
-		}
+			
 	}
 }

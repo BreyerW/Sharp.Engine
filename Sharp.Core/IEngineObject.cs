@@ -1,17 +1,27 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace Sharp
 {
-	public interface IEngineObject/*:IDisposable*/
+	public interface IEngineObject : IDisposable
 	{
-		//TODO: Available when DIM ship or as method GetInstanceId()
-		/*
-		 public Guid Id{
-		 get{
-		 this.GetInstanceId();
+		/*[JsonProperty]
+		public Guid Id
+		{
+			//internal set => Extension.objectToIdMapping.Add(this, value);
+			get
+			{
+
+				if (Extension.objectToIdMapping.TryGetValue(this, out var id))
+					return id;
+				else
+				{
+					id = Guid.NewGuid();
+					Extension.objectToIdMapping[this] = id;
+					return id;
+				}
 			}
-			}
-			 */
-		void Destroy();
+		}*/
+		void IDisposable.Dispose() => Extension.objectToIdMapping.Remove(this);
 	}
 }

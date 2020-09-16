@@ -42,20 +42,6 @@ namespace Sharp.Editor.UI.Property
 		private uint curvesEditor;
 		public Frame curveFrame = new Frame();
 
-		/*public override Curve[] Value
-		{
-			get { return curves; }
-			set
-			{
-				Console.WriteLine("set");
-				curves = value;
-			}
-		}*/
-		/*internal JArray Value
-		{
-			get => SerializedObject as JArray;
-			set => SerializedObject = value;
-		}*/
 		static RegionDrawer()
 		{
 			var mesh = new Mesh();
@@ -95,12 +81,13 @@ namespace Sharp.Editor.UI.Property
 		{
 			if (!Window.windows.ContainsKey(curvesEditor))
 			{
+				CurvesView.drawer = this;
 				var win = new FloatingWindow("");
 				curvesEditor = win.windowId;
 				var curvesView = new CurvesView(curvesEditor, this);
 				Window.OpenView(curvesView, MainEditorView.mainViews[curvesEditor].desktop);
 				win.Size = (700, 500);
-				CurvesView.drawer = this;
+
 			}
 			Window.windows[curvesEditor].OnFocus();
 		}
@@ -118,7 +105,7 @@ namespace Sharp.Editor.UI.Property
 			//int id = lines[0].Count < lines[1].Count ? 1 : 0;
 
 			List<Vector2> list2 = new List<Vector2>();
-			for (int i = 0; i < controlPoints.Count; i++)
+			foreach (var i in ..controlPoints.Count)
 			{
 				list2.Add(new Vector2(controlPoints[i].X - 0.00001f, 0));
 				list2.Add(new Vector2(controlPoints[i].X + 0.00001f, 0));
@@ -130,7 +117,7 @@ namespace Sharp.Editor.UI.Property
 						});
 			Vector2 vector = new Vector2(finalControlPoints[0].X, maxCurve.Evaluate(finalControlPoints[0].X));
 			Vector2 vector2 = new Vector2(finalControlPoints[0].X, minCurve.Evaluate(finalControlPoints[0].X));
-			for (int i = 1; i < finalControlPoints.Count; i++)
+			foreach (var i in 1..finalControlPoints.Count)
 			{
 				Vector2 vector3 = new Vector2(finalControlPoints[i].X, maxCurve.Evaluate(finalControlPoints[i].X));
 				Vector2 vector4 = new Vector2(finalControlPoints[i].X, minCurve.Evaluate(finalControlPoints[i].X));
@@ -178,7 +165,7 @@ namespace Sharp.Editor.UI.Property
 
 			region = list.ToArray();
 			this.lines = new Vector2[2][];
-			for (int j = 0; j < 2; j++)
+			foreach (var j in ..2)
 			{
 				this.lines[j] = lines[j].ToArray();
 			}
@@ -214,12 +201,13 @@ namespace Sharp.Editor.UI.Property
 			float[,] array = new float[1, 2];
 			array[0, 0] = minTime;
 			array[0, 1] = maxTime;
-			for (int i = 0; i < array.GetLength(0); i++)
+			foreach (var i in ..array.GetLength(0))
 			{
 				AddPoints(ref list, array[i, 0], array[i, 1], minTime, maxTime, curveId);
 			}
 			if (list.Count > 0)
 			{
+
 				for (int j = 1; j < list.Count; j++)
 				{
 					if (list[j].X < list[j - 1].X)
@@ -240,14 +228,13 @@ namespace Sharp.Editor.UI.Property
 		private void AddPoints(ref List<Vector2> points, float minTime, float maxTime, float visibleMinTime, float visibleMaxTime, int curveId)
 		{
 			var maxX = curvesRange.width + (curvesRange.x < 0 ? curvesRange.x : 0);
-			//var curve = Value.ToObject<Curve[]>(JsonSerializer.Create(MainClass.serializerSettings))[curveId];
 			var keys = Value[curveId].keys;
 			if (keys[0].time > minTime)
 			{
 				points.Add(new Vector2(curvesRange.x, Value[curveId].Evaluate(curvesRange.x)));
 				points.Add(new Vector2(keys[0].time, keys[0].value));//TODO: bug in corners or with evaluate?
 			}
-			for (int i = 0; i < keys.Length - 1; i++)
+			foreach (var i in ..(keys.Length - 1))
 			{
 				Keyframe keyframe = keys[i];
 				Keyframe keyframe2 = keys[i + 1];
@@ -257,7 +244,7 @@ namespace Sharp.Editor.UI.Property
 					int segmentResolution = GetSegmentResolution(visibleMinTime, visibleMaxTime, keyframe.time, keyframe2.time);
 					float num = Lerp(keyframe.time, keyframe2.time, 0.001f / segmentResolution);
 					points.Add(new Vector2(num, Value[curveId].Evaluate(num)));
-					for (float num2 = 1; num2 < segmentResolution; num2 += 1)
+					foreach (float num2 in 1..segmentResolution)
 					{
 						num = Lerp(keyframe.time, keyframe2.time, num2 / segmentResolution);
 						points.Add(new Vector2(num, Value[curveId].Evaluate(num)));
@@ -317,7 +304,6 @@ namespace Sharp.Editor.UI.Property
 
 		protected override void DrawAfter()
 		{
-			//var curves = Value.ToObject<Curve[]>(JsonSerializer.Create(MainClass.serializerSettings));
 			ref var curves = ref Value;
 			for (int i = 0; i < curves.Length; i += 2)
 				CreateRegion(curves[i], curves[i + 1]);
@@ -334,7 +320,7 @@ namespace Sharp.Editor.UI.Property
 			ref var polyfill = ref Pipeline.Get<Mesh>().GetAsset("dynamic_polyfill");
 			var array = new Basic2dVertexFormat[region.Length];
 			var indices = new ushort[region.Length];
-			for (int i = 0; i < region.Length; i++)
+			foreach (var i in ..region.Length)
 			{
 				indices[i] = (ushort)i;
 				array[i].vertex_position = CurveToViewSpace(region[i], scale, translation);
@@ -348,14 +334,14 @@ namespace Sharp.Editor.UI.Property
 			ref var mesh = ref Pipeline.Get<Mesh>().GetAsset("dynamic_curve");
 
 			line2dMat.BindProperty("width", 2f);
-			for (int j = 0; j < 2; j++)
+			foreach (var j in ..2)
 			{
 				c = PrepareColorForCurve(c, j);
 				line2dMat.BindProperty("color", c);
 
 				Line2dVertexFormat[] verts = new Line2dVertexFormat[lines[j].Length * 4];
 				indices = new ushort[lines[j].Length * 6];
-				for (int i = 0; i < lines[j].Length - 1; i++)
+				foreach (var i in ..(lines[j].Length - 1))
 				{
 					var start = CurveToViewSpace(lines[j][i], scale, translation);
 					var end = CurveToViewSpace(lines[j][i + 1], scale, translation);

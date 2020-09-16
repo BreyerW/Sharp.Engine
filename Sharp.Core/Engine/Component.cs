@@ -1,12 +1,14 @@
-﻿using Sharp.Editor.Attribs;
+﻿using Newtonsoft.Json;
+using Sharp.Editor.Attribs;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sharp
 {
 	[Serializable]
-	public abstract class Component : IEngineObject
+	public abstract class Component : IEngineObject, IEquatable<Component>
 	{
-		private bool enabled;
+		public bool enabled;
 
 		public bool active
 		{
@@ -17,10 +19,7 @@ namespace Sharp
 					return;
 				Console.WriteLine("disable");
 				enabled = value;
-				if (enabled)
-					OnEnableInternal();
-				else
-					OnDisableInternal();
+				OnActiveChanged();
 			}
 		}
 
@@ -37,7 +36,7 @@ namespace Sharp
 		//    set;
 		//  } = { { { 80, 45 }, { 80, 45 }, { 80, 45 } } };
 		//[CurveRange()]
-		
+
 		[NonSerializable]
 		public Entity Parent
 		{
@@ -45,24 +44,25 @@ namespace Sharp
 			internal set;
 		}
 
-		protected internal virtual void OnEnableInternal()
+		internal virtual void OnActiveChanged()
 		{
+
 		}
 
-		protected internal virtual void OnDisableInternal()
-		{
-		}
-
-		public void Destroy()
+		public void Dispose()
 		{
 			active = false;
 			Extension.entities.RemoveEngineObject(this);
+			Extension.objectToIdMapping.Remove(this);
 		}
-		public Component(Entity parent)
+
+		public bool Equals(Component other)
 		{
-			if (parent is null) throw new ArgumentNullException("You tried creating component without attaching it to entity");
-			Parent = parent;
-			active = true;
+			return ReferenceEquals(this, other);
+		}
+
+		public Component()
+		{
 			Extension.entities.AddEngineObject(this);
 		}
 	}

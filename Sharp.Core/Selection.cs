@@ -12,6 +12,10 @@ using System.Buffers;
 using System.Linq;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using SharpAsset;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Sharp.Engine.Components;
 
 namespace Sharp
 {
@@ -96,89 +100,10 @@ namespace Sharp
 
 		public static void IsSelectionDirty(CancellationToken token)
 		{//produce component drawers and hide/detach them when not active for all object in scene and calculate diff for each property separately
-			/*if ((InputHandler.isKeyboardPressed | InputHandler.isMouseDragging))//&& !(Editor.Views.SceneView.entities is null)
-			{
-				//Squid.UI.isDirty = true;
-				return;
-			}
-			lock (sync)
-			{
-				//var tmpdata = JsonConvert.SerializeObject(Editor.Views.SceneView.entities);
-				//var data = tmpdata.AsReadOnlySpan().AsBytes();
-				/*using (var sw = new StreamWriter(tempName, false))
-			{
-					using (var jsonWriter = new JsonTextWriter(sw))
-					{
-						serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
-					}
-				}*
-				//var mem = new FileStream(tempCurrName, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
-				var serializer = JsonSerializer.CreateDefault();
-				var mem = memStream.GetStream();
-
-				using (var sw = new StreamWriter(mem, System.Text.Encoding.UTF8, 4096, true))//
-				using (var jsonWriter = new JsonTextWriter(sw))
-				{
-					var watch = System.Diagnostics.Stopwatch.StartNew();
-					//sw.AutoFlush = true;
-					jsonWriter.ArrayPool = JsonArrayPool.Instance;
-					serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
-
-					watch.Stop();
-					//Console.WriteLine("cast: " + watch.ElapsedMilliseconds);
-				}
-				mem.Position = 0;
-				lastStructure.Position = 0;
-				var condition = mem.Length == lastStructure.Length;
-				//Console.WriteLine("serializedarr: " + System.Text.Encoding.UTF8.GetString(mem.ToArray()));
-				for (int i = 0, j = 0; j < lastStructure.Length && i < mem.Length && condition; i++, j++)
-				{
-					var b1 = lastStructure.ReadByte();
-					var b2 = mem.ReadByte();
-					//Console.WriteLine(b1 + " " + b2);
-					condition = !((b1 is -1 && b2 > -1) || (b2 is -1 && b1 > -1) || b1 != b2);
-				}
-				if (!condition)
-				{
-					//Console.WriteLine("current: " + tmpdata);
-					//Console.WriteLine("past: " + new string(Unsafe.As<byte[], char[]>(ref lastStructure), 0, lastStructure.Length / Unsafe.SizeOf<char>()));
-					Squid.UI.isDirty = true;
-
-
-					//System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Editor.Views.SceneView.entities)); /*System.Text.Encoding.UTF8.GetBytes(// JSON.ToJSON(Editor.Views.SceneView.entities).AsReadOnlySpan().AsBytes().ToArray();//System.Text.Encoding.UTF8.GetBytes(JSON.ToJSON(Editor.Views.SceneView.entities));
-
-					//CalculateHistoryDiff(mem);
-					lastStructure.Dispose();
-					lastStructure = mem;
-					//Utils.Swap(ref tempCurrName, ref tempPrevName);
-					Console.WriteLine("save");//problemem jest camera jej zmiany triggeruja zapis
-				}
-				else
-					mem.Dispose();
-			}*/
+			
 		}
 
-		/*private static void CalculateHistoryDiff(Stream currentStructure)
-		{
-			currentStructure.Position = 0;
-			var backward = Delta.Create(currentStructure, lastStructure);
-
-			if (!(UndoCommand.currentHistory is null))
-			{
-				var forward = Delta.Create(lastStructure, currentStructure);
-
-				if (UndoCommand.currentHistory != UndoCommand.snapshots.Last)
-					UndoCommand.currentHistory.RemoveAllAfter();
-
-				var copy = UndoCommand.snapshots.Last.Value;
-				copy.upgrade = forward;
-				UndoCommand.snapshots.Last.Value = copy;
-			}
-			Console.WriteLine("data size: " + currentStructure.Length + " patch size: " + backward.Length);
-			UndoCommand.snapshots.AddLast(new HistoryDiff() { downgrade = backward, selectedObject = Asset?.GetInstanceID() });
-			UndoCommand.currentHistory = UndoCommand.snapshots.Last;
-		}
-		*/
+		
 
 		//static ManualResetEventSlim waiter = new ManualResetEventSlim();
 		public static async Task Repeat(Action<CancellationToken> doWork, int delayInMilis, int periodInMilis, CancellationToken cancellationToken, bool singleThreaded = false)
@@ -249,70 +174,133 @@ namespace Sharp
 			writer.WriteEndObject();
 		}
 	}
-
-	//TODO: removing component that doesnt exist after selection changed, smoothing out scenestructure rebuild after redo/undo, fix bug with ispropertydirty, add transform component
-	public class ThreadsafeReferenceResolver : IReferenceResolver
+	public class EntityConverter : JsonConverter<Entity>
 	{
-
-		//private static IDictionary<string, string> referenceToRoot = new Dictionary<string, string>();
-
-		//private static Dictionary<string, WeakReference<object>> guidToObjMapping = new Dictionary<string, WeakReference<object>>();
-		private IDictionary<string, object> stringToReference;
-
-		private IDictionary<object, string> referenceToString;
-
-		//private int referenceCount = 0;
-
-		public ThreadsafeReferenceResolver()
+		public override bool CanRead => false;
+		
+		public override Entity ReadJson(JsonReader reader, Type objectType, Entity existingValue, bool hasExistingValue, JsonSerializer serializer)
 		{
-			stringToReference = new Dictionary<string, object>(EqualityComparer<string>.Default);
-			referenceToString = new Dictionary<object, string>(EqualityComparer<object>.Default);
+			throw new NotImplementedException();
 		}
 
-		public void AddReference(
-			object context,
-			string reference,
-			object value)
+		public override void WriteJson(JsonWriter writer, Entity value, JsonSerializer serializer)
 		{
-			if (value.GetType().IsValueType) return;
-			if (stringToReference.TryGetValue(reference, out _))
-				return;
-			referenceToString.Add(value, reference);
-			stringToReference.Add(reference, value);
+			writer.WriteStartObject();
+			writer.WritePropertyName(ListReferenceConverter.refProperty);
+			writer.WriteValue(value.GetInstanceID());
+			writer.WriteEndObject();
 		}
+	}
+	public class ReferenceConverter : JsonConverter
+	{
+		public override bool CanWrite => false;
+		public override bool CanConvert(Type objectType)
+		{
+			return !objectType.IsValueType && !typeof(IList).IsAssignableFrom(objectType) && !typeof(Delegate).IsAssignableFrom(objectType) && !typeof(MulticastDelegate).IsAssignableFrom(objectType);
+		}
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+		{
+			if (reader.TokenType == JsonToken.Null)
+				return null;
+			reader.Read();
+			var id = reader.ReadAsString();
+			var obj = serializer.ReferenceResolver.ResolveReference(serializer, id);
 
-		public string GetReference(
-			object context,
-			object value)
+			if (obj is null)
+			{
+				obj = serializer.ContractResolver.ResolveContract(objectType).DefaultCreator();
+				serializer.ReferenceResolver.AddReference(serializer, id,obj);
+				//obj.AddRestoredObject(new Guid(id));
+			}
+			//var members = objectType.GetTypeInfo().GetMembers();//TODO: add private support
+			ReadOnlySpan<char> name = "";
+			int dotPos = -1;
+			if (reader.TokenType == JsonToken.String)
+			{
+				dotPos = reader.Path.LastIndexOf('.');
+				if(dotPos >-1)
+				name = reader.Path.AsSpan()[0..dotPos];
+
+			}
+				while (reader.Read())
+			{
+				if (reader.Path.AsSpan().SequenceEqual(name)) break;
+				if (reader.TokenType == JsonToken.PropertyName)
+				{
+					var member = objectType.GetMember(reader.Value as string);
+					if (member.Length is 0) continue;
+						reader.Read();
+					
+						if (member[0] is PropertyInfo p)
+						{
+							p.SetValue(obj, serializer.Deserialize(reader, p.PropertyType));
+						}
+						else if (member[0] is FieldInfo f)
+						{
+							f.SetValue(obj, serializer.Deserialize(reader, f.FieldType));
+						}
+				}
+			}
+			return obj;
+		}
+		public static JsonReader CopyReaderForObject(JsonReader reader, JToken jToken)
+		{
+			JsonReader jTokenReader = jToken.CreateReader();
+			jTokenReader.Culture = reader.Culture;
+			jTokenReader.DateFormatString = reader.DateFormatString;
+			jTokenReader.DateParseHandling = reader.DateParseHandling;
+			jTokenReader.DateTimeZoneHandling = reader.DateTimeZoneHandling;
+			jTokenReader.FloatParseHandling = reader.FloatParseHandling;
+			jTokenReader.MaxDepth = reader.MaxDepth;
+			jTokenReader.SupportMultipleContent = reader.SupportMultipleContent;
+			return jTokenReader;
+		}
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+		{
+			throw new NotImplementedException();
+		}
+	}
+	//TODO: use IEngineObject for engine references and use listreferenceconverter and DelegateConverter for list and delegates but other references wont be supported ?
+	//TODO: removing component that doesnt exist after selection changed, smoothing out scenestructure rebuild after redo/undo, fix bug with ispropertydirty, add transform component
+	public class IdReferenceResolver : IReferenceResolver//TODO: if nothing else works try custom converter with CanConvert=>value.IsReferenceType;
+	{
+		internal readonly IDictionary<Guid, object> _idToObjects = new Dictionary<Guid, object>();
+		internal readonly IDictionary<object, Guid> _objectsToId = new Dictionary<object, Guid>();
+		//Resolves $ref during deserialization
+		public object ResolveReference(object context, string reference)
+		{
+			var id = new Guid(reference);//.ToByteArray();
+
+			var o = Extension.objectToIdMapping.FirstOrDefault((obj) => obj.Value == id).Key;
+			//_idToObjects.TryGetValue(new Guid(reference), out var o);
+			return o;
+		}
+		//Resolves $id or $ref value during serialization
+		public string GetReference(object context, object value)
 		{
 			if (value.GetType().IsValueType) return null;
-			if (!referenceToString.TryGetValue(value, out string result))
+			//if (!Extension.objectToIdMapping.TryGetValue(value, out var id))
+			if (!_objectsToId.TryGetValue(value, out var id))
 			{
-				//Console.WriteLine(value + " " + rootRef);
-				result = value.GetInstanceID().ToString();
-				AddReference(context, result, value);
+				id = value.GetInstanceID();//.ToByteArray(); //Guid.NewGuid().ToByteArray(); 
+				AddReference(context, id.ToString(), value);
 			}
-
-			return result;
+			return id.ToString();//value.GetInstanceID().ToString();//
 		}
-
-		public bool IsReferenced(
-			object context,
-			object value)
+		//Resolves if $id or $ref should be used during serialization
+		public bool IsReferenced(object context, object value)
 		{
-			//var isReferenced = objToGuidMapping.TryGetValue(value, out var reference);
-			//Console.WriteLine(isReferenced + " " + rootRef);
-			//isReferenced = isReferenced && ((string.IsNullOrEmpty(rootRef)) /*&& (referenceToRoot.ContainsKey(reference) && referenceToRoot[reference] != rootRef)*/);
-
-			return referenceToString.TryGetValue(value, out _);
+			return _objectsToId.ContainsKey(value);
 		}
-
-		public object ResolveReference(
-			object context,
-			string reference)
+		//Resolves $id during deserialization
+		public void AddReference(object context, string reference, object value)
 		{
-			stringToReference.TryGetValue(reference, out var obj);
-			return obj;
+			if (value.GetType().IsValueType) return;
+			Guid anotherId = new Guid(reference);
+			//Extension.objectToIdMapping.TryGetValue(value, out var id);
+			Extension.objectToIdMapping.TryAdd(value, anotherId);
+			_idToObjects[anotherId] = value;
+			_objectsToId[value] = anotherId;
 		}
 	}
 
@@ -321,7 +309,6 @@ namespace Sharp
 		internal const string refProperty = "$ref";
 		internal const string idProperty = "$id";
 		internal const string valuesProperty = "$values";
-
 		public override bool CanConvert(Type objectType)
 		{
 			return typeof(IList).IsAssignableFrom(objectType); // && !objectType.IsArray;
@@ -332,6 +319,7 @@ namespace Sharp
 			if (reader.TokenType == JsonToken.Null)
 				return null;
 			var obj = JToken.Load(reader);
+			//if (obj is JValue) return null;
 			//for (var i = 0; i < obj.Type == JTokenType.Array ? obj.Children().Count() : 1; i++)
 
 			var refId = objectType.IsArray ? null : (string)obj[refProperty] ?? (string)obj[idProperty]; //?? (string)obj[idProperty] was added because we need persistence between Serialize() calls and it is possible that one object can be serialized in multiple places with $id rather than $ref
@@ -339,11 +327,17 @@ namespace Sharp
 			{
 				var reference = serializer.ReferenceResolver.ResolveReference(serializer, refId);
 				if (reference != null)
-					return reference;
+				{
+					using (JsonReader jObjectReader = ReferenceConverter.CopyReaderForObject(reader, obj))
+					{
+						serializer.Populate(jObjectReader, reference);
+					}
+					return reference;//TODO: populate before returning?
+				}
 			}
 			//Console.WriteLine("exist: " + existingValue);
 			var values = (obj.Type == JTokenType.Array ? obj : obj[valuesProperty]) as JArray;
-			if (values == null || values.Type == JTokenType.Null)
+			if (values is null || values.Type == JTokenType.Null)
 				return null;
 			var count = values.Count;
 			var elementType = objectType.IsArray ? objectType.GetElementType() : objectType.GetGenericArguments()[0];
@@ -351,12 +345,20 @@ namespace Sharp
 			var value = Array.CreateInstance(elementType, count) as IList;
 			if (!objectType.IsArray)
 				value = Activator.CreateInstance(objectType, value) as IList;
-			var objId = objectType.IsArray ? null : (string)obj[idProperty];
+			var objId = /*objectType.IsArray ? null :*/ (string)obj[idProperty];
 			if (objId != null)
 			{
 				// Add the empty array into the reference table BEFORE populating it,
 				// to handle recursive references.
-				serializer.ReferenceResolver.AddReference(serializer, objId, value);
+				var refObj = serializer.ReferenceResolver.ResolveReference(serializer, objId) as IList;
+				if (refObj is null)
+					serializer.ReferenceResolver.AddReference(serializer, objId, value);
+				else
+				{
+					foreach(var i in ..refObj.Count)
+						refObj[i] = obj[valuesProperty][i].ToObject(elementType, JsonSerializer.Create(MainClass.serializerSettings));
+					return refObj;
+				}
 			}
 			int id = 0;
 			foreach (var token in values)
@@ -365,7 +367,7 @@ namespace Sharp
 				id++;
 			}
 			existingValue = value;
-
+			existingValue.AddRestoredObject(new Guid(objId));
 			return existingValue;
 		}
 
