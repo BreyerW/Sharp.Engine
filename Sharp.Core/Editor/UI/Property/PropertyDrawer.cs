@@ -19,6 +19,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Toolkit.HighPerformance;
+using Microsoft.Toolkit.HighPerformance.Extensions;
 
 namespace Sharp.Editor.UI.Property
 {
@@ -43,9 +45,9 @@ namespace Sharp.Editor.UI.Property
 		protected Label label = new Label();
 		protected Type propertyType;
 		//private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
-		private RefFunc<object, T> getter;
+		//private RefFunc<object, T> getter;
 		//private RefAction<object, T> setter;
-
+		private IntPtr offset;
 		public override Component Target
 		{
 			set
@@ -55,19 +57,12 @@ namespace Sharp.Editor.UI.Property
 			}
 			get => target;
 		}
-		public ref T Value => ref getter(target);
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int DangerousGetObjectDataByteOffset(object obj, FieldInfo field)
-		{
-			var rawObj = Unsafe.As<object, IntPtr>(ref obj);
-
-			return rawObj.ToInt32() - field.FieldHandle.Value.ToInt32();
-		}
+		public ref T Value => ref target.DangerousGetObjectDataReferenceAt<T>(offset);
 
 		public PropertyDrawer(MemberInfo memInfo)
 		{
 			memberInfo = memInfo;
-			(getter, _) = DelegateGenerator.GetAccessors<T>(memberInfo);
+			offset = (memberInfo as FieldInfo).GetFieldOffset();
 			//Scissor = true;
 			//Size = new Point(0, 20);
 			Name = memberInfo.Name;

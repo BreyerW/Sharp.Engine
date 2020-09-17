@@ -49,7 +49,7 @@ namespace Sharp
 
 		}
 
-		public void Dispose()
+		public virtual void Dispose()
 		{
 			active = false;
 			Extension.entities.RemoveEngineObject(this);

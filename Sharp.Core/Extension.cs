@@ -4,6 +4,8 @@ using Sharp.Editor.Views;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Sharp.Engine.Components;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Sharp
 {
@@ -28,6 +30,14 @@ namespace Sharp
 			Root.idToObjectMapping.TryGetValue(id, out var obj);
 			return (T)obj;
 		}
+		/*public static void Dispose(in this Guid id)
+		{
+			objectToIdMapping.R;
+		}*/
+		public static void Dispose<T>(this T obj) where T : class
+		{
+			objectToIdMapping.Remove(obj);
+		}
 		public static IEngineObject GetInstanceObject(in this Guid id)
 		{
 			Root.idToObjectMapping.TryGetValue(id, out var obj);
@@ -37,6 +47,12 @@ namespace Sharp
 		{
 			objectToIdMapping.Add(obj, id);
 		}
+		public static IntPtr GetFieldOffset(this FieldInfo fi) => fi.DeclaringType.IsValueType ? GetStructFieldOffset(fi.FieldHandle) : GetFieldOffset(fi.FieldHandle);
+
+		public static IntPtr GetFieldOffset(RuntimeFieldHandle h) =>
+									  (IntPtr)(Marshal.ReadInt32(h.Value + (4 + IntPtr.Size)) & 0xFFFFFF);
+		public static IntPtr GetStructFieldOffset(RuntimeFieldHandle h) =>
+									  (IntPtr)(Marshal.ReadInt32(h.Value + IntPtr.Size) & 0xFFFFFF);
 		public static TKey GetKey<TKey, TValue>(this Dictionary<TKey, TValue> dict, TValue val)
 		{
 			foreach (var pair in dict)

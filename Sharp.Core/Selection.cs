@@ -1,6 +1,5 @@
 ﻿using Fossil;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Sharp.Editor;
 using System;
@@ -15,7 +14,10 @@ using System.Runtime.CompilerServices;
 using SharpAsset;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Sharp.Engine.Components;
+using System.Runtime.InteropServices;
+using System.Linq;
+using OpenTK.Graphics.ES11;
+using SharpAvi.Codecs;
 
 namespace Sharp
 {
@@ -54,7 +56,6 @@ namespace Sharp
 		public static Action<object, object> OnSelectionChange;
 		public static Action<object> OnSelectionDirty;
 		public static bool isDragging = false;
-		//internal static JsonSerializer serializer;
 
 		static Selection()
 		{
@@ -63,47 +64,12 @@ namespace Sharp
 			//lastStructure = memStream.GetStream();// new FileStream(tempPrevName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
 		}
 
-		/*try
-				{
-					serializer = JsonSerializer.CreateDefault();
-					using (var sw = new StreamWriter(tempName, false))
-					{
-						using (var jsonWriter = new JsonTextWriter(sw))
-						{
-							serializer.Serialize(jsonWriter, Editor.Views.SceneView.entities);
-						}
-					}
-				}
-				catch (IOException io)
-				{
-					Console.WriteLine(io.Message);
-				}
-				tempFile = new FileStream(tempName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 2048, options: FileOptions.Asynchronous | FileOptions.SequentialScan);
 
-				var tmpdata = JsonConvert.SerializeObject(Editor.Views.SceneView.entities);
-				var data = tmpdata.AsReadOnlySpan().AsBytes();
-				if (tempFile.Length == tmpdata.Length)
-				{
-					for (int i = 0; i < tempFile.Length; i++)
-					{
-						if (tmpdata[i] != tempFile.ReadByte())
-						{
-							Console.WriteLine("not identical.");
-							break;
-						}
-					}
-
-					Console.WriteLine("identical");
-				}
-				else Console.WriteLine("not identical " + tempFile.Length + " " + tmpdata.Length);
-				tempFile.Close();*/
 
 		public static void IsSelectionDirty(CancellationToken token)
 		{//produce component drawers and hide/detach them when not active for all object in scene and calculate diff for each property separately
-			
-		}
 
-		
+		}
 
 		//static ManualResetEventSlim waiter = new ManualResetEventSlim();
 		public static async Task Repeat(Action<CancellationToken> doWork, int delayInMilis, int periodInMilis, CancellationToken cancellationToken, bool singleThreaded = false)
@@ -129,55 +95,54 @@ namespace Sharp
 		}
 	}
 
-	public class DelegateConverter : JsonConverter<MulticastDelegate>
+	public class DelegateConverter : JsonConverter<Delegate>
 	{
-		public override MulticastDelegate ReadJson(JsonReader reader, Type objectType, MulticastDelegate existingValue, bool hasExistingValue, JsonSerializer serializer)
+		public override Delegate ReadJson(JsonReader reader, Type objectType, Delegate existingValue, bool hasExistingValue, JsonSerializer serializer)
 		{
-			//if (!hasExistingValue) return null;
-			var tokens = JToken.Load(reader);
-			if (!tokens.HasValues) return null;
-			//var type = tokens["signature"].ToObject<Type>();
+			if (reader.TokenType == JsonToken.Null)
+				return null;
 			Delegate del = null;
-			//Console.WriteLine("declTYpe:" + existingValue.GetType().DeclaringType);
-			foreach (var invocation in tokens["invocations"])
+			while (reader.Read())
 			{
-				//Console.WriteLine("deserialized: " + serializer.Deserialize(invocation[0].CreateReader()));
-				var tmpDel = Delegate.CreateDelegate(objectType, /*serializer.Deserialize(invocation[0].CreateReader())*/ serializer.ReferenceResolver.ResolveReference(serializer, (invocation[0]["$ref"] ?? invocation[0]["$id"]).Value<string>()), invocation[1].Value<string>());
+				reader.Read();
+				if (reader.TokenType == JsonToken.EndArray) break;
+				while (reader.Value as string is not ListReferenceConverter.refProperty) reader.Read();
+				reader.Read();
+				var id = reader.Value as string;
+				while (reader.Value as string is not "methodName") reader.Read();
+				reader.Read();
+				var method = reader.Value as string;
+				var tmpDel = Delegate.CreateDelegate(objectType, serializer.ReferenceResolver.ResolveReference(serializer, id), method);
 				del = del is null ? tmpDel : Delegate.Combine(del, tmpDel);
+
 			}
-			return del as MulticastDelegate;
+			return del;
 		}
 
-		public override void WriteJson(JsonWriter writer, MulticastDelegate value, JsonSerializer serializer)
+		public override void WriteJson(JsonWriter writer, Delegate value, JsonSerializer serializer)
 		{
-			writer.WriteStartObject();
-			//writer.WritePropertyName("signature");
-			//serializer.Serialize(writer, value.GetType());
-			//Console.WriteLine(value.GetType());
-			writer.WritePropertyName("invocations");
 			writer.WriteStartArray();
 			foreach (var invocation in value.GetInvocationList())
 			{
-				writer.WriteStartArray();
+				writer.WriteStartObject();
+				writer.WritePropertyName(ListReferenceConverter.refProperty);
 				if (invocation.Target is null)
 				{
 					writer.WriteNull();
-					Console.WriteLine("null written");
 				}
 				else
-					serializer.Serialize(writer, invocation.Target);
+					writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, invocation.Target));
+				writer.WritePropertyName("methodName");
 				writer.WriteValue(invocation.Method.Name);
-
-				writer.WriteEndArray();
+				writer.WriteEndObject();
 			}
 			writer.WriteEndArray();
-			writer.WriteEndObject();
 		}
 	}
 	public class EntityConverter : JsonConverter<Entity>
 	{
 		public override bool CanRead => false;
-		
+
 		public override Entity ReadJson(JsonReader reader, Type objectType, Entity existingValue, bool hasExistingValue, JsonSerializer serializer)
 		{
 			throw new NotImplementedException();
@@ -191,12 +156,75 @@ namespace Sharp
 			writer.WriteEndObject();
 		}
 	}
+	public class DictionaryConverter : JsonConverter<IDictionary>
+	{
+
+		public override IDictionary ReadJson(JsonReader reader, Type objectType, IDictionary existingValue, bool hasExistingValue, JsonSerializer serializer)
+		{
+			if (reader.TokenType == JsonToken.Null)
+				return null;
+			reader.Read();
+			var id = reader.ReadAsString();
+			var obj = serializer.ReferenceResolver.ResolveReference(serializer, id) as IDictionary;
+
+			if (obj is null)
+			{
+				obj = serializer.ContractResolver.ResolveContract(objectType).DefaultCreator() as IDictionary;
+				serializer.ReferenceResolver.AddReference(serializer, id, obj);
+			}
+			obj.Clear();
+			ReadOnlySpan<char> name = "";
+			int dotPos = -1;
+			if (reader.TokenType == JsonToken.String)
+			{
+				dotPos = reader.Path.LastIndexOf('.');
+				if (dotPos > -1)
+					name = reader.Path.AsSpan()[0..dotPos];
+			}
+			while (reader.Read())
+			{
+				if (reader.Path.AsSpan().SequenceEqual(name)) break;
+				if (reader.TokenType == JsonToken.EndArray /*&& reader.Value as string is "pairs"*/)
+					break;
+				while (reader.Value as string is not "key") reader.Read();
+				reader.Read();
+				var generics = objectType.GetGenericArguments();
+				var key = serializer.Deserialize(reader, generics[0]);
+				while (reader.Value as string is not "value") reader.Read();
+				reader.Read();
+				var value = serializer.Deserialize(reader, generics[1]);
+				obj.Add(key, value);
+				reader.Read();
+			}
+			return obj;
+		}
+
+		public override void WriteJson(JsonWriter writer, IDictionary value, JsonSerializer serializer)
+		{
+			writer.WriteStartObject();
+			writer.WritePropertyName(ListReferenceConverter.idProperty);
+			writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
+			writer.WritePropertyName("pairs");
+			writer.WriteStartArray();
+			foreach (DictionaryEntry item in value)
+			{
+				writer.WriteStartObject();
+				writer.WritePropertyName("key");
+				serializer.Serialize(writer, item.Key);
+				writer.WritePropertyName("value");
+				serializer.Serialize(writer, item.Value);
+				writer.WriteEndObject();
+			}
+			writer.WriteEndArray();
+			writer.WriteEndObject();
+		}
+	}
 	public class ReferenceConverter : JsonConverter
 	{
 		public override bool CanWrite => false;
 		public override bool CanConvert(Type objectType)
 		{
-			return !objectType.IsValueType && !typeof(IList).IsAssignableFrom(objectType) && !typeof(Delegate).IsAssignableFrom(objectType) && !typeof(MulticastDelegate).IsAssignableFrom(objectType);
+			return objectType != typeof(string) && !objectType.IsValueType && !typeof(IList).IsAssignableFrom(objectType) && !typeof(Delegate).IsAssignableFrom(objectType) && !typeof(MulticastDelegate).IsAssignableFrom(objectType);
 		}
 		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
@@ -209,51 +237,36 @@ namespace Sharp
 			if (obj is null)
 			{
 				obj = serializer.ContractResolver.ResolveContract(objectType).DefaultCreator();
-				serializer.ReferenceResolver.AddReference(serializer, id,obj);
-				//obj.AddRestoredObject(new Guid(id));
+				serializer.ReferenceResolver.AddReference(serializer, id, obj);
 			}
-			//var members = objectType.GetTypeInfo().GetMembers();//TODO: add private support
 			ReadOnlySpan<char> name = "";
 			int dotPos = -1;
 			if (reader.TokenType == JsonToken.String)
 			{
 				dotPos = reader.Path.LastIndexOf('.');
-				if(dotPos >-1)
-				name = reader.Path.AsSpan()[0..dotPos];
-
+				if (dotPos > -1)
+					name = reader.Path.AsSpan()[0..dotPos];
 			}
-				while (reader.Read())
+			while (reader.Read())
 			{
 				if (reader.Path.AsSpan().SequenceEqual(name)) break;
 				if (reader.TokenType == JsonToken.PropertyName)
 				{
-					var member = objectType.GetMember(reader.Value as string);
+					var member = objectType.GetMember(reader.Value as string, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
 					if (member.Length is 0) continue;
-						reader.Read();
-					
-						if (member[0] is PropertyInfo p)
-						{
-							p.SetValue(obj, serializer.Deserialize(reader, p.PropertyType));
-						}
-						else if (member[0] is FieldInfo f)
-						{
-							f.SetValue(obj, serializer.Deserialize(reader, f.FieldType));
-						}
+					reader.Read();
+
+					if (member[0] is PropertyInfo p)
+					{
+						p.SetValue(obj, serializer.Deserialize(reader, p.PropertyType));
+					}
+					else if (member[0] is FieldInfo f)
+					{
+						f.SetValue(obj, serializer.Deserialize(reader, f.FieldType));
+					}
 				}
 			}
 			return obj;
-		}
-		public static JsonReader CopyReaderForObject(JsonReader reader, JToken jToken)
-		{
-			JsonReader jTokenReader = jToken.CreateReader();
-			jTokenReader.Culture = reader.Culture;
-			jTokenReader.DateFormatString = reader.DateFormatString;
-			jTokenReader.DateParseHandling = reader.DateParseHandling;
-			jTokenReader.DateTimeZoneHandling = reader.DateTimeZoneHandling;
-			jTokenReader.FloatParseHandling = reader.FloatParseHandling;
-			jTokenReader.MaxDepth = reader.MaxDepth;
-			jTokenReader.SupportMultipleContent = reader.SupportMultipleContent;
-			return jTokenReader;
 		}
 		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
@@ -304,97 +317,84 @@ namespace Sharp
 		}
 	}
 
-	public class ListReferenceConverter : JsonConverter
+	public class ListReferenceConverter : JsonConverter<IList>
 	{
 		internal const string refProperty = "$ref";
 		internal const string idProperty = "$id";
 		internal const string valuesProperty = "$values";
-		public override bool CanConvert(Type objectType)
-		{
-			return typeof(IList).IsAssignableFrom(objectType); // && !objectType.IsArray;
-		}
 
-		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+
+		public override IList ReadJson(JsonReader reader, Type objectType, IList existingValue, bool hasExistingValue, JsonSerializer serializer)
 		{
 			if (reader.TokenType == JsonToken.Null)
 				return null;
-			var obj = JToken.Load(reader);
-			//if (obj is JValue) return null;
-			//for (var i = 0; i < obj.Type == JTokenType.Array ? obj.Children().Count() : 1; i++)
+			reader.Read();
+			var elementType = objectType.IsArray ? objectType.GetElementType() : objectType.GetGenericArguments()[0];
+			var refId = reader.ReadAsString();
 
-			var refId = objectType.IsArray ? null : (string)obj[refProperty] ?? (string)obj[idProperty]; //?? (string)obj[idProperty] was added because we need persistence between Serialize() calls and it is possible that one object can be serialized in multiple places with $id rather than $ref
+			while (reader.TokenType is not JsonToken.StartArray) reader.Read();
+			reader.Read();
 			if (refId != null)
 			{
-				var reference = serializer.ReferenceResolver.ResolveReference(serializer, refId);
-				if (reference != null)
+				IList tmp = new List<object>();
+				while (true)
 				{
-					using (JsonReader jObjectReader = ReferenceConverter.CopyReaderForObject(reader, obj))
+					tmp.Add(serializer.Deserialize(reader, elementType));
+					reader.Read();
+					if (reader.TokenType is JsonToken.EndArray) { reader.Read(); break; }
+					while (!elementType.IsPrimitive && reader.TokenType is not JsonToken.StartObject) reader.Read();
+				}
+				var reference = serializer.ReferenceResolver.ResolveReference(serializer, refId) as IList;
+				if (reference is not null)
+				{
+					if (objectType.IsArray)
 					{
-						serializer.Populate(jObjectReader, reference);
+						foreach (var i in ..reference.Count)
+							reference[i] = tmp[i];
+						return reference;
 					}
-					return reference;//TODO: populate before returning?
+					else
+					{
+						reference.Clear();
+						existingValue = reference;
+					}
 				}
-			}
-			//Console.WriteLine("exist: " + existingValue);
-			var values = (obj.Type == JTokenType.Array ? obj : obj[valuesProperty]) as JArray;
-			if (values is null || values.Type == JTokenType.Null)
-				return null;
-			var count = values.Count;
-			var elementType = objectType.IsArray ? objectType.GetElementType() : objectType.GetGenericArguments()[0];
-
-			var value = Array.CreateInstance(elementType, count) as IList;
-			if (!objectType.IsArray)
-				value = Activator.CreateInstance(objectType, value) as IList;
-			var objId = /*objectType.IsArray ? null :*/ (string)obj[idProperty];
-			if (objId != null)
-			{
-				// Add the empty array into the reference table BEFORE populating it,
-				// to handle recursive references.
-				var refObj = serializer.ReferenceResolver.ResolveReference(serializer, objId) as IList;
-				if (refObj is null)
-					serializer.ReferenceResolver.AddReference(serializer, objId, value);
 				else
-				{
-					foreach(var i in ..refObj.Count)
-						refObj[i] = obj[valuesProperty][i].ToObject(elementType, JsonSerializer.Create(MainClass.serializerSettings));
-					return refObj;
-				}
+					existingValue = Activator.CreateInstance(objectType, tmp.Count) as IList;
+
+				foreach (var i in ..tmp.Count)
+					if (reference is not null && !objectType.IsArray)
+						existingValue.Add(tmp[i]);
+					else
+						existingValue[i] = tmp[i];
+				serializer.ReferenceResolver.AddReference(serializer, refId, existingValue);
+				return existingValue;
 			}
-			int id = 0;
-			foreach (var token in values)
-			{
-				value[id] = serializer.Deserialize(token.CreateReader(), elementType);
-				id++;
-			}
-			existingValue = value;
-			existingValue.AddRestoredObject(new Guid(objId));
-			return existingValue;
+
+			throw new NotSupportedException();
 		}
 
-		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+		public override void WriteJson(JsonWriter writer, IList value, JsonSerializer serializer)
 		{
-			if (value is IList array)
+			writer.WriteStartObject();
+			if (!serializer.ReferenceResolver.IsReferenced(serializer, value))
 			{
-				writer.WriteStartObject();
-				if (!serializer.ReferenceResolver.IsReferenced(serializer, value))
+				writer.WritePropertyName(idProperty);
+				writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
+				writer.WritePropertyName(valuesProperty);
+				writer.WriteStartArray();
+				foreach (var item in value)
 				{
-					writer.WritePropertyName(idProperty);
-					writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
-					writer.WritePropertyName(valuesProperty);
-					writer.WriteStartArray();
-					foreach (var item in array)
-					{
-						serializer.Serialize(writer, item);
-					}
-					writer.WriteEndArray();
+					serializer.Serialize(writer, item);
 				}
-				else
-				{
-					writer.WritePropertyName(refProperty);
-					writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
-				}
-				writer.WriteEndObject();
+				writer.WriteEndArray();
 			}
+			else
+			{
+				writer.WritePropertyName(refProperty);
+				writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
+			}
+			writer.WriteEndObject();
 		}
 	}
 
@@ -414,100 +414,3 @@ namespace Sharp
 		}
 	}
 }
-
-/*public class ArrayReferenceConverter : JsonConverter
-
-{
-	public override bool CanConvert(Type objectType)
-	{
-		return objectType.IsArray;
-	}
-
-	public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-	{
-		if (reader.TokenType == JsonToken.Null)
-			return null;
-		else if (reader.TokenType == JsonToken.StartArray)
-		{
-			// No $ref.  Deserialize as a List<T> to avoid infinite recursion and return as an array.
-			var elementType = objectType.GetElementType();
-			//if (existingValue is null)
-			{
-				var listType = typeof(List<>).MakeGenericType(elementType);
-				var list = serializer.Deserialize(reader, listType) as IList;
-				if (list == null)
-					return null;
-
-				existingValue = Array.CreateInstance(elementType, list.Count);
-				list.CopyTo((Array)existingValue, 0);
-			}
-			/*else
-			{
-				Console.WriteLine("exist: " + existingValue);
-			}*
-			return existingValue;
-		}
-		else
-		{
-			var obj = JObject.Load(reader);
-			var refId = (string)obj[refProperty];
-			if (refId != null)
-			{
-				var reference = serializer.ReferenceResolver.ResolveReference(serializer, refId);
-				if (reference != null)
-					return reference;
-			}
-			//Console.WriteLine("exist: " + existingValue);
-			var values = obj[valuesProperty] as JArray;
-			if (values == null || values.Type == JTokenType.Null)
-				return null;
-			var count = values.Count;
-
-			var elementType = objectType.GetElementType();
-			var array = Array.CreateInstance(elementType, count);
-
-			var objId = (string)obj[idProperty];
-			if (objId != null)
-			{
-				// Add the empty array into the reference table BEFORE populating it,
-				// to handle recursive references.
-				serializer.ReferenceResolver.AddReference(serializer, objId, array);
-			}
-
-			var listType = typeof(List<>).MakeGenericType(elementType);
-			using (var subReader = values.CreateReader())
-			{
-				var list = serializer.Deserialize(subReader, listType) as IList;
-				list.CopyTo(array, 0);
-			}
-
-			return array;
-		}
-	}
-
-	public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-	{
-		if (value is Array array)
-		{
-			writer.WriteStartObject();
-			if (!serializer.ReferenceResolver.IsReferenced(serializer, value))
-			{
-				writer.WritePropertyName(idProperty);
-				writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
-				writer.WritePropertyName(valuesProperty);
-				writer.WriteStartArray();
-				foreach (var item in array)
-				{
-					serializer.Serialize(writer, item);
-				}
-				writer.WriteEndArray();
-			}
-			else
-			{
-				writer.WritePropertyName(refProperty);
-				writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
-			}
-			writer.WriteEndObject();
-		}
-	}
-}*/

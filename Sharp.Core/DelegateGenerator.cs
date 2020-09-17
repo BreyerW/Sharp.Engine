@@ -110,7 +110,7 @@ namespace Sharp
 			var methodBuilder = typeBuilder.DefineMethod("GetFieldByRef", MethodAttributes.Static | MethodAttributes.Public, memberInfo.GetUnderlyingType().MakeByRefType(), new[] { typeof(object) });
 			var ilGen = methodBuilder.GetILGenerator();
 			ilGen.Emit(OpCodes.Ldarg_0);
-			ilGen.Emit(OpCodes.Castclass, memberInfo.DeclaringType);
+			//ilGen.Emit(OpCodes.Castclass, memberInfo.DeclaringType);
 			ilGen.Emit(OpCodes.Ldflda, memberInfo as FieldInfo);
 			ilGen.Emit(OpCodes.Ret);
 			var type = typeBuilder.CreateType();

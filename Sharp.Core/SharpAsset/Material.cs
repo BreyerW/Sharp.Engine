@@ -40,7 +40,7 @@ namespace SharpAsset
 	[Serializable]
 	public class Material : IDisposable, IEngineObject//IAsset
 	{//TODO: load locations lazily LoadLocation on IBackendRenderer when binding property? and when constructing material for global props  
-		
+
 
 		private const byte FLOAT = 0;
 		private const byte VECTOR2 = 1;
@@ -53,7 +53,6 @@ namespace SharpAsset
 		private const byte COLOR4PTR = byte.MaxValue - 1;
 
 		private static int lastShaderUsed = -1;
-		//private static ArrayPool<byte> pool = ArrayPool<byte>.Shared;
 		private static Dictionary<Type, int> sizeTable = new Dictionary<Type, int>()
 		{
 			[typeof(Vector2)] = Marshal.SizeOf<Vector2>(),
@@ -66,12 +65,11 @@ namespace SharpAsset
 			[typeof(IntPtr)] = Marshal.SizeOf<IntPtr>(),
 			[typeof(float)] = Marshal.SizeOf<float>(),
 		};
-		//private int lastSlot;
 		[JsonProperty]
 		private int shaderId;
 		private static Dictionary<(uint winId, string property), byte[]> globalParams = new Dictionary<(uint winId, string property), byte[]>();
 		[JsonProperty]
-		internal Dictionary<string, byte[]> localParams;
+		private Dictionary<string, byte[]> localParams;
 		public Shader Shader
 		{
 			get
@@ -208,7 +206,8 @@ namespace SharpAsset
 		{
 			if (localParams.TryGetValue(prop, out var addr))
 			{
-				data = Pipeline.Pipeline.Get<Mesh>().GetAsset(Unsafe.As<byte, int>(ref addr[1]));
+				var index = Unsafe.As<byte, int>(ref addr[1]);
+				data = Pipeline.Pipeline.Get<Mesh>().GetAsset(index);
 				return true;
 			}
 			data = default;
@@ -359,7 +358,10 @@ namespace SharpAsset
 		// This code added to correctly implement the disposable pattern.
 		public void Dispose()
 		{
+			Extension.objectToIdMapping.Remove(localParams);
 			Extension.objectToIdMapping.Remove(this);
+			foreach (var (_, item) in localParams)
+				item.Dispose();
 			// Do not change this code. Put cleanup code in Dispose(bool disposing) above.
 			Dispose(true);
 			// TODO: uncomment the following line if the finalizer is overridden above.

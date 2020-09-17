@@ -16,7 +16,6 @@ namespace Sharp
 		};
 		public Material material;
 
-
 		public override void Render()
 		{
 			material.TryGetProperty("mesh", out Mesh Mesh);
@@ -35,6 +34,12 @@ namespace Sharp
 		{
 			Console.WriteLine("start meshrenderer");
 			//material.BindUnmanagedProperty("model", Parent.transform.ModelMatrix);
+		}
+		public override void Dispose()
+		{
+			base.Dispose();
+			material.Dispose();
+			curves.Dispose();//TODO: add Dispose to GUID
 		}
 	}
 }

@@ -94,7 +94,6 @@ namespace Sharp.Editor
 					var objToBePatched = Encoding.Unicode.GetBytes(patched);
 					patched = Encoding.Unicode.GetString(Delta.Apply(objToBePatched, undo));
 					JsonConvert.DeserializeObject(patched, obj.GetType(), MainClass.serializerSettings);
-
 					/*getter(target) = val;
 				if (val is Material m)
 				{
@@ -153,7 +152,7 @@ namespace Sharp.Editor
 					foreach (var (comp, state) in prevStates)
 					{
 						var token = JsonConvert.SerializeObject(comp, comp.GetType(), MainClass.serializerSettings);
-
+					
 						if (!state.AsSpan().SequenceEqual(token.AsSpan()))
 						{
 							if (comp.Parent.GetComponent<Camera>() != Camera.main)
@@ -237,4 +236,5 @@ namespace Sharp.Editor
 			UndoCommand.currentHistory = UndoCommand.snapshots.Last;
 		}
 	}
+	
 }

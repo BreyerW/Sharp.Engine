@@ -23,8 +23,8 @@ namespace Sharp.Engine.Components
 				return ref modelMatrix;
 			}
 		}
-		[NonSerializable, JsonIgnore]
-		public Action onTransformChanged;
+		[JsonProperty]
+		public Action onTransformChanged { get; set; }
 
 		public Vector3 Position
 		{
@@ -76,7 +76,10 @@ namespace Sharp.Engine.Components
 			}*/
 			modelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
 		}
-			//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
-			
+		//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
+		public Transform() : base()
+		{
+			onTransformChanged += () => Console.WriteLine("transform changed");
+		}
 	}
 }
