@@ -7,16 +7,23 @@ using System.Runtime.InteropServices;
 
 namespace Sharp.Engine.Components
 {
-	public class Transform : Component//1 ui szablon dla roznych typow w inspectorze
+	public class Transform : Component
 	{
 		private readonly static int mat4x4Stride = Marshal.SizeOf<Matrix4x4>();
-		[NonSerializable]
-		private Matrix4x4 modelMatrix;
-		public Vector3 position = Vector3.Zero;
-		public Vector3 rotation = Vector3.Zero;
-		public Vector3 scale = Vector3.One;
+		//[NonSerializable]
+		[JsonProperty]
+		private Matrix4x4 modelMatrix = Matrix4x4.Identity;
+		[JsonProperty]
+		private Vector3 position = Vector3.Zero;
+		[JsonProperty]
+		private Vector3 eulerAngles = Vector3.Zero;
+		[JsonProperty]
+		private Vector3 scale = Vector3.One;
+		//[JsonProperty]
+		//private Quaternion rotation;
+
 		[NonSerializable, JsonIgnore]
-		public ref readonly Matrix4x4 ModelMatrix
+		public ref Matrix4x4 ModelMatrix
 		{
 			get
 			{ /*unsafe { return ref Unsafe.AsRef<Matrix4x4>(modelMatrix.ToPointer()); }*/
@@ -30,51 +37,60 @@ namespace Sharp.Engine.Components
 		{
 			get
 			{
+				//Matrix4x4.Decompose(modelMatrix, out _, out _, out var pos);
 				return position;
 			}
 			set
 			{
 				position = value;
-				SetModelMatrix();
-				onTransformChanged?.Invoke();
 			}
 		}
-
 		public Vector3 Rotation
+		{
+			get => eulerAngles;
+			set => eulerAngles = value;
+		}
+		/*[JsonIgnore]
+		public Quaternion Rotation
 		{
 			get
 			{
+				//Matrix4x4.Decompose(modelMatrix, out _, out var rot, out _);
 				return rotation;
 			}
 			set
 			{
+				if (rotation == value) return;
+				var delta = value *Quaternion.Inverse(rotation);
+				eulerAngles += delta.ToEulerAngles() * NumericsExtensions.Rad2Deg;
+				ModelMatrix =Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(delta) * Matrix4x4.CreateTranslation(position);  //Matrix4x4.CreateFromQuaternion(delta) * ModelMatrix; //
 				rotation = value;
-				SetModelMatrix();
-				onTransformChanged?.Invoke();
 			}
-		}
+		}*/
 
 		public Vector3 Scale
 		{
 			get
 			{
+				//Matrix4x4.Decompose(modelMatrix, out var s, out _, out _);
 				return scale;
 			}
 			set
 			{
 				scale = value;
-				SetModelMatrix();
-				onTransformChanged?.Invoke();
 			}
 		}
-		public void SetModelMatrix()
+		public void SetModelMatrix()//make custom transform inspector that will access properties directly instead of fields or make PropertyDrawer for quaternion that will represent them as euler angles and use their deltas to calculate orientation instead of using their numbers directly
 		{
-			var angles = rotation * NumericsExtensions.Pi / 180f;
+			//var 
+			//var normalizedRotX = (rotation.X % 180f) * NumericsExtensions.Deg2Rad;
+			//var normalizedRotY = (rotation.Y % 90f) * NumericsExtensions.Deg2Rad;
+			//var normalizedRotZ = (rotation.Z % 180f) * NumericsExtensions.Deg2Rad;
 			/*unsafe
 			{
 				Unsafe.AsRef<Matrix4x4>(modelMatrix.ToPointer()) = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
 			}*/
-			modelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
+			//modelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(normalizedRotX) * Matrix4x4.CreateRotationY(normalizedRotY) * Matrix4x4.CreateRotationZ(normalizedRotZ) * Matrix4x4.CreateTranslation(position);
 		}
 		//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
 		public Transform() : base()

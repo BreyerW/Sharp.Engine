@@ -62,19 +62,22 @@ namespace Sharp.Editor.UI.Property
 			line2dMat.Shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\LineShader.shader");
 			line2dMat.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("dynamic_curve"));
 		}
-
-		public RegionDrawer(MemberInfo memInfo) : base(memInfo)
+		public override bool CanApply(MemberInfo memInfo)
 		{
-			var range = attributes?.OfType<CurveRangeAttribute>();
-			if (range != null && range.Any())
-				curvesRange = range.GetEnumerator().Current.curvesRange;
+			var range = memInfo.GetCustomAttribute<CurveRangeAttribute>();
+			if (range is not null)
+				curvesRange = range.curvesRange;
+			else return false;
+			return true;
+		}
+		public RegionDrawer(MemberInfo memInfo) : base(memInfo)//move all of this to canApply and remove memInfo from constructor?
+		{
 			curveFrame.Style = "textbox";
 			curveFrame.NoEvents = false;
 			curveFrame.Position = new Point(label.Size.x, 0);
 			curveFrame.MouseUp += RegionDrawer_MouseDown;
 			Scissor = true;
 			Childs.Add(curveFrame);
-
 		}
 
 		private void RegionDrawer_MouseDown(Control sender, MouseEventArgs args)

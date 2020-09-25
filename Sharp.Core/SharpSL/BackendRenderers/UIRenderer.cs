@@ -259,8 +259,6 @@ namespace SharpSL.BackendRenderers
 
 			var mat = Matrix4x4.CreateScale(width, height, 1) * Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoMatrix;
 
-			//MainEditorView.editorBackendRenderer.LoadMatrix(ref mat);
-			//MainWindow.backendRenderer.Allocate(ref texture2d.bitmap[0], texture2d.width, texture2d.height, texture2d.format);
 			ref var mesh = ref Pipeline.Get<Mesh>().GetAsset("dynamic_square");
 			if (source.Left > 0 || source.Right > 0 || source.Top > 0 || source.Bottom > 0)
 			{
@@ -281,9 +279,7 @@ namespace SharpSL.BackendRenderers
 			texturedSquareMaterial.BindProperty("tex", texture2d);
 			texturedSquareMaterial.BindProperty("tint", col);
 			texturedSquareMaterial.SendData();
-			//MainEditorView.editorBackendRenderer.DrawSlicedQuad(0, 0, width, height, (float)source.Left / texture2d.width, (float)source.Right / texture2d.width, (float)source.Top / texture2d.height, (float)source.Bottom / texture2d.height, ref col.r);
-
-		}
+			}
 
 		public void StartBatch()//OnPreRender
 		{

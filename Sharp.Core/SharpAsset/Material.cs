@@ -264,7 +264,7 @@ namespace SharpAsset
 				MainWindow.backendRenderer.Use(Shader.Program);
 				lastShaderUsed = Shader.Program;
 			}
-			var idLight = 0;
+			/*var idLight = 0;
 			if (Shader.uniformArray.ContainsKey("ambient"))
 			{
 				MainWindow.backendRenderer.SendUniform1(Shader.uniformArray["ambient"], ref Unsafe.As<float, byte>(ref Light.ambientCoefficient));
@@ -276,7 +276,7 @@ namespace SharpAsset
 					//GL.Uniform1(mat.Shader.uniformArray[UniformType.Float]["lights[" + idLight + "].angle"], light.angle);
 					idLight++;
 				}
-			}
+			}*/
 			foreach (var (key, value) in localParams)
 			{
 				SendToGPU(key, value);

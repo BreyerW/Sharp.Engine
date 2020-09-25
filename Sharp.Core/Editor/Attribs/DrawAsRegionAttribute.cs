@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sharp.Editor.Attribs
 {
-    public class /*swatch*/RegionAttribute : CustomPropertyDrawerAttribute
-    {
-    }
+	public class /*swatch*/RegionAttribute : Attribute
+	{
+	}
 }

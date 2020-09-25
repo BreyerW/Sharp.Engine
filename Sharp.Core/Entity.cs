@@ -99,7 +99,7 @@ namespace Sharp
 		public Quaternion ToQuaterion(Vector3 angles)
 		{
 			// Assuming the angles are in radians.
-			angles *= NumericsExtensions.Pi / 180f;
+			angles *= NumericsExtensions.Deg2Rad;
 
 			return Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z));
 		}
@@ -108,7 +108,7 @@ namespace Sharp
 		{
 			//assert(isRotationMatrix(R));
 			mat = Matrix4x4.Transpose(mat);
-			float sy = (float)Math.Sqrt(mat.M11 * mat.M11 + mat.M21 * mat.M21);
+			float sy = (float)Math.Sqrt(mat.M32 * mat.M32 + mat.M33 * mat.M33);
 
 			bool singular = sy < 1e-6; // If
 

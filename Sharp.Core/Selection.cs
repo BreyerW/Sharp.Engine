@@ -334,7 +334,7 @@ namespace Sharp
 
 			while (reader.TokenType is not JsonToken.StartArray) reader.Read();
 			reader.Read();
-			if (refId != null)
+			if (refId is not null)
 			{
 				IList tmp = new List<object>();
 				while (true)
@@ -362,12 +362,14 @@ namespace Sharp
 				else
 					existingValue = Activator.CreateInstance(objectType, tmp.Count) as IList;
 
+				serializer.ReferenceResolver.AddReference(serializer, refId, existingValue);
+
 				foreach (var i in ..tmp.Count)
 					if (reference is not null && !objectType.IsArray)
 						existingValue.Add(tmp[i]);
 					else
 						existingValue[i] = tmp[i];
-				serializer.ReferenceResolver.AddReference(serializer, refId, existingValue);
+
 				return existingValue;
 			}
 

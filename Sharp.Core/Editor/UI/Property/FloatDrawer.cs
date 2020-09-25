@@ -14,7 +14,7 @@ namespace Sharp.Core.Editor.UI.Property
 		public FloatDrawer(MemberInfo memInfo) : base(memInfo)
 		{
 
-			fl = new FloatField(() => ref Value);
+			fl = new FloatField(() => Value, (x) => Value = x);
 			Childs.Add(fl);
 		}
 	}

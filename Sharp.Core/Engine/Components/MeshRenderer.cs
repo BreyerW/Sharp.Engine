@@ -20,10 +20,10 @@ namespace Sharp
 		{
 			material.TryGetProperty("mesh", out Mesh Mesh);
 			material.BindProperty("model", Parent.transform.ModelMatrix);
-			if (Camera.main.frustum.Intersect(Mesh.bounds, Parent.transform.ModelMatrix) == 0)
+			//if (Camera.main.frustum.Intersect(Mesh.bounds, Parent.transform.ModelMatrix) == 0)
 			{
 				//Console.WriteLine("cull");
-				return;
+			//	return;
 			}
 			//Console.WriteLine ("no-cull ");
 

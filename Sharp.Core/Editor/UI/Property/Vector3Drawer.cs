@@ -21,7 +21,7 @@ namespace Sharp.Editor.UI.Property
 			layout.AutoSize = AutoSize.HorizontalVertical;
 			//AutoSize = AutoSize.HorizontalVertical;
 			//layout.Scissor = false;
-			posX = new FloatField(() => ref Value.X);//SerializedObject[nameof(Vector3.X)]
+			posX = new FloatField(() =>Value.X,(x)=>Value.X=x);//SerializedObject[nameof(Vector3.X)]
 			posX.precision = Application.roundingPrecision;
 			posX.TextChanged += Pos_TextChanged;
 			var tmpLabel = new Label();
@@ -32,7 +32,7 @@ namespace Sharp.Editor.UI.Property
 			layout.Controls.Add(tmpLabel);
 			layout.Controls.Add(posX);
 
-			posY = new FloatField(() => ref Value.Y);//SerializedObject[nameof(Vector3.Y)]
+			posY = new FloatField(() => Value.Y, (y) => Value.Y = y);//SerializedObject[nameof(Vector3.Y)]
 			posY.precision = Application.roundingPrecision;
 			posY.TextChanged += Pos_TextChanged;
 			tmpLabel = new Label();
@@ -43,7 +43,7 @@ namespace Sharp.Editor.UI.Property
 			layout.Controls.Add(tmpLabel);
 			layout.Controls.Add(posY);
 
-			posZ = new FloatField(() => ref Value.Z);//SerializedObject[nameof(Vector3.Z)]
+			posZ = new FloatField(() => Value.Z, (z) => Value.Z = z);//SerializedObject[nameof(Vector3.Z)]
 			posZ.precision = Application.roundingPrecision;
 			posZ.TextChanged += Pos_TextChanged;
 			tmpLabel = new Label();

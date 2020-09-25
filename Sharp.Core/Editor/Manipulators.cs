@@ -59,7 +59,7 @@ namespace Sharp.Editor
 			var mat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans);
 
 			var rotationX = Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, NumericsExtensions.Deg2Rad * 90);
-			var rotationY = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, -NumericsExtensions.Deg2Rad * 90);
+			var rotationY = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, NumericsExtensions.Deg2Rad * 90);
 			var rotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, NumericsExtensions.Deg2Rad * 90);
 
 
@@ -68,7 +68,6 @@ namespace Sharp.Editor
 			DrawHelper.DrawTranslationGizmo(scaleMat * rotationX * mat, scaleMat * rotationY * mat, scaleMat * rotationZ * mat, xColor, yColor, zColor);
 			if (rotVectSource.HasValue)
 			{
-				var cross = Vector3.Cross(startAxis, currentAngle).Normalize();
 				var fullAngle = NumericsExtensions.CalculateAngle(startAxis, currentAngle);
 				CreatePrimitiveMesh.numVertices = halfCircleSegments;
 				CreatePrimitiveMesh.totalAngleDeg = fullAngle * NumericsExtensions.Rad2Deg;
@@ -78,16 +77,66 @@ namespace Sharp.Editor
 				origDisc.LoadVertices(disc.verts);
 				origDisc.LoadIndices(disc.Indices);
 
-				Matrix4x4.Decompose(startMat, out _, out var r, out _);
-				var startRot = Matrix4x4.CreateFromQuaternion(Quaternion.Inverse(r));
-				var sMat = startRot * startMat;
+				var sMat = Matrix4x4.CreateTranslation(trans);
 				discMaterial.BindProperty("model", scaleMat * sMat);
 				discMaterial.BindProperty("color", fillColor);
 
 				discMaterial.SendData();
+				/*var (startRot, up) = selectedAxisId switch
+				{
+					1 or 4 or 7 => (rotationX, Vector3.UnitX),
+					2 or 5 or 8 => (rotationZ, Vector3.UnitY),
+					_ => (rotationY, Vector3.UnitZ)
+				};
+				var realNormal = Vector3.TransformNormal(Vector3.UnitX, startRot * startMat).Normalized();
+				var sign = MathF.Sign(Vector3.Dot(realNormal, Vector3.UnitZ.Transformed(Camera.main.ViewMatrix).Normalized()));
+				if (sign is 0) sign = 1;
+				var rotToAxis = Matrix4x4.CreateFromQuaternion(RotationFromTo(Vector3.UnitY, sign* realNormal));
+				//var extraAngle = NumericsExtensions.CalculateAngle(Vector3.TransformNormal(Vector3.UnitY, startRot * startMat).Normalized(), startAxis.Normalized());
+				var extraRot = Matrix4x4.CreateFromQuaternion(RotationFromTo(Vector3.TransformNormal(Vector3.UnitY, startRot * startMat).Normalized(), startAxis.Normalized()));
+				var sMat =  rotToAxis *extraRot * Matrix4x4.CreateTranslation(trans);
+				var angle = AngleBetween(startAxis.Normalized(), currentAngle.Normalized(), Vector3.UnitY.Transformed(scaleMat * sMat).Normalized()) * NumericsExtensions.Rad2Deg;
+				if (angle < 0)
+					discMaterial.BindProperty("flipU", 0);
+				else
+					discMaterial.BindProperty("flipU", 1);
+				discMaterial.BindProperty("model", scaleMat * sMat);
+				discMaterial.BindProperty("progress", angle / 360f);
+				OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Blend);
+				discMaterial.SendData();
+				OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.Blend);*/
 			}
 		}
-
+		private static Quaternion RotationFromTo(Vector3 source, Vector3 destination)
+		{
+			Quaternion quat;
+			Vector3 tmpvec3;
+			var dot = Vector3.Dot(source, destination);
+			if (dot < -0.999999f)
+			{
+				tmpvec3 = Vector3.Cross(Vector3.UnitX, source);
+				if (tmpvec3.Length() < 0.000001f)
+					tmpvec3 = Vector3.Cross(Vector3.UnitY, source);
+				tmpvec3 = Vector3.Normalize(tmpvec3);
+				quat = Quaternion.CreateFromAxisAngle(tmpvec3, MathF.PI);
+			}
+			else if (dot > 0.999999f)
+			{
+				quat.X = 0;
+				quat.Y = 0;
+				quat.Z = 0;
+				quat.W = 1f;
+			}
+			else
+			{
+				tmpvec3 = Vector3.Cross(source, destination);
+				quat.X = tmpvec3.X;
+				quat.Y = tmpvec3.Y;
+				quat.Z = tmpvec3.Z;
+				quat.W = 1f + dot;
+			}
+			return Quaternion.Normalize(quat);
+		}
 		public static void Reset()
 		{
 			//if (newCommand != null)
@@ -170,8 +219,6 @@ namespace Sharp.Editor
 		public static void HandleRotation(Entity entity, ref Ray ray)//bugged when rescaled
 		{
 			var v = GetAxis();
-			var unchangedV = v;
-			//var rot = Quaternion.CreateFromYawPitchRoll(entity.rotation.Y * NumericsExtensions.Deg2Rad, entity.rotation.X * NumericsExtensions.Deg2Rad, entity.rotation.Z * NumericsExtensions.Deg2Rad);
 			Matrix4x4.Decompose(entity.transform.ModelMatrix, out _, out var rot, out _);
 			if (!SceneView.globalMode)
 			{
@@ -191,22 +238,16 @@ namespace Sharp.Editor
 				startAxis = origin.Normalized();
 				//UI.Property.PropertyDrawer.StopCommandCommits = true;
 			}
-			/* var currentVect = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
-             var cross = Vector3.Cross(rotVectSource.Value, currentVect);
-             var dot = Vector3.Dot(rotVectSource.Value, currentVect);
-             var quat = new Quaternion(cross, 1 + dot).Normalized();
-             entity.Rotation = Entity.rotationMatrixToEulerAngles(Matrix4.CreateFromQuaternion(quat)) * (180.0f / NumericsExtensions.Pi);*///entity.ModelMatrix.ExtractRotation().Normalized() *
 			angle = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
-			//entity.ModelMatrix.Inverted().ExtractRotation();
-			var rotAxis = new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z).Transform(Quaternion.Inverse(rot)).Normalize();
-			var deltaRot = Matrix4x4.CreateFromAxisAngle(rotAxis, angle - rotAngleOrigin.Value);
-			entity.transform.Rotation = Entity.rotationMatrixToEulerAngles(deltaRot * entity.transform.ModelMatrix) * NumericsExtensions.Rad2Deg;
+			//Console.WriteLine("angle: " + angle * NumericsExtensions.Rad2Deg);
+			var rotAxis = (new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z).Transform(Quaternion.Inverse(rot))).Normalize();
 			currentAngle = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
+			var deltaRot = Quaternion.Normalize(Quaternion.CreateFromAxisAngle(rotAxis, angle - rotAngleOrigin.Value));
+			entity.transform.ModelMatrix = Matrix4x4.CreateFromQuaternion(deltaRot) * entity.transform.ModelMatrix;
+			entity.transform.Rotation += deltaRot.ToEulerAngles() * NumericsExtensions.Rad2Deg;
 			rotAngleOrigin = angle;
-			//rotvectsource = constrain((ray.origin + ray.direction * len - entity.Position), v).Normalized();
-			//startRot = quat * startRot;
-		}
 
+		}
 		public static void HandleScale(Entity entity, ref Ray ray)
 		{
 			var v = GetAxis();
@@ -280,13 +321,21 @@ namespace Sharp.Editor
             return angle *= (Vector3.Dot(localPos, perpendicularVect) < 0.0f) ? 1.0f : -1.0f;
         }*/
 
-		private static double AngleBetween(Vector3 vector1, Vector3 vector2)
+		private static float AngleBetween(Vector3 vector1, Vector3 vector2, Vector3 originNormal)
 		{
-			var angle = Math.Atan2(vector1.Y, vector1.X) - Math.Atan2(vector2.Y, vector2.X);// * (180 / Math.PI);
+			//var angle = MathF.Acos(Vector3.Dot(vector1.Normalize(), vector2.Normalize()));
+			var cross = Vector3.Cross(vector1, vector2);
+			var dot = Vector3.Dot(vector1, vector2);
+			var angle = MathF.Atan2(cross.Length(), dot);
+			if (Vector3.Dot(originNormal, cross) < 0)
+			{ // Or > 0
+				angle = -angle;
+			}
+			/*var angle = MathF.Atan2(vector1.Y, vector1.X) - MathF.Atan2(vector2.Y, vector2.X);// * (180 / Math.PI);
 			if (angle < 0)
 			{
 				//angle = angle + NumericsExtensions.TwoPi;
-			}
+			}*/
 			return angle;
 		}
 

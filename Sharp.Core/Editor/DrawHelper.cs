@@ -61,7 +61,7 @@ namespace Sharp.Editor
 		}
 		public static void DrawGrid(Vector3 pos)
 		{
-			var scale = MathF.Abs(Camera.main.Parent.transform.position.Y);
+			var scale = MathF.Abs(Camera.main.Parent.transform.Position.Y);
 			gridSize = Camera.main.ZFar * (scale / 100f + 1);
 			var gridMat = Matrix4x4.CreateTranslation(0, 0, 0);
 			GL.Enable(EnableCap.Blend);

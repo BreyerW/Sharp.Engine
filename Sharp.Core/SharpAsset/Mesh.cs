@@ -138,6 +138,8 @@ namespace SharpAsset
 		{
 			var eObject = new Entity();
 			eObject.transform.Position = worldPos;
+			var angles = eObject.transform.Rotation * NumericsExtensions.Deg2Rad;
+			eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y,angles.X,angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 			var renderer = eObject.AddComponent<MeshRenderer>();
 			var shader = (Shader)Pipeline.Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TextureOnlyShader.shader");
 			renderer.material = new Material();
@@ -146,7 +148,7 @@ namespace SharpAsset
 			//zamienic na ref loading pipeliny
 			renderer.material.BindProperty("mesh", this);
 			renderer.material.BindProperty("MyTexture", texture);
-			if (context != null) //make as child of context?
+			if (context is not null) //make as child of context?
 			{
 			}
 

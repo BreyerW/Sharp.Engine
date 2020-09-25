@@ -55,21 +55,19 @@ namespace Sharp
 					Material.BindGlobalProperty("camOrtho", main.orthoMatrix);
 			}
 		}
-
-		private Matrix4x4 modelViewMatrix;
 		public Matrix4x4 ViewMatrix
 		{
 			get
 			{
-				return modelViewMatrix;
+				return Parent.transform.ModelMatrix;
 			}
 			private set
 			{
-				modelViewMatrix = value;
+				Parent.transform.ModelMatrix = value;
 				if (main != null)
 				{
-					Material.BindGlobalProperty("camView", main.modelViewMatrix);
-					Material.BindGlobalProperty("camWorldView", main.modelViewMatrix.Inverted());
+					Material.BindGlobalProperty("camView", main.Parent.transform.ModelMatrix);
+					Material.BindGlobalProperty("camWorldView", main.Parent.transform.ModelMatrix.Inverted());
 				}
 			}
 		}
@@ -82,7 +80,7 @@ namespace Sharp
 		{
 		}
 
-		public Camera()
+		public Camera() : base()
 		{
 			Speed = 50.0f;
 			//TargetPosition =  new Vector3();
@@ -169,11 +167,11 @@ namespace Sharp
 			vec.Z = time;
 			vec.W = 1.0f;
 
-			var viewInv = modelViewMatrix.Inverted();
+			var viewInv = ViewMatrix.Inverted();
 			var projInv = main.projectionMatrix.Inverted();
 			vec.Transform(projInv).Transform(viewInv);
 
-			if (vec.W is > 0.000001f or < -0.000001f)
+			if (vec.W > 0.000001f || vec.W < -0.000001f)
 			{
 				vec.X /= vec.W;
 				vec.Y /= vec.W;
@@ -185,7 +183,7 @@ namespace Sharp
 
 		public Vector3 WorldToScreen(Vector3 pos, int width, int height)
 		{
-			var pos4 = Vector4.Transform(new Vector4(pos, 1), modelViewMatrix * projectionMatrix);
+			var pos4 = Vector4.Transform(new Vector4(pos, 1), ViewMatrix * projectionMatrix);
 
 			var NDCSpace = new Vector3(pos4.X, pos4.Y, pos4.Z) / pos4.W;
 			return new Vector3(NDCSpace.X * (width / (2f)), NDCSpace.Y * (height / (2f)), NDCSpace.Z);//look at divide part
@@ -270,10 +268,11 @@ namespace Sharp
 			newRot.X += (y * MouseXSensitivity * time);
 			newRot.Y += (x * MouseYSensitivity * time);
 			Parent.transform.Rotation = newRot;
+			//Parent.transform.Rotation += Quaternion.CreateFromAxisAngle(Vector3.UnitY, (x * MouseYSensitivity * time) * NumericsExtensions.Deg2Rad) + Quaternion.CreateFromAxisAngle(Vector3.UnitX, (y * MouseXSensitivity * time) * NumericsExtensions.Deg2Rad);
 			SetModelviewMatrix();
 			//Console.WriteLine("Rotation={0}", MouseRotation);
 			//ClampMouseValues();
-			frustum?.Update(main.modelViewMatrix * main.projectionMatrix);
+			frustum?.Update(main.ViewMatrix * main.projectionMatrix);
 			//ResetMouse();
 		}
 
@@ -283,35 +282,20 @@ namespace Sharp
 		/// <param name="time">
 		/// A <see cref="System.Double"/> containing the time since the last update
 		/// </param>
-		public void Move(float x, float y, float z, float time = 0.2f)
+		public void Move(Vector3 axis, float distance, float time = 0.2f)
 		{
-			Movement.X = 0;
-			Movement.Y = 0;
-			Movement.Z = 0;
-			if (x != 0)
-			{
-				Movement.X = x * time;
-			}
-			else if (y != 0)
-			{
-				Movement.Y = y * time;
-			}
-			else if (z != 0)
-			{
-				Movement.Z = z * time;
-			}
 			if (CameraMode == CamMode.FirstPerson)
 			{
-				Parent.transform.Position += Vector3.Transform(Movement, Quaternion.Inverse(Parent.ToQuaterion(Parent.transform.Rotation)));//Invert?
+				Parent.transform.Position += Vector3.Transform(axis, Quaternion.Inverse(Parent.ToQuaterion(Parent.transform.Rotation)));//Invert?
 				Parent.transform.Position = new Vector3(Parent.transform.Position.X, 5, Parent.transform.Position.Z);
 			}
 			else
-				Parent.transform.Position += Vector3.Transform(Movement, Quaternion.Inverse(Parent.ToQuaterion(Parent.transform.Rotation)));
+				Parent.transform.Position += distance * axis.Transform(Quaternion.Inverse(Parent.ToQuaterion(Parent.transform.Rotation)));
 
 			SetModelviewMatrix();
 			SetProjectionMatrix();
 
-			frustum.Update(Camera.main.modelViewMatrix * Camera.main.projectionMatrix);
+			frustum.Update(Camera.main.ViewMatrix * Camera.main.projectionMatrix);
 			moved = true;
 		}
 

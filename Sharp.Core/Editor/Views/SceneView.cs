@@ -42,7 +42,9 @@ namespace Sharp.Editor.Views
 		private static void LoadScene()
 		{
 			var e = new Entity();
-			e.transform.position = new Vector3(0f, 10f, 0f);
+			e.transform.Position = new Vector3(0f, 10f, 0f);
+			var angles = e.transform.Rotation * NumericsExtensions.Deg2Rad;
+			e.transform.ModelMatrix = Matrix4x4.CreateScale(e.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(e.transform.Position);
 			var cam = e.AddComponent<Camera>();
 			Camera.main = cam;
 			cam.SetModelviewMatrix();
@@ -143,17 +145,17 @@ namespace Sharp.Editor.Views
 			}
 
 			if (args.Key == Keys.Q)
-				Camera.main.Move(0f, 1f, 0f);
+				Camera.main.Move(Vector3.UnitY, 1f, 0f);
 			if (args.Key == Keys.E)
-				Camera.main.Move(0f, -1f, 0f);
+				Camera.main.Move(Vector3.UnitY, -1f, 0f);
 			if (args.Key == Keys.A)
-				Camera.main.Move(-1f, 0f, 0f);
+				Camera.main.Move(Vector3.UnitX, -1f, 0f);
 			if (args.Key == Keys.D)
-				Camera.main.Move(1f, 0f, 0f);
+				Camera.main.Move(Vector3.UnitX, 1f, 0f);
 			if (args.Key == Keys.W)
-				Camera.main.Move(0f, 0f, -1f);
+				Camera.main.Move(Vector3.UnitZ, -1f, 0f);
 			if (args.Key == Keys.S)
-				Camera.main.Move(0f, 0f, 1f);
+				Camera.main.Move(Vector3.UnitZ, 1f, 0f);
 		}
 
 		//ErrorOutput errorOutput = new ErrorOutput();
@@ -178,6 +180,10 @@ namespace Sharp.Editor.Views
 			{
 				mouseLocked = false;
 				locPos = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
+				//if (Manipulators.selectedAxisId < 7)
+				{
+					//	Manipulators.HandleRotation(entity, ref ray);
+				}
 			}
 		}
 
@@ -299,7 +305,6 @@ namespace Sharp.Editor.Views
 				{
 					Manipulators.DrawCombinedGizmos(entity, new Vector2(Size.x, Size.y), xColor, yColor, zColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
 				}
-				//MainWindow.backendRenderer.FinishCommands();
 				if (locPos.HasValue)
 				{
 					var pixel = MainWindow.backendRenderer.ReadPixels(Squid.UI.MousePosition.x, Camera.main.height - Squid.UI.MousePosition.y - 1 /*locPos.Value.y - 64*/, 1, 1);

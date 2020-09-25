@@ -1,25 +1,6 @@
-﻿using BepuUtilities.Memory;
-using FastMember;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using Sharp.Core.Editor;
-using Sharp.Editor.Attribs;
-using Sharp.Editor.Views;
-using Sharp.Engine.Components;
-using SharpAsset;
-using SharpAsset.Pipeline;
-using Squid;
+﻿using Squid;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Numerics;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Extensions;
 
 namespace Sharp.Editor.UI.Property
@@ -31,7 +12,7 @@ namespace Sharp.Editor.UI.Property
 			set;
 			get;
 		}
-
+		public virtual bool CanApply(MemberInfo memInfo) => true;//var attribs = propertyInfo.GetCustomAttributes<CustomPropertyDrawerAttribute>(true);
 	}
 
 	/// <summary>
@@ -40,13 +21,9 @@ namespace Sharp.Editor.UI.Property
 	public abstract class PropertyDrawer<T> : PropertyDrawer
 	{
 		public MemberInfo memberInfo;
-		public CustomPropertyDrawerAttribute[] attributes;
 		private Component target;
 		protected Label label = new Label();
 		protected Type propertyType;
-		//private static Microsoft.IO.RecyclableMemoryStreamManager memStream = new Microsoft.IO.RecyclableMemoryStreamManager();
-		//private RefFunc<object, T> getter;
-		//private RefAction<object, T> setter;
 		private IntPtr offset;
 		public override Component Target
 		{

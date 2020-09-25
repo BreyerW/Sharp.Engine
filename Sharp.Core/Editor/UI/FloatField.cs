@@ -5,10 +5,11 @@ using Squid;
 
 namespace Sharp.Editor.UI
 {
-	public delegate ref TResult RefFunc<TResult>();
+	//public delegate ref TResult RefFunc<TResult>();
 	public class FloatField : TextField
 	{
-		private RefFunc<float> getter;
+		private Func<float> getter;
+		private Action<float> setter;
 		public int precision = 9;
 		public float Value
 		{
@@ -21,9 +22,10 @@ namespace Sharp.Editor.UI
 				return float.TryParse(_text.AsSpan(), NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out var x) ? x : 0;
 			}
 		}
-		public FloatField(RefFunc<float> getter)
+		public FloatField(Func<float> getter, Action<float> setter)
 		{
 			this.getter = getter;
+			this.setter = setter;
 			//Value = getter();
 			Mode = TextBoxMode.Numeric;
 			IsPassword = false;
@@ -32,7 +34,7 @@ namespace Sharp.Editor.UI
 
 		private void FloatField_TextChanged(Control sender)
 		{
-			getter() = Value;
+			setter(Value);
 		}
 
 		protected override void DrawText(Style style, float opacity, int charsToDraw)

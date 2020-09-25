@@ -7,7 +7,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
+using Microsoft.Collections.Extensions;
+using Sharp.Core.Editor.Attribs;
 
 namespace Sharp.Editor.Views
 {
@@ -19,27 +20,49 @@ namespace Sharp.Editor.Views
 		//private ListBox tagStrip = new ListBox();
 		private DropDownButton tagStrip = new DropDownButton();
 		private Dictionary<Entity, TreeView> idToViewMapping = new Dictionary<Entity, TreeView>();
-		internal static Dictionary<Type, Type> mappedPropertyDrawers = new Dictionary<Type, Type>();
+		internal static Dictionary<Type, SortedSet<Type>> mappedPropertyDrawers = new Dictionary<Type, SortedSet<Type>>();
+		internal static Dictionary<Type, SortedSet<Type>> mappedComponentDrawers = new Dictionary<Type, SortedSet<Type>>();
 
 		static InspectorView()
 		{
-			//var primitiveResult = Assembly.GetExecutingAssembly()
-			//   .GetTypes()
-			// .Where(t => t.BaseType != null && t.BaseType.IsGenericType &&
-			//      t.BaseType.GetGenericTypeDefinition() == typeof(Gwen.Control.Property.PropertyDrawer<>));//current solution does not support color case
-
 			var result = Assembly.GetExecutingAssembly().GetTypes()
 			 .Where(t => t.IsSubclassOfOpenGeneric(typeof(PropertyDrawer<>)));
 
 			Type[] genericArgs;
+			var priComparer = new PriorityComparer();
+			foreach (var type in result)
+			{
+				genericArgs = type.BaseType.GetGenericArguments();
+				if (!mappedPropertyDrawers.TryGetValue(genericArgs[0], out var set))
+					mappedPropertyDrawers.Add(genericArgs[0], new SortedSet<Type>(priComparer) { type });
+				else
+					set.Add(type);
+			}
+			result = Assembly.GetExecutingAssembly().GetTypes()
+			 .Where(t => t.IsSubclassOfOpenGeneric(typeof(ComponentDrawer<>)));
+
 
 			foreach (var type in result)
 			{
 				genericArgs = type.BaseType.GetGenericArguments();
-				mappedPropertyDrawers.Add(genericArgs[0], type);
+				if (!mappedComponentDrawers.TryGetValue(genericArgs[0], out var set))
+					mappedComponentDrawers.Add(genericArgs[0], new SortedSet<Type>(priComparer) { type });
+				else
+					set.Add(type);
 			}
 		}
-
+		private class PriorityComparer : IComparer<Type>
+		{
+			public int Compare(Type x, Type y)
+			{
+				var xPri = x.GetCustomAttribute<PriorityAttribute>();
+				var yPri = y.GetCustomAttribute<PriorityAttribute>();
+				if (xPri is null && yPri is null) return 0;
+				if (xPri is null && yPri is not null) return -1;
+				if (xPri is not null && yPri is null) return 1;
+				return xPri.priority < yPri.priority ? 1 : -1;
+			}
+		}
 		public InspectorView(uint attachToWindow) : base(attachToWindow)
 		{
 			/*tagStrip.Size = new Point(0, 25);
@@ -100,7 +123,7 @@ namespace Sharp.Editor.Views
 						idToViewMapping.Remove(ent);
 					}
 					else if (removal is Component component)
-						idToViewMapping[component.Parent].Nodes.Remove(idToViewMapping[component.Parent].Nodes.Find((node) => ((node.Childs[2] as FlowLayoutFrame).Controls[0] as PropertyDrawer).Target == component));
+						idToViewMapping[component.Parent].Nodes.Remove(idToViewMapping[component.Parent].Nodes.Find((node) => node.UserData == component));
 			}
 		}
 		private void RegisterEngineObject(IEngineObject obj)
@@ -125,16 +148,25 @@ namespace Sharp.Editor.Views
 		}
 		private ComponentNode RenderComponent(Component component)
 		{
-			var node = new ComponentNode();
-			node.Label.Text = component.GetType().Name;
-			node.Name = component.GetType().Name;
-			node.Label.TextAlign = Alignment.MiddleLeft;
+			ComponentDrawer draw = null;                                                                 // if (attrib is null)
 
-			var inspector = new DefaultComponentDrawer();
-			inspector.properties = node;
-			inspector.getTarget = component;
-			inspector.OnInitializeGUI();
-			return node;
+			if (mappedComponentDrawers.TryGetValue(component.GetType(), out var set) || mappedComponentDrawers.TryGetValue(typeof(Component), out set))
+			{
+				foreach (var drawer in set)
+				{
+					draw = Activator.CreateInstance(drawer) as ComponentDrawer;
+					if (draw.CanApply(component.GetType()))
+					{
+						draw.Target = component;
+						draw.OnInitializeGUI();
+						break;
+					}
+				}
+			}
+			draw.Label.Text = component.GetType().Name;
+			draw.Name = component.GetType().Name;
+			draw.Label.TextAlign = Alignment.MiddleLeft;
+			return draw;
 		}
 		/* tagStrip = new MenuStrip(panel);
              ptree = new PropertyTree(panel);
@@ -156,74 +188,29 @@ namespace Sharp.Editor.Views
 
 		public static PropertyDrawer Add(MemberInfo propertyInfo)
 		{
-			PropertyDrawer prop = null;
-			var attribs = propertyInfo.GetCustomAttributes<CustomPropertyDrawerAttribute>(true);//customattributes when supporting priority/overriding
-																								// if (attrib is null)
+			PropertyDrawer prop = null;                                                                 // if (attrib is null)
+
+			if (mappedPropertyDrawers.TryGetValue(propertyInfo.GetUnderlyingType(), out var set))
 			{
-				if (mappedPropertyDrawers.ContainsKey(propertyInfo.GetUnderlyingType()))
-					prop = Activator.CreateInstance(mappedPropertyDrawers[propertyInfo.GetUnderlyingType()], propertyInfo) as PropertyDrawer;
-				else if (propertyInfo.GetUnderlyingType().GetInterfaces()
-	.Any(i => i == typeof(IList)))//isassignablefrom?
+				foreach (var drawer in set)
 				{
-					prop = new ArrayDrawer(propertyInfo);
+					prop = Activator.CreateInstance(drawer, propertyInfo) as PropertyDrawer;
+					if (prop.CanApply(propertyInfo))
+						break;
 				}
-				else prop = Activator.CreateInstance(typeof(InvisibleSentinel<>).MakeGenericType(propertyInfo.GetUnderlyingType().IsByRef ? propertyInfo.GetUnderlyingType().GetElementType() : propertyInfo.GetUnderlyingType()), propertyInfo) as PropertyDrawer;
 			}
+			else if (propertyInfo.GetUnderlyingType().GetInterfaces()
+.Any(i => i == typeof(IList)))//isassignablefrom?
+			{
+				prop = new ArrayDrawer(propertyInfo);
+			}
+			else return null; //prop = Activator.CreateInstance(typeof(InvisibleSentinel<>).MakeGenericType(propertyInfo.GetUnderlyingType().IsByRef ? propertyInfo.GetUnderlyingType().GetElementType() : propertyInfo.GetUnderlyingType()), propertyInfo) as PropertyDrawer;
+
 			//prop.attributes = attribs.ToArray();
 			prop.AutoSize = AutoSize.Horizontal;
 			return prop;
 		}
 
-		/*public void RenderComponents(Entity entity)
-		{
-			var comps = entity.GetAllComponents();
 
-			foreach (var component in comps)
-			{
-				var prop = ptree.GetControl(component.GetType().Name) as ComponentNode;
-				if (prop is null)
-				{
-					var node = new ComponentNode();
-					node.Label.Text = component.GetType().Name;
-					node.Name = component.GetType().Name;
-					node.Label.TextAlign = Alignment.MiddleLeft;
-					node.referencedComponent = component;
-					ptree.Nodes.Add(node);
-					var inspector = new DefaultComponentDrawer();
-					inspector.properties = node;
-					inspector.getTarget = component;
-					inspector.OnInitializeGUI();
-				}
-				else
-					prop.referencedComponent = component;
-			}
-			List<ComponentNode> toBeRemoved = new List<ComponentNode>();
-			foreach (ComponentNode node in ptree.Nodes)
-				if (node.Name != "Transform" && !comps.Contains(node.referencedComponent as Component)) toBeRemoved.Add(node);
-
-			foreach (var remove in toBeRemoved)
-				ptree.Nodes.Remove(remove);
-		}*/
-
-		/*  private void UpdateInspector() {
-              var prop = ptree.AddOrGet("Transform", out bool exist);
-              if (exist)
-              {
-                  prop.
-              }
-              var comps = entity.GetAllComponents();
-              foreach (var component in comps)
-              {
-                  prop = ptree.AddOrGet(component.GetType().Name, out exist);
-                  if (!exist)
-                  {
-                      Console.WriteLine("component");
-                      var inspector = new DefaultComponentDrawer();
-                      inspector.properties = prop;
-                      inspector.getTarget = component;
-                      inspector.OnInitializeGUI();
-                  }
-              }
-          }*/
 	}
 }
