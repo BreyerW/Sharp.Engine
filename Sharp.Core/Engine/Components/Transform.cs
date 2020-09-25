@@ -40,7 +40,7 @@ namespace Sharp.Engine.Components
 				//Matrix4x4.Decompose(modelMatrix, out _, out _, out var pos);
 				return position;
 			}
-			set
+			internal set
 			{
 				position = value;
 			}
@@ -48,7 +48,7 @@ namespace Sharp.Engine.Components
 		public Vector3 Rotation
 		{
 			get => eulerAngles;
-			set => eulerAngles = value;
+			internal set => eulerAngles = value;
 		}
 		/*[JsonIgnore]
 		public Quaternion Rotation
@@ -75,7 +75,7 @@ namespace Sharp.Engine.Components
 				//Matrix4x4.Decompose(modelMatrix, out var s, out _, out _);
 				return scale;
 			}
-			set
+			internal set
 			{
 				scale = value;
 			}
