@@ -16,6 +16,7 @@ using Microsoft.Collections.Extensions;
 
 namespace Sharp
 {
+	[Guid("316B205A-2313-4317-80A1-B0FF49D865D5")]
 	public abstract class Window//investigate GetWindowData
 	{
 		private static bool quit = false;
@@ -172,9 +173,19 @@ namespace Sharp
 				{
 					ref var tex = ref Pipeline.Get<Texture>().GetAsset(i);
 					MainWindow.backendRenderer.GenerateBuffers(Target.Texture, out tex.TBO);
-					MainWindow.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
-					MainWindow.backendRenderer.Allocate(ref tex.bitmap[0], tex.width, tex.height, tex.format);
 
+					MainWindow.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
+					MainWindow.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
+					if (tex.FBO is -2)
+					{
+						MainWindow.backendRenderer.GenerateBuffers(Target.Frame, out tex.FBO);
+						MainWindow.backendRenderer.BindBuffers(Target.Frame, tex.FBO);
+						
+						MainWindow.backendRenderer.SendRenderTexture(tex.TBO);
+						
+						MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
+						MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
+					}
 				}
 				while (ShaderPipeline.recentlyLoadedAssets.TryDequeue(out var i))
 				{

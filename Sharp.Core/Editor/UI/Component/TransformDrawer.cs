@@ -55,8 +55,28 @@ namespace Sharp.Core.Editor.UI.Component
 		}
 		public override void OnInitializeGUI()
 		{
+			var tmpLabel = new Label();
+			tmpLabel.Text = "Position: ";
+			//tmpLabel.Size = new Point(0, Size.y);
+			tmpLabel.AutoSize = AutoSize.Horizontal;
+			position.Position = new Point(100, position.Position.y);
+			Frame.Controls.Add(tmpLabel);
 			Frame.Controls.Add(position);
+
+			tmpLabel = new Label();
+			tmpLabel.Text = "Rotation: ";
+			//tmpLabel.Size = new Point(0, Size.y);
+			tmpLabel.AutoSize = AutoSize.Horizontal;
+			eulerAngles.Position = new Point(100, eulerAngles.Position.y);
+			Frame.Controls.Add(tmpLabel);
 			Frame.Controls.Add(eulerAngles);
+
+			tmpLabel = new Label();
+			tmpLabel.Text = "Scale: ";
+			//tmpLabel.Size = new Point(0, Size.y/2f);
+			tmpLabel.AutoSize = AutoSize.Horizontal;
+			//scale.Margin = new Margin(scale.Margin.Left + 10, scale.Margin.Top, scale.Margin.Right, scale.Margin.Bottom);
+			Frame.Controls.Add(tmpLabel);
 			Frame.Controls.Add(scale);
 		}
 	}

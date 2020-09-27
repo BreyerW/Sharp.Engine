@@ -36,26 +36,47 @@ namespace Sharp.Core.Editor.UI
 			layout.Position = new Point(0, 0);
 			layout.HSpacing = 0;
 			layout.AutoSize = AutoSize.HorizontalVertical;
+			var tmpLabel = new Label();
+			tmpLabel.Text = "X";
+			tmpLabel.Size = new Point(0, Size.y);
+			tmpLabel.AutoSize = AutoSize.Horizontal;
+
 			xField = new FloatField(() => this.getter().X, (x) =>
 			{
 				var newVector = this.getter();
 				newVector.X = x;
 				this.setter(newVector);
 			});
+			
+			layout.Controls.Add(tmpLabel);
 			layout.Controls.Add(xField);
+			
+			tmpLabel = new Label();
+			tmpLabel.Text = "Y";
+			tmpLabel.Size = new Point(0, Size.y);
+			tmpLabel.AutoSize = AutoSize.Horizontal;
+
 			yField = new FloatField(() => this.getter().Y, (x) =>
 			{
 				var newVector = this.getter();
 				newVector.Y = x;
 				this.setter(newVector);
 			});
+			layout.Controls.Add(tmpLabel);
 			layout.Controls.Add(yField);
+
+			tmpLabel = new Label();
+			tmpLabel.Text = "Z";
+			tmpLabel.Size = new Point(0, Size.y);
+			tmpLabel.AutoSize = AutoSize.Horizontal;
+
 			zField = new FloatField(() => this.getter().Z, (x) =>
 			{
 				var newVector = this.getter();
 				newVector.Z = x;
 				this.setter(newVector);
 			});
+			layout.Controls.Add(tmpLabel);
 			layout.Controls.Add(zField);
 			this.getter = getter;
 			this.setter = setter;

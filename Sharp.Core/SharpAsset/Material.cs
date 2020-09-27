@@ -304,8 +304,8 @@ namespace SharpAsset
 				//mesh.needUpdate = false;
 			}
 			MainWindow.backendRenderer.Draw(mesh.indiceType, mesh.Indices.Length);
-			var tbo = 0;
-			MainWindow.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));//TODO: generalize this
+			//var tbo = 0;
+			//MainWindow.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));//TODO: generalize this
 		}
 
 		private void SendToGPU(string prop, byte[] data)
@@ -320,7 +320,15 @@ namespace SharpAsset
 					case MATRIX4X4: MainWindow.backendRenderer.SendMatrix4(Shader.uniformArray[prop], ref data[1]); break;
 					case TEXTURE:
 						TryGetProperty(prop, out Texture tex);
-						MainWindow.backendRenderer.SendTexture2D(Shader.uniformArray[prop], ref Unsafe.As<int, byte>(ref tex.TBO)/*, Slot*/); break;
+						//if (tex.FBO is > -1)
+						{
+
+							//MainWindow.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
+							//MainWindow.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
+							//MainWindow.backendRenderer.SendRenderTexture(tex.TBO);
+						}
+						MainWindow.backendRenderer.SendTexture2D(Shader.uniformArray[prop], ref Unsafe.As<int, byte>(ref tex.TBO)/*, Slot*/);
+						break;
 					case MATRIX4X4PTR: /*unsafe { MainWindow.backendRenderer.SendMatrix4(Shader.uniformArray[prop], ref Unsafe.AsRef<Matrix4x4>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer()).M11); }*/ break;
 				}
 		}

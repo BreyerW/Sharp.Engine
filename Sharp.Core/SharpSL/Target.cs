@@ -8,6 +8,6 @@
 		FragmentShader,
 		Mesh,
 		Indices,
-
+		Frame,
 	}
 }

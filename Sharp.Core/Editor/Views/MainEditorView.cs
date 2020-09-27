@@ -151,7 +151,7 @@ namespace Sharp.Editor.Views
 		{
 			currentMainView = this;
 			MainWindow.backendRenderer.Viewport(0, 0, desktop.Size.x, desktop.Size.y);
-			MainWindow.backendRenderer.Clip(0, 0, desktop.Size.x, desktop.Size.y);
+			//MainWindow.backendRenderer.Clip(0, 0, desktop.Size.x, desktop.Size.y);
 			MainWindow.backendRenderer.ClearBuffer();
 			MainWindow.backendRenderer.ClearColor();
 			//desktop.NoEvents = Window.UnderMouseWindowId == attachedToWindow;
@@ -167,11 +167,6 @@ namespace Sharp.Editor.Views
 		{
 			camera.SetOrthoMatrix(width, height);
 			desktop.Size = new Point(width, height);
-			//desktop.ResizeTo(new Point(width, height), AnchorStyles.Right | AnchorStyles.Bottom);
-			MainWindow.backendRenderer.Viewport(0, 0, desktop.Size.x, desktop.Size.y);
-			MainWindow.backendRenderer.Clip(0, 0, desktop.Size.x, desktop.Size.y);
-			MainWindow.backendRenderer.ClearBuffer();
-			MainWindow.backendRenderer.ClearColor();
 		}
 	}
 }

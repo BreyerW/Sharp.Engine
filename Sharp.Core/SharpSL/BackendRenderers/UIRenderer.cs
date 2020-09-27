@@ -238,6 +238,7 @@ namespace SharpSL.BackendRenderers
 					{
 						FullPath = c + "_" + f.Name + ".generated",
 						TBO = -1,
+						FBO = -1,
 						format = TextureFormat.A,
 						bitmap = MemoryMarshal.AsBytes(img.GetPixelSpan()).ToArray(),
 						width = img.Width,
@@ -279,7 +280,7 @@ namespace SharpSL.BackendRenderers
 			texturedSquareMaterial.BindProperty("tex", texture2d);
 			texturedSquareMaterial.BindProperty("tint", col);
 			texturedSquareMaterial.SendData();
-			}
+		}
 
 		public void StartBatch()//OnPreRender
 		{
@@ -293,7 +294,7 @@ namespace SharpSL.BackendRenderers
 		public void EndBatch(bool final)//OnPostRender
 		{
 			OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.DepthTest);
-			OpenTK.Graphics.OpenGL.GL.BindTexture(OpenTK.Graphics.OpenGL.TextureTarget.Texture2D, 0);
+			MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
 		}
 
 		public int GetFont(string name)

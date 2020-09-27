@@ -21,9 +21,8 @@ namespace Sharp.Editor.UI.Property
 			layout.AutoSize = AutoSize.HorizontalVertical;
 			//AutoSize = AutoSize.HorizontalVertical;
 			//layout.Scissor = false;
-			posX = new FloatField(() =>Value.X,(x)=>Value.X=x);//SerializedObject[nameof(Vector3.X)]
+			posX = new FloatField(() => Value.X, (x) => Value.X = x);//SerializedObject[nameof(Vector3.X)]
 			posX.precision = Application.roundingPrecision;
-			posX.TextChanged += Pos_TextChanged;
 			var tmpLabel = new Label();
 			tmpLabel.Text = "X";
 			tmpLabel.Size = new Point(0, Size.y);
@@ -34,7 +33,6 @@ namespace Sharp.Editor.UI.Property
 
 			posY = new FloatField(() => Value.Y, (y) => Value.Y = y);//SerializedObject[nameof(Vector3.Y)]
 			posY.precision = Application.roundingPrecision;
-			posY.TextChanged += Pos_TextChanged;
 			tmpLabel = new Label();
 			tmpLabel.Text = "Y";
 			tmpLabel.Size = new Point(0, Size.y);
@@ -45,7 +43,6 @@ namespace Sharp.Editor.UI.Property
 
 			posZ = new FloatField(() => Value.Z, (z) => Value.Z = z);//SerializedObject[nameof(Vector3.Z)]
 			posZ.precision = Application.roundingPrecision;
-			posZ.TextChanged += Pos_TextChanged;
 			tmpLabel = new Label();
 			tmpLabel.Text = "Z";
 			tmpLabel.Size = new Point(0, Size.y);
@@ -55,12 +52,6 @@ namespace Sharp.Editor.UI.Property
 			layout.Controls.Add(posZ);
 
 			Childs.Add(layout);
-		}
-
-		private void Pos_TextChanged(Control sender)
-		{
-			if (Target is Transform t)
-				t.SetModelMatrix();
 		}
 	}
 }

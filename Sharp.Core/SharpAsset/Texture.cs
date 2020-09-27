@@ -16,11 +16,11 @@ namespace SharpAsset
 	{
 		//internal bool allocated;
 		internal int TBO;
+		internal int FBO;
 		public int width;
 		public int height;
 		public TextureFormat format;
 		internal byte[] bitmap;
-
 
 		public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
 		public string Extension { get { return Path.GetExtension(FullPath); } set { } }

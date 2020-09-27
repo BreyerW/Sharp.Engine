@@ -243,7 +243,7 @@ namespace Sharp.Editor
 			var rotAxis = (new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z).Transform(Quaternion.Inverse(rot))).Normalize();
 			currentAngle = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
 			var deltaRot = Quaternion.Normalize(Quaternion.CreateFromAxisAngle(rotAxis, angle - rotAngleOrigin.Value));
-			entity.transform.ModelMatrix = Matrix4x4.CreateFromQuaternion(deltaRot) * entity.transform.ModelMatrix;
+			entity.transform.ModelMatrix = Matrix4x4.CreateFromQuaternion(deltaRot) * entity.transform.ModelMatrix;//TODO: add rotate to entity that deals with delta euler angles to quats/mats and other things
 			entity.transform.Rotation += deltaRot.ToEulerAngles() * NumericsExtensions.Rad2Deg;
 			rotAngleOrigin = angle;
 

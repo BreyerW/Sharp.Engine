@@ -7,6 +7,8 @@ using System.Linq;
 using System.Numerics;
 using Sharp.Engine.Components;
 using SharpAsset;
+using SharpSL;
+using OpenTK.Graphics.OpenGL;
 
 namespace Sharp.Editor.Views
 {
@@ -14,7 +16,9 @@ namespace Sharp.Editor.Views
 	{
 		private int cell_size = 32;
 		private int grid_size = 4096;
-
+		private int renderTarget;
+		private Material renderTexMaterial;
+		private static Material highlightFirstStage;
 		//public static Scene physScene;
 		//public static Physics physEngine;
 
@@ -73,6 +77,30 @@ namespace Sharp.Editor.Views
 			Squid.UI.MouseUp += UI_MouseUp;
 			Button.Text = "Scene";
 			AllowFocus = true;
+
+			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightShader.shader");
+			highlightFirstStage = new Material();
+			highlightFirstStage.Shader = shader;
+
+			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\BasicShader.shader");
+
+			renderTexMaterial = new Material();
+			renderTexMaterial.Shader = shader;
+			ref var screenMesh = ref Pipeline.Get<Mesh>().GetAsset("negative_square");
+			var renderTexture = new Texture()
+			{
+				FullPath = "rendertarget.generated",
+				TBO = -1,
+				FBO = -2,
+				format = TextureFormat.RGB,
+				bitmap = null,
+				width = 512,
+				height = 512,
+			};
+			renderTarget = Pipeline.Get<Texture>().Register(renderTexture);
+			renderTexMaterial.BindProperty("renderTexture", renderTexture);
+			renderTexMaterial.BindProperty("mesh", screenMesh);
+			renderTexMaterial.BindProperty("model", Matrix4x4.Identity);
 		}
 
 		private void SceneView_KeyUp(Control sender, KeyEventArgs args)
@@ -101,7 +129,7 @@ namespace Sharp.Editor.Views
 						var orig = Camera.main.Parent.transform.Position;
 						//var winPos = Window.windows[attachedToWindow].Position;
 						var localMouse = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
-						var start = Camera.main.ScreenToWorld(localMouse.x, localMouse.y, Size.x, Size.y, 1);
+						var start = Camera.main.ScreenToWorld(localMouse.x, localMouse.y, Size.x, Size.y + Button.Size.y, 1);
 
 						var ray = new Ray(orig, (start - orig).Normalize());
 						//foreach (var selected in SceneStructureView.tree.SelectedChildren)
@@ -129,11 +157,15 @@ namespace Sharp.Editor.Views
 
 		private void SceneView_SizeChanged(Control sender)
 		{
-			Camera.main.AspectRatio = (float)Size.x / Size.y;
+			Camera.main.AspectRatio = (float)Size.x / (Size.y + Button.Size.y);
+
+			Camera.main.SetOrthoMatrix(Location.x, Size.x, Location.y, Size.y + Button.Size.y);
 			Camera.main.SetProjectionMatrix();
-			Camera.main.SetOrthoMatrix(Canvas.Size.x, Canvas.Size.y);
+			ref var tex = ref Pipeline.Get<Texture>().GetAsset(renderTarget);
+			//tex.width = Size.x;
+			//tex.height = Size.y + Button.Size.y;
 			Camera.main.frustum = new Frustum(Camera.main.ViewMatrix * Camera.main.ProjectionMatrix);
-			Material.BindGlobalProperty("viewPort", new Vector2(Size.x, Size.y));
+			Material.BindGlobalProperty("viewPort", new Vector2(Size.x, Size.y + Button.Size.y));
 		}
 
 		private void SceneView_KeyDown(Control sender, KeyEventArgs args)
@@ -201,49 +233,83 @@ namespace Sharp.Editor.Views
 		}
 		protected override void DrawAfter()
 		{
-
 			//if (!IsVisible) return;
 			//base.Render();
 			//if (Camera.main is null) return;
 			while (startables.Count != 0)
 				startables.Dequeue().Start();
-			MainWindow.backendRenderer.Viewport(Location.x, Camera.main.height - (Location.y + Size.y), Size.x, Size.y);
 
-			if (locPos.HasValue)
+			ref var tex = ref Pipeline.Get<Texture>().GetAsset(renderTarget);
+			if (tex.FBO is > -1)
 			{
-				if (!PickTestForGizmo())
-					PickTestForObject();
-				locPos = null;
-			}
+				MainWindow.backendRenderer.ClearColor(0, 0, 0, 1);
+				MainWindow.backendRenderer.SetStandardState();
 
-			MainWindow.backendRenderer.SetStandardState();
+				MainWindow.backendRenderer.Viewport(-1, 0, tex.width + 1, tex.height);
+				MainWindow.backendRenderer.Clip(0, 0, tex.width, tex.height);
+				MainWindow.backendRenderer.BindBuffers(Target.Frame, tex.FBO);
+				MainWindow.backendRenderer.ClearBuffer();
+				MainWindow.backendRenderer.ClearColor();
 
 
-			foreach (var renderer in Extension.entities.renderers)
-				if (renderer.enabled)
-					renderer.Render();
+				Material tmpMat;
 
-			//Extension.entities.OnRenderFrame?.Invoke();
-			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
-			if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
-			{
-				//foreach (var selected in SceneStructureView.tree.SelectedChildren)
+				if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 				{
-					MainWindow.backendRenderer.ClearDepth();
-					Manipulators.DrawCombinedGizmos(entity, new Vector2(Size.x, Size.y));
-					/*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
-                    if (renderer != null)
-                    {
-                        var max = renderer.mesh.bounds.Max;
-                        var min = renderer.mesh.bounds.Min;
-                        DrawHelper.DrawBox(min, max);
-                    }*/
+					//foreach (var selected in SceneStructureView.tree.SelectedChildren)
+					{
+						var r = entity.GetComponent<MeshRenderer>();
+						tmpMat = r.SwapMaterial(highlightFirstStage);
+						r.Render();
+						r.material = tmpMat;
+						/*dynamic renderer = entity.GetComponent(typeof(MeshRenderer<,>));
+						if (renderer != null)
+						{
+							var max = renderer.mesh.bounds.Max;
+							var min = renderer.mesh.bounds.Min;
+							DrawHelper.DrawBox(min, max);
+						}*/
+					}
 				}
-			}
 
-			//GL.DebugMessageCallback(DebugCallbackInstance, IntPtr.Zero);
-			MainWindow.backendRenderer.Viewport(0, 0, Canvas.Size.x, Canvas.Size.y);
-			//TODO: skip buffer swap when rendering picking? and add fragment shader with editorPickColor to every shader but only in editor?
+				MainWindow.backendRenderer.Viewport(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
+				MainWindow.backendRenderer.Clip(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
+
+				MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
+				if (locPos.HasValue)
+				{
+					if (!PickTestForGizmo())
+						PickTestForObject();
+					locPos = null;
+				}
+				MainWindow.backendRenderer.SetStandardState();
+				MainWindow.backendRenderer.ClearBuffer();
+				MainWindow.backendRenderer.ClearColor();
+				MainWindow.backendRenderer.WriteDepth(true);
+				GL.Enable(EnableCap.Blend);
+
+				foreach (var renderer in Extension.entities.renderers)
+					if (renderer.enabled)
+						renderer.Render();
+				DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
+				GL.Disable(EnableCap.Blend);
+				MainWindow.backendRenderer.WriteDepth(true);
+				MainWindow.backendRenderer.ClearDepth();
+				if (SceneStructureView.tree.SelectedNode?.UserData is Entity e)
+				{
+					//foreach (var selected in SceneStructureView.tree.SelectedChildren)
+					{
+
+						Manipulators.DrawCombinedGizmos(e, new Vector2(Size.x, Size.y));
+
+					}
+				}
+
+
+				renderTexMaterial.SendData();
+				MainWindow.backendRenderer.Viewport(0, 0, Canvas.Size.x, Canvas.Size.y);
+				//TODO: skip buffer swap when rendering picking? and add fragment shader with editorPickColor to every shader but only in editor?
+			}
 
 		}
 

@@ -27,6 +27,7 @@ namespace SharpAsset.Pipeline
 				texture.width = image.Width;
 				texture.height = image.Height;
 				texture.TBO = -1;
+				texture.FBO = -1;
 				texture.format = TextureFormat.RGBA;
 				texture.FullPath = pathToFile;
 				texture.bitmap = MemoryMarshal.AsBytes(image.GetPixelSpan()).ToArray();

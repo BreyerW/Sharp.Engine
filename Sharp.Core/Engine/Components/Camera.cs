@@ -90,7 +90,7 @@ namespace Sharp
 			//MouseLookEnabled = mouseLook;
 
 			AspectRatio = 1f;
-			FieldOfView = 75;
+			FieldOfView = 90f;
 			ZNear = 0.1f;
 			ZFar = 1000f;
 			//Orientation = TargetOrientation;
@@ -132,15 +132,15 @@ namespace Sharp
 
 		public void SetProjectionMatrix()
 		{
-			ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView((float)(FieldOfView * Math.PI / 180.0), AspectRatio, ZNear, ZFar);
+			ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView((float)(FieldOfView * NumericsExtensions.Deg2Rad), AspectRatio, ZNear, ZFar);
 		}
 
-		public void SetOrthoMatrix(int width, int height)
+		public void SetOrthoMatrix(int left,int right, int bottom, int top)
 		{
-			OrthoMatrix = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, -1, 1); //Matrix4.CreateOrthographic(width, height, ZNear, ZFar);
+			OrthoMatrix= Matrix4x4.CreateOrthographicOffCenter(left,right, bottom,  top, -1, 1); //Matrix4x4.CreateOrthographic(width, height, -1, 1); //
 
-			this.width = width;
-			this.height = height;
+			this.width = right;
+			this.height =  top;
 		}
 
 		public void SetModelviewMatrix()

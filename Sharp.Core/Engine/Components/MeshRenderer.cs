@@ -23,13 +23,20 @@ namespace Sharp
 			//if (Camera.main.frustum.Intersect(Mesh.bounds, Parent.transform.ModelMatrix) == 0)
 			{
 				//Console.WriteLine("cull");
-			//	return;
+				//	return;
 			}
 			//Console.WriteLine ("no-cull ");
 
 			material.SendData();
 		}
-
+		internal Material SwapMaterial(Material mat)
+		{
+			var prev = material;
+			material = mat;
+			prev.TryGetProperty("mesh", out Mesh Mesh);
+			material.BindProperty("mesh", Mesh);
+			return prev;
+		}
 		public void Start()
 		{
 			Console.WriteLine("start meshrenderer");

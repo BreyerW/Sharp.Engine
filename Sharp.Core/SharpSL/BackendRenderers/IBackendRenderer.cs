@@ -31,6 +31,7 @@ namespace SharpSL.BackendRenderers
 		void SendMatrix4(int location, ref byte mat);
 
 		//void Send(ref int location,ref int[] i);
+		public void SendRenderTexture(int tbo);
 		void SendTexture2D(int location, ref byte tbo/*, int slot*/);
 
 		void SendUniform1(int location, ref byte data);
@@ -46,7 +47,6 @@ namespace SharpSL.BackendRenderers
 
 		void BindBuffers(Target target, int TBO);
 
-		void ChangeShader();
 
 		void BindVertexAttrib(AttributeType type, int shaderLoc, int dim, int stride, int offset);//vertextype and IndicesType move to SL
 

@@ -51,6 +51,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public void SetStandardState()
 		{
+			GL.DepthMask(true);
 			GL.CullFace(CullFaceMode.Back);
 			GL.Disable(EnableCap.Blend);
 			GL.Enable(EnableCap.DepthTest);
@@ -82,8 +83,6 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public void Allocate(ref byte bitmap, int width, int height, TextureFormat pxFormat)
 		{
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 			//if (ui)
 			{
 				//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
@@ -92,17 +91,21 @@ namespace SharpSL.BackendRenderers.OpenGL
 			var (internalPixelFormat, pixelFormat) = pxFormat switch
 			{
 				TextureFormat.A => (PixelInternalFormat.Alpha, PixelFormat.Alpha),
-				TextureFormat.RGB => (PixelInternalFormat.Rgb, PixelFormat.Bgr),
+				TextureFormat.RGB => (PixelInternalFormat.Rgb, PixelFormat.Rgb),
 				_ => (PixelInternalFormat.Rgba, PixelFormat.Bgra)
 			};
 			GL.TexImage2D(TextureTarget.Texture2D, 0, internalPixelFormat, width, height, 0,
 		   pixelFormat, PixelType.UnsignedByte, ref bitmap);
+
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 		}
 		public void GenerateBuffers(Target target, out int id)
 		{
 			switch (target)
 			{
 				case Target.Texture: id = GL.GenTexture(); break;
+				case Target.Frame: id = GL.GenFramebuffer(); break;
 				case Target.Shader: id = GL.CreateProgram(); break;
 				case Target.VertexShader: id = GL.CreateShader(ShaderType.VertexShader); break;
 				case Target.FragmentShader: id = GL.CreateShader(ShaderType.FragmentShader); break;
@@ -118,6 +121,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 				case Target.Mesh: GL.BindBuffer(BufferTarget.ArrayBuffer, id); break;
 				case Target.Indices: GL.BindBuffer(BufferTarget.ElementArrayBuffer, id); break;
 				case Target.Shader: GL.UseProgram(id); break;
+				case Target.Frame: GL.BindFramebuffer(FramebufferTarget.Framebuffer, id); break;
 			}
 		}
 
@@ -303,11 +307,6 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.Hint(HintTarget.PointSmoothHint, HintMode.Nicest);
 			GL.Hint(HintTarget.PolygonSmoothHint, HintMode.Nicest);
 		}
-		public void ChangeShader()
-		{
-			GL.UseProgram(0);
-		}
-
 		public void WriteDepth(bool enable = true)
 		{
 			GL.DepthMask(enable);
@@ -330,12 +329,15 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public void SendTexture2D(int location, ref byte tbo)
 		{
-			GL.ActiveTexture(TextureUnit.Texture0 + slot);//bugged?
+			GL.ActiveTexture(TextureUnit.Texture0 + slot);
 			GL.BindTexture(TextureTarget.Texture2D, Unsafe.As<byte, int>(ref tbo));
 			GL.Uniform1(location, slot);
 			slot = ++slot;
 		}
-
+		public void SendRenderTexture(int tbo)
+		{
+			GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, tbo, 0);
+		}
 		public void SendUniform1(int location, ref byte data)
 		{
 			GL.Uniform1(location, 1, ref Unsafe.As<byte, float>(ref data));

@@ -80,18 +80,6 @@ namespace Sharp.Engine.Components
 				scale = value;
 			}
 		}
-		public void SetModelMatrix()//make custom transform inspector that will access properties directly instead of fields or make PropertyDrawer for quaternion that will represent them as euler angles and use their deltas to calculate orientation instead of using their numbers directly
-		{
-			//var 
-			//var normalizedRotX = (rotation.X % 180f) * NumericsExtensions.Deg2Rad;
-			//var normalizedRotY = (rotation.Y % 90f) * NumericsExtensions.Deg2Rad;
-			//var normalizedRotZ = (rotation.Z % 180f) * NumericsExtensions.Deg2Rad;
-			/*unsafe
-			{
-				Unsafe.AsRef<Matrix4x4>(modelMatrix.ToPointer()) = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z) * Matrix4x4.CreateTranslation(position);
-			}*/
-			//modelMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateRotationX(normalizedRotX) * Matrix4x4.CreateRotationY(normalizedRotY) * Matrix4x4.CreateRotationZ(normalizedRotZ) * Matrix4x4.CreateTranslation(position);
-		}
 		//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
 		public Transform() : base()
 		{
