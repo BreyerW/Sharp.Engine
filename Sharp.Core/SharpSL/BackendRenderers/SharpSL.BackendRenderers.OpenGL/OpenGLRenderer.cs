@@ -2,6 +2,7 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using SharpAsset;
+using Squid;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -83,22 +84,28 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public void Allocate(ref byte bitmap, int width, int height, TextureFormat pxFormat)
 		{
-			//if (ui)
+			var (internalPixelFormat, pixelFormat, pixelType) = pxFormat switch
 			{
-				//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
-				//GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
-			}
-			var (internalPixelFormat, pixelFormat) = pxFormat switch
-			{
-				TextureFormat.A => (PixelInternalFormat.Alpha, PixelFormat.Alpha),
-				TextureFormat.RGB => (PixelInternalFormat.Rgb, PixelFormat.Rgb),
-				_ => (PixelInternalFormat.Rgba, PixelFormat.Bgra)
+				TextureFormat.R => (PixelInternalFormat.R16, PixelFormat.Red, PixelType.UnsignedByte),
+				TextureFormat.A => (PixelInternalFormat.Alpha, PixelFormat.Alpha, PixelType.UnsignedByte),
+				TextureFormat.DepthFloat => (PixelInternalFormat.DepthComponent, PixelFormat.DepthComponent, PixelType.Float),
+				TextureFormat.RGB => (PixelInternalFormat.Rgb, PixelFormat.Rgb, PixelType.UnsignedByte),
+				TextureFormat.RGBAFloat => (PixelInternalFormat.Rgba32f, PixelFormat.Rgba, PixelType.UnsignedByte),
+				TextureFormat.RG16_SNorm => (PixelInternalFormat.Rg16Snorm, PixelFormat.Rgb, PixelType.UnsignedByte),
+				_ => (PixelInternalFormat.Rgba, PixelFormat.Bgra, PixelType.UnsignedByte)
 			};
 			GL.TexImage2D(TextureTarget.Texture2D, 0, internalPixelFormat, width, height, 0,
-		   pixelFormat, PixelType.UnsignedByte, ref bitmap);
+		   pixelFormat, pixelType, ref bitmap);
 
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+			if (pxFormat is TextureFormat.DepthFloat)
+			{
+				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareFunc, (int)DepthFunction.Lequal);
+				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareMode, (int)TextureCompareMode.None);
+			}
 		}
 		public void GenerateBuffers(Target target, out int id)
 		{
@@ -122,6 +129,8 @@ namespace SharpSL.BackendRenderers.OpenGL
 				case Target.Indices: GL.BindBuffer(BufferTarget.ElementArrayBuffer, id); break;
 				case Target.Shader: GL.UseProgram(id); break;
 				case Target.Frame: GL.BindFramebuffer(FramebufferTarget.Framebuffer, id); break;
+				case Target.WriteFrame: GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, id); break;
+				case Target.ReadFrame: GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, id); break;
 			}
 		}
 
@@ -277,10 +286,6 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public void ClearColor(float r, float g, float b, float a)
 		{
-			GL.Enable(EnableCap.Blend);
-			GL.Enable(EnableCap.AlphaTest);
-			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-
 			GL.ClearColor(r, g, b, a);
 		}
 
@@ -334,9 +339,17 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.Uniform1(location, slot);
 			slot = ++slot;
 		}
-		public void SendRenderTexture(int tbo)
+		public void BindRenderTexture(int tbo, TextureRole role)
 		{
-			GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, tbo, 0);
+			var attachment = role switch//TODO: ensure theres always 1x color attachment even when only depth is needed since some graphic cards fail when theres no valid color attach
+			{
+				TextureRole.Color0 => FramebufferAttachment.ColorAttachment0,
+				TextureRole.Color1 => FramebufferAttachment.ColorAttachment1,
+				TextureRole.Depth => FramebufferAttachment.DepthAttachment,
+				TextureRole.Stencil => FramebufferAttachment.StencilAttachment,
+				_ => FramebufferAttachment.ColorAttachment0
+			};
+			GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, attachment, TextureTarget.Texture2D, tbo, 0);
 		}
 		public void SendUniform1(int location, ref byte data)
 		{

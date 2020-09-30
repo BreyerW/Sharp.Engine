@@ -8,6 +8,7 @@ using SharpSL.BackendRenderers.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -18,7 +19,7 @@ namespace Sharp
 		internal static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
 		{
 			ContractResolver = new UninitializedResolver() { IgnoreSerializableAttribute = false },
-			Converters = new List<JsonConverter>() {new DictionaryConverter(),new EntityConverter(), new DelegateConverter(), new ListReferenceConverter(),/*new IAssetConverter(), new IEngineConverter(),*/new PtrConverter(), new ReferenceConverter() },
+			Converters = new List<JsonConverter>() { new DictionaryConverter(), new EntityConverter(), new DelegateConverter(), new ListReferenceConverter(),/*new IAssetConverter(), new IEngineConverter(),*/new PtrConverter(), new ReferenceConverter() },
 			ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
 			PreserveReferencesHandling = PreserveReferencesHandling.All,
 			ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
@@ -40,10 +41,11 @@ namespace Sharp
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCone());
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCube());
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateTorus());
-			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateSquare(center: new System.Numerics.Vector2(0.5f)));
-			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateSquare("negative_square"));
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateSquare("square", new Vector2(0), new Vector2(1)));
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateSquare("screen_space_square", new Vector2(-1), new Vector2(1)));
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateSquare("negative_square", new Vector2(-0.5f), new Vector2(0.5f)));
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateLine());
-			var dSquare = CreatePrimitiveMesh.GenerateSquare("dynamic_square", new System.Numerics.Vector2(0.5f));
+			var dSquare = CreatePrimitiveMesh.GenerateSquare("dynamic_square", new Vector2(0), new Vector2(1));
 			dSquare.UsageHint = UsageHint.DynamicDraw;
 			Pipeline.Get<Mesh>().Register(dSquare);
 			Pipeline.Get<Font>().Import(@"C:\Windows\Fonts\times.ttf");

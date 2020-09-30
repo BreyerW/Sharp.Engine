@@ -13,6 +13,8 @@ using System.Text;
 using SharpAsset.Pipeline;
 using SharpSL;
 using Microsoft.Collections.Extensions;
+using Sharp.Engine.Components;
+using SharpSL.BackendRenderers;
 
 namespace Sharp
 {
@@ -169,6 +171,10 @@ namespace Sharp
 				Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
 				//foreach(var pipeline in Pipeline.allPipelines.Values)
 				//	while(pipeline.recentlyLoadedAssets.TryDequeue(out var i)) //TODO
+				
+				Time.SetTime();
+				Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
+
 				while (TexturePipeline.recentlyLoadedAssets.TryDequeue(out var i))
 				{
 					ref var tex = ref Pipeline.Get<Texture>().GetAsset(i);
@@ -180,9 +186,9 @@ namespace Sharp
 					{
 						MainWindow.backendRenderer.GenerateBuffers(Target.Frame, out tex.FBO);
 						MainWindow.backendRenderer.BindBuffers(Target.Frame, tex.FBO);
-						
-						MainWindow.backendRenderer.SendRenderTexture(tex.TBO);
-						
+
+						MainWindow.backendRenderer.BindRenderTexture(tex.TBO, TextureRole.Color0);
+
 						MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
 						MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
 					}
@@ -213,8 +219,21 @@ namespace Sharp
 						MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
 					}
 				}
-				Time.SetTime();
-				Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
+				foreach (var added in Root.addedEntities)
+				{
+					if (added is CommandBufferComponent cb)
+					{
+						MainWindow.backendRenderer.GenerateBuffers(Target.Frame, out cb.FBO);
+						MainWindow.backendRenderer.BindBuffers(Target.Frame, cb.FBO);
+						foreach (var t in cb.targetTextures)
+						{
+							ref var tex = ref Pipeline.Get<Texture>().GetAsset(t.texId);
+							MainWindow.backendRenderer.BindRenderTexture(tex.TBO, t.role);
+						}
+						MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
+						MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
+					}
+				}
 				//IdReferenceResolver._objectsToId.Clear();
 				//IdReferenceResolver._idToObjects.Clear();
 				Root.removedEntities.Clear();
@@ -324,12 +343,74 @@ namespace Sharp
 					foreach (var (_, mainV) in MainEditorView.mainViews)
 						mainV.desktop.Update();
 					Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
-					Root.removedEntities.Clear();
-					Root.addedEntities.Clear();
+					
 					Time.SetTime();
 					Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
+
+					while (TexturePipeline.recentlyLoadedAssets.TryDequeue(out var i))
+					{
+						ref var tex = ref Pipeline.Get<Texture>().GetAsset(i);
+						MainWindow.backendRenderer.GenerateBuffers(Target.Texture, out tex.TBO);
+
+						MainWindow.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
+						MainWindow.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
+						if (tex.FBO is -2)
+						{
+							MainWindow.backendRenderer.GenerateBuffers(Target.Frame, out tex.FBO);
+							MainWindow.backendRenderer.BindBuffers(Target.Frame, tex.FBO);
+
+							MainWindow.backendRenderer.BindRenderTexture(tex.TBO, TextureRole.Color0);
+
+							MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
+							MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
+						}
+					}
+					while (ShaderPipeline.recentlyLoadedAssets.TryDequeue(out var i))
+					{
+						Console.WriteLine("shader allocation");
+						ref var shader = ref Pipeline.Get<Shader>().GetAsset(i);
+						MainWindow.backendRenderer.GenerateBuffers(Target.Shader, out shader.Program);
+						MainWindow.backendRenderer.GenerateBuffers(Target.VertexShader, out shader.VertexID);
+						MainWindow.backendRenderer.GenerateBuffers(Target.FragmentShader, out shader.FragmentID);
+
+						MainWindow.backendRenderer.Allocate(shader.Program, shader.VertexID, shader.FragmentID, shader.VertexSource, shader.FragmentSource, shader.uniformArray, shader.attribArray);
+					}
+					while (MeshPipeline.recentlyLoadedAssets.TryDequeue(out var i))
+					{
+						ref var mesh = ref Pipeline.Get<Mesh>().GetAsset(i);
+						MainWindow.backendRenderer.GenerateBuffers(Target.Mesh, out mesh.VBO);
+						MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
+						//foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].Values)
+						//	MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, Shader.attribArray[vertAttrib.shaderLocation], vertAttrib.dimension, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
+
+						MainWindow.backendRenderer.GenerateBuffers(Target.Indices, out mesh.EBO);
+						MainWindow.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
+						if (mesh.Indices is not null && mesh.Indices.Length > 0)
+						{
+							MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
+							MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
+						}
+					}
+					foreach (var added in Root.addedEntities)
+					{
+						if (added is CommandBufferComponent cb)
+						{
+							MainWindow.backendRenderer.GenerateBuffers(Target.Frame, out cb.FBO);
+							MainWindow.backendRenderer.BindBuffers(Target.Frame, cb.FBO);
+							foreach (var t in cb.targetTextures)
+							{
+								ref var tex = ref Pipeline.Get<Texture>().GetAsset(t.texId);
+								MainWindow.backendRenderer.BindRenderTexture(tex.TBO, t.role);
+							}
+							MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
+							MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
+						}
+					}
+					Root.removedEntities.Clear();
+					Root.addedEntities.Clear();
 					//IdReferenceResolver._objectsToId.Clear();
 					//IdReferenceResolver._idToObjects.Clear();
+
 					break;
 
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_EXPOSED:

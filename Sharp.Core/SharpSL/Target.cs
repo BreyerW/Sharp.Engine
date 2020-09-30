@@ -9,5 +9,7 @@
 		Mesh,
 		Indices,
 		Frame,
+		WriteFrame,
+		ReadFrame,
 	}
 }

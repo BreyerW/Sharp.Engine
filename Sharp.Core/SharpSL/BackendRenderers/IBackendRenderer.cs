@@ -4,6 +4,13 @@ using SharpAsset;
 
 namespace SharpSL.BackendRenderers
 {
+	public enum TextureRole
+	{
+		Depth,
+		Stencil,
+		Color0,
+		Color1,
+	}
 	public interface IBackendRenderer
 	{
 		uint currentWindow { get; set; }
@@ -31,7 +38,7 @@ namespace SharpSL.BackendRenderers
 		void SendMatrix4(int location, ref byte mat);
 
 		//void Send(ref int location,ref int[] i);
-		public void SendRenderTexture(int tbo);
+		public void BindRenderTexture(int tbo,TextureRole role);
 		void SendTexture2D(int location, ref byte tbo/*, int slot*/);
 
 		void SendUniform1(int location, ref byte data);

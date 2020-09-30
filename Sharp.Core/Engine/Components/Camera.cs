@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using SharpAsset;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace Sharp
@@ -8,7 +9,6 @@ namespace Sharp
 	public class Camera : Component
 	{
 		public static Camera main;//rename to or add current camera and generate camera for each window and sceneview
-
 		/* public static Camera main
          {
              set
@@ -93,6 +93,7 @@ namespace Sharp
 			FieldOfView = 90f;
 			ZNear = 0.1f;
 			ZFar = 1000f;
+			Material.BindGlobalProperty("camNearFar", new Vector2(ZNear, ZFar));
 			//Orientation = TargetOrientation;
 			SetProjectionMatrix();
 		}
@@ -121,8 +122,29 @@ namespace Sharp
 		public float ZFar { get; set; }
 		public float FieldOfView { get; set; }
 		public float AspectRatio { get; set; }
-		public int width;
-		public int height;
+		private int width;
+		private int height;
+		public int Width
+		{
+			set
+			{
+				if (value == width) return;
+				width = value;
+				OnDimensionChanged?.Invoke(this);
+			}
+			get => width;
+		}
+		public int Height
+		{
+			set
+			{
+				if (value == height) return;
+				height = value;
+				OnDimensionChanged?.Invoke(this);
+			}
+			get => height;
+		}
+		public Action<Camera> OnDimensionChanged;
 		public CamMode CameraMode = CamMode.FlightCamera;
 
 		#endregion Properties
@@ -133,14 +155,12 @@ namespace Sharp
 		public void SetProjectionMatrix()
 		{
 			ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView((float)(FieldOfView * NumericsExtensions.Deg2Rad), AspectRatio, ZNear, ZFar);
+			
 		}
 
-		public void SetOrthoMatrix(int left,int right, int bottom, int top)
+		public void SetOrthoMatrix(int left, int right, int bottom, int top)
 		{
-			OrthoMatrix= Matrix4x4.CreateOrthographicOffCenter(left,right, bottom,  top, -1, 1); //Matrix4x4.CreateOrthographic(width, height, -1, 1); //
-
-			this.width = right;
-			this.height =  top;
+			OrthoMatrix = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, -1, 1); //Matrix4x4.CreateOrthographic(width, height, -1, 1); //
 		}
 
 		public void SetModelviewMatrix()

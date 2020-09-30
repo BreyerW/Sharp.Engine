@@ -1,19 +1,151 @@
-﻿#version 130
+﻿//based on https://ourmachinery.com/post/borderland-part-3-selection-highlighting/
+
+#version 130
 
 #pragma vertex
-in vec3 vertex_position;
-uniform mat4 camView;
-uniform mat4 model;
-uniform mat4 camProjection;
+            in vec3 vertex_position;
+			in vec2 vertex_texcoord;
+			out vec2 uv;
 
-void main() {
-	gl_Position = camProjection*camView *model* vec4(vertex_position, 1.0);
-}
+            void main(void)
+            {
+				uv = vertex_texcoord;
+                gl_Position = vec4(vertex_position, 1.0);
+            }
 
-#pragma fragment
-out vec4 output_color;
+		#pragma fragment
 
-void main(void)
+		uniform vec4 outline_color;
+		uniform vec2 camNearFar;
+		uniform sampler2D SceneTexture;
+		uniform sampler2D MyTexture;
+		uniform sampler2D SelectionDepthTex;
+		uniform sampler2D SceneDepthTex;
+		uniform vec2 viewPort;
+
+            in vec2 uv;
+            out vec4 frag_color;
+
+			vec4 GatherAlpha(sampler2D tex, vec2 uv,ivec2 offset){
+				float r1=textureOffset(tex,uv,ivec2(0,0)+offset).a;
+				float r2=textureOffset(tex,uv,ivec2(1,0)+offset).a;
+				float r3=textureOffset(tex,uv,ivec2(0,1)+offset).a;
+				float r4=textureOffset(tex,uv,ivec2(1,1)+offset).a;
+			return vec4(r1,r2,r3,r4);
+			}
+			vec4 GatherRed(sampler2D tex, vec2 uv,ivec2 offset){
+				float r1=textureOffset(tex,uv,ivec2(0,0)+offset).r;
+				float r2=textureOffset(tex,uv,ivec2(1,0)+offset).r;
+				float r3=textureOffset(tex,uv,ivec2(0,1)+offset).r;
+				float r4=textureOffset(tex,uv,ivec2(1,1)+offset).r;
+			return vec4(r1,r2,r3,r4);
+			}
+		float linearize_depth(float d,float zNear,float zFar)
 {
-	output_color = vec4(1,1,1,1);
-};
+    float z_n = 2.0 * d - 1.0;
+    return 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
+}
+            void main(void)
+            {
+            // Generate outline by comparing IDs between current pixel and surrounding
+// pixels. This will collect 4x4 IDs but we will only be using the upper
+// 3x3 taps.
+/*vec4 id0 = GatherAlpha(MyTexture, uv, ivec2(-2, -2));
+vec4 id1 = GatherAlpha(MyTexture, uv, ivec2( 0, -2));
+vec4 id2 = GatherAlpha(MyTexture, uv, ivec2(-2,  0));
+vec4 id3 = GatherAlpha(MyTexture, uv, ivec2( 0,  0));
+
+// Throw away unused taps and merge into two float4 and a center tap
+id2.xw = id1.xy;
+float id_center = id3.w;
+id3.w = id0.y;
+
+// Count ID misses and average together. a becomes our alpha of the outline.
+const float avg_scalar = 1.f / 8.f;
+//float a = dot(vec4(id2 != id_center), vec4(avg_scalar));
+//a += dot(vec4(id3 != id_center), vec4(avg_scalar));
+float a=clamp(float(id_center!=id3)+float(id_center!=id2),0,1);*/
+
+int w = 4;
+float a=0f;
+float smallest_distance=3.402823466e+38f;
+vec2 depth_offset=vec2(0);
+vec2 size = 1.0f / textureSize(MyTexture, 0);
+    // if the pixel is black (we are on the silhouette)
+    if (texture(MyTexture, uv).a < 0.00001f)
+    {
+	w-=3;
+        for (int i = -w; i <= +w; i++)
+        {
+            for (int j = -w; j <= +w; j++)
+            {
+                if (i == 0 && j == 0)
+                {
+                    continue;
+                }
+
+                vec2 offset = vec2(i, j) * size;
+
+                // and if one of the pixel-neighbor is white (we are on the border)
+                if (texture(MyTexture, uv + offset).a> 0.00001f)
+                {
+                    a = 1f;
+					
+					float l=length(offset);
+					if(l<smallest_distance){
+						depth_offset=offset;
+						smallest_distance=l;
+					}
+                }
+            }
+        }
+    }
+	else
+	{
+        for (int i = -w; i <= +w; i++)
+        {
+            for (int j = -w; j <= +w; j++)
+            {
+                if ((i == 0 && j == 0) || a==1f)
+                {
+                    continue;
+                }
+
+                vec2 offset = vec2(i, j) * size;
+
+                // and if one of the pixel-neighbor is black (we are on the border)
+                if (texture(MyTexture, uv + offset).a< 0.00001f)
+                {
+                    a = 1f;
+                }
+            }
+        }
+	}
+
+
+// To allow outline to bleed over objects and combat TAA jittering artifacts
+// sample depth of selection buffer in a 4x4 neighborhood and pick closest
+// depth.
+vec4 dtap0 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2(-2, -2));
+vec4 dtap1 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2( 0, -2));
+vec4 dtap2 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2(-2,  0));
+vec4 dtap3 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2( 0,  0));
+float d0 = min(dtap0.x, min(dtap0.y, min(dtap0.z, dtap0.w)));
+float d1 = min(dtap1.x, min(dtap1.y, min(dtap1.z, dtap1.w)));
+float d2 = min(dtap2.x, min(dtap2.y, min(dtap2.z, dtap2.w)));
+float d3 = min(dtap3.x, min(dtap3.y, min(dtap3.z, dtap3.w)));
+float d = min(d0, min(d1, min(d2, d3)));
+
+// Sample scene depth, scn_depth holds linear depth.
+float scnd = texture(SceneDepthTex, uv+depth_offset).r;
+
+// Linearize d and compare it with scene depth to determine if outline is
+// behind an object.=
+bool visible = d <=scnd;
+
+// If outline is hidden, reduce its alpha value to 30%.
+a *= visible ? 1.f : 0.33f;
+
+//frag_color =vec4(linearize_depth(texture(SceneDepthTex,res).r, camNearFar.x, camNearFar.y));
+frag_color=vec4(texture(SceneTexture,uv)*(1f-a)+(outline_color*a));
+            }

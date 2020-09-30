@@ -33,13 +33,13 @@ public static class CreatePrimitiveMesh
 		newMesh.LoadIndices(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan());
 		return newMesh;
 	}
-	public static Mesh GenerateSquare(string name = "square", Vector2 center = default)
+	public static Mesh GenerateSquare(string name, Vector2 lowerLeft, Vector2 upperRight)
 	{
 		var mData = new UIVertexFormat[4] {
-						new UIVertexFormat(){ position=new Vector3(center.X-0.5f,center.Y-0.5f,0),texcoords=new Vector2(0,0) },
-						new UIVertexFormat(){ position= new Vector3(center.X-0.5f,center.Y+0.5f,0),texcoords=new Vector2(0,1) },
-						new UIVertexFormat(){ position=new Vector3(center.X+0.5f,center.Y+0.5f,0),texcoords=new Vector2(1,1) },
-						new UIVertexFormat(){ position= new Vector3(center.X+0.5f,center.Y-0.5f,0),texcoords=new Vector2(1,0) }
+						new UIVertexFormat(){ position=new Vector3(lowerLeft.X,lowerLeft.Y,0),texcoords=new Vector2(0,0) },
+						new UIVertexFormat(){ position= new Vector3(lowerLeft.X,upperRight.Y,0),texcoords=new Vector2(0,1) },
+						new UIVertexFormat(){ position=new Vector3(upperRight.X,upperRight.Y,0),texcoords=new Vector2(1,1) },
+						new UIVertexFormat(){ position= new Vector3(upperRight.X,lowerLeft.Y,0),texcoords=new Vector2(1,0) }
 					}.AsSpan();
 		var Mesh = new Mesh
 		{
