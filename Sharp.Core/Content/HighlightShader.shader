@@ -79,7 +79,7 @@ vec2 size = 1.0f / textureSize(MyTexture, 0);
         {
             for (int j = -w; j <= +w; j++)
             {
-                if (i == 0 && j == 0)
+                if ((i == 0 && j == 0) || smallest_distance<2)
                 {
                     continue;
                 }
@@ -102,6 +102,7 @@ vec2 size = 1.0f / textureSize(MyTexture, 0);
     }
 	else
 	{
+	float image_border=0f;
         for (int i = -w; i <= +w; i++)
         {
             for (int j = -w; j <= +w; j++)
@@ -112,14 +113,17 @@ vec2 size = 1.0f / textureSize(MyTexture, 0);
                 }
 
                 vec2 offset = vec2(i, j) * size;
-
+				vec2 totalUV=uv+offset;
                 // and if one of the pixel-neighbor is black (we are on the border)
-                if (texture(MyTexture, uv + offset).a< 0.00001f)
+                if (texture(MyTexture,totalUV).a< 0.00001f)
                 {
                     a = 1f;
                 }
+				if(totalUV.x>0.99999f || totalUV.y>0.99999f || totalUV.x<0.00001f || totalUV.y<0.00001f)
+				image_border=1f;
             }
         }
+		a=image_border==1f ? 1f : a;
 	}
 
 
