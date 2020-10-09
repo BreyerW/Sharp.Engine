@@ -1,4 +1,5 @@
-﻿using SharpAsset;
+﻿using Sharp.Core;
+using SharpAsset;
 using SharpAsset.Pipeline;
 using SharpSL;
 using SharpSL.BackendRenderers;
@@ -10,6 +11,7 @@ namespace Sharp.Engine.Components
 	//TODO: requires CameraComponent
 	public abstract class CommandBufferComponent : Component//Renderer?
 	{
+		private static BitMask rendererMask = new BitMask(0);
 		private bool screenSpace;
 		public bool ScreenSpace
 		{
@@ -32,6 +34,12 @@ namespace Sharp.Engine.Components
 		internal int FBO = -1;
 		internal List<(int texId, TextureRole role)> targetTextures = new();//TODO: make tag&layers (maybe IdentityComponent?) component and use that for render to texture (eg. selected tag or layer)
 		public List<Material> passes;
+
+		protected CommandBufferComponent(Entity parent) : base(parent)
+		{
+			rendererMask.SetFlag(0);
+		}
+
 		private void OnCameraSizeChange(Camera cam)
 		{
 			foreach (var t in targetTextures)
@@ -63,7 +71,7 @@ namespace Sharp.Engine.Components
 			var texId = Pipeline.Get<Texture>().Register(tex);
 			targetTextures.Add((texId, role));
 		}
-		public void DrawPass()
+		private void PreparePass()
 		{
 			ref var tex = ref Pipeline.Get<Texture>().GetAsset(targetTextures[0].texId);
 			MainWindow.backendRenderer.Viewport(0, 0, tex.width, tex.height);
@@ -71,9 +79,45 @@ namespace Sharp.Engine.Components
 			MainWindow.backendRenderer.BindBuffers(Target.Frame, FBO);
 			MainWindow.backendRenderer.SetStandardState();
 			MainWindow.backendRenderer.ClearBuffer();
-			
-			
-			//TODO: draw all meshes from camera layer optionally swap material
+		}
+		public void DrawPass(BitMask mask)
+		{
+			PreparePass();
+			var renderables = Entity.FindAllWithComponentsAndTags(rendererMask, mask).GetEnumerator();
+			while (renderables.MoveNext())
+				foreach (var renderable in renderables.Current)
+				{
+					var renderer = renderable.GetComponent<Renderer>();
+					if (renderer.active is true)
+						renderer.Render();
+				}
+
+		}
+		public void DrawPass(IEnumerable<Renderer> renderables)
+		{
+			PreparePass();
+			foreach (var renderable in renderables)
+			{
+				if (renderable.active is true)
+					renderable.Render();
+			}
+
+		}
+		public void DrawPass()
+		{
+			PreparePass();
+			var cam = Parent.GetComponent<Camera>();
+			var renderables = Entity.FindAllWithComponentsAndTags(rendererMask, cam.cullingTags, cullTags: true).GetEnumerator();
+			while (renderables.MoveNext())
+				foreach (var renderable in renderables.Current)
+				{
+					var renderer = renderable.GetComponent<Renderer>();
+					//if (renderer is null) continue;
+					if (renderer.active is true)
+						renderer.Render();
+				}
+
+			//TODO: draw all meshes from camera culling tags optionally swap material
 		}
 		public abstract void Execute();
 

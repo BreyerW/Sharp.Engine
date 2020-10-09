@@ -29,7 +29,6 @@ namespace Sharp.Editor
 		internal static Vector4 transformationPlane;
 		internal static Vector3 startAxis;
 		internal static Matrix4x4 startMat;
-		internal static ChangeValueCommand newCommand;
 
 		static Manipulators()
 		{
@@ -142,7 +141,6 @@ namespace Sharp.Editor
 			//if (newCommand != null)
 			//    newCommand.StoreCommand();
 			//UI.Property.PropertyDrawer.StopCommandCommits = false;
-			newCommand = null;
 			rotVectSource = null;
 			rotAngleOrigin = null;
 			planeOrigin = null;

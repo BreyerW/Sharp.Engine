@@ -29,7 +29,7 @@ namespace Sharp.Editor
 	public class UndoCommand : IMenuCommand
 	{
 		private static Dictionary<Guid, (string label, byte[] undo, byte[] redo)> saveState = new Dictionary<Guid, (string label, byte[] undo, byte[] redo)>();
-		internal static DictionarySlim<Component, string> prevStates = new DictionarySlim<Component, string>();
+		internal static DictionarySlim<IEngineObject, string> prevStates = new();
 		internal static LinkedList<History> snapshots = new LinkedList<History>();
 
 		internal static LinkedListNode<History> currentHistory;
@@ -69,7 +69,7 @@ namespace Sharp.Editor
 				}
 				else if (label is "removedEntity")
 				{
-					var entity = RuntimeHelpers.GetUninitializedObject(typeof(Entity));//pseudodeserialization thats why we use this
+					//var entity = RuntimeHelpers.GetUninitializedObject(typeof(Entity));//pseudodeserialization thats why we use this
 				}
 				else if (label is "addedComponent")
 				{
@@ -89,7 +89,7 @@ namespace Sharp.Editor
 				}
 				else if (label is "changed")
 				{
-					var obj = index.GetInstanceObject<Component>();
+					var obj = index.GetInstanceObject<IEngineObject>();
 					ref var patched = ref prevStates.GetOrAddValueRef(obj);
 					var objToBePatched = Encoding.Unicode.GetBytes(patched);
 					patched = Encoding.Unicode.GetString(Delta.Apply(objToBePatched, undo));
@@ -133,57 +133,47 @@ namespace Sharp.Editor
 
 						if (added is Entity ent)
 						{
-							saveState[ent.GetInstanceID()] = ("addedEntity", null, Encoding.Unicode.GetBytes(ent.name));
+							prevStates.GetOrAddValueRef(ent) = JsonConvert.SerializeObject(ent, ent.GetType(), MainClass.serializerSettings);
+							saveState[ent.GetInstanceID()] = ("addedEntity", null, Encoding.Unicode.GetBytes(prevStates.GetOrAddValueRef(ent)));
 						}
 						else if (added is Component comp)
 						{
 							if (prevStates.TryGetValue(comp, out _)) throw new InvalidOperationException("unexpected add to already existing key");
-							
+
 							prevStates.GetOrAddValueRef(comp) = JsonConvert.SerializeObject(comp, comp.GetType(), MainClass.serializerSettings);
-								saveState[comp.GetInstanceID()] = ("addedComponent", Encoding.Unicode.GetBytes(comp.GetType().AssemblyQualifiedName), Encoding.Unicode.GetBytes(prevStates.GetOrAddValueRef(comp)));
+							saveState[comp.GetInstanceID()] = ("addedComponent", Encoding.Unicode.GetBytes(comp.GetType().AssemblyQualifiedName), Encoding.Unicode.GetBytes(prevStates.GetOrAddValueRef(comp)));
 						}
 					};
 				if (Root.removedEntities.Count > 0)
 					foreach (var removed in Root.removedEntities)
-						if (removed is Component comp)
+						if (removed is IEngineObject comp)
 							prevStates.Remove(comp);
 				if (historyMoved is false && !InputHandler.isKeyboardPressed && !InputHandler.isMouseDragging)//TODO: change to on mouse up/keyboard up?
 				{
 					foreach (var (comp, state) in prevStates)
 					{
 						var token = JsonConvert.SerializeObject(comp, comp.GetType(), MainClass.serializerSettings);
-					
+
 						if (!state.AsSpan().SequenceEqual(token.AsSpan()))
 						{
-							if (comp.Parent.GetComponent<Camera>() != Camera.main)
-							{
-								Console.WriteLine(" name " + /*Name + */" target " + comp);
-								if (saveState is null)
-									saveState = new Dictionary<Guid, (string, byte[] undo, byte[] redo)>();
-								//MemoryMarshal.AsBytes();
-								//if(SpanHelper.IsPrimitive<T>())
-								var str = token;
-								var currObjInBytes = Encoding.Unicode.GetBytes(str);
-								if (state is null /*|| saveState[comp.GetInstanceID()].ContainsKey("addedComponent")*/)
-									saveState[comp.GetInstanceID()] = ("changed", null, currObjInBytes);
-								else
-								{
-									var prevObjInBytes = Encoding.Unicode.GetBytes(state);
-									var delta2 = Delta.Create(currObjInBytes, prevObjInBytes);
-									var delta1 = Delta.Create(prevObjInBytes, currObjInBytes);
-									saveState[comp.GetInstanceID()] = ("changed", delta2, delta1);
-								}
-							}
-							/*if (comp is MeshRenderer)
-							{
-								var oldmatrix = Unsafe.As<byte, Matrix4x4>(ref JToken.Parse(state)["material"]["localParams"]["model"]["$values"].ToObject<byte[]>()[0]);
-								Matrix4x4.Decompose(oldmatrix, out _, out var oldrot, out var oldpos);
-								Console.WriteLine("transform mat: " + oldpos + " " + (ToEulerAngles(oldrot) * NumericsExtensions.Rad2Deg));
+							if (comp is Component c && c.Parent.GetComponent<Camera>() == Camera.main) continue;
 
-								var matrix = Unsafe.As<byte, Matrix4x4>(ref JToken.Parse(token)["material"]["localParams"]["model"]["$values"].ToObject<byte[]>()[0]);
-								Matrix4x4.Decompose(matrix, out _, out var rot, out var pos);
-								Console.WriteLine("material mat: " + pos + " " +(ToEulerAngles(rot)*NumericsExtensions.Rad2Deg));
-							}*/
+							Console.WriteLine(" name " + /*Name + */" target " + comp);
+							if (saveState is null)
+								saveState = new Dictionary<Guid, (string, byte[] undo, byte[] redo)>();
+							//MemoryMarshal.AsBytes();
+							//if(SpanHelper.IsPrimitive<T>())
+							var str = token;
+							var currObjInBytes = Encoding.Unicode.GetBytes(str);
+							if (state is null /*|| saveState[comp.GetInstanceID()].ContainsKey("addedComponent")*/)
+								saveState[comp.GetInstanceID()] = ("changed", null, currObjInBytes);
+							else
+							{
+								var prevObjInBytes = Encoding.Unicode.GetBytes(state);
+								var delta2 = Delta.Create(currObjInBytes, prevObjInBytes);
+								var delta1 = Delta.Create(prevObjInBytes, currObjInBytes);
+								saveState[comp.GetInstanceID()] = ("changed", delta2, delta1);
+							}
 							prevStates.GetOrAddValueRef(comp) = token;
 						}
 					}
@@ -236,5 +226,5 @@ namespace Sharp.Editor
 			UndoCommand.currentHistory = UndoCommand.snapshots.Last;
 		}
 	}
-	
+
 }

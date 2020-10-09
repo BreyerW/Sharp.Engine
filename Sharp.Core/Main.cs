@@ -19,12 +19,11 @@ namespace Sharp
 		internal static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
 		{
 			ContractResolver = new UninitializedResolver() { IgnoreSerializableAttribute = false },
-			Converters = new List<JsonConverter>() { new DictionaryConverter(), new EntityConverter(), new DelegateConverter(), new ListReferenceConverter(),/*new IAssetConverter(), new IEngineConverter(),*/new PtrConverter(), new ReferenceConverter() },
-			ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
+			Converters = new List<JsonConverter>() { new DictionaryConverter(), /*new EntityConverter(),*/ new DelegateConverter(), new ListReferenceConverter(),/*new IAssetConverter(), new IEngineConverter(),*/new PtrConverter(), new ReferenceConverter() },
 			PreserveReferencesHandling = PreserveReferencesHandling.All,
 			ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
 			TypeNameHandling = TypeNameHandling.All,
-			ObjectCreationHandling = ObjectCreationHandling.Reuse,
+			ObjectCreationHandling = ObjectCreationHandling.Replace,
 			ReferenceResolverProvider = () => new IdReferenceResolver(),
 			NullValueHandling = NullValueHandling.Ignore,
 			//DefaultValueHandling = DefaultValueHandling.Populate

@@ -1,29 +1,28 @@
-﻿using System;
+﻿using BepuUtilities.Memory;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Numerics;
 
 namespace Sharp.Core
 {
 	/// <summary>
 	/// A resizable collection of bits.
 	/// </summary>
-	public class BitMask
+	public struct BitMask
 	{
-		const int BitSize = (sizeof(uint) * 8) - 1;
-		const int ByteSize = 5;  // log_2(BitSize + 1)
+		private static int BitSize = (sizeof(uint) * 8) - 1;
+		private static int ByteSize = 5;  // log_2(BitSize + 1)
 
-		uint[] bits;
+		[JsonProperty(IsReference = false)]
+		private uint[] bits;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="BitSet"/> class.
-		/// </summary>
-		public BitMask()
+		public BitMask(int startValue)
 		{
 			bits = new uint[1];
+			if (startValue is 1)
+				SetAll();
 		}
-
 		/// <summary>
 		/// Determines whether the given bit is set.
 		/// </summary>
@@ -42,7 +41,7 @@ namespace Sharp.Core
 		/// Sets the bit at the given index.
 		/// </summary>
 		/// <param name="index">The bit to set.</param>
-		public void SetBit(int index)
+		public void SetFlag(int index)
 		{
 			int b = index >> ByteSize;
 			if (b >= bits.Length)
@@ -50,12 +49,11 @@ namespace Sharp.Core
 
 			bits[b] |= 1u << (index & BitSize);
 		}
-
 		/// <summary>
 		/// Clears the bit at the given index.
 		/// </summary>
 		/// <param name="index">The bit to clear.</param>
-		public void ClearBit(int index)
+		public void ClearFlag(int index)
 		{
 			int b = index >> ByteSize;
 			if (b >= bits.Length)
@@ -63,15 +61,15 @@ namespace Sharp.Core
 
 			bits[b] &= ~(1u << (index & BitSize));
 		}
-
 		/// <summary>
 		/// Sets all bits.
 		/// </summary>
 		public void SetAll()
 		{
-			int count = bits.Length;
-			for (int i = 0; i < count; i++)
-				bits[i] = 0xffffffff;
+			bits = Array.Empty<uint>();
+			//int count = bits.Length;
+			//for (int i = 0; i < count; i++)
+			//bits[i] = 0xffffffff;
 		}
 
 		/// <summary>
@@ -81,50 +79,63 @@ namespace Sharp.Core
 		{
 			Array.Clear(bits, 0, bits.Length);
 		}
-
-		/// <summary>
-		/// Determines whether all of the bits in this instance are also set in the given bitset.
-		/// </summary>
-		/// <param name="other">The bitset to check.</param>
-		/// <returns><c>true</c> if all of the bits in this instance are set in <paramref name="other"/>; otherwise, <c>false</c>.</returns>
-		public bool IsSubsetOf(BitMask other)
+		public bool HasNoFlags(in BitMask flags)
 		{
-			if (other == null)
-				throw new ArgumentNullException("other");
-
-			var otherBits = other.bits;
-			int count = Math.Min(bits.Length, otherBits.Length);
+			if (flags.bits.Length is 0)//means Everything
+				return false;
+			//var isNothing = true;
+			//foreach (var bit in flags.bits.AsSpan())
+			//if (BitOperations.PopCount(bit) is not 0)//or (bit&0) is not 0
+			//	isNothing = false;
+			//if (isNothing) return true;
+			int count = bits.Length;
+			int flagsCount = flags.bits.Length;
+			if (flagsCount < count)
+				count = flagsCount;
 			for (int i = 0; i < count; i++)
 			{
-				uint bit = bits[i];
-				if ((bit & otherBits[i]) != bit)
+				uint bit = flags.bits[i];
+				if ((bits[i] & bit) is not 0)
 					return false;
 			}
-
-			// handle extra bits on our side that might just be all zero
-			int extra = bits.Length - count;
-			for (int i = count; i < extra; i++)
-			{
-				if (bits[i] != 0)
-					return false;
-			}
-
 			return true;
 		}
-		public bool HasFlags(BitMask flags)
+		public bool HasFlags(in BitMask flags)
 		{
-			if (flags == null)
-				throw new ArgumentNullException("other");
-
-			var otherBits = flags.bits;
-			int count = Math.Min(bits.Length, otherBits.Length);
+			if (flags.bits.Length is 0)
+				return true;
+			int count = bits.Length;
+			int flagsCount = flags.bits.Length;
+			if (flagsCount > count)
+			{
+				foreach (var bit in flags.bits.AsSpan()[count..])
+					if (BitOperations.PopCount(bit) is not 0)//or (bit&0) is not 0
+						return false; //early out in case testing mask has flags set in last bits that are outside of range of this mask
+			}
+			else
+				count = flagsCount;
 			for (int i = 0; i < count; i++)
 			{
-				uint bit = otherBits[i];
+				uint bit = flags.bits[i];
 				if ((bits[i] & bit) != bit)
 					return false;
 			}
-
+			return true;
+		}
+		public bool HasAnyFlags(in BitMask flags)
+		{
+			if (flags.bits is null)
+				throw new ArgumentNullException(nameof(flags.bits));
+			int count = bits.Length;
+			int flagsCount = flags.bits.Length;
+			if (flagsCount < count)
+				count = flagsCount;
+			for (int i = 0; i < count; i++)
+			{
+				uint bit = flags.bits[i];
+				if ((bits[i] & bit) == 0)
+					return false;
+			}
 			return true;
 		}
 	}

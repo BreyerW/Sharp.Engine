@@ -64,17 +64,13 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public void SetFlatColorState()
 		{
-			GL.Disable(EnableCap.Fog);
 			GL.Disable(EnableCap.Texture2D);
 			GL.Disable(EnableCap.Dither);
 			GL.Enable(EnableCap.DepthTest);
 			//GL.Disable(EnableCap.DepthTest);
-			GL.Disable(EnableCap.LineStipple);
-			GL.Disable(EnableCap.PolygonStipple);
 			GL.Disable(EnableCap.CullFace);
 			GL.Disable(EnableCap.Blend);
 			GL.Disable(EnableCap.AlphaTest);
-			GL.ShadeModel(ShadingModel.Flat);
 		}
 
 		public void Use(int Program)

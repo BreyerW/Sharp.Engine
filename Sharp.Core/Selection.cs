@@ -10,14 +10,7 @@ using System.Threading.Tasks;
 using System.Buffers;
 using System.Linq;
 using System.Collections;
-using System.Runtime.CompilerServices;
-using SharpAsset;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Linq;
-using OpenTK.Graphics.ES11;
-using SharpAvi.Codecs;
 
 namespace Sharp
 {
@@ -25,11 +18,12 @@ namespace Sharp
 	{
 		private static Stack<object> assets = new Stack<object>();
 
-
-		internal static Stream lastStructure;// memStream.GetStream();
-											 //private static Root cachedRoot = new Root();
 		public static object sync = new object();
-
+		public static Stack<object> Assets
+		{
+			get => assets;
+			set => assets = value;
+		}
 		public static object Asset
 		{
 			set
@@ -50,28 +44,10 @@ namespace Sharp
 				return assets.Peek();
 			}
 		}
-
-		internal static string tempPrevName = Path.GetTempFileName();
-		internal static string tempCurrName = Path.GetTempFileName();
 		public static Action<object, object> OnSelectionChange;
 		public static Action<object> OnSelectionDirty;
 		public static bool isDragging = false;
 
-		static Selection()
-		{
-			//memStream.AggressiveBufferReturn = true;
-
-			//lastStructure = memStream.GetStream();// new FileStream(tempPrevName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 4096);
-		}
-
-
-
-		public static void IsSelectionDirty(CancellationToken token)
-		{//produce component drawers and hide/detach them when not active for all object in scene and calculate diff for each property separately
-
-		}
-
-		//static ManualResetEventSlim waiter = new ManualResetEventSlim();
 		public static async Task Repeat(Action<CancellationToken> doWork, int delayInMilis, int periodInMilis, CancellationToken cancellationToken, bool singleThreaded = false)
 		{
 			await Task.Delay(delayInMilis, cancellationToken).ConfigureAwait(singleThreaded);
@@ -245,19 +221,29 @@ namespace Sharp
 			{
 				dotPos = reader.Path.LastIndexOf('.');
 				if (dotPos > -1)
-					name = reader.Path.AsSpan()[0..dotPos];
+					name = reader.Path.AsSpan()[..dotPos];
 			}
 			while (reader.Read())
 			{
 				if (reader.Path.AsSpan().SequenceEqual(name)) break;
 				if (reader.TokenType == JsonToken.PropertyName)
 				{
-					var member = objectType.GetMember(reader.Value as string, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
+					var memName = reader.Value as string;
+					var member = objectType.GetMember(memName, MemberTypes.Property | MemberTypes.Field, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
 					if (member.Length is 0) continue;
 					reader.Read();
 
 					if (member[0] is PropertyInfo p)
 					{
+						if (p.CanWrite is false)
+						{
+							var baseT = objectType.BaseType;
+							while (baseT is not null && p.CanWrite is false)
+							{
+								p = baseT.GetProperty(memName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
+								baseT = baseT.BaseType;
+							}
+						}
 						p.SetValue(obj, serializer.Deserialize(reader, p.PropertyType));
 					}
 					else if (member[0] is FieldInfo f)
@@ -279,6 +265,7 @@ namespace Sharp
 	{
 		internal readonly IDictionary<Guid, object> _idToObjects = new Dictionary<Guid, object>();
 		internal readonly IDictionary<object, Guid> _objectsToId = new Dictionary<object, Guid>();
+		private IEngineObject rootObj = null;
 		//Resolves $ref during deserialization
 		public object ResolveReference(object context, string reference)
 		{
@@ -303,7 +290,13 @@ namespace Sharp
 		//Resolves if $id or $ref should be used during serialization
 		public bool IsReferenced(object context, object value)
 		{
-			return _objectsToId.ContainsKey(value);
+			if (rootObj is null && value is IEngineObject eObj)
+			{
+				rootObj = eObj;
+				return false;
+			}
+			return rootObj is not null ? false : _objectsToId.ContainsKey(value);
+			//return _objectsToId.ContainsKey(value);
 		}
 		//Resolves $id during deserialization
 		public void AddReference(object context, string reference, object value)
@@ -330,13 +323,15 @@ namespace Sharp
 				return null;
 			reader.Read();
 			var elementType = objectType.IsArray ? objectType.GetElementType() : objectType.GetGenericArguments()[0];
-			var refId = reader.ReadAsString();
+			var refId =/* reader.Path is refProperty or idProperty ?*/ reader.ReadAsString() /*: null*/;
 
 			while (reader.TokenType is not JsonToken.StartArray) reader.Read();
 			reader.Read();
+			IList tmp = new List<object>();
+			IList reference = null;
 			if (refId is not null)
 			{
-				IList tmp = new List<object>();
+
 				while (true)
 				{
 					tmp.Add(serializer.Deserialize(reader, elementType));
@@ -344,7 +339,7 @@ namespace Sharp
 					if (reader.TokenType is JsonToken.EndArray) { reader.Read(); break; }
 					while (!elementType.IsPrimitive && reader.TokenType is not JsonToken.StartObject) reader.Read();
 				}
-				var reference = serializer.ReferenceResolver.ResolveReference(serializer, refId) as IList;
+				reference = serializer.ReferenceResolver.ResolveReference(serializer, refId) as IList;
 				if (reference is not null)
 				{
 					if (objectType.IsArray)
@@ -361,28 +356,48 @@ namespace Sharp
 				}
 				else
 					existingValue = Activator.CreateInstance(objectType, tmp.Count) as IList;
-
 				serializer.ReferenceResolver.AddReference(serializer, refId, existingValue);
-
-				foreach (var i in ..tmp.Count)
-					if (reference is not null && !objectType.IsArray)
-						existingValue.Add(tmp[i]);
-					else
-						existingValue[i] = tmp[i];
-
-				return existingValue;
 			}
+
+
+			foreach (var i in ..tmp.Count)
+				if (reference is not null && !objectType.IsArray)
+					existingValue.Add(tmp[i]);
+				else
+					existingValue[i] = tmp[i];
+
+			return existingValue;
+
 
 			throw new NotSupportedException();
 		}
 
 		public override void WriteJson(JsonWriter writer, IList value, JsonSerializer serializer)
 		{
+
 			writer.WriteStartObject();
-			if (!serializer.ReferenceResolver.IsReferenced(serializer, value))
+			if (serializer.ContractResolver.ResolveContract(value.GetType()).IsReference.HasValue is false || serializer.ContractResolver.ResolveContract(value.GetType()).IsReference is true)
+				if (!serializer.ReferenceResolver.IsReferenced(serializer, value))
+				{
+					writer.WritePropertyName(idProperty);
+					writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
+					writer.WritePropertyName(valuesProperty);
+					writer.WriteStartArray();
+					foreach (var item in value)
+					{
+						serializer.Serialize(writer, item);
+					}
+					writer.WriteEndArray();
+				}
+				else
+				{
+					writer.WritePropertyName(refProperty);
+					writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
+				}
+			else
 			{
 				writer.WritePropertyName(idProperty);
-				writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
+				writer.WriteNull();
 				writer.WritePropertyName(valuesProperty);
 				writer.WriteStartArray();
 				foreach (var item in value)
@@ -390,11 +405,6 @@ namespace Sharp
 					serializer.Serialize(writer, item);
 				}
 				writer.WriteEndArray();
-			}
-			else
-			{
-				writer.WritePropertyName(refProperty);
-				writer.WriteValue(serializer.ReferenceResolver.GetReference(serializer, value));
 			}
 			writer.WriteEndObject();
 		}

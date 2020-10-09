@@ -5,20 +5,34 @@ in vec3 vertex_position;
 in vec2 vertex_texcoord;
 out vec2 v_texcoord;
 out vec3 v_pos;
+out float depth;
 uniform mat4 camView;
 uniform mat4 camProjection;
 uniform mat4 model;
 uniform vec2 viewPort;
 uniform float len;
+float computeDepth(vec3 pos) {
+	vec4 clip_space_pos = camProjection * camView*model * vec4(pos.xyz, 1.0);
+	float clip_space_depth = clip_space_pos.z / clip_space_pos.w;
 
+	float far = gl_DepthRange.far;
+	float near = gl_DepthRange.near;
+
+	float depth = (((far-near) * clip_space_depth) + near + far) / 2.0;
+
+	return depth;
+}
             void main(void)
             {
 				vec4 pp =camProjection*camView*model* vec4(vertex_position.xz*len, vertex_position.y * len, 1.0);
+				depth=computeDepth(vec3(vertex_position.xz*len, vertex_position.y * len));
 				pp.z =1.0e-6f; //pp.w - 1.0e-6f; reverse-z or traditional z depth
 				gl_Position = pp;
+				
 				v_texcoord = vertex_texcoord*len;
 				v_pos = (model * vec4(vertex_position.xz * len, vertex_position.y * len,1.0f)).xyz;
-            }
+
+           }
 
 		#pragma fragment
 			uniform mat4 camView;
@@ -29,9 +43,23 @@ uniform float len;
 			uniform vec4 color;
 			uniform vec2 viewPort;
 			uniform float len;
+			uniform vec2 camNearFar;
             out vec4 frag_color;
 			in vec2 v_texcoord;
 			in vec3 v_pos;
+			//in vec3 depth;
+
+			float computeDepth(vec3 pos) {
+	vec4 clip_space_pos = camProjection * camView*model * vec4(pos.xyz, 1.0);
+	float clip_space_depth = clip_space_pos.z / clip_space_pos.w;
+
+	float far = gl_DepthRange.far;
+	float near = gl_DepthRange.near;
+
+	float depth = (((far-near) * clip_space_depth) + near + far) / 2.0;
+
+	return depth;
+}
 			vec3 getCameraPos() {
 				return vec3(camWorldView[3][0], camWorldView[3][1], camWorldView[3][2]);
 			}
@@ -51,6 +79,7 @@ uniform float len;
 			}
 			void main(void)
 			{
+			gl_FragDepth =computeDepth(v_pos);
 				// UV is grid space coordinate of pixel.
 				vec2 uv =abs(v_texcoord-vec2(len)/2f);
 

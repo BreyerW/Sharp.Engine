@@ -1,14 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿
+using Newtonsoft.Json;
 using Sharp.Editor.Attribs;
+using Sharp.Engine.Components;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Sharp
 {
 	[Serializable]
 	public abstract class Component : IEngineObject, IEquatable<Component>
 	{
-		public bool enabled;
+		private bool enabled;
 
 		public bool active
 		{
@@ -36,12 +37,18 @@ namespace Sharp
 		//    set;
 		//  } = { { { 80, 45 }, { 80, 45 }, { 80, 45 } } };
 		//[CurveRange()]
-
-		[NonSerializable]
+		private Entity parent;
+		[NonSerializable, JsonProperty]
 		public Entity Parent
 		{
-			get;
-			internal set;
+			get => parent;
+			private set
+			{
+				if (this is Transform t)
+					value.transform = t;
+				//value.ComponentsMask = value.ComponentsMask.SetTag(this);
+				parent = value;
+			}
 		}
 
 		internal virtual void OnActiveChanged()
@@ -61,8 +68,9 @@ namespace Sharp
 			return ReferenceEquals(this, other);
 		}
 
-		public Component()
+		public Component(Entity parent)
 		{
+			Parent = parent;
 			Extension.entities.AddEngineObject(this);
 		}
 	}

@@ -131,6 +131,7 @@
     <PackageReference Include="SDL2-CS.NetCore" Version="2.0.8" />
     <PackageReference Include="SDL2.Core" Version="2.2.0" />
     <PackageReference Include="SharpAvi" Version="2.1.2" />
+    <PackageReference Include="SharpCompress" Version="0.26.0" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0009" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />

@@ -16,6 +16,11 @@ namespace Sharp
 		};
 		public Material material;
 
+		public MeshRenderer(Entity parent) : base(parent)
+		{
+			parent.TagsMask = parent.TagsMask.SetTag("Renderable");
+		}
+
 		public override void Render()
 		{
 			material.TryGetProperty("mesh", out Mesh Mesh);

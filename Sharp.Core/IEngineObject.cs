@@ -3,7 +3,7 @@ using System;
 
 namespace Sharp
 {
-	public interface IEngineObject : IDisposable
+	public interface IEngineObject : IDisposable, IEquatable<IEngineObject>
 	{
 		/*[JsonProperty]
 		public Guid Id
@@ -23,5 +23,8 @@ namespace Sharp
 			}
 		}*/
 		void IDisposable.Dispose() => Extension.objectToIdMapping.Remove(this);
+		bool IEquatable<IEngineObject>.Equals(IEngineObject other){
+			return this == other;
+}
 	}
 }

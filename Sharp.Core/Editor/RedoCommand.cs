@@ -20,8 +20,6 @@ namespace Sharp.Editor
 
 		public string Indentifier { get => menuPath; }
 
-		// public static Stack<ICommand> undone = new Stack<ICommand>();
-
 		public void Execute(bool reverse = false)//TODO: add object context parameter with anything under mouse?
 		{
 			if (UndoCommand.currentHistory.Next is null)
@@ -37,10 +35,17 @@ namespace Sharp.Editor
 			{
 				if (label is "addedEntity")
 				{
-					var entity = Entity.CreateEntityForEditor();
+					var str = Encoding.Unicode.GetString(redo);
+					var component = JsonConvert.DeserializeObject(str, typeof(Entity), MainClass.serializerSettings) as Entity;
+					component.components = new List<Component>();
+					component.childs = new List<Entity>();
+					UndoCommand.prevStates.GetOrAddValueRef(component) = str;
+					//component.AddRestoredObject(index);
+					Extension.entities.AddRestoredEngineObject(component, index);
+					/*var entity = Entity.CreateEntityForEditor();
 					entity.name = Encoding.Unicode.GetString(redo);
 					entity.AddRestoredObject(index);
-					Extension.entities.AddRestoredEngineObject(entity, index);
+					Extension.entities.AddRestoredEngineObject(entity, index);*/
 				}
 				else if (label is "addedComponent")
 				{
@@ -52,10 +57,10 @@ namespace Sharp.Editor
 				}
 				else if (label is "changed")
 				{
-					ref var patched = ref UndoCommand.prevStates.GetOrAddValueRef(index.GetInstanceObject<Component>());
+					ref var patched = ref UndoCommand.prevStates.GetOrAddValueRef(index.GetInstanceObject<IEngineObject>());
 					var objToBePatched = Encoding.Unicode.GetBytes(patched);
 					patched = Encoding.Unicode.GetString(Delta.Apply(objToBePatched, redo));
-					JsonConvert.DeserializeObject(patched, index.GetInstanceObject<Component>().GetType(), MainClass.serializerSettings);
+					JsonConvert.DeserializeObject(patched, index.GetInstanceObject<IEngineObject>().GetType(), MainClass.serializerSettings);
 					//Console.WriteLine(object.ReferenceEquals(index.GetInstanceObject(),UndoCommand.prevStates.FirstOrDefault((obj) => obj.Key.GetInstanceID() == index).Key));
 				}
 				if (label is "selected")
@@ -68,11 +73,13 @@ namespace Sharp.Editor
 			{
 				//Extension.objectToIdMapping.TryGetValue(componentsToBeAdded.Keys[0],out _);
 				var str = Encoding.Unicode.GetString(list.redo);
-				var component = JsonConvert.DeserializeObject(str,Type.GetType(Encoding.Unicode.GetString(list.undo)), MainClass.serializerSettings) as Component;
-				component.Parent.AddComponent(component);
+				var component = JsonConvert.DeserializeObject(str, Type.GetType(Encoding.Unicode.GetString(list.undo)), MainClass.serializerSettings) as Component;
+				component.Parent.components.Add(component);
 				UndoCommand.prevStates.GetOrAddValueRef(component) = str;
 				//component.AddRestoredObject(id);
 				Extension.entities.AddRestoredEngineObject(component, id);
+
+				//TODO: theres bug with not adding component back to entitys internal collection
 			}
 			//TODO: add pointer type with IntPtr and size and PointerConverter where serializer will regenerate unmanaged memory automatcally or abuse properties with internal set or prepend unmanaged memory with size then IntPtr can be used as is
 			Squid.UI.isDirty = true;

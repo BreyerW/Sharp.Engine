@@ -19,9 +19,13 @@ namespace Sharp
 		public float Angle { get => angle; set => angle = value; }
 		public static float ambientCoefficient = 0.005f;
 
+		public Light(Entity parent) : base(parent)
+		{
+		}
+
 		internal override void OnActiveChanged()
 		{
-			if (enabled)
+			if (active)
 				lights.Add(this);
 			else
 				lights.Remove(this);

@@ -1,10 +1,7 @@
 ﻿using System;
-using Sharp.Editor.Views;
 using System.Numerics;
-using SharpSL;
 using SharpAsset;
 using SharpAsset.Pipeline;
-using OpenTK.Graphics.OpenGL;
 
 namespace Sharp.Editor
 {
@@ -64,7 +61,6 @@ namespace Sharp.Editor
 			var scale = MathF.Abs(Camera.main.Parent.transform.Position.Y);
 			gridSize = Camera.main.ZFar * (scale / 100f + 1);
 			var gridMat = Matrix4x4.CreateTranslation(0, 0, 0);
-
 			gridLineMaterial.BindProperty("len", gridSize);
 			gridLineMaterial.BindProperty("model", gridMat);
 			gridLineMaterial.SendData();

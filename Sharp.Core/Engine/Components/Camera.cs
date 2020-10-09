@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Sharp.Core;
 using SharpAsset;
 using System;
 using System.Collections.Generic;
@@ -51,8 +52,8 @@ namespace Sharp
 			private set
 			{
 				orthoMatrix = value;
-				if (main != null)
-					Material.BindGlobalProperty("camOrtho", main.orthoMatrix);
+				//if (main != null)
+				//	Material.BindGlobalProperty("camOrtho", main.orthoMatrix);
 			}
 		}
 		public Matrix4x4 ViewMatrix
@@ -80,7 +81,7 @@ namespace Sharp
 		{
 		}
 
-		public Camera() : base()
+		public Camera(Entity p) : base(p)
 		{
 			Speed = 50.0f;
 			//TargetPosition =  new Vector3();
@@ -96,6 +97,7 @@ namespace Sharp
 			Material.BindGlobalProperty("camNearFar", new Vector2(ZNear, ZFar));
 			//Orientation = TargetOrientation;
 			SetProjectionMatrix();
+			cullingTags.SetTag("Nothing");
 		}
 
 		#endregion Constructors
@@ -115,7 +117,7 @@ namespace Sharp
 
 		public Vector2 MouseRotation;
 		public Vector3 Movement;
-
+		public BitMask cullingTags = new(0);
 		public float Speed { get; set; }
 		public float Acceleration { get; set; }
 		public float ZNear { get; set; }
@@ -155,12 +157,12 @@ namespace Sharp
 		public void SetProjectionMatrix()
 		{
 			ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView((float)(FieldOfView * NumericsExtensions.Deg2Rad), AspectRatio, ZNear, ZFar);
-			
+
 		}
 
-		public void SetOrthoMatrix(int left, int right, int bottom, int top)
+		public void SetOrthoMatrix(int width, int height/*int left, int right, int bottom, int top*/)
 		{
-			OrthoMatrix = Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, -1, 1); //Matrix4x4.CreateOrthographic(width, height, -1, 1); //
+			OrthoMatrix = Matrix4x4.CreateOrthographicOffCenter(300, 0, 70, 0, -1, 1); //Matrix4x4.CreateOrthographicOffCenter(left, right, bottom, top, -1, 1); //Matrix4x4.CreateOrthographic(width, height, -1, 1); //
 		}
 
 		public void SetModelviewMatrix()

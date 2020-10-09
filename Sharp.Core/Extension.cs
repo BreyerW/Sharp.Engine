@@ -6,11 +6,99 @@ using System.Runtime.CompilerServices;
 using Sharp.Engine.Components;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Sharp.Core;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace Sharp
 {
 	public static class Extension
 	{
+		private static Dictionary<string, int> flagToBitPositionMapping = new()//TODO: replace with generated enum?
+		{
+			["Renderable"] = 0,
+			["Selected"] = 1
+		};
+		private static Dictionary<Type, int> compFlagToBitPositionMapping = new()
+		{
+			[typeof(Renderer)] = 0,
+			[typeof(Behaviour)] = 1,
+			[typeof(CommandBufferComponent)] = 2,
+		};//TODO: replace with generated enum?
+
+		public static ref readonly BitMask SetTag(this in BitMask mask, string tag)
+		{
+			ref var bitmask = ref Unsafe.AsRef(mask);
+			if (tag is "Nothing")
+			{
+				bitmask.ClearAll();
+			}
+			else if (tag is "Everything")
+			{
+				bitmask.SetAll();
+			}
+			else if (flagToBitPositionMapping.TryGetValue(tag, out var index))
+				bitmask.SetFlag(index);
+			else throw new ArgumentException($"{tag} does not exist.");
+
+			return ref bitmask;
+		}
+		public static ref readonly BitMask ClearTag(this in BitMask mask, string tag)
+		{
+			ref var bitmask = ref Unsafe.AsRef(mask);
+			if (tag is "Nothing")
+			{
+				return ref bitmask;
+			}
+			else if (tag is "Everything")
+			{
+				bitmask.ClearAll();
+			}
+			else if (flagToBitPositionMapping.TryGetValue(tag, out var index))
+				bitmask.ClearFlag(index);
+			else throw new ArgumentException($"{tag} does not exist.");
+
+			return ref bitmask;
+		}
+		public static ref readonly BitMask SetTag(this in BitMask mask, Component tag)
+		{
+			ref var bitmask = ref Unsafe.AsRef(mask);
+			if (tag is Renderer)
+			{
+				bitmask.SetFlag(compFlagToBitPositionMapping[typeof(Renderer)]);
+			}
+			else if (tag is CommandBufferComponent)
+			{
+				bitmask.SetFlag(compFlagToBitPositionMapping[typeof(CommandBufferComponent)]);
+			}
+			else if (tag is Behaviour)
+			{
+				bitmask.SetFlag(compFlagToBitPositionMapping[typeof(Behaviour)]);
+			}
+			if (compFlagToBitPositionMapping.TryGetValue(tag.GetType(), out var index) is false) compFlagToBitPositionMapping.Add(tag.GetType(), index = compFlagToBitPositionMapping.Count);
+			bitmask.SetFlag(index);
+			return ref bitmask;
+		}
+		public static ref readonly BitMask ClearTag(this in BitMask mask, Component tag)
+		{
+			ref var bitmask = ref Unsafe.AsRef(mask);
+			if (tag is Renderer)
+			{
+				bitmask.ClearFlag(compFlagToBitPositionMapping[typeof(Renderer)]);
+			}
+			else if (tag is CommandBufferComponent)
+			{
+				bitmask.ClearFlag(compFlagToBitPositionMapping[typeof(CommandBufferComponent)]);
+			}
+			else if (tag is Behaviour)
+			{
+				bitmask.ClearFlag(compFlagToBitPositionMapping[typeof(Behaviour)]);
+			}
+			if (compFlagToBitPositionMapping.TryGetValue(tag.GetType(), out var index))
+				bitmask.ClearFlag(index);
+			else throw new ArgumentException($"{tag} does not exist.");
+
+			return ref bitmask;
+		}
 		internal static Root entities = new Root();
 		//TODO: delete implicit id someday if someone really want to keep track of cyclic references and doesnt own source code
 		//they can wrap - or extend if not sealed - said class and implement IEngineObject
@@ -104,7 +192,6 @@ namespace Sharp
 		public static HashSet<IEngineObject> removedEntities = new HashSet<IEngineObject>();
 		internal static List<Entity> root = new List<Entity>();
 		internal static Dictionary<Guid, IEngineObject> idToObjectMapping = new Dictionary<Guid, IEngineObject>();
-		internal List<Renderer> renderers = new List<Renderer>();
 
 		internal void AddEngineObject(IEngineObject obj)
 		{
@@ -117,8 +204,6 @@ namespace Sharp
 			}
 			if (obj is IStartableComponent start)
 				SceneView.startables.Enqueue(start);
-			if (obj is Renderer r)
-				renderers.Add(r);
 		}
 
 		internal void RemoveEngineObject(IEngineObject obj)
@@ -128,8 +213,6 @@ namespace Sharp
 			removedEntities.Add(obj);
 			var id = obj.GetInstanceID();
 			idToObjectMapping.Remove(id);
-			if (obj is Renderer r)
-				renderers.Remove(r);
 		}
 		internal void AddRestoredEngineObject(IEngineObject obj, in Guid id)
 		{
@@ -142,8 +225,6 @@ namespace Sharp
 			}
 			if (obj is IStartableComponent start)
 				SceneView.startables.Enqueue(start);
-			if (obj is Renderer r)
-				renderers.Add(r);
 		}
 	}
 }

@@ -76,7 +76,7 @@ namespace Sharp.Editor.UI.Property
 			curveFrame.NoEvents = false;
 			curveFrame.Position = new Point(label.Size.x, 0);
 			curveFrame.MouseUp += RegionDrawer_MouseDown;
-			Scissor = true;
+			//Scissor = true;
 			Childs.Add(curveFrame);
 		}
 

@@ -123,7 +123,8 @@ namespace Sharp.Editor.Views
 						idToViewMapping.Remove(ent);
 					}
 					else if (removal is Component component)
-						idToViewMapping[component.Parent].Nodes.Remove(idToViewMapping[component.Parent].Nodes.Find((node) => node.UserData == component));
+						if (idToViewMapping.TryGetValue(component.Parent, out var tree))
+							tree.Nodes.Remove(idToViewMapping[component.Parent].Nodes.Find((node) => node.UserData == component));
 			}
 		}
 		private void RegisterEngineObject(IEngineObject obj)

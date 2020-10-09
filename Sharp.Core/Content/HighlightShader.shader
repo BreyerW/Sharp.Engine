@@ -17,7 +17,6 @@
 
 		uniform vec4 outline_color;
 		uniform vec2 camNearFar;
-		uniform sampler2D SceneTexture;
 		uniform sampler2D MyTexture;
 		uniform sampler2D SelectionDepthTex;
 		uniform sampler2D SceneDepthTex;
@@ -151,5 +150,5 @@ bool visible = d <=scnd;
 a *= visible ? 1.f : 0.33f;
 
 //frag_color =vec4(linearize_depth(texture(SceneDepthTex,res).r, camNearFar.x, camNearFar.y));
-frag_color=vec4(texture(SceneTexture,uv)*(1f-a)+(outline_color*a));
+frag_color=(outline_color*a);
             }

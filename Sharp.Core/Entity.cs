@@ -1,99 +1,57 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
+using Microsoft.Collections.Extensions;
+using Newtonsoft.Json;
+using Sharp.Core;
 using Sharp.Engine.Components;
 
 namespace Sharp
 {
-	[Serializable]
-	public class Entity : IEngineObject
+	[Serializable, JsonObject]
+	public sealed class Entity : IEngineObject
 	{
+		internal static MultiValueDictionary<(BitMask components, BitMask tags), Entity> tagsMapping = new();//key is bit position also make it for system parts where mask defines what components entity has at least once
+		[JsonIgnore]
 		public Entity parent;
-		public Transform transform;
+
+		[JsonIgnore]
+		public Transform transform;//TODO: remove it and make caching responsibility of user
+		[JsonIgnore]
 		public List<Entity> childs = new List<Entity>();
 		public string name = "Entity Object";
+		private BitMask tagsMask = new(0);
 
-		public bool active
+		private BitMask componentsMask = new(0);
+		[JsonProperty]
+		public BitMask ComponentsMask
 		{
-			get { return enabled; }
-			set
+			get => componentsMask;
+			private set
 			{
-				if (enabled == value)
-					return;
-				enabled = value;
-				//if (enabled)
-				//OnEnableInternal ();
-				//else
-				//OnDisableInternal ();
+				tagsMapping.Remove((componentsMask, tagsMask), this);
+				tagsMapping.Add((value, tagsMask), this);
+				componentsMask = value;
 			}
 		}
-
-		private bool enabled = true;
-		private HashSet<int> tags = new HashSet<int>();
-
-		private List<Component> components = new List<Component>();
-		private Entity(string name)
+		[JsonProperty]
+		public BitMask TagsMask
 		{
-			this.name = name;
+			get => tagsMask;
+			set
+			{
+				tagsMapping.Remove((componentsMask, tagsMask), this);
+				tagsMapping.Add((componentsMask, value), this);
+				tagsMask = value;
+			}
 		}
+		[JsonIgnore]
+		internal List<Component> components = new List<Component>();
+
 		public Entity()
 		{
 			Extension.entities.AddEngineObject(this);
 			AddComponent<Transform>();
-		}
-		internal static Entity CreateEntityForEditor()
-		{
-			return new Entity("Entity Object");
-		}
-		public static Entity[] FindAllWithTags(bool activeOnly = true, params string[] lookupTags)
-		{
-			//find all entities with tags in scene
-			HashSet<Entity> intersectedArr;
-			var id = TagsContainer.allTags.IndexOf(lookupTags[0]);
-			intersectedArr = TagsContainer.entitiesToTag[id];
-			foreach (var tag in lookupTags)
-			{
-				id = TagsContainer.allTags.IndexOf(tag);
-				intersectedArr.IntersectWith(TagsContainer.entitiesToTag[id]);
-			}
-			if (activeOnly)
-				foreach (var entity in intersectedArr)
-					if (!entity.active)
-						intersectedArr.Remove(entity);
-			return intersectedArr.ToArray();
-		}
-
-		//public Entity[] FindWithTags(bool activeOnly=true, params string[] lookupTags){
-		//find children entities with tags in scene
-		//}
-		public void AddTags(params string[] tagsToAdd)
-		{
-			foreach (var tag in tagsToAdd)
-			{
-				if (TagsContainer.allTags.Contains(tag))
-				{
-					var id = TagsContainer.allTags.IndexOf(tag);
-					TagsContainer.entitiesToTag[id].Add(this);
-					tags.Add(id);
-				}
-				else
-				{
-					throw new ArgumentException("Tag " + tag + " doesn't exist!");
-					//TagsContainer.allTags.Add (tag);
-					//TagsContainer.entitiesToTag.Add(new HashSet<Entity>(){this});
-				}
-			}
-		}
-
-		public void RemoveTags(params string[] tagsToRemove)
-		{
-			foreach (var tag in tagsToRemove)
-			{
-				var id = TagsContainer.allTags.IndexOf(tag);
-				TagsContainer.entitiesToTag[id].Remove(this);
-				tags.Remove(id);
-			}
 		}
 
 		public Quaternion ToQuaterion(Vector3 angles)
@@ -103,7 +61,61 @@ namespace Sharp
 
 			return Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z));
 		}
+		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithTags(BitMask mask, bool cull = false)
+		{
+			if (cull)
+			{
+				foreach (var (key, value) in tagsMapping)
+					if (key.tags.HasNoFlags(mask))
+						yield return value;
+			}
+			else
+				foreach (var (key, value) in tagsMapping)
+					if (key.tags.HasFlags(mask))
+						yield return value;
 
+		}
+		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithComponents(BitMask mask, bool cull = false)
+		{
+			if (cull)
+			{
+				foreach (var (key, value) in tagsMapping)
+					if (key.components.HasNoFlags(mask))
+						yield return value;
+			}
+			else
+				foreach (var (key, value) in tagsMapping)
+					if (key.components.HasFlags(mask))
+						yield return value;
+
+		}
+		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithComponentsAndTags(BitMask componentsMask, BitMask tagsMask, bool cullComponents = false, bool cullTags = false)
+		{
+			if (cullComponents && cullTags)
+			{
+				foreach (var (key, value) in tagsMapping)
+					if (key.components.HasNoFlags(componentsMask) && key.tags.HasNoFlags(tagsMask))
+						yield return value;
+			}
+			else if (cullComponents is false && cullTags is false)
+			{
+				foreach (var (key, value) in tagsMapping)
+					if (key.components.HasFlags(componentsMask) && key.tags.HasFlags(tagsMask))
+						yield return value;
+			}
+			else if (cullComponents is false && cullTags)
+			{
+				foreach (var (key, value) in tagsMapping)
+					if (key.components.HasFlags(componentsMask) && key.tags.HasNoFlags(tagsMask))
+						yield return value;
+			}
+			else
+			{
+				foreach (var (key, value) in tagsMapping)
+					if (key.components.HasNoFlags(componentsMask) && key.tags.HasFlags(tagsMask))
+						yield return value;
+			}
+		}
 		public static Vector3 rotationMatrixToEulerAngles(Matrix4x4 mat)
 		{
 			//assert(isRotationMatrix(R));
@@ -159,19 +171,11 @@ namespace Sharp
 
 		public Component AddComponent(Type type)
 		{
-			var comp = Activator.CreateInstance(type) as Component;
-			comp.Parent = this;
+			var comp = Activator.CreateInstance(type, this) as Component;
 			comp.active = true;
-			if (comp is Transform t)
-				transform = t;
-			components.Add(comp);
-			return comp;
-		}
-		internal Component AddComponent(Component comp)
-		{
-			comp.Parent = this;
-			if (comp is Transform t)
-				transform = t;
+			//if (comp is Transform t)
+			//transform = t;
+			ComponentsMask = ComponentsMask.SetTag(comp);
 			components.Add(comp);
 			return comp;
 		}
@@ -208,6 +212,7 @@ namespace Sharp
 				component.Dispose();
 			foreach (var child in childs)
 				child.Dispose();
+			tagsMapping.Remove((componentsMask, tagsMask), this);
 			Extension.entities.RemoveEngineObject(this);
 			Extension.objectToIdMapping.Remove(this);
 		}

@@ -10,11 +10,13 @@ using SharpAsset;
 using SharpSL;
 using OpenTK.Graphics.OpenGL;
 using System.Runtime.CompilerServices;
+using Sharp.Core;
 
 namespace Sharp.Editor.Views
 {
 	public class SceneView : View
 	{
+		private static BitMask rendererMask = new BitMask(0);
 		private int cell_size = 32;
 		private int grid_size = 4096;
 		private static Material highlight;
@@ -41,6 +43,7 @@ namespace Sharp.Editor.Views
 		static SceneView()
 		{
 			LoadScene();
+			rendererMask.SetFlag(0);
 		}
 		private static void LoadScene()
 		{
@@ -67,14 +70,12 @@ namespace Sharp.Editor.Views
 
 			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightShader.shader");
 			ref var screenMesh = ref Pipeline.Get<Mesh>().GetAsset("screen_space_square");
-			ref var sceneTexture = ref Pipeline.Get<Texture>().GetAsset("sceneTarget");
 			ref var selectionTexture = ref Pipeline.Get<Texture>().GetAsset("selectionTarget");
 			ref var sceneDepthTexture = ref Pipeline.Get<Texture>().GetAsset("depthTarget");
 			ref var selectionDepthTexture = ref Pipeline.Get<Texture>().GetAsset("selectionDepthTarget");
 			highlight = new Material();
 			highlight.Shader = shader;
 			highlight.BindProperty("MyTexture", selectionTexture);
-			highlight.BindProperty("SceneTexture", sceneTexture);
 			highlight.BindProperty("SelectionDepthTex", selectionDepthTexture);
 			highlight.BindProperty("SceneDepthTex", sceneDepthTexture);
 			highlight.BindProperty("outline_color", Manipulators.selectedColor);
@@ -155,7 +156,7 @@ namespace Sharp.Editor.Views
 		{
 			Camera.main.AspectRatio = (float)Size.x / (Size.y);
 
-			Camera.main.SetOrthoMatrix(Location.x, Size.x, Location.y, Size.y);
+			Camera.main.SetOrthoMatrix(Size.x, Size.y);
 			Camera.main.Width = Size.x;
 			Camera.main.Height = Size.y;
 			Camera.main.SetProjectionMatrix();
@@ -240,29 +241,43 @@ namespace Sharp.Editor.Views
 
 			var scene = Camera.main.Parent.GetComponent<SceneCommandComponent>();
 			scene.Execute();
+
+
 			MainWindow.backendRenderer.Viewport(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
 			MainWindow.backendRenderer.Clip(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
 			MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
+
 			MainWindow.backendRenderer.SetStandardState();
-			GL.Disable(EnableCap.Blend);
 			MainWindow.backendRenderer.ClearColor(0.15f, 0.15f, 0.15f, 1f);
 			MainWindow.backendRenderer.ClearBuffer();
-
-			//MainWindow.backendRenderer.ClearColor();
-			MainWindow.backendRenderer.WriteDepth(false);
-			highlight.SendData();
 			if (locPos.HasValue)
 			{
 				if (!PickTestForGizmo())
 					PickTestForObject();
 				locPos = null;
 			}
+			GL.Enable(EnableCap.Blend);
+			//blit from SceneCommand to this framebuffer instead
+			var renderables = Entity.FindAllWithComponentsAndTags(rendererMask, Camera.main.cullingTags, cullTags: true).GetEnumerator();
+			while (renderables.MoveNext())
+				foreach (var renderable in renderables.Current)
+				{
+					var renderer = renderable.GetComponent<Renderer>();
+					if (renderer is { active: true })
+						renderer.Render();
+				}
+			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
+			MainWindow.backendRenderer.WriteDepth(false);
+
+			highlight.SendData();
+
+
 			if (SceneStructureView.tree.SelectedNode?.UserData is Entity e)
 			{
 				//foreach (var selected in SceneStructureView.tree.SelectedChildren)
 				{
 					MainWindow.backendRenderer.WriteDepth(true);
-					//MainWindow.backendRenderer.ClearDepth();
+					MainWindow.backendRenderer.ClearDepth();
 
 					Manipulators.DrawCombinedGizmos(e, new Vector2(Size.x, Size.y));
 					MainWindow.backendRenderer.WriteDepth(false);
@@ -368,6 +383,7 @@ namespace Sharp.Editor.Views
 			if (hitList.Count > 0)
 			{
 				var entity = Root.root.First((ent) => ent.GetInstanceID() == hitList.Values[0]);
+
 				Console.WriteLine("Select " + entity.name + entity.GetInstanceID());
 				Selection.Asset = entity;
 				SceneStructureView.tree.SelectedNode = SceneStructureView.flattenedTree[entity.GetInstanceID()];
