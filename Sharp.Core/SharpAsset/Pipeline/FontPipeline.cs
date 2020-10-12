@@ -17,9 +17,7 @@ namespace SharpAsset.Pipeline
 		public override IAsset Import(string pathToFile)
 		{
 
-			var name = Path.GetFileNameWithoutExtension(pathToFile);
-			if (nameToKey.Contains(name))
-				return this[nameToKey.IndexOf(name)];
+			if (base.Import(pathToFile) is IAsset asset) return asset;
 			var font = new Font() { metrics = new Dictionary<uint, (Texture tex, float bearing, float advance)>() };
 			font.FullPath = pathToFile;
 			return this[Register(font)];

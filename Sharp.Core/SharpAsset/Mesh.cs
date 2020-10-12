@@ -23,14 +23,14 @@ namespace SharpAsset
 				if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(value))
 					RegisterAsAttribute.ParseVertexFormat(value);
 				vertsType = value;
-
 			}
 			get => vertsType;
 		}
 		public IndiceType indiceType;
 		public Type vertsType;
-		public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } }
-		public string Extension { get { return Path.GetExtension(FullPath); } }
+		public ReadOnlySpan<char> Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
+		public ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath); } set { } }
+
 		public string FullPath { get; set; }
 		public UsageHint UsageHint; //TODO: make enum flag with dynamic/static size & attributes static size but dynamic attrib mean unchanging indices but changing vertexes themselves
 
@@ -43,23 +43,22 @@ namespace SharpAsset
 
 		internal int VBO;
 		internal int EBO;
-		//internal bool needUpdate;
 
 		public Span<byte> SpanToMesh
 		{
 			get
 			{
-				return verts is null ? SpanToSharedMesh : verts.AsSpan();
+				return /*verts is null ? SpanToSharedMesh :*/ verts.AsSpan();
 			}
 		}
 
-		public Span<byte> SpanToSharedMesh
+		/*public Span<byte> SpanToSharedMesh
 		{
 			get
 			{
 				return sharedMeshes[Name].AsSpan();
 			}
-		}
+		}*/
 
 		public Span<byte> SpanToIndices
 		{
@@ -80,7 +79,7 @@ namespace SharpAsset
 
 		public override string ToString()
 		{
-			return Name;
+			return Name.ToString();
 		}
 
 		public ref T ReadVertexAtIndex<T>(int index) where T : struct, IVertex
@@ -137,9 +136,10 @@ namespace SharpAsset
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)//TODO: wyrzucic to do kodu edytora PlaceIntoView(View view,)
 		{
 			var eObject = new Entity();
+
 			eObject.transform.Position = worldPos;
 			var angles = eObject.transform.Rotation * NumericsExtensions.Deg2Rad;
-			eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y,angles.X,angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
+			eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 			var renderer = eObject.AddComponent<MeshRenderer>();
 			var shader = (Shader)Pipeline.Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TextureOnlyShader.shader");
 			renderer.material = new Material();

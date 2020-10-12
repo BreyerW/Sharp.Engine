@@ -52,8 +52,10 @@ namespace Sharp.Editor
 		}
 		private static void FillMaterial(out Material mat, ref Mesh m, ref Shader s)
 		{
-			mat = new Material();
-			mat.Shader = s;
+			mat = new Material
+			{
+				Shader = s
+			};
 			mat.BindProperty("mesh", m);
 		}
 		public static void DrawGrid(Vector3 pos)

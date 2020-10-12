@@ -26,13 +26,13 @@ namespace SharpAsset
 		public TextureFormat format;
 		internal byte[] bitmap;
 
-		public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
-		public string Extension { get { return Path.GetExtension(FullPath); } set { } }
+		public ReadOnlySpan<char> Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
+		public ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath); } set { } }
 		public string FullPath { get; set; }
 
 		public override string ToString()
 		{
-			return Name;
+			return Name.ToString();
 		}
 
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)

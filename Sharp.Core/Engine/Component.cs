@@ -73,5 +73,10 @@ namespace Sharp
 			Parent = parent;
 			Extension.entities.AddEngineObject(this);
 		}
+
+		public override bool Equals(object obj)
+		{
+			return Equals(obj as Component);
+		}
 	}
 }

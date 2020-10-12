@@ -92,7 +92,7 @@ namespace Sharp
 
 			AspectRatio = 1f;
 			FieldOfView = 90f;
-			ZNear = 0.1f;
+			ZNear = 0.2f;
 			ZFar = 1000f;
 			Material.BindGlobalProperty("camNearFar", new Vector2(ZNear, ZFar));
 			//Orientation = TargetOrientation;
@@ -117,7 +117,7 @@ namespace Sharp
 
 		public Vector2 MouseRotation;
 		public Vector3 Movement;
-		public BitMask cullingTags = new(0);
+		public Bitask cullingTags = new(0);
 		public float Speed { get; set; }
 		public float Acceleration { get; set; }
 		public float ZNear { get; set; }

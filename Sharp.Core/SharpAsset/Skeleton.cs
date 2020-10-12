@@ -1,5 +1,6 @@
 ﻿using Sharp;
 using SharpAsset.Pipeline;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
@@ -12,6 +13,8 @@ namespace SharpAsset
 		internal int VBOI;
 		internal int VAO;
 		internal Matrix4x4 MVP;
+		public ReadOnlySpan<char> Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
+		public ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath); } set { } }
 
 		public Bone this[string boneName]
 		{
@@ -56,31 +59,6 @@ namespace SharpAsset
 			get;
 			set;
 		}
-
-		public string Extension
-		{
-			get
-			{
-				return Path.GetExtension(FullPath);
-			}
-			set
-			{
-				//throw new NotImplementedException ();
-			}
-		}
-
-		public string Name
-		{
-			get
-			{
-				return Path.GetFileNameWithoutExtension(FullPath);
-			}
-			set
-			{
-				//throw new NotImplementedException ();
-			}
-		}
-
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)
 		{
 			var eObject = new Entity();

@@ -3,6 +3,7 @@ using System;
 using Sharp;
 using System.Linq;
 using OpenTK.Graphics.ES10;
+using System.IO;
 
 namespace SharpAsset.Pipeline
 {
@@ -24,15 +25,15 @@ namespace SharpAsset.Pipeline
 				return ref assets[index];
 			}
 		}
-
 		public ref T GetAsset(int index)
 		{
 			return ref this[index];
 		}
 		public int Register(in T asset)
 		{
-			nameToKey.Add(asset.Name);
-			var i = nameToKey.IndexOf(asset.Name);
+			var name = asset.Name.ToString();
+			nameToKey.Add(name);
+			var i = nameToKey.IndexOf(name);
 			this[i] = asset;
 			recentlyLoadedAssets.Enqueue(i);
 			return i;
@@ -41,6 +42,13 @@ namespace SharpAsset.Pipeline
 		public ref T GetAsset(string name)
 		{
 			return ref GetAsset(nameToKey.IndexOf(name));
+		}
+		public override IAsset Import(string pathToFile)
+		{
+			var name = Path.GetFileNameWithoutExtension(pathToFile);
+			if (nameToKey.Contains(name))
+				return this[nameToKey.IndexOf(name)];
+			return null;
 		}
 	}
 
@@ -57,7 +65,7 @@ namespace SharpAsset.Pipeline
 			var subclasses = type.Assembly.GetTypes().Where(t => t.IsSubclassOf(type));
 			foreach (var subclass in subclasses)
 			{
-				if (!(subclass.GetCustomAttributes(typeof(SupportedFilesAttribute), false).FirstOrDefault() is SupportedFilesAttribute attr))
+				if (subclass.GetCustomAttributes(typeof(SupportedFilesAttribute), false).FirstOrDefault() is not SupportedFilesAttribute attr)
 					continue;
 				var importer = Activator.CreateInstance(subclass) as Pipeline;
 				allPipelines.Add(importer.GetType().BaseType, importer);
@@ -87,9 +95,7 @@ namespace SharpAsset.Pipeline
 		{
 			return extensionToTypeMapping.Keys.ToArray();
 		}
-
-		public abstract IAsset Import(string pathToFile);
-
+		public virtual IAsset Import(string pathToFile) => null;
 		public abstract void Export(string pathToExport, string format);
 	}
 }

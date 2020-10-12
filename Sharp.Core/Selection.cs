@@ -30,9 +30,8 @@ namespace Sharp
 			{
 				if (value == Asset) return;
 				OnSelectionChange?.Invoke(Asset, value);
-				if (value is null)
-					assets.Clear();
-				else
+				assets.Clear();
+				if (value is not null)
 					assets.Push(value);
 				//Thread.SetData
 
@@ -141,9 +140,8 @@ namespace Sharp
 				return null;
 			reader.Read();
 			var id = reader.ReadAsString();
-			var obj = serializer.ReferenceResolver.ResolveReference(serializer, id) as IDictionary;
 
-			if (obj is null)
+			if (serializer.ReferenceResolver.ResolveReference(serializer, id) is not IDictionary obj)
 			{
 				obj = serializer.ContractResolver.ResolveContract(objectType).DefaultCreator() as IDictionary;
 				serializer.ReferenceResolver.AddReference(serializer, id, obj);

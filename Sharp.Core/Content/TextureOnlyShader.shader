@@ -31,5 +31,5 @@
             void main(void)
             {
             vec4 texColor= texture(MyTexture,v_texcoord.xy);
-	         frag_color =texColor;
+	         frag_color =EnablePicking(texColor);
             }

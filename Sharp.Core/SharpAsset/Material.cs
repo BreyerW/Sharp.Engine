@@ -82,7 +82,7 @@ namespace SharpAsset
 			}
 			set
 			{
-				shaderId = ShaderPipeline.nameToKey.IndexOf(value.Name);
+				shaderId = ShaderPipeline.nameToKey.IndexOf(value.Name.ToString());
 				if (localParams == null)
 				{
 					localParams = new Dictionary<string, byte[]>();
@@ -112,7 +112,7 @@ namespace SharpAsset
 		}
 		public void BindProperty(string propName, in Texture data)
 		{
-			var i = TexturePipeline.nameToKey.IndexOf(data.Name);
+			var i = TexturePipeline.nameToKey.IndexOf(data.Name.ToString());
 			if (localParams.TryGetValue(propName, out var addr))
 				Unsafe.WriteUnaligned(ref addr[1], i);
 			else
@@ -152,7 +152,7 @@ namespace SharpAsset
 		}
 		internal void BindProperty(string propName, in Mesh data)//TODO: change to BindMesh without property name?
 		{
-			var i = MeshPipeline.nameToKey.IndexOf(data.Name);//TODO: change to rely on pinned heap object and intptr?
+			var i = MeshPipeline.nameToKey.IndexOf(data.Name.ToString());//TODO: change to rely on pinned heap object and intptr?
 			if (localParams.TryGetValue(propName, out var addr))
 				Unsafe.WriteUnaligned(ref addr[1], i);
 			else
@@ -239,6 +239,22 @@ namespace SharpAsset
 
 			//Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
 		}
+		public static void BindGlobalProperty(string propName, in float data/*, bool store = true*/)
+		{
+			if (!globalParams.ContainsKey((MainWindow.backendRenderer.currentWindow, propName)))
+			{
+				var param = new byte[sizeTable[data.GetType()] + 1];
+				param[0] = FLOAT;
+				//param.DataAddress = Unsafe.As<Matrix4x4, byte>(ref data);
+				Unsafe.WriteUnaligned(ref param[1], data);
+				//Unsafe.CopyBlock(ref param.dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
+				globalParams.Add((MainWindow.backendRenderer.currentWindow, propName), param);
+			}
+			else
+				Unsafe.WriteUnaligned(ref globalParams[(MainWindow.backendRenderer.currentWindow, propName)][1], data);
+
+			//Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
+		}
 		public static void BindGlobalProperty(string propName, in Vector2 data/*, bool store = true*/)
 		{
 			if (!globalParams.ContainsKey((MainWindow.backendRenderer.currentWindow, propName)))
@@ -257,8 +273,9 @@ namespace SharpAsset
 		}
 		internal void SendData()
 		{
-
 			if (Shader.IsAllocated is false) return;
+			if (TryGetProperty("mesh", out Mesh mesh) is false || mesh.VBO is -1)
+				return;
 			if (Material.lastShaderUsed != Shader.Program)
 			{
 				MainWindow.backendRenderer.Use(Shader.Program);
@@ -286,7 +303,7 @@ namespace SharpAsset
 			foreach (var (key, value) in globalParams)
 				if (key.winId == MainWindow.backendRenderer.currentWindow)
 					SendToGPU(key.property, value);
-			if (TryGetProperty("mesh", out Mesh mesh) is false) return;
+
 
 			MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
 
@@ -301,7 +318,6 @@ namespace SharpAsset
 			{
 				MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
 				MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
-				//mesh.needUpdate = false;
 			}
 			MainWindow.backendRenderer.Draw(mesh.indiceType, mesh.Indices.Length);
 			//var tbo = 0;
@@ -310,7 +326,7 @@ namespace SharpAsset
 
 		private void SendToGPU(string prop, byte[] data)
 		{
-			if (!(prop is "mesh") && Shader.uniformArray.ContainsKey(prop))
+			if (prop is not "mesh" && Shader.uniformArray.ContainsKey(prop))
 				switch (data[0])
 				{
 					case FLOAT: MainWindow.backendRenderer.SendUniform1(Shader.uniformArray[prop], ref data[1]); break;

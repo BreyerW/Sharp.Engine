@@ -19,6 +19,7 @@ namespace Sharp.Editor.Views
 
 			Selection.OnSelectionChange += (old, n) =>
 			{
+				//SceneStructureView.tree.SelectedNode = SceneStructureView.flattenedTree[entity.GetInstanceID()];
 				tree.SelectedNodeChanged -= Tree_SelectedNodeChanged;
 				tree.SelectedNode = n is null ? null : flattenedTree[n.GetInstanceID()];
 				tree.SelectedNodeChanged += Tree_SelectedNodeChanged;

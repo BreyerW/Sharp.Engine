@@ -9,11 +9,12 @@ using Sharp;
 namespace SharpAsset
 {
 	[StructLayout(LayoutKind.Sequential)]
-	internal struct Font : IAsset
+	public struct Font : IAsset
 	{
-		public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
-		public string Extension { get { return Path.GetExtension(FullPath); } set { } }
 		public string FullPath { get; set; }
+		public ReadOnlySpan<char> Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
+		public ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath); } set { } }
+
 		//public Texture atlas;
 		public Dictionary<uint, (Texture tex, float bearing, float advance)> metrics;
 		public int nominalHeight;

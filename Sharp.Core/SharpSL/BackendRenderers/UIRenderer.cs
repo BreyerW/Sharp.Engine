@@ -154,7 +154,7 @@ namespace SharpSL.BackendRenderers
 
 		private void GenerateTextureForChar(char c, ref Font f)
 		{
-			if (currentFont is -1 || f.Name != Pipeline.Get<Font>().GetAsset(currentFont).Name)
+			if (currentFont is -1 || f.Name.SequenceEqual(Pipeline.Get<Font>().GetAsset(currentFont).Name))
 			{
 				FontFamily fam = SystemFonts.Find("Arial");
 				face = new SixLabors.Fonts.Font(fam, 18); // size doesn't matter too much as we will be scaling shortly anyway
@@ -173,7 +173,7 @@ namespace SharpSL.BackendRenderers
 				{
 					var succ = StbTrueType.stbtt_InitFont(face, addr, 0);
 				}*/
-				currentFont = FontPipeline.nameToKey.IndexOf(f.Name);
+				currentFont = FontPipeline.nameToKey.IndexOf(f.Name.ToString());
 			}
 			Texture tex = default;
 			/*var glyph = face.Lookup(c);
@@ -231,23 +231,21 @@ namespace SharpSL.BackendRenderers
 				{
 					allowed = invalid != c;
 				}
-				using (Image<Alpha8> img = new Image<Alpha8>(Configuration.Default, nextPowerOfTwo, nextPowerOfTwo, new Alpha8(0)))
+				using Image<Alpha8> img = new Image<Alpha8>(Configuration.Default, nextPowerOfTwo, nextPowerOfTwo, new Alpha8(0));
+				img.Mutate(i => i.Fill(new GraphicsOptions(true), SixLabors.ImageSharp.Color.Black, glyphs));
+				tex = new Texture()
 				{
-					img.Mutate(i => i.Fill(new GraphicsOptions(true), SixLabors.ImageSharp.Color.Black, glyphs));
-					tex = new Texture()
-					{
-						FullPath = c + "_" + f.Name + ".generated",
-						TBO = -1,
-						FBO = -1,
-						format = TextureFormat.A,
-						bitmap = MemoryMarshal.AsBytes(img.GetPixelSpan()).ToArray(),
-						width = img.Width,
-						height = img.Height
-					};
-					//var bitmap = new Span<byte>(bytes, width * height).ToArray();
+					FullPath = c + "_" + f.Name.ToString() + ".generated",
+					TBO = -1,
+					FBO = -1,
+					format = TextureFormat.A,
+					bitmap = MemoryMarshal.AsBytes(img.GetPixelSpan()).ToArray(),
+					width = img.Width,
+					height = img.Height
+				};
+				//var bitmap = new Span<byte>(bytes, width * height).ToArray();
 
-					Pipeline.Get<Texture>().Register(tex);
-				}
+				Pipeline.Get<Texture>().Register(tex);
 			}
 			f.metrics.Add(c, (tex, PixelToPointSize(glyph.Instance.LeftSideBearing), PixelToPointSize(glyph.Instance.AdvanceWidth)));
 
@@ -294,7 +292,7 @@ namespace SharpSL.BackendRenderers
 		public void EndBatch(bool final)//OnPostRender
 		{
 			OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.DepthTest);
-			MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
+			//MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
 		}
 
 		public int GetFont(string name)

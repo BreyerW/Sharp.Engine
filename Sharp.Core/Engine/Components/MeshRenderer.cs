@@ -18,7 +18,6 @@ namespace Sharp
 
 		public MeshRenderer(Entity parent) : base(parent)
 		{
-			parent.TagsMask = parent.TagsMask.SetTag("Renderable");
 		}
 
 		public override void Render()

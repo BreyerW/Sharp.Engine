@@ -1,17 +1,29 @@
-﻿using Sharp.Core;
+﻿using Newtonsoft.Json;
+using Sharp.Core;
 using SharpAsset;
 using SharpAsset.Pipeline;
 using SharpSL;
 using SharpSL.BackendRenderers;
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+
 namespace Sharp.Engine.Components
 {
 	//TODO: requires CameraComponent
 	public abstract class CommandBufferComponent : Component//Renderer?
 	{
-		private static BitMask rendererMask = new BitMask(0);
+		protected Camera cam;
+		private CommandBufferComponent prevPass = null;
+		[JsonProperty]
+		public CommandBufferComponent PrevPass
+		{
+			get => prevPass;
+			internal set
+			{
+				prevPass = value;
+			}
+		}
+		private static Bitask rendererMask = new Bitask(0);
 		private bool screenSpace;
 		public bool ScreenSpace
 		{
@@ -19,12 +31,10 @@ namespace Sharp.Engine.Components
 			{
 				if (value)
 				{
-					var cam = Parent.GetComponent<Camera>();
 					cam.OnDimensionChanged += OnCameraSizeChange;
 				}
 				else
 				{
-					var cam = Parent.GetComponent<Camera>();
 					cam.OnDimensionChanged -= OnCameraSizeChange;
 				}
 				screenSpace = value;
@@ -32,12 +42,12 @@ namespace Sharp.Engine.Components
 			get => screenSpace;
 		}
 		internal int FBO = -1;
-		internal List<(int texId, TextureRole role)> targetTextures = new();//TODO: make tag&layers (maybe IdentityComponent?) component and use that for render to texture (eg. selected tag or layer)
-		public List<Material> passes;
-
+		internal List<(int texId, TextureRole role)> targetTextures = new();
+		public Material swapMaterial;
 		protected CommandBufferComponent(Entity parent) : base(parent)
 		{
 			rendererMask.SetFlag(0);
+			cam = Parent.GetComponent<Camera>();
 		}
 
 		private void OnCameraSizeChange(Camera cam)
@@ -73,51 +83,79 @@ namespace Sharp.Engine.Components
 		}
 		private void PreparePass()
 		{
-			ref var tex = ref Pipeline.Get<Texture>().GetAsset(targetTextures[0].texId);
-			MainWindow.backendRenderer.Viewport(0, 0, tex.width, tex.height);
-			MainWindow.backendRenderer.Clip(0, 0, tex.width, tex.height);
+			int width, height = default;
+			if (screenSpace)
+			{
+				width = cam.Width;
+				height = cam.Height;
+			}
+			else
+			{
+				ref var tex = ref Pipeline.Get<Texture>().GetAsset(targetTextures[0].texId);
+				width = tex.width;
+				height = tex.height;
+			}
+			MainWindow.backendRenderer.Viewport(0, 0, width, height);
+			MainWindow.backendRenderer.Clip(0, 0, width, height);
 			MainWindow.backendRenderer.BindBuffers(Target.Frame, FBO);
 			MainWindow.backendRenderer.SetStandardState();
 			MainWindow.backendRenderer.ClearBuffer();
+			MainWindow.backendRenderer.ClearColor(0f, 0f, 0f, 0f);
 		}
-		public void DrawPass(BitMask mask)
+		public void DrawPass(Bitask mask)
 		{
 			PreparePass();
 			var renderables = Entity.FindAllWithComponentsAndTags(rendererMask, mask).GetEnumerator();
 			while (renderables.MoveNext())
-				foreach (var renderable in renderables.Current)
-				{
-					var renderer = renderable.GetComponent<Renderer>();
-					if (renderer.active is true)
-						renderer.Render();
-				}
-
+				Draw(renderables.Current);
 		}
-		public void DrawPass(IEnumerable<Renderer> renderables)
+		public void DrawPass(IEnumerable<MeshRenderer> renderables)
 		{
 			PreparePass();
+			if (renderables is null) return;
+			var condition = swapMaterial is not null;
 			foreach (var renderable in renderables)
 			{
 				if (renderable.active is true)
-					renderable.Render();
+				{
+					if (condition)
+					{
+						var tmp = renderable.SwapMaterial(swapMaterial);
+						renderable.Render();
+						renderable.SwapMaterial(tmp);
+					}
+					else
+						renderable.Render();
+				}
 			}
 
 		}
 		public void DrawPass()
 		{
 			PreparePass();
-			var cam = Parent.GetComponent<Camera>();
 			var renderables = Entity.FindAllWithComponentsAndTags(rendererMask, cam.cullingTags, cullTags: true).GetEnumerator();
 			while (renderables.MoveNext())
-				foreach (var renderable in renderables.Current)
+				Draw(renderables.Current);
+
+		}
+		private void Draw(IReadOnlyCollection<Entity> renderables)
+		{
+			var condition = swapMaterial is not null;
+			foreach (var renderable in renderables)
+			{
+				var renderer = renderable.GetComponent<MeshRenderer>();
+				if (renderer.active is true)
 				{
-					var renderer = renderable.GetComponent<Renderer>();
-					//if (renderer is null) continue;
-					if (renderer.active is true)
+					if (condition)
+					{
+						var tmp = renderer.SwapMaterial(swapMaterial);
+						renderer.Render();
+						renderer.SwapMaterial(tmp);
+					}
+					else
 						renderer.Render();
 				}
-
-			//TODO: draw all meshes from camera culling tags optionally swap material
+			}
 		}
 		public abstract void Execute();
 

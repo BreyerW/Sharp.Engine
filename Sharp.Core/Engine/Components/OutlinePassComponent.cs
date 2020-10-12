@@ -7,21 +7,18 @@ using System.Collections.Generic;
 
 namespace Sharp.Engine.Components
 {
-	class SelectionCommandComponent : CommandBufferComponent
+	class OutlinePassComponent : CommandBufferComponent
 	{
-		private BitMask mask = new(0);
-		public SelectionCommandComponent(Entity p) : base(p)
+		public OutlinePassComponent(Entity p) : base(p)
 		{
-			mask.SetTag("Selected");
-			mask.SetTag("Renderable");
 			CreateNewTemporaryTexture("selectionTarget", TextureRole.Color0, 0, 0, TextureFormat.A);
 			CreateNewTemporaryTexture("selectionDepthTarget", TextureRole.Depth, 0, 0, TextureFormat.DepthFloat);
 		}
 		public override void Execute()
 		{
-			List<Renderer> renderables = new();
+			List<MeshRenderer> renderables = new();
 			foreach (var asset in Selection.Assets)
-				if (asset is Entity e && e.GetComponent<Renderer>() is Renderer renderer)
+				if (asset is Entity e && e.GetComponent<MeshRenderer>() is MeshRenderer renderer)
 				{
 					renderables.Add(renderer);
 				}

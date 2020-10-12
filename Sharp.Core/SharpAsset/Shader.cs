@@ -10,8 +10,9 @@ namespace SharpAsset
 	[Serializable]
 	public struct Shader : IAsset//move backendrenderer here?
 	{
-		public string Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
-		public string Extension { get { return Path.GetExtension(FullPath); } set { } }
+		public ReadOnlySpan<char> Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
+		public ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath); } set { } }
+
 		public string FullPath { get; set; }
 		public bool IsAllocated => !(Program is -1);
 		public string VertexSource;
@@ -28,7 +29,7 @@ namespace SharpAsset
 
 		public override string ToString()
 		{
-			return Name;
+			return Name.ToString();
 		}
 
 		public void Dispose()

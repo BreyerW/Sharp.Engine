@@ -105,15 +105,15 @@ namespace SharpSL.BackendRenderers.OpenGL
 		}
 		public void GenerateBuffers(Target target, out int id)
 		{
-			switch (target)
+			id = target switch
 			{
-				case Target.Texture: id = GL.GenTexture(); break;
-				case Target.Frame: id = GL.GenFramebuffer(); break;
-				case Target.Shader: id = GL.CreateProgram(); break;
-				case Target.VertexShader: id = GL.CreateShader(ShaderType.VertexShader); break;
-				case Target.FragmentShader: id = GL.CreateShader(ShaderType.FragmentShader); break;
-				default: id = GL.GenBuffer(); break;
-			}
+				Target.Texture => GL.GenTexture(),
+				Target.Frame => GL.GenFramebuffer(),
+				Target.Shader => GL.CreateProgram(),
+				Target.VertexShader => GL.CreateShader(ShaderType.VertexShader),
+				Target.FragmentShader => GL.CreateShader(ShaderType.FragmentShader),
+				_ => GL.GenBuffer(),
+			};
 		}
 
 		public void BindBuffers(Target target, int id)

@@ -16,9 +16,7 @@ namespace SharpAsset.Pipeline
 
 		public override IAsset Import(string pathToFile)
 		{
-			var name = Path.GetFileNameWithoutExtension(pathToFile);
-			if (nameToKey.Contains(name))
-				return this[nameToKey.IndexOf(name)];
+			if (base.Import(pathToFile) is IAsset asset) return asset;
 			var texture = new Texture();
 			//Console.WriteLine (IsPowerOfTwo(texture.bitmap.Width) +" : "+IsPowerOfTwo(texture.bitmap.Height));
 			//var format=ImageInfo.(pathToFile); 

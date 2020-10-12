@@ -15,7 +15,7 @@ namespace SharpAsset.Pipeline
 	[SupportedFiles(".fbx", ".dae", ".obj")]
 	public class MeshPipeline : Pipeline<Mesh>
 	{
-		public ThreadLocal<AssimpContext> asset = new ThreadLocal<AssimpContext>(() => new AssimpContext());
+		public ThreadLocal<AssimpContext> context = new ThreadLocal<AssimpContext>(() => new AssimpContext());
 		private static readonly int assimpStride = Unsafe.SizeOf<Vector3D>();
 		private static readonly VertexAttribute[] supportedAttribs = (VertexAttribute[])Enum.GetValues(typeof(VertexAttribute));
 		private static BoundingBox bounds;
@@ -35,10 +35,12 @@ namespace SharpAsset.Pipeline
 
 		public override IAsset Import(string pathToFile)
 		{
+			if (base.Import(pathToFile) is IAsset asset) return asset;
 			var format = Path.GetExtension(pathToFile);
 			//if (!SupportedFileFormatsAttribute.supportedFileFormats.Contains (format))
 			//throw new NotSupportedException (format+" format is not supported");
-			var scene = asset.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals);
+
+			var scene = context.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals);
 			if (!scene.HasMeshes) return null;
 			var internalMesh = new Mesh();
 			internalMesh.FullPath = pathToFile;
@@ -87,8 +89,9 @@ namespace SharpAsset.Pipeline
 					internalMesh.indiceType = IndiceType.UnsignedShort;
 				else if (indices[0].GetType() == typeof(uint))
 					internalMesh.indiceType = IndiceType.UnsignedInt;
-				if (!Mesh.sharedMeshes.ContainsKey(internalMesh.Name))
-					Mesh.sharedMeshes.Add(internalMesh.Name, vertices.ToArray());
+				//if (!Mesh.sharedMeshes.ContainsKey(internalMesh.Name))
+				//Mesh.sharedMeshes.Add(internalMesh.Name, vertices.ToArray());
+				internalMesh.verts = vertices.ToArray();
 				bounds = new BoundingBox(min, max);
 			}
 			internalMesh.bounds = bounds;
@@ -119,26 +122,26 @@ namespace SharpAsset.Pipeline
 	{
 		public static bool HasAttribute(this Assimp.Mesh mesh, VertexAttribute vertAttrib, int level = 0)
 		{
-			switch (vertAttrib)
+			return vertAttrib switch
 			{
-				case VertexAttribute.POSITION: return true;
-				case VertexAttribute.UV: return mesh.HasTextureCoords(level);
-				case VertexAttribute.NORMAL: return mesh.HasNormals;
-				case VertexAttribute.COLOR4: return mesh.HasVertexColors(level);
-				default: return false;
-			}
+				VertexAttribute.POSITION => true,
+				VertexAttribute.UV => mesh.HasTextureCoords(level),
+				VertexAttribute.NORMAL => mesh.HasNormals,
+				VertexAttribute.COLOR4 => mesh.HasVertexColors(level),
+				_ => false,
+			};
 		}
 
 		public static byte[] GetAttribute(this Assimp.Mesh mesh, VertexAttribute vertAttrib, int level = 0)
 		{
-			switch (vertAttrib)
+			return vertAttrib switch
 			{
-				case VertexAttribute.POSITION: return MemoryMarshal.AsBytes(mesh.Vertices.ToArray().AsSpan()).ToArray();
-				case VertexAttribute.UV: return MemoryMarshal.AsBytes(mesh.TextureCoordinateChannels[level].ToArray().AsSpan()).ToArray();
-				case VertexAttribute.NORMAL: return MemoryMarshal.AsBytes(mesh.Normals.ToArray().AsSpan()).ToArray();
-				case VertexAttribute.COLOR4: return MemoryMarshal.AsBytes(mesh.VertexColorChannels[level].ToArray().AsSpan()).ToArray();
-				default: throw new NotSupportedException(vertAttrib + " attribute not supported");
-			}
+				VertexAttribute.POSITION => MemoryMarshal.AsBytes(mesh.Vertices.ToArray().AsSpan()).ToArray(),
+				VertexAttribute.UV => MemoryMarshal.AsBytes(mesh.TextureCoordinateChannels[level].ToArray().AsSpan()).ToArray(),
+				VertexAttribute.NORMAL => MemoryMarshal.AsBytes(mesh.Normals.ToArray().AsSpan()).ToArray(),
+				VertexAttribute.COLOR4 => MemoryMarshal.AsBytes(mesh.VertexColorChannels[level].ToArray().AsSpan()).ToArray(),
+				_ => throw new NotSupportedException(vertAttrib + " attribute not supported"),
+			};
 		}
 	}
 

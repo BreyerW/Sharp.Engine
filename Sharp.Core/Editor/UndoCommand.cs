@@ -50,7 +50,7 @@ namespace Sharp.Editor
 					if (saveState is null)
 						saveState = new Dictionary<Guid, (string label, byte[] undo, byte[] redo)>();
 
-					saveState[o.GetInstanceID()] = ("selected", old is null ? null : old.GetInstanceID().ToByteArray(), s is null ? null : s.GetInstanceID().ToByteArray());
+					saveState[o.GetInstanceID()] = ("selected", old?.GetInstanceID().ToByteArray(), s?.GetInstanceID().ToByteArray());
 				}
 			};
 			Coroutine.Start(SaveChangesBeforeNextFrame());
