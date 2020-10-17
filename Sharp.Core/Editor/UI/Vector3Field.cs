@@ -81,17 +81,6 @@ namespace Sharp.Core.Editor.UI
 			this.getter = getter;
 			this.setter = setter;
 			Childs.Add(layout);
-			//Value = getter();
-			//this.TextChanged += FloatField_TextChanged;
 		}
-
-		/*private void FloatField_TextChanged(Control sender)
-		{
-			setter(Value);
-		}
-		protected override void OnLateUpdate()
-		{
-			Value = getter();
-		}*/
 	}
 }

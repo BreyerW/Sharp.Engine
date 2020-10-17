@@ -14,6 +14,9 @@ namespace Sharp.Engine.Components
 	public class SelectionPassComponent : CommandBufferComponent
 	{
 		private static Bitask rendererMask = new(0);
+		private int readPixels = -1;
+		private (int x, int y) mouseClick;
+		private List<MeshRenderer> renderables;
 		public SelectionPassComponent(Entity parent) : base(parent)
 		{
 			ScreenSpace = true;
@@ -25,12 +28,20 @@ namespace Sharp.Engine.Components
 
 		public override void Execute()
 		{
+			/*if (readPixels is 0)
+			{
+				Console.WriteLine(FBO);
+				BindFrame();
+				
+				readPixels = -1;
+			}*/
 			if (SceneView.locPos.HasValue)
 			{
 				if (PickTestForGizmo() is false)
 				{
+					Console.WriteLine(FBO);
 					MainWindow.backendRenderer.ClearBuffer();
-					List<MeshRenderer> renderables = new List<MeshRenderer>();
+					renderables = new List<MeshRenderer>();
 					var renderers = Entity.FindAllWithComponentsAndTags(rendererMask, Camera.main.cullingTags, cullTags: true).GetEnumerator();
 					int id = 1;
 					while (renderers.MoveNext())
@@ -46,15 +57,19 @@ namespace Sharp.Engine.Components
 							}
 						}
 					DrawPass(renderables);
-					var pixel = MainWindow.backendRenderer.ReadPixels(SceneView.locPos.Value.x, SceneView.locPos.Value.y - 1 /*locPos.Value.y - 64*/, 1, 1);
+					var pixel = MainWindow.backendRenderer.ReadPixels(SceneView.locPos.Value.x, SceneView.locPos.Value.y - 1, 1, 1);//TODO: optimize using PBO
 					var index = ((pixel[0]) << 00) + ((pixel[1]) << 08) + (((pixel[2]) << 16));
 					if (index is not 0)
 						Selection.Asset = renderables[index - 1].Parent;
 					foreach (var r in renderables)
 						r.material.BindProperty("colorId", Color.Transparent);
+					//readPixels = 2;
+					//mouseClick = (SceneView.locPos.Value.x, SceneView.locPos.Value.y);
 				}
 				SceneView.locPos = null;
 			}
+			//if (readPixels is not -1)
+			//	readPixels--;
 		}
 		private bool PickTestForGizmo()
 		{
@@ -62,10 +77,11 @@ namespace Sharp.Engine.Components
 			if (SceneStructureView.tree.SelectedNode != null)
 			{
 				Color xColor = Color.Red, yColor = Color.LimeGreen, zColor = Color.Blue;
+				Color xPlaneColor = Color.Red, yPlaneColor = Color.LimeGreen, zPlaneColor = Color.Blue;
 				Color xRotColor = Color.Red, yRotColor = Color.LimeGreen, zRotColor = Color.Blue;
 				Color xScaleColor = Color.Red, yScaleColor = Color.LimeGreen, zScaleColor = Color.Blue;
 				Color color;
-				for (int id = 1; id < 10; id++)
+				for (int id = 1; id < 13; id++)
 				{
 					color = new Color((byte)((id & 0x000000FF) >> 00), (byte)((id & 0x0000FF00) >> 08), (byte)((id & 0x00FF0000) >> 16), 255);
 					switch (id)
@@ -81,51 +97,61 @@ namespace Sharp.Engine.Components
 						case 3:
 							zColor = color;
 							break;
-
 						case 4:
-							xRotColor = color;
+							xPlaneColor = color;
 							break;
 
 						case 5:
-							yRotColor = color;
+							yPlaneColor = color;
 							break;
 
 						case 6:
-							zRotColor = color;
+							zPlaneColor = color;
 							break;
-
 						case 7:
-							xScaleColor = color;
+							xRotColor = color;
 							break;
 
 						case 8:
-							yScaleColor = color;
+							yRotColor = color;
 							break;
 
 						case 9:
+							zRotColor = color;
+							break;
+
+						case 10:
+							xScaleColor = color;
+							break;
+
+						case 11:
+							yScaleColor = color;
+							break;
+
+						case 12:
 							zScaleColor = color;
 							break;
 					}
 				}
-				DrawPass(null);
+				PreparePass();
 				//foreach (var selected in SceneStructureView.tree.SelectedNode)
 				if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 				{
-					Manipulators.DrawCombinedGizmos(entity, new Vector2(cam.Width, cam.Height), xColor, yColor, zColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
+					Manipulators.DrawCombinedGizmos(entity, xColor, yColor, zColor, xPlaneColor, yPlaneColor, zPlaneColor, xRotColor, yRotColor, zRotColor, xScaleColor, yScaleColor, zScaleColor);
 				}
 				if (SceneView.locPos.HasValue)
 				{
 					var pixel = MainWindow.backendRenderer.ReadPixels(SceneView.locPos.Value.x, SceneView.locPos.Value.y - 1 /*locPos.Value.y - 64*/, 1, 1);
 					int index = ((pixel[0]) << 00) + ((pixel[1]) << 08) + (((pixel[2]) << 16));
 					Console.WriteLine("encoded index=" + index);
-					if (index > 0 && index < 10)
+					if (index > 0)
 					{
-						Manipulators.selectedAxisId = index;
+						Manipulators.selectedAxisId = (Gizmo)(index-1);
 						SceneView.mouseLocked = true;
 						return true;
 					}
 					else
-						Manipulators.selectedAxisId = 0;
+						Manipulators.selectedAxisId = Gizmo.Invalid;
 				}
 			}
 			return false;

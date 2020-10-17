@@ -202,7 +202,7 @@ namespace Sharp
 		}
 		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
-			if (reader.TokenType == JsonToken.Null)
+			if (reader.TokenType is JsonToken.Null)
 				return null;
 			reader.Read();
 			var id = reader.ReadAsString();
@@ -224,7 +224,7 @@ namespace Sharp
 			while (reader.Read())
 			{
 				if (reader.Path.AsSpan().SequenceEqual(name)) break;
-				if (reader.TokenType == JsonToken.PropertyName)
+				if (reader.TokenType is JsonToken.PropertyName)
 				{
 					var memName = reader.Value as string;
 					var member = objectType.GetMember(memName, MemberTypes.Property | MemberTypes.Field, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);

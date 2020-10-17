@@ -49,6 +49,22 @@ namespace Sharp.Engine.Components
 		{
 			get => eulerAngles;
 			internal set => eulerAngles = value;
+
+		}
+		[JsonIgnore]
+		public Vector3 Right
+		{
+			get => new Vector3(ModelMatrix.M11, ModelMatrix.M12, ModelMatrix.M13);
+		}
+		[JsonIgnore]
+		public Vector3 Up
+		{
+			get => new Vector3(ModelMatrix.M21, ModelMatrix.M22, ModelMatrix.M23);
+		}
+		[JsonIgnore]
+		public Vector3 Forward
+		{
+			get => new Vector3(ModelMatrix.M31, ModelMatrix.M32, ModelMatrix.M33);
 		}
 		/*[JsonIgnore]
 		public Quaternion Rotation

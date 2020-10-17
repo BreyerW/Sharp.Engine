@@ -11,6 +11,7 @@ namespace Sharp.Editor.UI
 		private Func<float> getter;
 		private Action<float> setter;
 		public int precision = 9;
+		private bool fromOutside;
 		public float Value
 		{
 			set
@@ -34,7 +35,10 @@ namespace Sharp.Editor.UI
 
 		private void FloatField_TextChanged(Control sender)
 		{
-			setter(Value);
+			if (fromOutside is false)
+			{
+				setter(Value);
+			}
 		}
 
 		protected override void DrawText(Style style, float opacity, int charsToDraw)
@@ -45,7 +49,9 @@ namespace Sharp.Editor.UI
 		}
 		protected override void OnLateUpdate()
 		{
+			fromOutside = true;
 			Value = getter();
+			fromOutside = false;
 		}
 	}
 }

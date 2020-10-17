@@ -68,36 +68,37 @@ namespace Sharp.Editor
 			gridLineMaterial.SendData();
 		}
 
-		public static void DrawTranslationGizmo(in Matrix4x4 xRotAndScaleMat, in Matrix4x4 yRotAndScaleMat, in Matrix4x4 zRotAndScaleMat, Color xColor, Color yColor, Color zColor)
+		public static void DrawTranslationGizmo(in Matrix4x4 xRotAndScaleMat, in Matrix4x4 yRotAndScaleMat, in Matrix4x4 zRotAndScaleMat, Color xColor, Color yColor, Color zColor, Color xPlaneColor, Color yPlaneColor, Color zPlaneColor)
 		{
 			var planeTranslation = Matrix4x4.CreateTranslation(2.5f, 2.5f, 0);
-			planeMaterial.BindProperty("model", planeTranslation * yRotAndScaleMat);
-			planeMaterial.BindProperty("color", xColor);
+			var rotationX = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, NumericsExtensions.Deg2Rad * 180);
+			planeMaterial.BindProperty("model", planeTranslation * xRotAndScaleMat);
+			planeMaterial.BindProperty("color", yPlaneColor);
 			planeMaterial.SendData();
 
-			planeMaterial.BindProperty("model", planeTranslation * xRotAndScaleMat);
-			planeMaterial.BindProperty("color", yColor);
+			planeMaterial.BindProperty("model", planeTranslation * rotationX * yRotAndScaleMat);
+			planeMaterial.BindProperty("color", xPlaneColor);
 			planeMaterial.SendData();
+
 			var antiRotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, -NumericsExtensions.Deg2Rad * 90);
 			planeMaterial.BindProperty("model", planeTranslation * antiRotationZ * zRotAndScaleMat);
-			planeMaterial.BindProperty("color", zColor);
+			planeMaterial.BindProperty("color", zPlaneColor);
 			planeMaterial.SendData();
 
+			var rotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, NumericsExtensions.Deg2Rad * 180);
 			var coneTranslation = Matrix4x4.CreateTranslation(15, 0, 0);
 			coneMaterial.BindProperty("model", coneTranslation * xRotAndScaleMat);
 			coneMaterial.BindProperty("color", xColor);
 			coneMaterial.SendData();
+
 			coneMaterial.BindProperty("model", coneTranslation * zRotAndScaleMat);
 			coneMaterial.BindProperty("color", yColor);
 			coneMaterial.SendData();
-			coneMaterial.BindProperty("model", coneTranslation * yRotAndScaleMat);
+
+			coneMaterial.BindProperty("model", coneTranslation * rotation * yRotAndScaleMat);
 			coneMaterial.BindProperty("color", zColor);
 			coneMaterial.SendData();
 
-
-			//GL.Enable(EnableCap.LineSmooth);
-			//GL.Enable(EnableCap.Blend);
-			//GL.DepthMask(false);
 			lineMaterial.BindProperty("model", xRotAndScaleMat);
 			lineMaterial.BindProperty("color", xColor);
 			lineMaterial.SendData();
@@ -106,11 +107,9 @@ namespace Sharp.Editor
 			lineMaterial.BindProperty("color", yColor);
 			lineMaterial.SendData();
 
-			lineMaterial.BindProperty("model", yRotAndScaleMat);
+			lineMaterial.BindProperty("model", rotation * yRotAndScaleMat);
 			lineMaterial.BindProperty("color", zColor);
 			lineMaterial.SendData();
-			//GL.Disable(EnableCap.Blend);
-			//GL.DepthMask(true);
 		}
 
 		public static void DrawRotationGizmo(in Matrix4x4 xRotAndScaleMat, in Matrix4x4 yRotAndScaleMat, in Matrix4x4 zRotAndScaleMat, Color xColor, Color yColor, Color zColor)
@@ -128,18 +127,19 @@ namespace Sharp.Editor
 			circleMaterial.SendData();
 		}
 
-		public static void DrawScaleGizmo(in Matrix4x4 xRotAndScaleMat, in Matrix4x4 yRotAndScaleMat, in Matrix4x4 zRotAndScaleMat, Color xColor, Color yColor, Color zColor, Vector3 offset = default(Vector3))
+		public static void DrawScaleGizmo(in Matrix4x4 xRotAndScaleMat, in Matrix4x4 yRotAndScaleMat, in Matrix4x4 zRotAndScaleMat, Color xColor, Color yColor, Color zColor, Vector3 offset,Gizmo selectedGizmo)
 		{
+			var offsetTranslation = Matrix4x4.CreateTranslation(offset);
 			var cubeTranslation = Matrix4x4.CreateTranslation(20, -2, -2);
-			cubeMaterial.BindProperty("model", cubeTranslation * xRotAndScaleMat);
+			cubeMaterial.BindProperty("model",cubeTranslation * xRotAndScaleMat *(selectedGizmo is Gizmo.ScaleX ? offsetTranslation : Matrix4x4.Identity));
 			cubeMaterial.BindProperty("color", xColor);
 			cubeMaterial.SendData();
 
-			cubeMaterial.BindProperty("model", cubeTranslation * zRotAndScaleMat);
+			cubeMaterial.BindProperty("model", cubeTranslation * zRotAndScaleMat * (selectedGizmo is Gizmo.ScaleY ? offsetTranslation : Matrix4x4.Identity));
 			cubeMaterial.BindProperty("color", yColor);
 			cubeMaterial.SendData();
-
-			cubeMaterial.BindProperty("model", cubeTranslation * yRotAndScaleMat);
+			var rotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, NumericsExtensions.Deg2Rad * 180);
+			cubeMaterial.BindProperty("model", cubeTranslation * rotation * yRotAndScaleMat * (selectedGizmo is Gizmo.ScaleZ ? offsetTranslation : Matrix4x4.Identity));
 			cubeMaterial.BindProperty("color", zColor);
 			cubeMaterial.SendData();
 		}

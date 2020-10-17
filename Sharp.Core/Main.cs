@@ -54,7 +54,7 @@ namespace Sharp
 			// OpenTK.Graphics.GraphicsContext.ShareContexts = false;
 			SDL.SDL_SetHint(SDL.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 			SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
-			//SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
+			//SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 2);
 			//SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, (int)SDL.SDL_GLcontext.);
 
 			MainWindow.backendRenderer.Start();

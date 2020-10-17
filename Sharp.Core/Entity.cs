@@ -163,9 +163,9 @@ namespace Sharp
 		{
 			return components;
 		}
-		public List<Component> GetAllComponents<T>() where T : Component
+		public List<T> GetAllComponents<T>() where T : Component
 		{
-			return components.FindAll((obj) => obj is T); //as List<T>;
+			return components.FindAll((obj) => obj is T).ConvertAll(comp => comp as T); //as List<T>;
 		}
 		public T AddComponent<T>() where T : Component
 		{
@@ -182,32 +182,6 @@ namespace Sharp
 			components.Add(comp);
 			return comp;
 		}
-		/*private Behaviour AddComponent (Behaviour comp)
-		{
-		//assign behaviour specific events to scene view
-			components.Add (comp.GetType(),comp);
-			return components [comp.GetType()] as Behaviour;
-		}
-		private Renderer AddComponent (Renderer comp)
-		{
-		//assign renderer specific events to scene view
-			components.Add (comp.GetType(), comp);
-			return components [comp.GetType()] as Renderer;
-		}*/
-
-		/*public void Instatiate()
-		{
-			//lastId = id;
-			Instatiate(default, default, default);
-		}
-
-		public void Instatiate(Vector3 pos, Vector3 rot, Vector3 s)
-		{
-			
-			transform.scale = s;
-			transform.position = pos;
-			transform.rotation = rot;
-		}*/
 
 		public void Dispose()
 		{

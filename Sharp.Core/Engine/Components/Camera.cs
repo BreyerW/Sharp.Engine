@@ -93,7 +93,7 @@ namespace Sharp
 			AspectRatio = 1f;
 			FieldOfView = 90f;
 			ZNear = 0.2f;
-			ZFar = 1000f;
+			ZFar = 10000f;
 			Material.BindGlobalProperty("camNearFar", new Vector2(ZNear, ZFar));
 			//Orientation = TargetOrientation;
 			SetProjectionMatrix();

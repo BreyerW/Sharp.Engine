@@ -26,7 +26,7 @@ namespace Sharp.Editor.Views
 		public static Action OnUpdate;
 		public static List<Renderer> renderers = new List<Renderer>();
 		public static Queue<IStartableComponent> startables = new Queue<IStartableComponent>();
-		public static bool globalMode = false;
+		public static bool globalMode = true;
 
 		internal static Point? locPos = null;
 		public static bool mouseLocked = false;
@@ -113,7 +113,7 @@ namespace Sharp.Editor.Views
 		{
 			if (mouseLocked)
 			{
-				if (Manipulators.selectedAxisId == 0)
+				if (Manipulators.selectedAxisId is Gizmo.Invalid)
 				{
 					Camera.main.Rotate(Squid.UI.MouseDelta.x, Squid.UI.MouseDelta.y, 0.3f);//maybe divide delta by fov?
 				}
@@ -130,11 +130,11 @@ namespace Sharp.Editor.Views
 						//foreach (var selected in SceneStructureView.tree.SelectedChildren)
 						if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 						{
-							if (Manipulators.selectedAxisId < 4)
+							if (Manipulators.selectedAxisId < Gizmo.RotateX)
 							{
 								Manipulators.HandleTranslation(entity, ref ray);
 							}
-							else if (Manipulators.selectedAxisId < 7)
+							else if (Manipulators.selectedAxisId < Gizmo.ScaleX)
 							{
 								Manipulators.HandleRotation(entity, ref ray);
 							}
@@ -195,7 +195,7 @@ namespace Sharp.Editor.Views
 			if (args.Button is 1)
 			{
 				mouseLocked = true;
-				Manipulators.selectedAxisId = 0;
+				Manipulators.selectedAxisId = Gizmo.Invalid;
 			}
 			else if (args.Button is 0)
 			{
@@ -228,7 +228,7 @@ namespace Sharp.Editor.Views
 				startables.Dequeue().Start();
 			var commandBuffers = Camera.main.Parent.GetAllComponents<CommandBufferComponent>();
 			foreach (var command in commandBuffers)
-				(command as CommandBufferComponent).Execute();
+				command.Execute();
 
 			MainWindow.backendRenderer.Viewport(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
 			MainWindow.backendRenderer.Clip(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
@@ -237,14 +237,6 @@ namespace Sharp.Editor.Views
 			MainWindow.backendRenderer.SetStandardState();
 			MainWindow.backendRenderer.ClearColor(0.15f, 0.15f, 0.15f, 1f);
 			MainWindow.backendRenderer.ClearBuffer();
-			/*	if (locPos.HasValue)
-				{
-					if (!PickTestForGizmo())
-						PickTestForObject();
-					locPos = null;
-				}
-				MainWindow.backendRenderer.ClearColor(0.15f, 0.15f, 0.15f, 1f);
-				MainWindow.backendRenderer.ClearBuffer();*/
 			GL.Enable(EnableCap.Blend);
 			//blit from SceneCommand to this framebuffer instead
 			var renderables = Entity.FindAllWithComponentsAndTags(rendererMask, Camera.main.cullingTags, cullTags: true).GetEnumerator();
@@ -268,7 +260,7 @@ namespace Sharp.Editor.Views
 					MainWindow.backendRenderer.WriteDepth(true);
 					MainWindow.backendRenderer.ClearDepth();
 
-					Manipulators.DrawCombinedGizmos(e, new Vector2(Size.x, Size.y));
+					Manipulators.DrawCombinedGizmos(e);
 					MainWindow.backendRenderer.WriteDepth(false);
 				}
 			}

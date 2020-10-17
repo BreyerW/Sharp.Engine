@@ -75,15 +75,35 @@ namespace Sharp.Engine.Components
 			var texId = Pipeline.Get<Texture>().Register(tex);
 			targetTextures.Add((texId, role));
 		}
+
 		protected void ReuseTemporaryTexture(string texName, TextureRole role)
 		{
 			ref var tex = ref Pipeline.Get<Texture>().GetAsset(texName);
 			var texId = Pipeline.Get<Texture>().Register(tex);
 			targetTextures.Add((texId, role));
 		}
-		private void PreparePass()
+		protected void BindFrame()
 		{
-			int width, height = default;
+			int width, height;
+			if (screenSpace)
+			{
+				width = cam.Width;
+				height = cam.Height;
+			}
+			else
+			{
+				ref var tex = ref Pipeline.Get<Texture>().GetAsset(targetTextures[0].texId);
+				width = tex.width;
+				height = tex.height;
+			}
+			//MainWindow.backendRenderer.Viewport(0, 0, width, height);
+			//MainWindow.backendRenderer.Clip(0, 0, width, height);
+			MainWindow.backendRenderer.BindBuffers(Target.Frame, FBO);
+			//MainWindow.backendRenderer.SetStandardState();
+		}
+		protected void PreparePass()
+		{
+			int width, height;
 			if (screenSpace)
 			{
 				width = cam.Width;

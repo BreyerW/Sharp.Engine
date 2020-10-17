@@ -14,7 +14,7 @@ namespace Sharp
             direction = dir;
         }
 
-        public float IntersectPlane(ref Vector4 plane)
+        public float IntersectPlane(Vector4 plane)
         {
             float numer = Vector3.Dot(new Vector3(plane.X, plane.Y, plane.Z), origin) - plane.W;
             float denom = Vector3.Dot(new Vector3(plane.X, plane.Y, plane.Z), direction);

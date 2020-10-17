@@ -24,8 +24,11 @@ namespace Sharp.Core.Editor.UI.Component
 					var delta = pos - t.Position;
 					if (delta != Vector3.Zero)
 					{
-						var angles = t.Rotation * NumericsExtensions.Deg2Rad;
-						t.ModelMatrix = Matrix4x4.CreateScale(t.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(pos);
+						Matrix4x4.Decompose(t.ModelMatrix, out var scale, out var rot, out var trans);
+						Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scale);
+						Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
+						Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
+						t.ModelMatrix = scaleOrigin * rotateOrigin * Matrix4x4.CreateTranslation(delta) * translateOrigin;
 					}
 					t.Position = pos;
 				});
@@ -36,7 +39,14 @@ namespace Sharp.Core.Editor.UI.Component
 					var t = Target as Transform;
 					var delta = pos - t.Rotation;
 					if (delta != Vector3.Zero)
-						t.ModelMatrix = Matrix4x4.CreateScale(t.Scale) * Matrix4x4.CreateFromYawPitchRoll((pos.Y) * NumericsExtensions.Deg2Rad, (pos.X) * NumericsExtensions.Deg2Rad, (pos.Z) * NumericsExtensions.Deg2Rad) * Matrix4x4.CreateTranslation(t.Position);
+					{
+						Matrix4x4.Decompose(t.ModelMatrix, out var scale, out var rot, out var trans);
+						var deltaRot = Quaternion.Normalize(Quaternion.CreateFromYawPitchRoll((delta.Y) * NumericsExtensions.Deg2Rad, (delta.X) * NumericsExtensions.Deg2Rad, (delta.Z) * NumericsExtensions.Deg2Rad));
+						Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scale);
+						Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
+						Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot * deltaRot);
+						t.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
+					}
 					t.Rotation = pos;
 				});
 			eulerAngles.AutoSize = AutoSize.Horizontal;
@@ -46,8 +56,11 @@ namespace Sharp.Core.Editor.UI.Component
 				var delta = pos - t.Scale;
 				if (delta != Vector3.Zero)
 				{
-					var angles = t.Rotation * NumericsExtensions.Deg2Rad;
-					t.ModelMatrix = Matrix4x4.CreateScale(pos) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(t.Position);
+					Matrix4x4.Decompose(t.ModelMatrix, out var scale, out var rot, out var trans);
+					Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scale);
+					Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
+					Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
+					t.ModelMatrix = Matrix4x4.CreateScale(pos) * rotateOrigin * translateOrigin;
 				}
 				t.Scale = pos;
 			});

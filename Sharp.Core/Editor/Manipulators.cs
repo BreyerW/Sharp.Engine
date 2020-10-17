@@ -1,4 +1,5 @@
-﻿using Sharp.Commands;
+﻿using Microsoft.Toolkit.HighPerformance.Extensions;
+using Sharp.Commands;
 using Sharp.Editor.Views;
 using SharpAsset;
 using SharpAsset.Pipeline;
@@ -7,6 +8,23 @@ using System.Numerics;
 
 namespace Sharp.Editor
 {
+	public enum Gizmo
+	{
+		TranslateX,
+		TranslateY,
+		TranslateZ,
+		TranslateXY,
+		TranslateYZ,
+		TranslateZX,
+		RotateX,
+		RotateY,
+		RotateZ,
+		ScaleX,
+		ScaleY,
+		ScaleZ,
+		UnformScale,
+		Invalid
+	}
 	public static class Manipulators
 	{
 		private static readonly int halfCircleSegments = 64;
@@ -17,18 +35,20 @@ namespace Sharp.Editor
 		public static readonly Color zColor = new Color(0xFFAA0000);
 
 		internal static Material discMaterial;
-		internal static int selectedAxisId = 0;
+		internal static Gizmo selectedAxisId = Gizmo.Invalid;
 		internal static float? rotAngleOrigin;
 		internal static float angle;
 		internal static Vector3 currentAngle = Vector3.Zero;
 		internal static Vector3? relativeOrigin;
 		internal static Vector3? planeOrigin;
 		internal static Vector3? rotVectSource;
-		internal static Vector3? scaleOrigin;
+		internal static Vector3? scaleSource;
+		internal static Vector3 transformOrigin;
 		internal static Vector3 scaleOffset;
 		internal static Vector4 transformationPlane;
-		internal static Vector3 startAxis;
+		internal static Vector3 translationPlaneOrigin;
 		internal static Matrix4x4 startMat;
+		internal static Matrix4x4 mModel;
 
 		static Manipulators()
 		{
@@ -44,39 +64,45 @@ namespace Sharp.Editor
 			discMaterial.BindProperty("len", new Vector2(17.5f));
 		}
 
-		public static void DrawCombinedGizmos(Entity entity, Vector2 winSize)
+		public static void DrawCombinedGizmos(Entity entity)
 		{
-			DrawCombinedGizmos(entity, winSize, (selectedAxisId == 1 ? selectedColor : xColor), (selectedAxisId == 2 ? selectedColor : yColor), (selectedAxisId == 3 ? selectedColor : zColor), (selectedAxisId == 4 ? selectedColor : xColor), (selectedAxisId == 5 ? selectedColor : yColor), (selectedAxisId == 6 ? selectedColor : zColor), (selectedAxisId == 7 ? selectedColor : xColor), (selectedAxisId == 8 ? selectedColor : yColor), (selectedAxisId == 9 ? selectedColor : zColor), 3f);
+			DrawCombinedGizmos(entity, (selectedAxisId is Gizmo.TranslateX ? selectedColor : xColor), (selectedAxisId is Gizmo.TranslateY ? selectedColor : yColor), (selectedAxisId is Gizmo.TranslateZ ? selectedColor : zColor), (selectedAxisId is Gizmo.TranslateXY ? selectedColor : xColor), (selectedAxisId is Gizmo.TranslateYZ ? selectedColor : yColor), (selectedAxisId is Gizmo.TranslateZX ? selectedColor : zColor), (selectedAxisId is Gizmo.RotateX ? selectedColor : xColor), (selectedAxisId is Gizmo.RotateY ? selectedColor : yColor), (selectedAxisId is Gizmo.RotateZ ? selectedColor : zColor), (selectedAxisId is Gizmo.ScaleX ? selectedColor : xColor), (selectedAxisId is Gizmo.ScaleY ? selectedColor : yColor), (selectedAxisId is Gizmo.ScaleZ ? selectedColor : zColor), 3f);
 		}
 
-		public static void DrawCombinedGizmos(Entity entity, Vector2 winSize, Color xColor, Color yColor, Color zColor, Color xRotColor, Color yRotColor, Color zRotColor, Color xScaleColor, Color yScaleColor, Color zScaleColor, float thickness = 5f)
+		public static void DrawCombinedGizmos(Entity entity, Color xColor, Color yColor, Color zColor, Color xPlaneColor, Color yPlaneColor, Color zPlaneColor, Color xRotColor, Color yRotColor, Color zRotColor, Color xScaleColor, Color yScaleColor, Color zScaleColor, float thickness = 5f)
 		{
 			float scale = (Camera.main.Parent.transform.Position - entity.transform.Position).Length() / 100.0f;
-			Matrix4x4.Decompose(SceneView.globalMode ? entity.transform.ModelMatrix.Inverted() : entity.transform.ModelMatrix, out _, out var rot, out var trans);
-
+			if (SceneView.globalMode is false)
+			{
+				mModel = entity.transform.ModelMatrix;
+				mModel.OrthoNormalize();
+			}
+			else
+			{
+				mModel = Matrix4x4.CreateTranslation(entity.transform.Position);
+			}
 			var scaleMat = Matrix4x4.CreateScale(scale, scale, scale);
-			var mat = Matrix4x4.CreateFromQuaternion(rot) * Matrix4x4.CreateTranslation(trans);
 
 			var rotationX = Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, NumericsExtensions.Deg2Rad * 90);
 			var rotationY = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, NumericsExtensions.Deg2Rad * 90);
 			var rotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, NumericsExtensions.Deg2Rad * 90);
 
-
-			DrawHelper.DrawRotationGizmo(scaleMat * rotationX * mat, scaleMat * rotationY * mat, scaleMat * rotationZ * mat, xRotColor, yRotColor, zRotColor);
-			DrawHelper.DrawScaleGizmo(scaleMat * rotationX * mat, scaleMat * rotationY * mat, scaleMat * rotationZ * mat, xScaleColor, yScaleColor, zScaleColor, scaleOffset);
-			DrawHelper.DrawTranslationGizmo(scaleMat * rotationX * mat, scaleMat * rotationY * mat, scaleMat * rotationZ * mat, xColor, yColor, zColor);
+			//TODO: convert cube to ball for scale gizmo?
+			DrawHelper.DrawRotationGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel, xRotColor, yRotColor, zRotColor);
+			DrawHelper.DrawScaleGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel, xScaleColor, yScaleColor, zScaleColor, scaleOffset, selectedAxisId);
+			DrawHelper.DrawTranslationGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel, xColor, yColor, zColor, xPlaneColor, yPlaneColor, zPlaneColor);
 			if (rotVectSource.HasValue)
 			{
-				var fullAngle = NumericsExtensions.CalculateAngle(startAxis, currentAngle);
+				var fullAngle = NumericsExtensions.CalculateAngle(rotVectSource.Value, currentAngle);
 				CreatePrimitiveMesh.numVertices = halfCircleSegments;
 				CreatePrimitiveMesh.totalAngleDeg = fullAngle * NumericsExtensions.Rad2Deg;
 				CreatePrimitiveMesh.innerRadius = 0.80f;
-				var disc = CreatePrimitiveMesh.GenerateEditorDisc(startAxis, currentAngle);
+				var disc = CreatePrimitiveMesh.GenerateEditorDisc(rotVectSource.Value, currentAngle);
 				ref var origDisc = ref Pipeline.Get<Mesh>().GetAsset("editor_disc");
 				origDisc.LoadVertices(disc.verts);
 				origDisc.LoadIndices(disc.Indices);
 
-				var sMat = Matrix4x4.CreateTranslation(trans);
+				var sMat = Matrix4x4.CreateTranslation(mModel.Translation);
 				discMaterial.BindProperty("model", scaleMat * sMat);
 				discMaterial.BindProperty("color", fillColor);
 
@@ -138,28 +164,26 @@ namespace Sharp.Editor
 		}
 		public static void Reset()
 		{
-			//if (newCommand != null)
-			//    newCommand.StoreCommand();
-			//UI.Property.PropertyDrawer.StopCommandCommits = false;
 			rotVectSource = null;
 			rotAngleOrigin = null;
 			planeOrigin = null;
 			relativeOrigin = null;
-			scaleOrigin = null;
-			scaleOffset = Vector3.Zero;
-			currentAngle = Vector3.Zero;
-			angle = 0;
-			startAxis = Vector3.Zero;
+			scaleSource = null;
+			scaleOffset = default;
+			currentAngle = default;
+			angle = default;
 			startMat = default;
+			transformOrigin = default;
+			transformationPlane = default;
 		}
 
 		private static Vector3 GetAxis()
 		{
-			if (selectedAxisId is 1 or 4 or 7)
+			if (selectedAxisId is Gizmo.TranslateX or Gizmo.TranslateXY or Gizmo.RotateX or Gizmo.ScaleX)
 			{
 				return Vector3.UnitX;
 			}
-			else if (selectedAxisId is 2 or 5 or 8)
+			else if (selectedAxisId is Gizmo.TranslateY or Gizmo.TranslateYZ or Gizmo.RotateY or Gizmo.ScaleY)
 			{
 				return Vector3.UnitY;
 			}
@@ -169,28 +193,102 @@ namespace Sharp.Editor
 
 		public static void HandleTranslation(Entity entity, ref Ray ray)
 		{
-			var v = GetAxis();
-			if (!SceneView.globalMode)
+			if (SceneView.globalMode is false)
 			{
-				Matrix4x4.Decompose(entity.transform.ModelMatrix, out _, out var r, out _);
-				v.Transform(r).Normalize();//TransformVector
+				mModel = entity.transform.ModelMatrix;
+				mModel.OrthoNormalize();
 			}
-			var len = ComputeLength(ref ray, entity.transform.Position);
-			if (!relativeOrigin.HasValue)
+			else
 			{
-				planeOrigin = ray.origin + ray.direction * len;
-				relativeOrigin = (planeOrigin - entity.transform.Position) * (1f / (0.1f * GetUniform(entity.transform.Position, Camera.main.ProjectionMatrix)));
-				//UI.Property.PropertyDrawer.StopCommandCommits = true;
+				mModel = Matrix4x4.Identity * Matrix4x4.CreateTranslation(entity.transform.Position);
 			}
-			var newPos = ray.origin + ray.direction * len;
-			var newOrigin = newPos - relativeOrigin.Value * (0.1f * GetUniform(entity.transform.Position, Camera.main.ProjectionMatrix));
-			var delta = newOrigin - entity.transform.Position;
-			var lenOnAxis = Vector3.Dot(delta, v);
-			delta = v * lenOnAxis;
-			entity.transform.Position += delta;
-		}
+			// move
+			if (relativeOrigin.HasValue)
+			{
+				float len = ray.IntersectPlane(transformationPlane); // near plan
+				var newPos = ray.origin + ray.direction * len;
 
-		//private static Quaternion startRot = Quaternion.Identity;
+				// compute delta
+				Vector3 newOrigin = newPos - relativeOrigin.Value * Camera.main.AspectRatio;//TODO: when moving XZ plane to infinity relativeorigin or something seems to become 0 and object pos become camera pos
+				Vector3 delta = newOrigin - entity.transform.Position;
+				Matrix4x4.Decompose(entity.transform.ModelMatrix, out var scale, out var rot, out var trans);
+				// 1 axis constraint
+				mModel.DecomposeDirections(out var right, out var up, out var forward);
+				if (selectedAxisId is Gizmo.TranslateX or Gizmo.TranslateY or Gizmo.TranslateZ)
+				{
+					var direction = selectedAxisId switch
+					{
+						Gizmo.TranslateX => right,
+						Gizmo.TranslateY => up,
+						_ => forward
+					};
+					Vector3 axisValue = direction; //.Normalize();// direction;
+					float lengthOnAxis = Vector3.Dot(axisValue, delta);
+					delta = axisValue * lengthOnAxis;
+				}
+
+				// snap
+				/*if (snap)
+				{
+					vec_t cumulativeDelta = gContext.mModel.v.position + delta - gContext.mMatrixOrigin;
+					if (SceneView.globalMode is false)
+					{
+						matrix_t modelSourceNormalized = gContext.mModelSource;
+						modelSourceNormalized.OrthoNormalize();
+						matrix_t modelSourceNormalizedInverse;
+						modelSourceNormalizedInverse.Inverse(modelSourceNormalized);
+						cumulativeDelta.TransformVector(modelSourceNormalizedInverse);
+						ComputeSnap(cumulativeDelta, snap);
+						cumulativeDelta.TransformVector(modelSourceNormalized);
+					}
+					else
+					{
+						ComputeSnap(cumulativeDelta, snap);
+					}
+					delta = gContext.mMatrixOrigin + cumulativeDelta - gContext.mModel.v.position;
+
+				}*/
+				// compute matrix & delta
+				entity.transform.Position = trans + delta;
+				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scaleSource.Value);
+				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans + delta);
+				Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
+				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin; //Matrix4x4.CreateScale(entity.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(entity.transform.Position);
+			}
+			else
+			{
+				mModel.DecomposeDirections(out var right, out var up, out var forward);
+				Vector3[] movePlanNormal = { right, up, forward,
+				 right, up, forward,
+			   -Camera.main.Parent.transform.Forward/*free movement*/ };
+
+				Vector3 cameraToModelNormalized = Vector3.Normalize(entity.transform.Position - Camera.main.Parent.transform.Position);
+				for (int i = 0; i < 3; i++)
+				{
+					Vector3 orthoVector = Vector3.Cross(movePlanNormal[i], cameraToModelNormalized);
+					movePlanNormal[i] = Vector3.Cross(movePlanNormal[i], orthoVector).Normalize();
+				}
+				var index = selectedAxisId switch
+				{
+					Gizmo.TranslateX => 1,
+					Gizmo.TranslateY => 0,//TODO: choose 0 or 2 based on camera view?
+					Gizmo.TranslateZ => 1,
+					Gizmo.TranslateXY => 3,
+					Gizmo.TranslateYZ => 4,
+					Gizmo.TranslateZX => 5,
+					_ => 6
+				};
+				startMat = entity.transform.ModelMatrix;
+				transformOrigin = entity.transform.Position;
+				var plane = BuildPlane(entity.transform.Position, movePlanNormal[index]);//TODO: bugged look up imguizmo again
+				transformationPlane = new Vector4(plane.Normal, plane.D);
+				float len = ray.IntersectPlane(transformationPlane); // near plan
+				var newPos = ray.origin + ray.direction * len;
+				scaleSource = new Vector3(entity.transform.Right.Length(), entity.transform.Up.Length(), entity.transform.Forward.Length());
+				relativeOrigin = (newPos - entity.transform.Position) * (1.0f / Camera.main.AspectRatio);
+
+			}
+		}
 		private static Vector3 MakePositive(Vector3 euler)
 		{
 			float negativeFlip = -0.0001f * NumericsExtensions.Rad2Deg;
@@ -213,79 +311,166 @@ namespace Sharp.Editor
 
 			return euler;
 		}
-
-		public static void HandleRotation(Entity entity, ref Ray ray)//bugged when rescaled
+		public static void HandleRotation(Entity entity, ref Ray ray)
 		{
-			var v = GetAxis();
-			Matrix4x4.Decompose(entity.transform.ModelMatrix, out _, out var rot, out _);
-			if (!SceneView.globalMode)
-			{
-				v.Transform(rot).Normalize();
-			}
-			var plane = BuildPlane(entity.transform.Position, v);
-			transformationPlane = new Vector4(plane.Normal.X, plane.Normal.Y, plane.Normal.Z, plane.D);
-			var len = ComputeLength(ref ray, entity.transform.Position);
 
-			if (!rotVectSource.HasValue)
+			if (SceneView.globalMode is false)
 			{
-				var origin = ray.origin + ray.direction * len - entity.transform.Position;
-				var rotVec = constrain(origin, v).Normalize();
-				rotVectSource = rotVec;
+				mModel = entity.transform.ModelMatrix;
+				mModel.OrthoNormalize();
+			}
+			else
+			{
+				mModel = Matrix4x4.Identity * Matrix4x4.CreateTranslation(entity.transform.Position);
+			}
+			if (rotVectSource.HasValue)
+			{
+				/*if (type == ROTATE_SCREEN)
+				{
+					applyRotationLocaly = true;
+				}*/
+				angle = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
+				/*if (snap)
+				{
+					float snapInRadian = snap[0] * DEG2RAD;
+					ComputeSnap(&gContext.mRotationAngle, snapInRadian);
+				}*/
+				var rotationAxisLocalSpace = Vector3.TransformNormal(new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z), mModel.Inverted());
+				rotationAxisLocalSpace.Normalize();
+				var deltaRot = Quaternion.Normalize(Quaternion.CreateFromAxisAngle(rotationAxisLocalSpace, angle - rotAngleOrigin.Value));
+				var deltaRotation = Matrix4x4.CreateFromQuaternion(deltaRot);
+				var len = ComputeLength(ref ray, entity.transform.Position);
+				currentAngle = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
+				rotAngleOrigin = angle;
+				Matrix4x4.Decompose(entity.transform.ModelMatrix, out _, out var rot, out var trans);
+
+				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scaleSource.Value);
+				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
+				Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot * deltaRot);
+				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
+				//entity.transform.Rotation = (rot * deltaRot).ToEulerAngles() * NumericsExtensions.Rad2Deg;
+
+
+				entity.transform.Rotation += deltaRot.ToEulerAngles() * NumericsExtensions.Rad2Deg;
+
+			}
+			else
+			{
+				//Vector3[] directionUnary = { Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ };
+				mModel.DecomposeDirections(out var right, out var up, out var forward);
+				Vector3[] movePlanNormal = { right,up,forward,
+			   -Camera.main.Parent.transform.Forward/*free movement*/
+				};
+				var index = selectedAxisId switch
+				{
+					Gizmo.RotateX => 0,
+					Gizmo.RotateY => 1,//TODO: choose 0 or 2 based on camera view?
+					Gizmo.RotateZ => 2,
+					_ => throw new NotSupportedException($"Rotate doesnt support {selectedAxisId}")
+				};
+				// pickup plan
+				var plane = BuildPlane(entity.transform.Position, movePlanNormal[index]);
+				scaleSource = new Vector3(entity.transform.Right.Length(), entity.transform.Up.Length(), entity.transform.Forward.Length());
+				transformationPlane = new Vector4(plane.Normal, plane.D);
+				float len = ray.IntersectPlane(transformationPlane); // near plan
+				var localPos = ray.origin + ray.direction * len - entity.transform.Position;
+				rotVectSource = Vector3.Normalize(localPos);
+				currentAngle = rotVectSource.Value;
 				rotAngleOrigin = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
-				startMat = entity.transform.ModelMatrix;
-				startAxis = origin.Normalized();
-				//UI.Property.PropertyDrawer.StopCommandCommits = true;
 			}
-			angle = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
-			//Console.WriteLine("angle: " + angle * NumericsExtensions.Rad2Deg);
-			var rotAxis = (new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z).Transform(Quaternion.Inverse(rot))).Normalize();
-			currentAngle = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
-			var deltaRot = Quaternion.Normalize(Quaternion.CreateFromAxisAngle(rotAxis, angle - rotAngleOrigin.Value));
-			entity.transform.ModelMatrix = Matrix4x4.CreateFromQuaternion(deltaRot) * entity.transform.ModelMatrix;//TODO: add rotate to entity that deals with delta euler angles to quats/mats and other things
-			entity.transform.Rotation += deltaRot.ToEulerAngles() * NumericsExtensions.Rad2Deg;
-			rotAngleOrigin = angle;
-
 		}
+
 		public static void HandleScale(Entity entity, ref Ray ray)
 		{
-			var v = GetAxis();
-			if (!SceneView.globalMode)
-			{
-				Matrix4x4.Decompose(entity.transform.ModelMatrix, out _, out var r, out _);
-				v.Transform(r).Normalize(); //TransformVector
-			}
-			var len = ComputeLength(ref ray, entity.transform.Position);
-			if (!planeOrigin.HasValue)
-			{
-				planeOrigin = ray.origin + ray.direction * len;
-				scaleOrigin = entity.transform.Scale;
-				// UI.Property.PropertyDrawer.StopCommandCommits = true;
-			}
-			var newPos = ray.origin + ray.direction * len;
-			var delta = (newPos - entity.transform.Position).Length() / (planeOrigin.Value - entity.transform.Position).Length();
-			scaleOffset = newPos * v;
-			entity.transform.Scale = scaleOrigin.Value + v * delta - v;
-		}
 
-		private static float GetUniform(Vector3 pos, Matrix4x4 mat)
-		{
-			var trf = new Vector4(pos, 1f);
-			trf = Vector4.Transform(trf, mat);
-			return trf.W;
-		}
-
-		private static Vector3 constrain(Vector3 vec, Vector3 axis)
-		{
-			var onPlane = Vector3.Subtract(vec, axis * Vector3.Dot(axis, vec));
-			var norm = onPlane.LengthSquared();
-			if (norm > 0)
+			// move
+			if (relativeOrigin.HasValue)
 			{
-				if (onPlane.Z < 0) onPlane = -onPlane;
-				return onPlane * (1 / (float)Math.Sqrt(norm));
+				entity.transform.ModelMatrix.OrthoNormalize();
+				float len = ray.IntersectPlane(transformationPlane); // near plan
+				var newPos = ray.origin + ray.direction * len;
+
+				// compute delta
+				Vector3 newOrigin = newPos - relativeOrigin.Value * Camera.main.AspectRatio;
+				Vector3 delta = newOrigin - entity.transform.Position;
+
+				// 1 axis constraint
+				Matrix4x4.Decompose(entity.transform.ModelMatrix, out var scale, out var rot, out var trans);
+
+				var direction = selectedAxisId switch
+				{
+					Gizmo.ScaleX => entity.transform.Right,
+					Gizmo.ScaleY => entity.transform.Up,
+					_ => entity.transform.Forward
+				};
+				Vector3 axisValue = direction;// direction;
+				float lengthOnAxis = Vector3.Dot(axisValue, delta);
+				delta = axisValue * lengthOnAxis;
+
+				// snap
+				/*if (snap)
+				{
+					vec_t cumulativeDelta = gContext.mModel.v.position + delta - gContext.mMatrixOrigin;
+					if (applyRotationLocaly)
+					{
+						matrix_t modelSourceNormalized = gContext.mModelSource;
+						modelSourceNormalized.OrthoNormalize();
+						matrix_t modelSourceNormalizedInverse;
+						modelSourceNormalizedInverse.Inverse(modelSourceNormalized);
+						cumulativeDelta.TransformVector(modelSourceNormalizedInverse);
+						ComputeSnap(cumulativeDelta, snap);
+						cumulativeDelta.TransformVector(modelSourceNormalized);
+					}
+					else
+					{
+						ComputeSnap(cumulativeDelta, snap);
+					}
+					delta = gContext.mMatrixOrigin + cumulativeDelta - gContext.mModel.v.position;
+
+				}*/
+				// compute matrix & delta
+
+				scaleOffset = delta;
+				Vector3 baseVector = translationPlaneOrigin - entity.transform.Position;
+				float ratio = Vector3.Dot(axisValue, baseVector + delta) / Vector3.Dot(axisValue, baseVector);
+				//if (float.IsNaN(ratio) || float.IsInfinity(ratio)) ratio = float.MaxValue;
+				var newScale = Math.Clamp(MathF.Max(ratio, 0.001f), float.MinValue, float.MaxValue);
+				var vScale = selectedAxisId switch
+				{
+					Gizmo.ScaleX => new Vector3(newScale, 1, 1),
+					Gizmo.ScaleY => new Vector3(1, newScale, 1),
+					Gizmo.ScaleZ => new Vector3(1, 1, newScale),
+					_ => Vector3.One
+				};
+				vScale = vScale * scaleSource.Value;
+				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(vScale);
+				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
+				Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
+				entity.transform.Scale = vScale;//new Vector3(float.IsNaN(newScale.X) || float.IsInfinity(newScale.X) ? 1 : newScale.X, float.IsNaN(newScale.Y) || float.IsInfinity(newScale.Y) ? 1 : newScale.Y, float.IsNaN(newScale.Z) || float.IsInfinity(newScale.Z) ? 1 : newScale.Z);
+				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
 			}
-			if (axis.Z is 1) onPlane = Vector3.UnitX;
-			else onPlane = new Vector3(-axis.Y, axis.X, 0).Normalize();
-			return onPlane;
+			else
+			{
+				Vector3[] movePlanNormal = { entity.transform.Right, entity.transform.Up, entity.transform.Forward };
+
+				var index = selectedAxisId switch
+				{
+					Gizmo.ScaleX => 1,
+					Gizmo.ScaleY => 0,//TODO: choose 0 or 2 based on camera view?
+					Gizmo.ScaleZ => 1,
+					_ => throw new NotSupportedException($"Scale doesnt support {selectedAxisId}")
+				};
+				startMat = entity.transform.ModelMatrix;
+				startMat.DecomposeDirections(out var right, out var up, out var forward);
+				scaleSource = new Vector3(right.Length(), up.Length(), forward.Length());
+				var plane = BuildPlane(entity.transform.Position, movePlanNormal[index]);//TODO: bugged look up imguizmo again
+				transformationPlane = new Vector4(plane.Normal, plane.D);
+				float len = ray.IntersectPlane(transformationPlane); // near plan
+				var newPos = ray.origin + ray.direction * len;
+				translationPlaneOrigin = newPos;
+				relativeOrigin = (newPos - entity.transform.Position) * (1.0f / Camera.main.AspectRatio);
+
+			}
 		}
 
 		private static Plane BuildPlane(Vector3 pos, Vector3 normal)
@@ -298,26 +483,15 @@ namespace Sharp.Editor
 			baseForPlane.Z = normal.Z;
 			return new Plane(baseForPlane);
 		}
-
 		private static float ComputeAngleOnPlane(Entity entity, ref Ray ray, ref Vector4 plane)
 		{
-			var len = ray.IntersectPlane(ref plane);
+			var len = ray.IntersectPlane(plane);
 			var localPos = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
 			var perpendicularVect = Vector3.Cross(rotVectSource.Value, new Vector3(plane.X, plane.Y, plane.Z)).Normalize();
-			var angle = NumericsExtensions.CalculateAngle(localPos, rotVectSource.Value);//(float)Math.Acos(NumericsExtensions.Clamp(Vector3.Dot(localPos, rotVectSource.Value), -0.9999f, 0.9999f));
-
-			return angle *= NumericsExtensions.Clamp((Vector3.Dot(localPos, perpendicularVect) < 0.0f) ? 1.0f : -1.0f, -0.9999f, 0.9999f);
+			var angle = MathF.Acos(Math.Clamp(Vector3.Dot(localPos, rotVectSource.Value), -1f, 1f));
+			angle *= (Vector3.Dot(localPos, perpendicularVect) < 0) ? 1f : -1f;
+			return angle;
 		}
-
-		/*private static float ComputeAngleOnPlane(Entity entity, ref Ray ray, ref Vector4 plane)
-        {
-            var len = ray.IntersectPlane(ref plane);
-            var localPos = (ray.origin + ray.direction * len - entity.Position).Normalized();
-            var perpendicularVect = Vector3.Cross(rotVectSource.Value, plane.Xyz).Normalized();
-            var angle = (float)Math.Acos(NumericsExtensions.Clamp(Vector3.Dot(localPos, rotVectSource.Value), -0.9999f, 0.9999f));//(float)Math.Acos(NumericsExtensions.Clamp(Vector3.Dot(localPos, rotVectSource.Value), -0.9999f, 0.9999f));
-
-            return angle *= (Vector3.Dot(localPos, perpendicularVect) < 0.0f) ? 1.0f : -1.0f;
-        }*/
 
 		private static float AngleBetween(Vector3 vector1, Vector3 vector2, Vector3 originNormal)
 		{
@@ -341,27 +515,7 @@ namespace Sharp.Editor
 		{
 			//var plane = BuildPlane(pos, -ray.direction);
 			//var intersectPlane = new Vector4(plane.Normal.X, plane.Normal.Y, plane.Normal.Z, plane.D);
-			return ray.IntersectPlane(ref transformationPlane);
+			return ray.IntersectPlane(transformationPlane);
 		}
 	}
 }
-
-/*var v = GetAxis();
-            var len = ComputeLength(ref ray, entity.Position);
-            if (!relativeOrigin.HasValue)
-            {
-                planeOrigin = ray.origin + ray.direction * len;
-                relativeOrigin = (planeOrigin - entity.Position);// * (1f / (1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix)));
-            }
-            var newPos = ray.origin + ray.direction * len;
-            var newOrigin = newPos - relativeOrigin.Value;// * (1f * GetUniform(entity.Position, Camera.main.ProjectionMatrix));
-            var delta = newOrigin - entity.Position;
-            var lenOnAxis = Vector3.Dot(v, delta);
-            delta = v * lenOnAxis;
-            var baseVector = planeOrigin.Value - entity.Position;
-            float ratio = Vector3.Dot(v, baseVector + delta) / Vector3.Dot(v, baseVector);
-            var scale = ratio * v;
-            scale.X = scale.X == 0 ? entity.Scale.X : scale.X;
-            scale.Y = scale.Y == 0 ? entity.Scale.Y : scale.Y;
-            scale.Z = scale.Z == 0 ? entity.Scale.Z : scale.Z;
-            entity.Scale = scale;*/

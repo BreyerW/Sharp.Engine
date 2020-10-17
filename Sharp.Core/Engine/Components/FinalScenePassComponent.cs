@@ -47,7 +47,7 @@ namespace Sharp.Core.Engine.Components
 					MainWindow.backendRenderer.WriteDepth(true);
 					MainWindow.backendRenderer.ClearDepth();
 
-					Manipulators.DrawCombinedGizmos(e, new Vector2(cam.Width, cam.Height));
+					Manipulators.DrawCombinedGizmos(e);
 					MainWindow.backendRenderer.WriteDepth(false);
 				}
 			}
