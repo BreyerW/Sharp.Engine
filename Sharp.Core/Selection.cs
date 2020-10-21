@@ -43,6 +43,10 @@ namespace Sharp
 				return assets.Peek();
 			}
 		}
+		public static object HoveredObject
+		{
+			get; set;
+		}
 		public static Action<object, object> OnSelectionChange;
 		public static Action<object> OnSelectionDirty;
 		public static bool isDragging = false;

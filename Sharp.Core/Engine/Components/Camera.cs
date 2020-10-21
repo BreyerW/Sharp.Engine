@@ -62,10 +62,10 @@ namespace Sharp
 			{
 				return Parent.transform.ModelMatrix;
 			}
-			private set
+			internal set
 			{
 				Parent.transform.ModelMatrix = value;
-				if (main != null)
+				if (main is not null)
 				{
 					Material.BindGlobalProperty("camView", main.Parent.transform.ModelMatrix);
 					Material.BindGlobalProperty("camWorldView", main.Parent.transform.ModelMatrix.Inverted());
@@ -199,7 +199,6 @@ namespace Sharp
 				vec.Y /= vec.W;
 				vec.Z /= vec.W;
 			}
-
 			return new Vector3(vec.X, vec.Y, vec.Z);
 		}
 

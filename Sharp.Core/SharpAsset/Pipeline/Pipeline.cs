@@ -76,7 +76,7 @@ namespace SharpAsset.Pipeline
 			}
 		}
 
-		public static Pipeline GetPipeline(string extension)
+		public static Pipeline Get(string extension)
 		{
 			return allPipelines[extensionToTypeMapping[extension]];
 		}

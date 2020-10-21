@@ -148,7 +148,6 @@ namespace Sharp.Engine.Components
 						renderable.Render();
 				}
 			}
-
 		}
 		public void DrawPass()
 		{

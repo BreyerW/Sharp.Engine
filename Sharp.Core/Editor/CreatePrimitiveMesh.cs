@@ -1,9 +1,11 @@
 ﻿using Sharp;
 using Sharp.Editor;
 using SharpAsset;
+using SharpAsset.Pipeline;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 public static class CreatePrimitiveMesh
 {
@@ -50,7 +52,10 @@ public static class CreatePrimitiveMesh
 		Mesh.LoadIndices(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan());
 		return Mesh; ;
 	}
-
+	public static Mesh GenerateEditorCube()
+	{
+		return Unsafe.Unbox<Mesh>(Pipeline.Get<Mesh>().Import(Application.projectPath + @"\Content\viewcube.dae"));
+	}
 	public static Mesh GenerateCylinder(string meshName = "cylinder")
 	{
 		Vector3 end_point = Vector3.Zero;

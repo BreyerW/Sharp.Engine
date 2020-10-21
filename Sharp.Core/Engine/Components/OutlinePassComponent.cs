@@ -1,8 +1,10 @@
-﻿using Microsoft.VisualBasic;
+﻿using OpenTK.Graphics.OpenGL;
 using Sharp.Core;
+using Sharp.Editor;
 using Sharp.Editor.Views;
 using SharpAsset;
 using SharpSL.BackendRenderers;
+using System;
 using System.Collections.Generic;
 
 namespace Sharp.Engine.Components
@@ -22,10 +24,16 @@ namespace Sharp.Engine.Components
 				{
 					renderables.Add(renderer);
 				}
+			{
+				if (Manipulators.selectedGizmoId is Gizmo.Invalid && Selection.HoveredObject is Entity e && e.GetComponent<MeshRenderer>() is MeshRenderer renderer)
+				{
+					renderables.Add(renderer);
+				}
+
+			}
 			DrawPass(renderables);
-			/*MainWindow.backendRenderer.ClearColor(0.15f, 0.15f, 0.15f, 1f);
 			//Material tmpMat;
-			if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
+			/*if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 			{
 				//foreach (var selected in SceneStructureView.tree.SelectedChildren)
 				{
@@ -45,6 +53,6 @@ namespace Sharp.Engine.Components
 					}*
 				}
 			}*/
+				}
+			}
 		}
-	}
-}

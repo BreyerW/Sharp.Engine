@@ -1,4 +1,5 @@
-﻿using SharpAsset;
+﻿using BepuUtilities;
+using SharpAsset;
 using SharpAsset.Pipeline;
 using SharpSL.BackendRenderers;
 using System;
@@ -17,7 +18,10 @@ namespace Sharp.Engine.Components
 		}
 		public override void Execute()
 		{
+			MainWindow.backendRenderer.WriteDepth(true);
 			DrawPass();
+			MainWindow.backendRenderer.WriteDepth(false);
+
 		}
 	}
 }

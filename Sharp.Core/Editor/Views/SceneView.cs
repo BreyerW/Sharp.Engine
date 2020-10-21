@@ -20,14 +20,16 @@ namespace Sharp.Editor.Views
 		private int cell_size = 32;
 		private int grid_size = 4096;
 		private static Material highlight;
+		private static Material editorHighlight;
+		private static Material viewCubeMat;
 		//public static Scene physScene;
 		//public static Physics physEngine;
 
 		public static Action OnUpdate;
 		public static List<Renderer> renderers = new List<Renderer>();
 		public static Queue<IStartableComponent> startables = new Queue<IStartableComponent>();
-		public static bool globalMode = true;
-
+		public static bool globalMode = false;
+		internal static Vector2 localMousePos;
 		internal static Point? locPos = null;
 		public static bool mouseLocked = false;
 		/*DebugProc DebugCallbackInstance = DebugCallback;
@@ -54,9 +56,10 @@ namespace Sharp.Editor.Views
 			Camera.main = cam;
 			var command = e.AddComponent<DepthPrePassComponent>() as CommandBufferComponent;
 			command.ScreenSpace = true;
+			e.AddComponent<EditorSelectionPassComponent>();
+			e.AddComponent<SelectionPassComponent>();
 			command = e.AddComponent<OutlinePassComponent>();
 			command.ScreenSpace = true;
-			e.AddComponent<SelectionPassComponent>();
 			cam.SetModelviewMatrix();
 			cam.SetProjectionMatrix();
 			e.name = "Main Camera";
@@ -68,18 +71,50 @@ namespace Sharp.Editor.Views
 			eLight.transform.Position = Camera.main.Parent.transform.Position;
 			eLight.AddComponent<Light>();
 
-			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightShader.shader");
+			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ViewCubeShader.shader");
+			var viewCubeMesh = (Mesh)Pipeline.Get<Mesh>().Import(Application.projectPath + @"\Content\viewcube.dae");
+			var viewCubeTexture = (Texture)Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\Cube.png");
+			var cubeTexture = (Texture)Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\viewcube_textured.png");
+			var mask = (Texture)Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\viewcube_mask.png");
+
+
+
+			viewCubeMat = new Material();
+
+			viewCubeMat.Shader = shader;
+			viewCubeMat.BindProperty("hoverOverColor", Color.Transparent);
+			viewCubeMat.BindProperty("MyTexture", viewCubeTexture);
+			viewCubeMat.BindProperty("CubeTex", cubeTexture);
+			viewCubeMat.BindProperty("mask", mask);
+			viewCubeMat.BindProperty("xColor", Manipulators.xColor);
+			viewCubeMat.BindProperty("yColor", Manipulators.yColor);
+			viewCubeMat.BindProperty("zColor", Manipulators.zColor);
+			viewCubeMat.BindProperty("mesh", viewCubeMesh);
+			EditorSelectionPassComponent.viewCubeMat = viewCubeMat;
+			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightShader.shader");
 			ref var screenMesh = ref Pipeline.Get<Mesh>().GetAsset("screen_space_square");
-			ref var selectionTexture = ref Pipeline.Get<Texture>().GetAsset("selectionTarget");
-			ref var sceneDepthTexture = ref Pipeline.Get<Texture>().GetAsset("depthTarget");
-			ref var selectionDepthTexture = ref Pipeline.Get<Texture>().GetAsset("selectionDepthTarget");
+
+
 			highlight = new Material();
 			highlight.Shader = shader;
+			ref var selectionTexture = ref Pipeline.Get<Texture>().GetAsset("selectionTarget");
 			highlight.BindProperty("MyTexture", selectionTexture);
+			ref var selectionDepthTexture = ref Pipeline.Get<Texture>().GetAsset("selectionDepthTarget");
 			highlight.BindProperty("SelectionDepthTex", selectionDepthTexture);
+			ref var sceneDepthTexture = ref Pipeline.Get<Texture>().GetAsset("depthTarget");
 			highlight.BindProperty("SceneDepthTex", sceneDepthTexture);
 			highlight.BindProperty("outline_color", Manipulators.selectedColor);
 			highlight.BindProperty("mesh", screenMesh);
+
+			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\EditorHighlightShader.shader");
+
+			editorHighlight = new Material();
+			editorHighlight.Shader = shader;
+			ref var editorSelectionTexture = ref Pipeline.Get<Texture>().GetAsset("editorSelectionScene");
+			editorHighlight.BindProperty("MyTexture", editorSelectionTexture);
+			editorHighlight.BindProperty("outline_color", new Color(255, 255, 255, 255));
+			editorHighlight.BindProperty("mesh", screenMesh);
+			EditorSelectionPassComponent.editorHighlight = editorHighlight;
 		}
 		public SceneView(uint attachToWindow) : base(attachToWindow)
 		{
@@ -107,13 +142,14 @@ namespace Sharp.Editor.Views
 		{
 			Console.WriteLine("global mouse happened");
 			mouseLocked = false;
+			Manipulators.Reset();
 		}
 
 		private void UI_MouseMove(Control sender, MouseEventArgs args)
 		{
 			if (mouseLocked)
 			{
-				if (Manipulators.selectedAxisId is Gizmo.Invalid)
+				if (Manipulators.selectedGizmoId is Gizmo.Invalid)
 				{
 					Camera.main.Rotate(Squid.UI.MouseDelta.x, Squid.UI.MouseDelta.y, 0.3f);//maybe divide delta by fov?
 				}
@@ -130,11 +166,11 @@ namespace Sharp.Editor.Views
 						//foreach (var selected in SceneStructureView.tree.SelectedChildren)
 						if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 						{
-							if (Manipulators.selectedAxisId < Gizmo.RotateX)
+							if (Manipulators.selectedGizmoId < Gizmo.RotateX)
 							{
 								Manipulators.HandleTranslation(entity, ref ray);
 							}
-							else if (Manipulators.selectedAxisId < Gizmo.ScaleX)
+							else if (Manipulators.selectedGizmoId < Gizmo.ScaleX)
 							{
 								Manipulators.HandleRotation(entity, ref ray);
 							}
@@ -146,6 +182,9 @@ namespace Sharp.Editor.Views
 					}
 				}
 			}
+			localMousePos = new Vector2(Squid.UI.MousePosition.x - Location.x, Size.y - (Squid.UI.MousePosition.y - Location.y));
+
+			highlight.BindProperty("mousePos", localMousePos);
 			oldX = Squid.UI.MousePosition.x;
 			oldY = Squid.UI.MousePosition.y;
 		}
@@ -187,7 +226,8 @@ namespace Sharp.Editor.Views
 
 		private void Panel_MouseUp(Control sender, MouseEventArgs args)
 		{
-			Manipulators.Reset();
+			if (Manipulators.selectedGizmoId is not Gizmo.Invalid and < Gizmo.ViewCubeUpperLeftCornerMinusX)
+				Manipulators.HandleViewCube(SceneStructureView.tree.SelectedNode?.UserData as Entity);
 		}
 
 		private void Panel_MouseDown(Control sender, MouseEventArgs args)
@@ -195,7 +235,7 @@ namespace Sharp.Editor.Views
 			if (args.Button is 1)
 			{
 				mouseLocked = true;
-				Manipulators.selectedAxisId = Gizmo.Invalid;
+				Manipulators.selectedGizmoId = Gizmo.Invalid;
 			}
 			else if (args.Button is 0)
 			{
@@ -216,7 +256,7 @@ namespace Sharp.Editor.Views
 				foreach (var asset in entities)
 				{
 					(string name, string extension) = asset;
-					Pipeline.GetPipeline(extension).Import(name).PlaceIntoScene(null, orig + (Camera.main.ScreenToWorld(locPos.x, locPos.y, Size.x, Size.y) - orig).Normalize() * Camera.main.ZFar * 0.1f);
+					Pipeline.Get(extension).Import(name).PlaceIntoScene(null, orig + (Camera.main.ScreenToWorld(locPos.x, locPos.y, Size.x, Size.y) - orig).Normalize() * Camera.main.ZFar * 0.1f);
 				}
 		}
 		protected override void DrawAfter()
@@ -226,6 +266,12 @@ namespace Sharp.Editor.Views
 			//if (Camera.main is null) return;
 			while (startables.Count != 0)
 				startables.Dequeue().Start();
+
+			var angles = Camera.main.Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
+			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(-angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
+
+			viewCubeMat.BindProperty("model", Matrix4x4.CreateScale(50) * rotationMatrix * Matrix4x4.CreateTranslation(100, 100, 0) * Matrix4x4.CreateOrthographicOffCenter(0, Camera.main.Width, Camera.main.Height, 0, -100f, 100f));
+
 			var commandBuffers = Camera.main.Parent.GetAllComponents<CommandBufferComponent>();
 			foreach (var command in commandBuffers)
 				command.Execute();
@@ -247,24 +293,27 @@ namespace Sharp.Editor.Views
 					if (renderer is { active: true })
 						renderer.Render();
 				}
+
 			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
-			MainWindow.backendRenderer.WriteDepth(false);
+
+			//MainWindow.backendRenderer.WriteDepth(false);
+
 
 			highlight.SendData();
 
-
+			MainWindow.backendRenderer.WriteDepth(true);
+			MainWindow.backendRenderer.ClearDepth();
 			if (SceneStructureView.tree.SelectedNode?.UserData is Entity e)
 			{
 				//foreach (var selected in SceneStructureView.tree.SelectedChildren)
 				{
-					MainWindow.backendRenderer.WriteDepth(true);
-					MainWindow.backendRenderer.ClearDepth();
-
 					Manipulators.DrawCombinedGizmos(e);
-					MainWindow.backendRenderer.WriteDepth(false);
 				}
 			}
-
+			viewCubeMat.SendData();
+			GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.OneMinusSrcAlpha);
+			editorHighlight.SendData();
+			GL.BlendFunc(BlendingFactorSrc.Src1Alpha, BlendingFactorDest.OneMinusSrcAlpha);
 			MainWindow.backendRenderer.Viewport(0, 0, Canvas.Size.x, Canvas.Size.y);
 		}
 		private int oldX;
