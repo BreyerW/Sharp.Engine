@@ -11,32 +11,38 @@ namespace Sharp.Editor
 	public enum Gizmo
 	{
 		Invalid,
-		ViewCubeX,
 		ViewCubeMinusX,
-		ViewCubeY,
+		ViewCubeX,
 		ViewCubeMinusY,
-		ViewCubeZ,
+		ViewCubeY,
 		ViewCubeMinusZ,
-		ViewCubeBottomEdgeX,
-		ViewCubeRightEdgeX,
-		ViewCubeTopEdgeX,
-		ViewCubeLeftEdgeX,
-		ViewCubeBottomEdgeMinusX,
+		ViewCubeZ,
+
 		ViewCubeRightEdgeMinusX,
-		ViewCubeTopEdgeMinusX,
 		ViewCubeLeftEdgeMinusX,
-		ViewCubeBottomEdgeZ,
-		ViewCubeTopEdgeZ,
+		ViewCubeBottomEdgeMinusX,
+		ViewCubeTopEdgeMinusX,
+		ViewCubeLeftEdgeX,
+		ViewCubeRightEdgeX,
+		ViewCubeBottomEdgeX,
+		ViewCubeTopEdgeX,
+
 		ViewCubeBottomEdgeMinusZ,
+		ViewCubeTopEdgeZ,
 		ViewCubeTopEdgeMinusZ,
-		ViewCubeLowerLeftCornerX,
-		ViewCubeLowerRightCornerX,
-		ViewCubeUpperRightCornerX,
-		ViewCubeUpperLeftCornerX,
-		ViewCubeLowerLeftCornerMinusX,
+		ViewCubeBottomEdgeZ,
+
+
 		ViewCubeLowerRightCornerMinusX,
 		ViewCubeUpperRightCornerMinusX,
 		ViewCubeUpperLeftCornerMinusX,
+		ViewCubeLowerLeftCornerMinusX,
+
+
+		ViewCubeLowerLeftCornerX,
+		ViewCubeUpperLeftCornerX,
+		ViewCubeUpperRightCornerX,
+		ViewCubeLowerRightCornerX,
 		TranslateX,
 		TranslateY,
 		TranslateZ,
@@ -60,7 +66,7 @@ namespace Sharp.Editor
 		public static readonly Color xColor = new Color(0xFF0000AA);
 		public static readonly Color yColor = new Color(0xFF00AA00);
 		public static readonly Color zColor = new Color(0xFFAA0000);
-
+		public static bool preserveInsignificantCameraAngleWithViewCube = false;
 		internal static Material discMaterial;
 		internal static Gizmo selectedGizmoId = Gizmo.Invalid;
 		internal static float? rotAngleOrigin;
@@ -406,17 +412,62 @@ namespace Sharp.Editor
 		}
 		public static void HandleViewCube(Entity entity)//null means orbit camera around camera focus point rather than selected object
 		{
-			var rotateAngles = selectedGizmoId switch
+			var rotateVector = selectedGizmoId switch
 			{
-				Gizmo.ViewCubeX => new Vector3(90, 0, 0),//Matrix4x4.CreateRotationY(90 * NumericsExtensions.Deg2Rad) * Matrix4x4.CreateRotationX(0) * Matrix4x4.CreateRotationZ(0),
-				_ => new Vector3(0)//Matrix4x4.CreateFromYawPitchRoll(0, 0, 0)
+				Gizmo.ViewCubeX => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, 90, 0),
+				Gizmo.ViewCubeMinusX => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, -90, 0),
+				Gizmo.ViewCubeY => new Vector3(90, preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.Y : 180, 0),
+				Gizmo.ViewCubeMinusY => new Vector3(-90, preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.Y : 180, 0),
+				Gizmo.ViewCubeZ => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, 0, 0),
+				Gizmo.ViewCubeMinusZ => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, 180, 0),
+
+				Gizmo.ViewCubeBottomEdgeX => new Vector3(-45, 90, 0),
+				Gizmo.ViewCubeRightEdgeX => new Vector3(0, 45, 0),
+				Gizmo.ViewCubeTopEdgeX => new Vector3(45, 90, 0),
+				Gizmo.ViewCubeLeftEdgeX => new Vector3(0, 135, 0),
+				Gizmo.ViewCubeBottomEdgeMinusX => new Vector3(-45, -90, 0),
+				Gizmo.ViewCubeRightEdgeMinusX => new Vector3(0, -135, 0),
+				Gizmo.ViewCubeTopEdgeMinusX => new Vector3(45, -90, 0),
+				Gizmo.ViewCubeLeftEdgeMinusX => new Vector3(0, -45, 0),
+				Gizmo.ViewCubeBottomEdgeZ => new Vector3(45, 0, 0),
+				Gizmo.ViewCubeTopEdgeZ => new Vector3(-45, 0, 0),
+				Gizmo.ViewCubeBottomEdgeMinusZ => new Vector3(-45, 180, 0),
+				Gizmo.ViewCubeTopEdgeMinusZ => new Vector3(45, 180, 0),
+
+				Gizmo.ViewCubeLowerLeftCornerX => new Vector3(-45, 135, 0),
+				Gizmo.ViewCubeLowerRightCornerX => new Vector3(-45, 45, 0),
+				Gizmo.ViewCubeUpperRightCornerX => new Vector3(45, 45, 0),
+				Gizmo.ViewCubeUpperLeftCornerX => new Vector3(45, 135, 0),
+				Gizmo.ViewCubeLowerLeftCornerMinusX => new Vector3(-45, -45, 0),
+				Gizmo.ViewCubeLowerRightCornerMinusX => new Vector3(-45, -135, 0),
+				Gizmo.ViewCubeUpperRightCornerMinusX => new Vector3(45, -135, 0),
+				Gizmo.ViewCubeUpperLeftCornerMinusX => new Vector3(45, -45, 0),
+				_ => new Vector3(0)
 			};
-			//Camera.main.ViewMatrix =rotateMatrix*Matrix4x4.CreateTranslation(Camera.main.Parent.transform.Position);
-			Camera.main.Parent.transform.Rotation = rotateAngles;
-			var translationMatrix = Matrix4x4.CreateTranslation(-Camera.main.Parent.transform.Position);
-			var angles = Camera.main.Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
-			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
-			Camera.main.ViewMatrix = rotationMatrix * translationMatrix; //pan
+
+			if (entity is not null)
+			{//TODO calculate radius based on bounding box or instead rely on centering tool
+				var rotationMatrix = Matrix4x4.CreateRotationY(0) * Matrix4x4.CreateRotationX(0);
+
+				var camPos = entity.transform.Position + Vector3.UnitZ * 100f; //entity.transform.Position - Vector3.Normalize(objTocamDir) * 300;
+				var localPos = Vector3.Transform(entity.transform.Position - camPos, rotationMatrix);
+				var newAngles = rotateVector * NumericsExtensions.Deg2Rad;
+				Camera.main.Parent.transform.Rotation = rotateVector;
+				var newRotationMatrix = Matrix4x4.CreateRotationY(newAngles.Y) * Matrix4x4.CreateRotationX(newAngles.X);
+
+				var pos = Vector3.Transform(localPos, newRotationMatrix.Inverted());
+				var newCameraPos = entity.transform.Position - pos;
+				Camera.main.ViewMatrix = Matrix4x4.CreateTranslation(-newCameraPos) * newRotationMatrix;
+				Camera.main.Parent.transform.Position = newCameraPos;
+			}
+			else
+			{
+				Camera.main.Parent.transform.Rotation = rotateVector;
+				var translationMatrix = Matrix4x4.CreateTranslation(-Camera.main.Parent.transform.Position);
+				var angles = Camera.main.Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
+				var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X);
+				Camera.main.ViewMatrix = translationMatrix * rotationMatrix; //pan
+			}
 		}
 		public static void HandleScale(Entity entity, ref Ray ray)
 		{

@@ -114,7 +114,7 @@ namespace Sharp
 
 		public float MouseYSensitivity = 1f;
 		public float MouseXSensitivity = 1f;
-
+		public Vector3 pivot;
 		public Vector2 MouseRotation;
 		public Vector3 Movement;
 		public Bitask cullingTags = new(0);
@@ -147,7 +147,7 @@ namespace Sharp
 			get => height;
 		}
 		public Action<Camera> OnDimensionChanged;
-		public CamMode CameraMode = CamMode.FlightCamera;
+		public CamMode CameraMode = CamMode.Flight;
 
 		#endregion Properties
 
@@ -169,8 +169,9 @@ namespace Sharp
 		{
 			var translationMatrix = Matrix4x4.CreateTranslation(-Parent.transform.Position);
 			var angles = Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
-			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
-			//modelViewMatrix = rotationMatrix*translationMatrix; orbit
+
+			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X);
+			//ViewMatrix = rotationMatrix * translationMatrix * Matrix4x4.CreateTranslation(0, 0, -20); //orbit
 			ViewMatrix = translationMatrix * rotationMatrix; //pan
 		}
 
@@ -288,9 +289,25 @@ namespace Sharp
 			var newRot = Parent.transform.Rotation;
 			newRot.X += (y * MouseXSensitivity * time);
 			newRot.Y += (x * MouseYSensitivity * time);
+
+
+			if (pivot != Vector3.Zero)
+			{
+				var angles = Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
+				var origRotateMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X);
+				var localPos = Vector3.Transform(pivot - Parent.transform.Position, origRotateMatrix);
+				var newAngles = newRot * NumericsExtensions.Deg2Rad;
+
+				var rotationMatrix = Matrix4x4.CreateRotationY(newAngles.Y) * Matrix4x4.CreateRotationX(newAngles.X);
+				ViewMatrix = rotationMatrix;
+				var pos = Vector3.Transform(localPos, ViewMatrix.Inverted());
+				var newCameraPos = pivot - pos;
+				ViewMatrix = Matrix4x4.CreateTranslation(-newCameraPos) * rotationMatrix;
+				Parent.transform.Position = newCameraPos;
+			}
+			else
+				SetModelviewMatrix();
 			Parent.transform.Rotation = newRot;
-			//Parent.transform.Rotation += Quaternion.CreateFromAxisAngle(Vector3.UnitY, (x * MouseYSensitivity * time) * NumericsExtensions.Deg2Rad) + Quaternion.CreateFromAxisAngle(Vector3.UnitX, (y * MouseXSensitivity * time) * NumericsExtensions.Deg2Rad);
-			SetModelviewMatrix();
 			//Console.WriteLine("Rotation={0}", MouseRotation);
 			//ClampMouseValues();
 			frustum?.Update(main.ViewMatrix * main.projectionMatrix);
@@ -305,13 +322,7 @@ namespace Sharp
 		/// </param>
 		public void Move(Vector3 axis, float distance, float time = 0.2f)
 		{
-			if (CameraMode == CamMode.FirstPerson)
-			{
-				Parent.transform.Position += Vector3.Transform(axis, Quaternion.Inverse(Parent.ToQuaterion(Parent.transform.Rotation)));//Invert?
-				Parent.transform.Position = new Vector3(Parent.transform.Position.X, 5, Parent.transform.Position.Z);
-			}
-			else
-				Parent.transform.Position += distance * axis.Transform(Quaternion.Inverse(Parent.ToQuaterion(Parent.transform.Rotation)));
+			Parent.transform.Position += distance * axis.Transform(Quaternion.Inverse(Parent.ToQuaterion(Parent.transform.Rotation)));
 
 			SetModelviewMatrix();
 			SetProjectionMatrix();
@@ -327,8 +338,7 @@ namespace Sharp
 
 	public enum CamMode
 	{
-		FlightCamera,
-		FirstPerson,
-		NoClip
+		Flight,
+		Orbit
 	}
 }

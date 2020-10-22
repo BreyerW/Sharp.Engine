@@ -59,7 +59,10 @@ namespace Sharp.Engine.Components
 				if (SceneView.locPos.HasValue)
 				{
 					if (index is not 0)
+					{
+						Camera.main.pivot = renderables[index - 1].Parent.transform.Position;
 						Selection.Asset = renderables[index - 1].Parent;
+					}
 					SceneView.locPos = null;
 				}
 				else if (index is not 0)

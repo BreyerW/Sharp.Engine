@@ -24,13 +24,16 @@
 		uniform vec4 xColor;
 		uniform vec4 yColor;
 		uniform vec4 zColor;
-		uniform vec4 hoverOverColor;
+		uniform vec4 edgeColor;
+		uniform vec4 faceColor;
+		uniform float isHovered;
             in vec2 v_texcoord;
             out vec4 frag_color;
             void main(void)
             {
+			float a =1f;//0.5f+0.5f*isHovered;
 		 vec4 maskTex=texture(mask,v_texcoord.xy);
             vec4 texColor=texture(MyTexture,v_texcoord.xy);
-			vec4 cubeColor=mix(mix(mix(texture(CubeTex,v_texcoord.xy), xColor,maskTex.x),yColor,maskTex.y),zColor,maskTex.z);
-			  frag_color =mix(cubeColor, texColor,enablePicking);
+			vec4 cubeColor=mix(mix(mix(mix(edgeColor,faceColor, texture(CubeTex,v_texcoord.xy).r), xColor,maskTex.x),yColor,maskTex.y),zColor,maskTex.z);
+			  frag_color =mix(vec4(cubeColor.rgb,a), texColor,enablePicking);//float(any(bvec2(enablePicking,isHovered)))
             }

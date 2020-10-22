@@ -86,6 +86,8 @@ namespace Sharp.Editor.Views
 			viewCubeMat.BindProperty("MyTexture", viewCubeTexture);
 			viewCubeMat.BindProperty("CubeTex", cubeTexture);
 			viewCubeMat.BindProperty("mask", mask);
+			viewCubeMat.BindProperty("edgeColor", new Color(150, 150, 150, 255));
+			viewCubeMat.BindProperty("faceColor", new Color(100, 100, 100, 255));//192 as light alternative?
 			viewCubeMat.BindProperty("xColor", Manipulators.xColor);
 			viewCubeMat.BindProperty("yColor", Manipulators.yColor);
 			viewCubeMat.BindProperty("zColor", Manipulators.zColor);
@@ -226,7 +228,7 @@ namespace Sharp.Editor.Views
 
 		private void Panel_MouseUp(Control sender, MouseEventArgs args)
 		{
-			if (Manipulators.selectedGizmoId is not Gizmo.Invalid and < Gizmo.ViewCubeUpperLeftCornerMinusX)
+			if (Manipulators.selectedGizmoId is not Gizmo.Invalid and < Gizmo.TranslateX)
 				Manipulators.HandleViewCube(SceneStructureView.tree.SelectedNode?.UserData as Entity);
 		}
 
@@ -310,10 +312,12 @@ namespace Sharp.Editor.Views
 					Manipulators.DrawCombinedGizmos(e);
 				}
 			}
+
 			viewCubeMat.SendData();
 			GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.OneMinusSrcAlpha);
 			editorHighlight.SendData();
-			GL.BlendFunc(BlendingFactorSrc.Src1Alpha, BlendingFactorDest.OneMinusSrcAlpha);
+			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+			GL.Enable(EnableCap.Blend);
 			MainWindow.backendRenderer.Viewport(0, 0, Canvas.Size.x, Canvas.Size.y);
 		}
 		private int oldX;

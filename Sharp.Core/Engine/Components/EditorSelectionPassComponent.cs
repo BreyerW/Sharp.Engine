@@ -97,6 +97,8 @@ namespace Sharp.Engine.Components
 							break;
 					}
 				}
+				MainWindow.backendRenderer.WriteDepth(true);
+				MainWindow.backendRenderer.ClearDepth();
 				//foreach (var selected in SceneStructureView.tree.SelectedNode)
 				if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 				{
@@ -110,13 +112,19 @@ namespace Sharp.Engine.Components
 				var index = ((pixel[0]) << 00) + ((pixel[1]) << 08) + (((pixel[2]) << 16));
 				if (SceneView.locPos.HasValue && index is not 0)
 				{
-					Manipulators.selectedGizmoId = (Gizmo)index;
-					if (index > 26)
+					if (index < 27)
+
+						Manipulators.selectedGizmoId = (Gizmo)index;
+
+					else
 						SceneView.mouseLocked = true;
 					SceneView.locPos = null;
 				}
 				else if (index is not 0)
 				{
+					if (index < 27)
+						viewCubeMat.BindProperty("isHovered", 1f);
+
 					Manipulators.selectedGizmoId = (Gizmo)index;
 					editorHighlight.BindProperty("hoverIdColor", new Color(pixel[0], 0, 0, 255));
 				}
@@ -126,6 +134,7 @@ namespace Sharp.Engine.Components
 					{
 						Manipulators.selectedGizmoId = Gizmo.Invalid;
 						editorHighlight.BindProperty("hoverIdColor", new Color(0, 0, 0, 0));
+						viewCubeMat.BindProperty("isHovered", 0f);
 					}
 				}
 				//readPixels = 2;
