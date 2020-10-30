@@ -104,8 +104,8 @@ uniform float len;
 				float lod2_a = max(lod2_cross_a.x, lod2_cross_a.y);
 
 				// Load sRGB colors from tm_visual_grid_t (converted into 0-1 range) 
-				vec4 thin_color = vec4(1f, 1f, 1f, 0.5f);
-				vec4 thick_color = vec4(1f, 1f, 1f, 1f);
+				vec4 thin_color = color*0.5f;
+				vec4 thick_color = color;
 
 				// Blend between falloff colors to handle LOD transition [4]
 				vec4 c = lod2_a > 0 ? thick_color : lod1_a > 0 ? mix(thick_color, thin_color, lod_fade) : thin_color;

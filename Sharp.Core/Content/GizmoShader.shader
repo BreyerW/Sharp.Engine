@@ -34,5 +34,5 @@ uniform vec2 len;
 
             void main(void)
             {
-	         frag_color =color;
+	         frag_color =EnablePicking(color);
             }

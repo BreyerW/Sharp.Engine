@@ -14,7 +14,7 @@ namespace Sharp
 		internal static MultiValueDictionary<(Bitask components, Bitask tags), Entity> tagsMapping = new();//key is bit position also make it for system parts where mask defines what components entity has at least once
 		[JsonIgnore]
 		public Entity parent;
-
+		public bool visible;//TODO: mark all objects as not visible every frame then when frustrum culling in bepuphysic or physx mark them as visible
 		[JsonIgnore]
 		public Transform transform;//TODO: remove it and make caching responsibility of user
 		[JsonIgnore]

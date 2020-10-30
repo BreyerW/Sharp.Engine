@@ -20,7 +20,7 @@ namespace Sharp.Core.Engine.Components
 			ref var sceneDepthTexture = ref Pipeline.Get<Texture>().GetAsset("depthTarget");
 			ref var selectionDepthTexture = ref Pipeline.Get<Texture>().GetAsset("selectionDepthTarget");
 			highlight = new Material();
-			highlight.Shader = shader;
+			highlight.BindShader(0, shader);
 			highlight.BindProperty("MyTexture", selectionTexture);
 			highlight.BindProperty("SelectionDepthTex", selectionDepthTexture);
 			highlight.BindProperty("SceneDepthTex", sceneDepthTexture);
@@ -37,7 +37,7 @@ namespace Sharp.Core.Engine.Components
 			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
 			MainWindow.backendRenderer.WriteDepth(false);
 
-			highlight.SendData();
+			highlight.Draw();
 
 
 			if (SceneStructureView.tree.SelectedNode?.UserData is Entity e)

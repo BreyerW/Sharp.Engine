@@ -30,6 +30,7 @@ namespace Sharp.Editor.Views
 		public static Queue<IStartableComponent> startables = new Queue<IStartableComponent>();
 		public static bool globalMode = false;
 		internal static Vector2 localMousePos;
+		internal static Vector2 mouseDela;
 		internal static Point? locPos = null;
 		public static bool mouseLocked = false;
 		/*DebugProc DebugCallbackInstance = DebugCallback;
@@ -54,12 +55,10 @@ namespace Sharp.Editor.Views
 			e.transform.ModelMatrix = Matrix4x4.CreateScale(e.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(e.transform.Position);
 			var cam = e.AddComponent<Camera>();
 			Camera.main = cam;
-			var command = e.AddComponent<DepthPrePassComponent>() as CommandBufferComponent;
-			command.ScreenSpace = true;
-			e.AddComponent<EditorSelectionPassComponent>();
+			e.AddComponent<DepthPrePassComponent>();
+			e.AddComponent<EditorHighlightPassComponent>();
 			e.AddComponent<SelectionPassComponent>();
-			command = e.AddComponent<OutlinePassComponent>();
-			command.ScreenSpace = true;
+			e.AddComponent<HighlightPassComponent>();
 			cam.SetModelviewMatrix();
 			cam.SetProjectionMatrix();
 			e.name = "Main Camera";
@@ -81,42 +80,45 @@ namespace Sharp.Editor.Views
 
 			viewCubeMat = new Material();
 
-			viewCubeMat.Shader = shader;
-			viewCubeMat.BindProperty("hoverOverColor", Color.Transparent);
+			viewCubeMat.BindShader(0, shader);
+			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ViewCubeHighlightPassShader.shader");
+			viewCubeMat.BindShader(1, shader);
+			viewCubeMat.BindProperty("hoveredColorId", Color.Transparent);
 			viewCubeMat.BindProperty("MyTexture", viewCubeTexture);
 			viewCubeMat.BindProperty("CubeTex", cubeTexture);
 			viewCubeMat.BindProperty("mask", mask);
 			viewCubeMat.BindProperty("edgeColor", new Color(150, 150, 150, 255));
 			viewCubeMat.BindProperty("faceColor", new Color(100, 100, 100, 255));//192 as light alternative?
-			viewCubeMat.BindProperty("xColor", Manipulators.xColor);
-			viewCubeMat.BindProperty("yColor", Manipulators.yColor);
-			viewCubeMat.BindProperty("zColor", Manipulators.zColor);
+			viewCubeMat.BindProperty("xColor", new Color(255, 75, 75, 255));//Manipulators.xColor
+			viewCubeMat.BindProperty("yColor", new Color(100, 255, 100, 255));//Manipulators.yColor
+			viewCubeMat.BindProperty("zColor", new Color(80, 150, 255, 255));//Manipulators.zColor
 			viewCubeMat.BindProperty("mesh", viewCubeMesh);
-			EditorSelectionPassComponent.viewCubeMat = viewCubeMat;
+			EditorHighlightPassComponent.viewCubeMat = viewCubeMat;
+			SelectionPassComponent.viewCubeMat = viewCubeMat;
 			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightShader.shader");
 			ref var screenMesh = ref Pipeline.Get<Mesh>().GetAsset("screen_space_square");
 
 
 			highlight = new Material();
-			highlight.Shader = shader;
-			ref var selectionTexture = ref Pipeline.Get<Texture>().GetAsset("selectionTarget");
+			highlight.BindShader(0, shader);
+			ref var selectionTexture = ref Pipeline.Get<Texture>().GetAsset("highlightScene");
 			highlight.BindProperty("MyTexture", selectionTexture);
-			ref var selectionDepthTexture = ref Pipeline.Get<Texture>().GetAsset("selectionDepthTarget");
+			ref var selectionDepthTexture = ref Pipeline.Get<Texture>().GetAsset("highlightDepth");
 			highlight.BindProperty("SelectionDepthTex", selectionDepthTexture);
 			ref var sceneDepthTexture = ref Pipeline.Get<Texture>().GetAsset("depthTarget");
 			highlight.BindProperty("SceneDepthTex", sceneDepthTexture);
 			highlight.BindProperty("outline_color", Manipulators.selectedColor);
+			highlight.BindProperty("overlay_color", new Color(255, 255, 255, 255));
 			highlight.BindProperty("mesh", screenMesh);
 
 			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\EditorHighlightShader.shader");
 
 			editorHighlight = new Material();
-			editorHighlight.Shader = shader;
+			editorHighlight.BindShader(0, shader);
 			ref var editorSelectionTexture = ref Pipeline.Get<Texture>().GetAsset("editorSelectionScene");
 			editorHighlight.BindProperty("MyTexture", editorSelectionTexture);
-			editorHighlight.BindProperty("outline_color", new Color(255, 255, 255, 255));
+			editorHighlight.BindProperty("outline_color", new Color(255, 255, 255, 255));//Manipulators.selectedColor
 			editorHighlight.BindProperty("mesh", screenMesh);
-			EditorSelectionPassComponent.editorHighlight = editorHighlight;
 		}
 		public SceneView(uint attachToWindow) : base(attachToWindow)
 		{
@@ -151,7 +153,7 @@ namespace Sharp.Editor.Views
 		{
 			if (mouseLocked)
 			{
-				if (Manipulators.selectedGizmoId is Gizmo.Invalid)
+				if (Manipulators.SelectedGizmoId is Gizmo.Invalid)
 				{
 					Camera.main.Rotate(Squid.UI.MouseDelta.x, Squid.UI.MouseDelta.y, 0.3f);//maybe divide delta by fov?
 				}
@@ -168,11 +170,11 @@ namespace Sharp.Editor.Views
 						//foreach (var selected in SceneStructureView.tree.SelectedChildren)
 						if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 						{
-							if (Manipulators.selectedGizmoId < Gizmo.RotateX)
+							if (Manipulators.SelectedGizmoId < Gizmo.RotateX)
 							{
 								Manipulators.HandleTranslation(entity, ref ray);
 							}
-							else if (Manipulators.selectedGizmoId < Gizmo.ScaleX)
+							else if (Manipulators.SelectedGizmoId is < Gizmo.ScaleX)
 							{
 								Manipulators.HandleRotation(entity, ref ray);
 							}
@@ -187,8 +189,7 @@ namespace Sharp.Editor.Views
 			localMousePos = new Vector2(Squid.UI.MousePosition.x - Location.x, Size.y - (Squid.UI.MousePosition.y - Location.y));
 
 			highlight.BindProperty("mousePos", localMousePos);
-			oldX = Squid.UI.MousePosition.x;
-			oldY = Squid.UI.MousePosition.y;
+			mouseDela =new Vector2(Squid.UI.MouseDelta.x,Squid.UI.MouseDelta.y);
 		}
 
 		private void SceneView_SizeChanged(Control sender)
@@ -228,8 +229,10 @@ namespace Sharp.Editor.Views
 
 		private void Panel_MouseUp(Control sender, MouseEventArgs args)
 		{
-			if (Manipulators.selectedGizmoId is not Gizmo.Invalid and < Gizmo.TranslateX)
+			if (Manipulators.SelectedGizmoId is not Gizmo.Invalid and < Gizmo.TranslateX)
 				Manipulators.HandleViewCube(SceneStructureView.tree.SelectedNode?.UserData as Entity);
+			mouseLocked = false;
+			Manipulators.SelectedGizmoId = Gizmo.Invalid;
 		}
 
 		private void Panel_MouseDown(Control sender, MouseEventArgs args)
@@ -237,7 +240,7 @@ namespace Sharp.Editor.Views
 			if (args.Button is 1)
 			{
 				mouseLocked = true;
-				Manipulators.selectedGizmoId = Gizmo.Invalid;
+				Manipulators.SelectedGizmoId = Gizmo.Invalid;
 			}
 			else if (args.Button is 0)
 			{
@@ -268,11 +271,15 @@ namespace Sharp.Editor.Views
 			//if (Camera.main is null) return;
 			while (startables.Count != 0)
 				startables.Dequeue().Start();
-
+			SelectionPassComponent.clip = (Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
 			var angles = Camera.main.Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
 			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(-angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
+			var rotatorRotationMatrix = Matrix4x4.CreateRotationZ(angles.Z);
 
-			viewCubeMat.BindProperty("model", Matrix4x4.CreateScale(50) * rotationMatrix * Matrix4x4.CreateTranslation(100, 100, 0) * Matrix4x4.CreateOrthographicOffCenter(0, Camera.main.Width, Camera.main.Height, 0, -100f, 100f));
+			var m = Matrix4x4.CreateScale(40) * rotationMatrix * Matrix4x4.CreateTranslation(Size.x - 70, 70, 0) * Matrix4x4.CreateOrthographicOffCenter(0, Camera.main.Width, Camera.main.Height, 0, -100f, 100f);
+			var m1 = Matrix4x4.CreateScale(50) * rotatorRotationMatrix * Matrix4x4.CreateTranslation(Size.x - 70, 70, 0) * Matrix4x4.CreateOrthographicOffCenter(0, Camera.main.Width, Camera.main.Height, 0, -100f, 100f);
+
+			viewCubeMat.BindProperty("model", m);
 
 			var commandBuffers = Camera.main.Parent.GetAllComponents<CommandBufferComponent>();
 			foreach (var command in commandBuffers)
@@ -288,23 +295,34 @@ namespace Sharp.Editor.Views
 			GL.Enable(EnableCap.Blend);
 			//blit from SceneCommand to this framebuffer instead
 			var renderables = Entity.FindAllWithComponentsAndTags(rendererMask, Camera.main.cullingTags, cullTags: true).GetEnumerator();
+
+			MainWindow.backendRenderer.WriteDepth(true);
+
 			while (renderables.MoveNext())
 				foreach (var renderable in renderables.Current)
 				{
 					var renderer = renderable.GetComponent<Renderer>();
 					if (renderer is { active: true })
+					{
 						renderer.Render();
+					}
 				}
-
+			//MainWindow.backendRenderer.WriteDepth(false);
 			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
 
+			//MainWindow.backendRenderer.ClearDepth();
 			//MainWindow.backendRenderer.WriteDepth(false);
 
+			highlight.Draw();
 
-			highlight.SendData();
+			//if (viewCubeMat.TryGetProperty("isHovered", out float isHovered) && isHovered is 0f)
+			{
+				//GL.CullFace(CullFaceMode.FrontAndBack);
+				//MainWindow.backendRenderer.WriteDepth(false);
+			}
 
-			MainWindow.backendRenderer.WriteDepth(true);
 			MainWindow.backendRenderer.ClearDepth();
+			MainWindow.backendRenderer.WriteDepth(true);
 			if (SceneStructureView.tree.SelectedNode?.UserData is Entity e)
 			{
 				//foreach (var selected in SceneStructureView.tree.SelectedChildren)
@@ -313,11 +331,11 @@ namespace Sharp.Editor.Views
 				}
 			}
 
-			viewCubeMat.SendData();
+			viewCubeMat.Draw();
 			GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.OneMinusSrcAlpha);
-			editorHighlight.SendData();
+			editorHighlight.Draw();
 			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-			GL.Enable(EnableCap.Blend);
+			//GL.Enable(EnableCap.Blend);
 			MainWindow.backendRenderer.Viewport(0, 0, Canvas.Size.x, Canvas.Size.y);
 		}
 		private int oldX;

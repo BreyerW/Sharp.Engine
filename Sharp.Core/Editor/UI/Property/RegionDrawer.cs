@@ -55,11 +55,11 @@ namespace Sharp.Editor.UI.Property
 			Pipeline.Get<Mesh>().Register(polyfill);
 
 			polyfill2dMat = new Material();
-			polyfill2dMat.Shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\Polyfill2dEditorShader.shader");
+			polyfill2dMat.BindShader(0, (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\Polyfill2dEditorShader.shader"));
 			polyfill2dMat.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("dynamic_polyfill"));
 
 			line2dMat = new Material();
-			line2dMat.Shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\LineShader.shader");
+			line2dMat.BindShader(0,(Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\LineShader.shader"));
 			line2dMat.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("dynamic_curve"));
 		}
 		public override bool CanApply(MemberInfo memInfo)
@@ -331,7 +331,7 @@ namespace Sharp.Editor.UI.Property
 
 			polyfill.LoadVertices<Basic2dVertexFormat>(array);
 			polyfill.LoadIndices<ushort>(indices);
-			polyfill2dMat.SendData();
+			polyfill2dMat.Draw();
 
 			var c = new Color(curveColor.R, curveColor.G, curveColor.B, (byte)(curveColor.A * 0.75f));
 			ref var mesh = ref Pipeline.Get<Mesh>().GetAsset("dynamic_curve");
@@ -352,7 +352,7 @@ namespace Sharp.Editor.UI.Property
 				}
 				mesh.LoadIndices<ushort>(indices);
 				mesh.LoadVertices<Line2dVertexFormat>(verts);
-				line2dMat.SendData();
+				line2dMat.Draw();
 			}
 
 		}

@@ -21,6 +21,7 @@
 		uniform sampler2D SelectionScene;
 		uniform sampler2D SelectionDepthTex;
 		uniform sampler2D SceneDepthTex;
+		uniform vec4 overlay_color;
 		uniform vec2 viewPort;
 		uniform vec4 selectedIdColor;
             in vec2 uv;
@@ -66,15 +67,19 @@ const float avg_scalar = 1.f / 8.f;
 //a += dot(vec4(id3 != id_center), vec4(avg_scalar));
 float a=clamp(float(id_center!=id3)+float(id_center!=id2),0,1);*/
 
-int w = 2;
+int w = 3;
 float a=0f;
 float smallest_distance=3.402823466e+38f;
 vec2 depth_offset=vec2(0);
 vec2 size = 1.0f / textureSize(MyTexture, 0);
 vec2 realsize = textureSize(MyTexture, 0);
+vec4 currColor=texture(MyTexture, uv);
+vec4 finalColor;
+//if(all(equal(currColor.rgb,vec3(1,1,0)))){frag_color=vec4(0,0,0,0); return; }
     // if the pixel is black (we are on the silhouette)
-    if (texture(MyTexture, uv).a < 0.00001f)
+    if (all(equal(currColor.rgb,vec3(0,0,0)))/*texture(MyTexture, uv).a < 0.00001f*/)
     {
+	finalColor=outline_color;
 	//w-=2;
         for (int i = -w; i <= +w; i++)
         {
@@ -88,11 +93,11 @@ vec2 realsize = textureSize(MyTexture, 0);
                 vec2 offset = vec2(i, j) * size;
 
                 // and if one of the pixel-neighbor is white (we are on the border)
-                if (texture(MyTexture, uv + offset).a> 0.00001f)
+                if (any(notEqual(texture(MyTexture, uv+ offset).rg,vec2(0,0))) && texture(MyTexture, uv+ offset).b!=1/*texture(MyTexture, uv + offset).a> 0.00001f*/)
                 {
                     a = 1f;
 					
-					float l=length(offset);
+					float l=length(vec2(i, j));
 					if(l<smallest_distance){
 						depth_offset=offset;
 						smallest_distance=l;
@@ -101,6 +106,40 @@ vec2 realsize = textureSize(MyTexture, 0);
             }
         }
     }
+	else if(all(equal(currColor.rgb,vec3(1,0,0)))){
+	finalColor=outline_color;
+		w=3;
+		for (int i = -w; i <= +w; i++)
+        {
+            for (int j = -w; j <= +w; j++)
+            {
+                if ((i == 0 && j == 0)||smallest_distance<2)
+                {
+                    continue;
+                }
+
+                vec2 offset = vec2(i, j) * size;
+
+                // and if one of the pixel-neighbor is white (we are on the border)
+                if (all(equal(texture(MyTexture, uv+ offset).rgb,vec3(0,1,0)))/*texture(MyTexture, uv + offset).a> 0.00001f*/)
+                {
+                    a = 1f;
+					
+					float l=length(vec2(i, j));
+					if(l<smallest_distance){
+						depth_offset=offset;
+						smallest_distance=l;
+					}
+                }
+            }
+        }
+
+	}
+	else if(all(equal(currColor.rgb,vec3(0,0,1)))){
+		finalColor=overlay_color;
+		a=0.75f;
+	}
+	
 	/*else
 	{
 	float image_border=0f;
@@ -131,6 +170,8 @@ vec2 realsize = textureSize(MyTexture, 0);
 // To allow outline to bleed over objects and combat TAA jittering artifacts
 // sample depth of selection buffer in a 4x4 neighborhood and pick closest
 // depth.
+if(all(equal(texture(MyTexture, uv+depth_offset).rgb,vec3(1,0,0))))
+{
 vec4 dtap0 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2(-2, -2));
 vec4 dtap1 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2( 0, -2));
 vec4 dtap2 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2(-2,  0));
@@ -150,9 +191,9 @@ bool visible = d <=scnd;
 
 // If outline is hidden, reduce its alpha value to 30%.
 a *= visible ? 1.f : 0.33f;
-
+}
 //frag_color =vec4(linearize_depth(texture(SceneDepthTex,res).r, camNearFar.x, camNearFar.y));
-frag_color=(outline_color*a);//vec4(texture(MyTexture,uv).aaa,1);//
+frag_color=(finalColor*a);//vec4(texture(MyTexture,uv).rgb,1);//
             }
 
 

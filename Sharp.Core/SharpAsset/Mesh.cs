@@ -143,7 +143,7 @@ namespace SharpAsset
 			var renderer = eObject.AddComponent<MeshRenderer>();
 			var shader = (Shader)Pipeline.Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TextureOnlyShader.shader");
 			renderer.material = new Material();
-			renderer.material.Shader = shader;
+			renderer.material.BindShader(0, shader);
 			var texture = (Texture)Pipeline.Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\duckCM.bmp");
 			//zamienic na ref loading pipeliny
 			renderer.material.BindProperty("mesh", this);

@@ -38,13 +38,13 @@ namespace SharpSL.BackendRenderers
 		void SendMatrix4(int location, ref byte mat);
 
 		//void Send(ref int location,ref int[] i);
-		public void BindRenderTexture(int tbo,TextureRole role);
+		public void BindRenderTexture(int tbo, TextureRole role);
 		void SendTexture2D(int location, ref byte tbo/*, int slot*/);
 
 		void SendUniform1(int location, ref byte data);
 
-		void SendUniform2(int location, ref byte data);
-
+		void SendUniformFloat2(int location, ref byte data);
+		void SendUniformUInt2(int location, ref byte data);
 		void SendUniform3(int location, ref byte data);
 
 		void SendUniform4(int location, ref byte data);//TODO: int stride to differentiate floats ints etc?
@@ -82,6 +82,6 @@ namespace SharpSL.BackendRenderers
 
 		void FinishCommands();
 
-		byte[] ReadPixels(int x, int y, int width, int height);
+		byte[] ReadPixels(int x, int y, int width, int height,TextureFormat pxFormat);
 	}
 }

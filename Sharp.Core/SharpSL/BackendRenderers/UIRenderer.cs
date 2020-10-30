@@ -33,19 +33,19 @@ namespace SharpSL.BackendRenderers
 		{
 			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\SDFShader.shader");
 			sdfMaterial = new Material();
-			sdfMaterial.Shader = shader;
+			sdfMaterial.BindShader(0,shader);
 			sdfMaterial.BindProperty("color", fontColor);
 			sdfMaterial.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("square"));
 
 			squareMaterial = new Material();
-			squareMaterial.Shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ColoredEditorShader.shader");
+			squareMaterial.BindShader(0,(Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ColoredEditorShader.shader"));
 			squareMaterial.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("square"));
 			squareMaterial.BindProperty("len", Vector2.One);
 
 			var square = Pipeline.Get<Mesh>().GetAsset("dynamic_square");
 
 			texturedSquareMaterial = new Material();
-			texturedSquareMaterial.Shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TexturedEditorShader.shader");
+			texturedSquareMaterial.BindShader(0, (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TexturedEditorShader.shader"));
 			texturedSquareMaterial.BindProperty("mesh", square);
 		}
 		public void DrawBox(int x, int y, int width, int height, int color)//DrawMesh?
@@ -54,7 +54,7 @@ namespace SharpSL.BackendRenderers
 			var mat = Matrix4x4.CreateScale(width, height, 1) * Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoMatrix;
 			squareMaterial.BindProperty("model", mat);
 			squareMaterial.BindProperty("color", col);
-			squareMaterial.SendData();
+			squareMaterial.Draw();
 		}
 		//float PointToPixelSize(float pt)
 		//{
@@ -118,7 +118,7 @@ namespace SharpSL.BackendRenderers
 
 					sdfMaterial.BindProperty("model", mat);
 					sdfMaterial.BindProperty("msdf", texChar);
-					sdfMaterial.SendData();
+					sdfMaterial.Draw();
 				}
 				var m = realFont.metrics[chars[i]];
 				#region Overrun
@@ -277,7 +277,7 @@ namespace SharpSL.BackendRenderers
 			texturedSquareMaterial.BindProperty("model", mat);
 			texturedSquareMaterial.BindProperty("tex", texture2d);
 			texturedSquareMaterial.BindProperty("tint", col);
-			texturedSquareMaterial.SendData();
+			texturedSquareMaterial.Draw();
 		}
 
 		public void StartBatch()//OnPreRender

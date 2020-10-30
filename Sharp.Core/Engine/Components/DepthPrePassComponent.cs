@@ -14,7 +14,8 @@ namespace Sharp.Engine.Components
 			CreateNewTemporaryTexture("depthTarget", TextureRole.Depth, 0, 0, TextureFormat.DepthFloat);
 			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightMaskPassShader.shader");
 			swapMaterial = new Material();
-			swapMaterial.Shader = shader;
+			swapMaterial.BindShader(0,shader);
+			ScreenSpace = true;
 		}
 		public override void Execute()
 		{

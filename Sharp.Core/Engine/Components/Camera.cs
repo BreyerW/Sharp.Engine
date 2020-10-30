@@ -114,7 +114,7 @@ namespace Sharp
 
 		public float MouseYSensitivity = 1f;
 		public float MouseXSensitivity = 1f;
-		public Vector3 pivot;
+		public Entity pivot;
 		public Vector2 MouseRotation;
 		public Vector3 Movement;
 		public Bitask cullingTags = new(0);
@@ -170,7 +170,7 @@ namespace Sharp
 			var translationMatrix = Matrix4x4.CreateTranslation(-Parent.transform.Position);
 			var angles = Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
 
-			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X);
+			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
 			//ViewMatrix = rotationMatrix * translationMatrix * Matrix4x4.CreateTranslation(0, 0, -20); //orbit
 			ViewMatrix = translationMatrix * rotationMatrix; //pan
 		}
@@ -291,17 +291,17 @@ namespace Sharp
 			newRot.Y += (x * MouseYSensitivity * time);
 
 
-			if (pivot != Vector3.Zero)
+			if (pivot is not null)
 			{
 				var angles = Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
 				var origRotateMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X);
-				var localPos = Vector3.Transform(pivot - Parent.transform.Position, origRotateMatrix);
+				var localPos = Vector3.Transform(pivot.transform.Position - Parent.transform.Position, origRotateMatrix);
 				var newAngles = newRot * NumericsExtensions.Deg2Rad;
 
 				var rotationMatrix = Matrix4x4.CreateRotationY(newAngles.Y) * Matrix4x4.CreateRotationX(newAngles.X);
 				ViewMatrix = rotationMatrix;
 				var pos = Vector3.Transform(localPos, ViewMatrix.Inverted());
-				var newCameraPos = pivot - pos;
+				var newCameraPos = pivot.transform.Position - pos;
 				ViewMatrix = Matrix4x4.CreateTranslation(-newCameraPos) * rotationMatrix;
 				Parent.transform.Position = newCameraPos;
 			}

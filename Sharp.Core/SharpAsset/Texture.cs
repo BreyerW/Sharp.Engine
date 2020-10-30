@@ -10,6 +10,10 @@ namespace SharpAsset
 		R,
 		RGB,
 		RGBA,
+		RUInt,
+		RGUInt,
+		RGBUInt,
+		RGBAUInt,
 		A,
 		RGBAFloat,
 		RG16_SNorm,
@@ -23,6 +27,8 @@ namespace SharpAsset
 		internal int FBO;
 		public int width;
 		public int height;
+		public byte bits;
+		public bool normalized;
 		public TextureFormat format;
 		internal byte[] bitmap;
 

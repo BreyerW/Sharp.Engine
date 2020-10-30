@@ -55,7 +55,7 @@ namespace Sharp.Editor
 		ScaleX,
 		ScaleY,
 		ScaleZ,
-		UnformScale,
+		UniformScale,
 
 	}
 	public static class Manipulators
@@ -68,7 +68,101 @@ namespace Sharp.Editor
 		public static readonly Color zColor = new Color(0xFFAA0000);
 		public static bool preserveInsignificantCameraAngleWithViewCube = false;
 		internal static Material discMaterial;
-		internal static Gizmo selectedGizmoId = Gizmo.Invalid;
+		private static Gizmo selectedGizmoId = Gizmo.Invalid;
+		public static Gizmo SelectedGizmoId
+		{
+			get => selectedGizmoId;
+			set
+			{
+				switch (selectedGizmoId)
+				{
+					case Gizmo.TranslateX:
+						DrawHelper.lineMaterialX.BindProperty("color", xColor);
+						DrawHelper.coneMaterialX.BindProperty("color", xColor);
+						break;
+					case Gizmo.TranslateY:
+						DrawHelper.lineMaterialY.BindProperty("color", yColor);
+						DrawHelper.coneMaterialX.BindProperty("color", yColor);
+						break;
+					case Gizmo.TranslateZ:
+						DrawHelper.lineMaterialZ.BindProperty("color", zColor);
+						DrawHelper.coneMaterialX.BindProperty("color", zColor);
+						break;
+					case Gizmo.TranslateXY:
+						DrawHelper.planeMaterialXY.BindProperty("color", zColor);
+						break;
+					case Gizmo.TranslateYZ:
+						DrawHelper.planeMaterialYZ.BindProperty("color", xColor);
+						break;
+					case Gizmo.TranslateZX:
+						DrawHelper.planeMaterialZX.BindProperty("color", yColor);
+						break;
+					case Gizmo.RotateX:
+						DrawHelper.circleMaterialX.BindProperty("color", xColor);
+						break;
+					case Gizmo.RotateY:
+						DrawHelper.circleMaterialY.BindProperty("color", yColor);
+						break;
+					case Gizmo.RotateZ:
+						DrawHelper.circleMaterialZ.BindProperty("color", zColor);
+						break;
+					case Gizmo.ScaleX:
+						DrawHelper.cubeMaterialX.BindProperty("color", xColor);
+						break;
+					case Gizmo.ScaleY:
+						DrawHelper.cubeMaterialY.BindProperty("color", yColor);
+						break;
+					case Gizmo.ScaleZ:
+						DrawHelper.cubeMaterialZ.BindProperty("color", zColor);
+						break;
+				}
+				switch (value)
+				{
+					case Gizmo.TranslateX:
+						DrawHelper.lineMaterialX.BindProperty("color", selectedColor);
+						DrawHelper.coneMaterialX.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.TranslateY:
+						DrawHelper.lineMaterialY.BindProperty("color", selectedColor);
+						DrawHelper.coneMaterialY.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.TranslateZ:
+						DrawHelper.lineMaterialZ.BindProperty("color", selectedColor);
+						DrawHelper.coneMaterialZ.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.TranslateXY:
+						DrawHelper.planeMaterialXY.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.TranslateYZ:
+						DrawHelper.planeMaterialYZ.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.TranslateZX:
+						DrawHelper.planeMaterialZX.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.RotateX:
+						DrawHelper.circleMaterialX.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.RotateY:
+						DrawHelper.circleMaterialY.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.RotateZ:
+						DrawHelper.circleMaterialZ.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.ScaleX:
+						DrawHelper.cubeMaterialX.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.ScaleY:
+						DrawHelper.cubeMaterialY.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.ScaleZ:
+						DrawHelper.cubeMaterialZ.BindProperty("color", selectedColor);
+						break;
+					case Gizmo.Invalid: ResetGizmoColors(); break;
+				}
+				selectedGizmoId = value;
+			}
+		}
+		internal static Gizmo hoveredGizmoId = Gizmo.Invalid;
 		internal static float? rotAngleOrigin;
 		internal static float angle;
 		internal static Vector3 currentAngle = Vector3.Zero;
@@ -82,13 +176,13 @@ namespace Sharp.Editor
 		internal static Vector3 translationPlaneOrigin;
 		internal static Matrix4x4 startMat;
 		internal static Matrix4x4 mModel;
-		//internal static int hoverOverGizmoId;
+		//
 
 		static Manipulators()
 		{
 			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GizmoShader.shader");
 			discMaterial = new Material();
-			discMaterial.Shader = shader;
+			discMaterial.BindShader(0, shader);
 			CreatePrimitiveMesh.numVertices = halfCircleSegments;
 			var disc = CreatePrimitiveMesh.GenerateEditorDisc(Vector3.UnitY, Vector3.UnitX);
 
@@ -100,10 +194,70 @@ namespace Sharp.Editor
 
 		public static void DrawCombinedGizmos(Entity entity)
 		{
-			DrawCombinedGizmos(entity, (selectedGizmoId is Gizmo.TranslateX ? selectedColor : xColor), (selectedGizmoId is Gizmo.TranslateY ? selectedColor : yColor), (selectedGizmoId is Gizmo.TranslateZ ? selectedColor : zColor), (selectedGizmoId is Gizmo.TranslateXY ? selectedColor : xColor), (selectedGizmoId is Gizmo.TranslateYZ ? selectedColor : yColor), (selectedGizmoId is Gizmo.TranslateZX ? selectedColor : zColor), (selectedGizmoId is Gizmo.RotateX ? selectedColor : xColor), (selectedGizmoId is Gizmo.RotateY ? selectedColor : yColor), (selectedGizmoId is Gizmo.RotateZ ? selectedColor : zColor), (selectedGizmoId is Gizmo.ScaleX ? selectedColor : xColor), (selectedGizmoId is Gizmo.ScaleY ? selectedColor : yColor), (selectedGizmoId is Gizmo.ScaleZ ? selectedColor : zColor), 3f);
+			DrawCombinedGizmos(entity, 3f);
 		}
+		internal static void ResetGizmoColors()
+		{
+			DrawHelper.lineMaterialX.BindProperty("color", xColor);
 
-		public static void DrawCombinedGizmos(Entity entity, Color xColor, Color yColor, Color zColor, Color xPlaneColor, Color yPlaneColor, Color zPlaneColor, Color xRotColor, Color yRotColor, Color zRotColor, Color xScaleColor, Color yScaleColor, Color zScaleColor, float thickness = 5f)
+			DrawHelper.lineMaterialY.BindProperty("color", yColor);
+
+			DrawHelper.lineMaterialZ.BindProperty("color", zColor);
+			DrawHelper.coneMaterialX.BindProperty("color", xColor);
+
+			DrawHelper.coneMaterialY.BindProperty("color", yColor);
+
+			DrawHelper.coneMaterialZ.BindProperty("color", zColor);
+
+			DrawHelper.planeMaterialXY.BindProperty("color", zColor);
+
+			DrawHelper.planeMaterialYZ.BindProperty("color", xColor);
+
+			DrawHelper.planeMaterialZX.BindProperty("color", yColor);
+
+			DrawHelper.circleMaterialX.BindProperty("color", xColor);
+
+			DrawHelper.circleMaterialY.BindProperty("color", yColor);
+
+			DrawHelper.circleMaterialZ.BindProperty("color", zColor);
+
+			DrawHelper.cubeMaterialX.BindProperty("color", xColor);
+
+			DrawHelper.cubeMaterialY.BindProperty("color", yColor);
+
+			DrawHelper.cubeMaterialZ.BindProperty("color", zColor);
+		}
+		internal static void SetGizmoColors(in Color c)
+		{
+			DrawHelper.lineMaterialX.BindProperty("color", c);
+
+			DrawHelper.lineMaterialY.BindProperty("color", c);
+
+			DrawHelper.lineMaterialZ.BindProperty("color", c);
+			DrawHelper.coneMaterialX.BindProperty("color", c);
+
+			DrawHelper.coneMaterialY.BindProperty("color", c);
+
+			DrawHelper.coneMaterialZ.BindProperty("color", c);
+			DrawHelper.planeMaterialXY.BindProperty("color", c);
+
+			DrawHelper.planeMaterialYZ.BindProperty("color", c);
+
+			DrawHelper.planeMaterialZX.BindProperty("color", c);
+
+			DrawHelper.circleMaterialX.BindProperty("color", c);
+
+			DrawHelper.circleMaterialY.BindProperty("color", c);
+
+			DrawHelper.circleMaterialZ.BindProperty("color", c);
+
+			DrawHelper.cubeMaterialX.BindProperty("color", c);
+
+			DrawHelper.cubeMaterialY.BindProperty("color", c);
+
+			DrawHelper.cubeMaterialZ.BindProperty("color", c);
+		}
+		public static void DrawCombinedGizmos(Entity entity, float thickness = 5f)
 		{
 			float scale = (Camera.main.Parent.transform.Position - entity.transform.Position).Length() / 100.0f;
 			if (SceneView.globalMode is false)
@@ -122,9 +276,9 @@ namespace Sharp.Editor
 			var rotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, NumericsExtensions.Deg2Rad * 90);
 
 			//TODO: convert cube to ball for scale gizmo?
-			DrawHelper.DrawRotationGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel, xRotColor, yRotColor, zRotColor);
-			DrawHelper.DrawScaleGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel, xScaleColor, yScaleColor, zScaleColor, scaleOffset, selectedGizmoId);
-			DrawHelper.DrawTranslationGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel, xColor, yColor, zColor, xPlaneColor, yPlaneColor, zPlaneColor);
+			DrawHelper.DrawRotationGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel);
+			DrawHelper.DrawScaleGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel, scaleOffset, SelectedGizmoId);
+			DrawHelper.DrawTranslationGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel);
 			if (rotVectSource.HasValue)
 			{
 				var fullAngle = NumericsExtensions.CalculateAngle(rotVectSource.Value, currentAngle);
@@ -140,7 +294,7 @@ namespace Sharp.Editor
 				discMaterial.BindProperty("model", scaleMat * sMat);
 				discMaterial.BindProperty("color", fillColor);
 
-				discMaterial.SendData();
+				discMaterial.Draw();
 				/*var (startRot, up) = selectedAxisId switch
 				{
 					1 or 4 or 7 => (rotationX, Vector3.UnitX),
@@ -209,15 +363,16 @@ namespace Sharp.Editor
 			startMat = default;
 			transformOrigin = default;
 			transformationPlane = default;
+			ResetGizmoColors();
 		}
 
 		private static Vector3 GetAxis()
 		{
-			if (selectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateXY or Gizmo.RotateX or Gizmo.ScaleX)
+			if (SelectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateXY or Gizmo.RotateX or Gizmo.ScaleX)
 			{
 				return Vector3.UnitX;
 			}
-			else if (selectedGizmoId is Gizmo.TranslateY or Gizmo.TranslateYZ or Gizmo.RotateY or Gizmo.ScaleY)
+			else if (SelectedGizmoId is Gizmo.TranslateY or Gizmo.TranslateYZ or Gizmo.RotateY or Gizmo.ScaleY)
 			{
 				return Vector3.UnitY;
 			}
@@ -248,9 +403,9 @@ namespace Sharp.Editor
 				Matrix4x4.Decompose(entity.transform.ModelMatrix, out var scale, out var rot, out var trans);
 				// 1 axis constraint
 				mModel.DecomposeDirections(out var right, out var up, out var forward);
-				if (selectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateY or Gizmo.TranslateZ)
+				if (SelectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateY or Gizmo.TranslateZ)
 				{
-					var direction = selectedGizmoId switch
+					var direction = SelectedGizmoId switch
 					{
 						Gizmo.TranslateX => right,
 						Gizmo.TranslateY => up,
@@ -292,29 +447,29 @@ namespace Sharp.Editor
 			else
 			{
 				mModel.DecomposeDirections(out var right, out var up, out var forward);
-				Vector3[] movePlanNormal = { right, up, forward,
+				Vector3[] movePlaneNormal = { right, up, forward,
 				 right, up, forward,
 			   -Camera.main.Parent.transform.Forward/*free movement*/ };
 
 				Vector3 cameraToModelNormalized = Vector3.Normalize(entity.transform.Position - Camera.main.Parent.transform.Position);
 				for (int i = 0; i < 3; i++)
 				{
-					Vector3 orthoVector = Vector3.Cross(movePlanNormal[i], cameraToModelNormalized);
-					movePlanNormal[i] = Vector3.Cross(movePlanNormal[i], orthoVector).Normalize();
+					Vector3 orthoVector = Vector3.Cross(movePlaneNormal[i], cameraToModelNormalized);
+					movePlaneNormal[i] = Vector3.Cross(movePlaneNormal[i], orthoVector).Normalize();
 				}
-				var index = selectedGizmoId switch
+				var index = SelectedGizmoId switch
 				{
 					Gizmo.TranslateX => 1,
 					Gizmo.TranslateY => 0,//TODO: choose 0 or 2 based on camera view?
 					Gizmo.TranslateZ => 1,
-					Gizmo.TranslateXY => 3,
-					Gizmo.TranslateYZ => 4,
-					Gizmo.TranslateZX => 5,
+					Gizmo.TranslateXY => 5,
+					Gizmo.TranslateYZ => 3,
+					Gizmo.TranslateZX => 4,
 					_ => 6
 				};
 				startMat = entity.transform.ModelMatrix;
 				transformOrigin = entity.transform.Position;
-				var plane = BuildPlane(entity.transform.Position, movePlanNormal[index]);//TODO: bugged look up imguizmo again
+				var plane = BuildPlane(entity.transform.Position, movePlaneNormal[index]);//TODO: bugged look up imguizmo again
 				transformationPlane = new Vector4(plane.Normal, plane.D);
 				float len = ray.IntersectPlane(transformationPlane); // near plan
 				var newPos = ray.origin + ray.direction * len;
@@ -392,12 +547,12 @@ namespace Sharp.Editor
 				Vector3[] movePlanNormal = { right,up,forward,
 			   -Camera.main.Parent.transform.Forward/*free movement*/
 				};
-				var index = selectedGizmoId switch
+				var index = SelectedGizmoId switch
 				{
 					Gizmo.RotateX => 0,
 					Gizmo.RotateY => 1,//TODO: choose 0 or 2 based on camera view?
 					Gizmo.RotateZ => 2,
-					_ => throw new NotSupportedException($"Rotate doesnt support {selectedGizmoId}")
+					_ => throw new NotSupportedException($"Rotate doesnt support {SelectedGizmoId}")
 				};
 				// pickup plan
 				var plane = BuildPlane(entity.transform.Position, movePlanNormal[index]);
@@ -412,7 +567,7 @@ namespace Sharp.Editor
 		}
 		public static void HandleViewCube(Entity entity)//null means orbit camera around camera focus point rather than selected object
 		{
-			var rotateVector = selectedGizmoId switch
+			var rotateVector = SelectedGizmoId switch
 			{
 				Gizmo.ViewCubeX => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, 90, 0),
 				Gizmo.ViewCubeMinusX => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, -90, 0),
@@ -486,7 +641,7 @@ namespace Sharp.Editor
 				// 1 axis constraint
 				Matrix4x4.Decompose(entity.transform.ModelMatrix, out var scale, out var rot, out var trans);
 
-				var direction = selectedGizmoId switch
+				var direction = SelectedGizmoId switch
 				{
 					Gizmo.ScaleX => entity.transform.Right,
 					Gizmo.ScaleY => entity.transform.Up,
@@ -524,7 +679,7 @@ namespace Sharp.Editor
 				float ratio = Vector3.Dot(axisValue, baseVector + delta) / Vector3.Dot(axisValue, baseVector);
 				//if (float.IsNaN(ratio) || float.IsInfinity(ratio)) ratio = float.MaxValue;
 				var newScale = Math.Clamp(MathF.Max(ratio, 0.001f), float.MinValue, float.MaxValue);
-				var vScale = selectedGizmoId switch
+				var vScale = SelectedGizmoId switch
 				{
 					Gizmo.ScaleX => new Vector3(newScale, 1, 1),
 					Gizmo.ScaleY => new Vector3(1, newScale, 1),
@@ -542,12 +697,12 @@ namespace Sharp.Editor
 			{
 				Vector3[] movePlanNormal = { entity.transform.Right, entity.transform.Up, entity.transform.Forward };
 
-				var index = selectedGizmoId switch
+				var index = SelectedGizmoId switch
 				{
 					Gizmo.ScaleX => 1,
 					Gizmo.ScaleY => 0,//TODO: choose 0 or 2 based on camera view?
 					Gizmo.ScaleZ => 1,
-					_ => throw new NotSupportedException($"Scale doesnt support {selectedGizmoId}")
+					_ => throw new NotSupportedException($"Scale doesnt support {SelectedGizmoId}")
 				};
 				startMat = entity.transform.ModelMatrix;
 				startMat.DecomposeDirections(out var right, out var up, out var forward);

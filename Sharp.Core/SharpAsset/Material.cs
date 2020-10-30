@@ -2,6 +2,7 @@
 using Sharp;
 using SharpAsset.Pipeline;
 using SharpSL;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -49,6 +50,7 @@ namespace SharpAsset
 		private const byte TEXTURE = 4;
 		private const byte MESH = 5;
 		private const byte COLOR4 = 6;
+		private const byte UVECTOR2 = 7;
 		private const byte MATRIX4X4PTR = byte.MaxValue;
 		private const byte COLOR4PTR = byte.MaxValue - 1;
 
@@ -64,13 +66,14 @@ namespace SharpAsset
 			[typeof(Color)] = Marshal.SizeOf<Color>(),
 			[typeof(IntPtr)] = Marshal.SizeOf<IntPtr>(),
 			[typeof(float)] = Marshal.SizeOf<float>(),
+			[typeof(uint)] = Marshal.SizeOf<uint>(),
 		};
 		[JsonProperty]
-		private int shaderId;
+		private int[] shadersId = Array.Empty<int>();
 		private static Dictionary<(uint winId, string property), byte[]> globalParams = new Dictionary<(uint winId, string property), byte[]>();
 		[JsonProperty]
 		private Dictionary<string, byte[]> localParams;
-		public Shader Shader
+		/*public Shader Shader
 		{
 			get
 			{
@@ -78,7 +81,7 @@ namespace SharpAsset
 				/*     if (shader!=null)
                          return shader;
                  throw new IndexOutOfRangeException("Material dont point to any shader");
-                 */
+                 *
 			}
 			set
 			{
@@ -87,6 +90,16 @@ namespace SharpAsset
 				{
 					localParams = new Dictionary<string, byte[]>();
 				}
+			}
+		}*/
+		public void BindShader(int pass, in Shader shader)
+		{
+			if (pass >= shadersId.Length)
+				Array.Resize(ref shadersId, pass + 1);
+			shadersId[pass] = ShaderPipeline.nameToKey.IndexOf(shader.Name.ToString());
+			if (localParams is null)
+			{
+				localParams = new Dictionary<string, byte[]>();
 			}
 		}
 		public void BindUnmanagedProperty<T>(string propName, in T data) where T : unmanaged
@@ -202,6 +215,20 @@ namespace SharpAsset
 			else
 				Unsafe.WriteUnaligned(ref localParams[propName][1], data);
 		}
+		public void BindProperty(string propName, in uint[] data)
+		{
+			if (!localParams.ContainsKey(propName))
+			{
+
+				var param = new byte[sizeTable[data[0].GetType()] * data.Length + 1];
+				if (data.Length is 2)
+					param[0] = UVECTOR2;
+				Unsafe.WriteUnaligned(ref param[1], data);
+				localParams.Add(propName, param);
+			}
+			else
+				Unsafe.WriteUnaligned(ref localParams[propName][1], data);
+		}
 		public bool TryGetProperty(string prop, out Mesh data)
 		{
 			if (localParams.TryGetValue(prop, out var addr))
@@ -218,6 +245,16 @@ namespace SharpAsset
 			if (localParams.TryGetValue(prop, out var addr))
 			{
 				data = Pipeline.Pipeline.Get<Texture>().GetAsset(Unsafe.As<byte, int>(ref addr[1]));
+				return true;
+			}
+			data = default;
+			return false;
+		}
+		public bool TryGetProperty(string prop, out float data)
+		{
+			if (localParams.TryGetValue(prop, out var addr))
+			{
+				data = Unsafe.As<byte, float>(ref addr[1]);
 				return true;
 			}
 			data = default;
@@ -271,15 +308,16 @@ namespace SharpAsset
 
 			//Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
 		}
-		internal void SendData()
+		public void Draw(int pass)
 		{
-			if (Shader.IsAllocated is false) return;
+			ref var shader = ref Pipeline.Pipeline.Get<Shader>().GetAsset(shadersId[pass]);
+			if (shader.IsAllocated is false) return;
 			if (TryGetProperty("mesh", out Mesh mesh) is false || mesh.VBO is -1)
 				return;
-			if (Material.lastShaderUsed != Shader.Program)
+			if (Material.lastShaderUsed != shader.Program)
 			{
-				MainWindow.backendRenderer.Use(Shader.Program);
-				lastShaderUsed = Shader.Program;
+				MainWindow.backendRenderer.Use(shader.Program);
+				lastShaderUsed = shader.Program;
 			}
 			/*var idLight = 0;
 			if (Shader.uniformArray.ContainsKey("ambient"))
@@ -296,20 +334,20 @@ namespace SharpAsset
 			}*/
 			foreach (var (key, value) in localParams)
 			{
-				SendToGPU(key, value);
+				SendToGPU(shader, key, value);
 				//Console.WriteLine("test " + key);
 			}
 
 			foreach (var (key, value) in globalParams)
 				if (key.winId == MainWindow.backendRenderer.currentWindow)
-					SendToGPU(key.property, value);
+					SendToGPU(shader, key.property, value);
 
 
 			MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
 
 			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].attribs)
 			{
-				if (Shader.attribArray.TryGetValue(vertAttrib.shaderLocation, out var attrib))
+				if (shader.attribArray.TryGetValue(vertAttrib.shaderLocation, out var attrib))
 					MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, attrib.location, vertAttrib.size, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
 			}
 
@@ -322,21 +360,28 @@ namespace SharpAsset
 			MainWindow.backendRenderer.Draw(mesh.indiceType, mesh.Indices.Length);
 			//var tbo = 0;
 			//MainWindow.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));//TODO: generalize this
+
+		}
+		internal void Draw()
+		{
+			Draw(0);
 		}
 
-		private void SendToGPU(string prop, byte[] data)
+		private void SendToGPU(in Shader shader, string prop, byte[] data)
 		{
-			if (prop is not "mesh" && Shader.uniformArray.ContainsKey(prop))
+			if (prop is not "mesh" && shader.uniformArray.ContainsKey(prop))
 				switch (data[0])
 				{
-					case FLOAT: MainWindow.backendRenderer.SendUniform1(Shader.uniformArray[prop], ref data[1]); break;
-					case VECTOR2: MainWindow.backendRenderer.SendUniform2(Shader.uniformArray[prop], ref data[1]); break;
-					case VECTOR3: MainWindow.backendRenderer.SendUniform3(Shader.uniformArray[prop], ref data[1]); break;
-					case COLOR4: MainWindow.backendRenderer.SendUniform4(Shader.uniformArray[prop], ref data[1]); break;
-					case MATRIX4X4: MainWindow.backendRenderer.SendMatrix4(Shader.uniformArray[prop], ref data[1]); break;
+					case FLOAT: MainWindow.backendRenderer.SendUniform1(shader.uniformArray[prop], ref data[1]); break;
+					case VECTOR2: MainWindow.backendRenderer.SendUniformFloat2(shader.uniformArray[prop], ref data[1]); break;
+					case UVECTOR2: MainWindow.backendRenderer.SendUniformUInt2(shader.uniformArray[prop], ref data[1]); break;
+
+					case VECTOR3: MainWindow.backendRenderer.SendUniform3(shader.uniformArray[prop], ref data[1]); break;
+					case COLOR4: MainWindow.backendRenderer.SendUniform4(shader.uniformArray[prop], ref data[1]); break;
+					case MATRIX4X4: MainWindow.backendRenderer.SendMatrix4(shader.uniformArray[prop], ref data[1]); break;
 					case TEXTURE:
 						TryGetProperty(prop, out Texture tex);
-						MainWindow.backendRenderer.SendTexture2D(Shader.uniformArray[prop], ref Unsafe.As<int, byte>(ref tex.TBO)/*, Slot*/);
+						MainWindow.backendRenderer.SendTexture2D(shader.uniformArray[prop], ref Unsafe.As<int, byte>(ref tex.TBO)/*, Slot*/);
 						break;
 					case MATRIX4X4PTR: /*unsafe { MainWindow.backendRenderer.SendMatrix4(Shader.uniformArray[prop], ref Unsafe.AsRef<Matrix4x4>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer()).M11); }*/ break;
 				}

@@ -118,7 +118,7 @@ uniform vec4 color;
 
 void main() {
 
-	frag_color = color;
+	frag_color =EnablePicking(color);
 
 }
 vec4 when_eq(vec4 x, vec4 y) {

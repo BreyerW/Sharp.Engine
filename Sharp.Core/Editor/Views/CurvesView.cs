@@ -668,7 +668,7 @@ namespace Sharp.Editor.Views
 				}
 				curve.LoadIndices<ushort>(inds);
 				curve.LoadVertices<Line2dVertexFormat>(verts);
-				RegionDrawer.line2dMat.SendData();
+				RegionDrawer.line2dMat.Draw();
 			}
 			c = PrepareColorForRegion(drawer.curveColor);
 			RegionDrawer.polyfill2dMat.BindProperty("color", c);
@@ -686,7 +686,7 @@ namespace Sharp.Editor.Views
 
 
 			GridGUI();
-			RegionDrawer.polyfill2dMat.SendData();
+			RegionDrawer.polyfill2dMat.Draw();
 			//MainWindow.backendRenderer.WriteDepth();
 			if (selectedControl != null)
 			{
@@ -707,7 +707,7 @@ namespace Sharp.Editor.Views
 
 					curve.LoadIndices<ushort>(inds);
 					curve.LoadVertices<Line2dVertexFormat>(verts);
-					RegionDrawer.line2dMat.SendData();
+					RegionDrawer.line2dMat.Draw();
 				}
 				if (inTan.IsVisible)
 				{
@@ -718,7 +718,7 @@ namespace Sharp.Editor.Views
 
 					curve.LoadIndices<ushort>(inds);
 					curve.LoadVertices<Line2dVertexFormat>(verts);
-					RegionDrawer.line2dMat.SendData();
+					RegionDrawer.line2dMat.Draw();
 				}
 			}
 		}
@@ -846,7 +846,7 @@ namespace Sharp.Editor.Views
 
 							curve.LoadIndices<ushort>(inds);
 							curve.LoadVertices<Line2dVertexFormat>(verts);
-							RegionDrawer.line2dMat.SendData();
+							RegionDrawer.line2dMat.Draw();
 						}
 					}
 				}
@@ -861,7 +861,7 @@ namespace Sharp.Editor.Views
 
 				curve.LoadIndices<ushort>(inds);
 				curve.LoadVertices<Line2dVertexFormat>(verts);
-				RegionDrawer.line2dMat.SendData();
+				RegionDrawer.line2dMat.Draw();
 			}
 			if (maxX != float.PositiveInfinity)
 			{
@@ -871,7 +871,7 @@ namespace Sharp.Editor.Views
 
 				curve.LoadIndices<ushort>(inds);
 				curve.LoadVertices<Line2dVertexFormat>(verts);
-				RegionDrawer.line2dMat.SendData();
+				RegionDrawer.line2dMat.Draw();
 			}
 			vTicks.SetTickStrengths((float)curveSettings.vTickStyle.distMin, (float)curveSettings.vTickStyle.distFull, false);
 			if (curveSettings.vTickStyle.stubs)
@@ -903,7 +903,7 @@ namespace Sharp.Editor.Views
 
 							curve.LoadIndices<ushort>(inds);
 							curve.LoadVertices<Line2dVertexFormat>(verts);
-							RegionDrawer.line2dMat.SendData();
+							RegionDrawer.line2dMat.Draw();
 						}
 					}
 				}
@@ -918,7 +918,7 @@ namespace Sharp.Editor.Views
 
 				curve.LoadIndices<ushort>(inds);
 				curve.LoadVertices<Line2dVertexFormat>(verts);
-				RegionDrawer.line2dMat.SendData();
+				RegionDrawer.line2dMat.Draw();
 			}
 			if (maxY != float.PositiveInfinity)
 			{
@@ -928,7 +928,7 @@ namespace Sharp.Editor.Views
 
 				curve.LoadIndices<ushort>(inds);
 				curve.LoadVertices<Line2dVertexFormat>(verts);
-				RegionDrawer.line2dMat.SendData();
+				RegionDrawer.line2dMat.Draw();
 			}
 
 			if (curveSettings.showAxisLabels)

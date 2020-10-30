@@ -20,7 +20,6 @@
 		uniform sampler2D MyTexture;
 		uniform sampler2D CubeTex;
 		uniform sampler2D mask;
-		//TODO: semi-transparent when not hovered over?
 		uniform vec4 xColor;
 		uniform vec4 yColor;
 		uniform vec4 zColor;
@@ -31,9 +30,9 @@
             out vec4 frag_color;
             void main(void)
             {
-			float a =1f;//0.5f+0.5f*isHovered;
+			float a =0.33f+0.67f*isHovered;
 		 vec4 maskTex=texture(mask,v_texcoord.xy);
             vec4 texColor=texture(MyTexture,v_texcoord.xy);
 			vec4 cubeColor=mix(mix(mix(mix(edgeColor,faceColor, texture(CubeTex,v_texcoord.xy).r), xColor,maskTex.x),yColor,maskTex.y),zColor,maskTex.z);
-			  frag_color =mix(vec4(cubeColor.rgb,a), texColor,enablePicking);//float(any(bvec2(enablePicking,isHovered)))
+			  frag_color =mix(vec4(cubeColor.rgb,1),mix( vec4(texColor.rgb,0),vec4(0,0,0,0),all(equal(texColor,colorId))),enablePicking);//float(any(bvec2(enablePicking,isHovered)))
             }

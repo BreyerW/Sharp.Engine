@@ -6,6 +6,7 @@ using Squid;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace SharpSL.BackendRenderers.OpenGL
@@ -41,15 +42,26 @@ namespace SharpSL.BackendRenderers.OpenGL
 			// GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
 		}
 
-		public byte[] ReadPixels(int x, int y, int width, int height)
+		public byte[] ReadPixels(int x, int y, int width, int height, TextureFormat pxFormat)
 		{
-			byte[] pixel = new byte[3];
+			(var pixelFormat, byte[] pixel) = pxFormat switch
+			{
+				TextureFormat.R => (PixelFormat.Red, new byte[3]),
+				TextureFormat.A => (PixelFormat.Alpha, new byte[3]),
+				TextureFormat.DepthFloat => (PixelFormat.DepthComponent, new byte[3]),
+				TextureFormat.RGB => (PixelFormat.Rgb, new byte[3]),
+				TextureFormat.RGBA => (PixelFormat.Rgba, new byte[4]),
+				TextureFormat.RUInt => (PixelFormat.RedInteger, new byte[3]),
+				TextureFormat.RGUInt => (PixelFormat.RgInteger, new byte[Marshal.SizeOf<uint>() * 2]),
+				TextureFormat.RGBAFloat => (PixelFormat.Rgba, new byte[3]),
+				TextureFormat.RG16_SNorm => (PixelFormat.Rgb, new byte[3]),
+				_ => (PixelFormat.Bgra, new byte[4])
+			};
 			// Flip Y-axis (Windows <-> OpenGL)
-			GL.ReadPixels(x, y, width, height, PixelFormat.Rgb, PixelType.UnsignedByte, pixel);
+			GL.ReadPixels(x, y, width, height, pixelFormat, PixelType.UnsignedByte, pixel);
 
 			return pixel;
 		}
-
 		public void SetStandardState()
 		{
 			GL.DepthMask(true);
@@ -84,8 +96,10 @@ namespace SharpSL.BackendRenderers.OpenGL
 			{
 				TextureFormat.R => (PixelInternalFormat.R16, PixelFormat.Red, PixelType.UnsignedByte),
 				TextureFormat.A => (PixelInternalFormat.Alpha, PixelFormat.Alpha, PixelType.UnsignedByte),
-				TextureFormat.DepthFloat => (PixelInternalFormat.DepthComponent, PixelFormat.DepthComponent, PixelType.Float),
+				TextureFormat.DepthFloat => (PixelInternalFormat.DepthComponent, PixelFormat.DepthComponent, PixelType.UnsignedByte),
 				TextureFormat.RGB => (PixelInternalFormat.Rgb, PixelFormat.Rgb, PixelType.UnsignedByte),
+				TextureFormat.RUInt => (PixelInternalFormat.R32ui, PixelFormat.RedInteger, PixelType.UnsignedByte),
+				TextureFormat.RGUInt => (PixelInternalFormat.Rg32ui, PixelFormat.RgInteger, PixelType.UnsignedByte),
 				TextureFormat.RGBAFloat => (PixelInternalFormat.Rgba32f, PixelFormat.Rgba, PixelType.UnsignedByte),
 				TextureFormat.RG16_SNorm => (PixelInternalFormat.Rg16Snorm, PixelFormat.Rgb, PixelType.UnsignedByte),
 				_ => (PixelInternalFormat.Rgba, PixelFormat.Bgra, PixelType.UnsignedByte)
@@ -352,9 +366,13 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.Uniform1(location, 1, ref Unsafe.As<byte, float>(ref data));
 		}
 
-		public void SendUniform2(int location, ref byte data)
+		public void SendUniformFloat2(int location, ref byte data)
 		{
 			GL.Uniform2(location, 1, ref Unsafe.As<byte, float>(ref data));
+		}
+		public void SendUniformUInt2(int location, ref byte data)
+		{
+			GL.Uniform2(location, 1, ref Unsafe.As<byte, uint>(ref data));
 		}
 
 		public void SendUniform3(int location, ref byte data)

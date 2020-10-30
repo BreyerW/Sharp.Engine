@@ -31,7 +31,7 @@ namespace Sharp
 			}
 			//Console.WriteLine ("no-cull ");
 
-			material.SendData();
+			material.Draw();
 		}
 		internal Material SwapMaterial(Material mat)
 		{

@@ -6,6 +6,7 @@ using SharpSL;
 using SharpSL.BackendRenderers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using OpenTK.Graphics.OpenGL;
 
 namespace Sharp.Engine.Components
 {
@@ -118,9 +119,11 @@ namespace Sharp.Engine.Components
 			MainWindow.backendRenderer.Viewport(0, 0, width, height);
 			MainWindow.backendRenderer.Clip(0, 0, width, height);
 			MainWindow.backendRenderer.BindBuffers(Target.Frame, FBO);
+
 			MainWindow.backendRenderer.SetStandardState();
 			MainWindow.backendRenderer.ClearBuffer();
 			MainWindow.backendRenderer.ClearColor(0f, 0f, 0f, 0f);
+
 		}
 		public void DrawPass(Bitask mask)
 		{
@@ -157,13 +160,13 @@ namespace Sharp.Engine.Components
 				Draw(renderables.Current);
 
 		}
-		private void Draw(IReadOnlyCollection<Entity> renderables)
+		internal void Draw(IReadOnlyCollection<Entity> renderables)
 		{
 			var condition = swapMaterial is not null;
 			foreach (var renderable in renderables)
 			{
 				var renderer = renderable.GetComponent<MeshRenderer>();
-				if (renderer.active is true)
+				if (renderer is { active: true })
 				{
 					if (condition)
 					{
