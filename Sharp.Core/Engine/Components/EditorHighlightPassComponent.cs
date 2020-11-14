@@ -87,13 +87,13 @@ namespace Sharp.Engine.Components
 							DrawHelper.coneMaterialZ,
 						_ => null
 					};
-					extra?.BindProperty("colorId", hovered);
+					extra?.BindProperty("color", hovered);
 					extra?.Draw();
-					material?.BindProperty("colorId", hovered);
+					material?.BindProperty("color", hovered);
 					material?.Draw();
 				}
 			}
-			
+			Manipulators.ResetGizmoColors();
 			viewCubeMat.Draw(1);
 			//MainWindow.backendRenderer.WriteDepth(true);
 			//if (readPixels is not -1)

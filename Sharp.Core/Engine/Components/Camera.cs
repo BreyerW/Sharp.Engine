@@ -93,7 +93,7 @@ namespace Sharp
 			AspectRatio = 1f;
 			FieldOfView = 90f;
 			ZNear = 0.2f;
-			ZFar = 10000f;
+			ZFar = 5000f;
 			Material.BindGlobalProperty("camNearFar", new Vector2(ZNear, ZFar));
 			//Orientation = TargetOrientation;
 			SetProjectionMatrix();
@@ -206,9 +206,8 @@ namespace Sharp
 		public Vector3 WorldToScreen(Vector3 pos, int width, int height)
 		{
 			var pos4 = Vector4.Transform(new Vector4(pos, 1), ViewMatrix * projectionMatrix);
-
 			var NDCSpace = new Vector3(pos4.X, pos4.Y, pos4.Z) / pos4.W;
-			return new Vector3(NDCSpace.X * (width / (2f)), NDCSpace.Y * (height / (2f)), NDCSpace.Z);//look at divide part
+			return new Vector3((NDCSpace.X + 1) * (width / (2f)), (NDCSpace.Y + 1) * (height / (2f)), NDCSpace.Z);//look at divide part
 		}
 
 		public Vector2 ScreenToNDC(Vector2 pos, int width, int height)

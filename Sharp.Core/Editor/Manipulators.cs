@@ -227,36 +227,7 @@ namespace Sharp.Editor
 
 			DrawHelper.cubeMaterialZ.BindProperty("color", zColor);
 		}
-		internal static void SetGizmoColors(in Color c)
-		{
-			DrawHelper.lineMaterialX.BindProperty("color", c);
-
-			DrawHelper.lineMaterialY.BindProperty("color", c);
-
-			DrawHelper.lineMaterialZ.BindProperty("color", c);
-			DrawHelper.coneMaterialX.BindProperty("color", c);
-
-			DrawHelper.coneMaterialY.BindProperty("color", c);
-
-			DrawHelper.coneMaterialZ.BindProperty("color", c);
-			DrawHelper.planeMaterialXY.BindProperty("color", c);
-
-			DrawHelper.planeMaterialYZ.BindProperty("color", c);
-
-			DrawHelper.planeMaterialZX.BindProperty("color", c);
-
-			DrawHelper.circleMaterialX.BindProperty("color", c);
-
-			DrawHelper.circleMaterialY.BindProperty("color", c);
-
-			DrawHelper.circleMaterialZ.BindProperty("color", c);
-
-			DrawHelper.cubeMaterialX.BindProperty("color", c);
-
-			DrawHelper.cubeMaterialY.BindProperty("color", c);
-
-			DrawHelper.cubeMaterialZ.BindProperty("color", c);
-		}
+		
 		public static void DrawCombinedGizmos(Entity entity, float thickness = 5f)
 		{
 			float scale = (Camera.main.Parent.transform.Position - entity.transform.Position).Length() / 100.0f;

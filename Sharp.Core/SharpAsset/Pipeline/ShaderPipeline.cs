@@ -39,7 +39,7 @@ namespace SharpAsset.Pipeline
 			string version = "";
 			foreach (string line in shaderBuffer)
 			{
-				if (line.Contains("#pragma vertex"))
+				if (line.Contains("#pragma vertex"))//TODO: process #pragma transparency + blend equations
 				{
 					vertexShaderOffset = lineCount + 1;
 				}
@@ -64,9 +64,9 @@ namespace SharpAsset.Pipeline
 			{
 				fragmentShaderBuffer.Insert(1, pickingSupportFileReader.ReadToEnd());
 			}
-			ProcessIncludes(vertexShaderBuffer, out var vertexShader);	
-			ProcessIncludes(fragmentShaderBuffer,out var fragmentShader);
-			
+			ProcessIncludes(vertexShaderBuffer, out var vertexShader);
+			ProcessIncludes(fragmentShaderBuffer, out var fragmentShader);
+
 			var shader = new Shader()
 			{
 				uniformArray = new Dictionary<string, int>(),
@@ -74,6 +74,10 @@ namespace SharpAsset.Pipeline
 				FullPath = name,
 				VertexSource = vertexShader,
 				FragmentSource = fragmentShader,
+				dstColor = BlendEquation.None,
+				srcColor = BlendEquation.None,
+				dstAlpha = BlendEquation.None,
+				srcAlpha = BlendEquation.None,
 			};
 			return shader;
 		}

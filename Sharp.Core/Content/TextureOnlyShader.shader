@@ -22,7 +22,7 @@
 
 
 		uniform sampler2D MyTexture;
-
+		uniform float darkening;
 
             in vec2 v_texcoord;
             out vec4 frag_color;
@@ -31,5 +31,5 @@
             void main(void)
             {
             vec4 texColor= texture(MyTexture,v_texcoord.xy);
-	         frag_color =EnablePicking(texColor);
+	         frag_color =texColor;//*darkening
             }

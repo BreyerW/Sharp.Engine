@@ -7,6 +7,13 @@ using System.Numerics;
 
 namespace SharpAsset
 {
+	public enum BlendEquation
+	{
+		None,
+		One,
+		OneMinuSrcAlpha,
+		SrcAlpha
+	}
 	[Serializable]
 	public struct Shader : IAsset//move backendrenderer here?
 	{
@@ -20,7 +27,10 @@ namespace SharpAsset
 
 		internal int VertexID;
 		internal int FragmentID;
-
+		internal BlendEquation dstColor;
+		internal BlendEquation srcColor;
+		internal BlendEquation dstAlpha;
+		internal BlendEquation srcAlpha;
 		internal int Program;
 
 		internal Dictionary<string, int> uniformArray;//=new Dictionary<UniformType, Dictionary<string, int>> ();

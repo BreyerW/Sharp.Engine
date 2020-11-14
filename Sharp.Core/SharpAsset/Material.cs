@@ -92,11 +92,18 @@ namespace SharpAsset
 				}
 			}
 		}*/
+		public bool IsMainPassTransparent
+		{
+			get;
+			private set;
+		} = false;
 		public void BindShader(int pass, in Shader shader)
 		{
 			if (pass >= shadersId.Length)
 				Array.Resize(ref shadersId, pass + 1);
 			shadersId[pass] = ShaderPipeline.nameToKey.IndexOf(shader.Name.ToString());
+			if (pass is 0 && shader.dstColor is not BlendEquation.None)
+				IsMainPassTransparent = true;
 			if (localParams is null)
 			{
 				localParams = new Dictionary<string, byte[]>();
@@ -260,12 +267,38 @@ namespace SharpAsset
 			data = default;
 			return false;
 		}
+		public bool TryGetProperty<T>(string prop, out T data) where T : unmanaged
+		{
+			if (localParams.TryGetValue(prop, out var addr))
+			{
+				data = Unsafe.As<byte, T>(ref addr[1]);
+				return true;
+			}
+			data = default;
+			return false;
+		}
 		public static void BindGlobalProperty(string propName, in Matrix4x4 data/*, bool store = true*/)
 		{
 			if (!globalParams.ContainsKey((MainWindow.backendRenderer.currentWindow, propName)))
 			{
 				var param = new byte[sizeTable[data.GetType()] + 1];
 				param[0] = MATRIX4X4;
+				//param.DataAddress = Unsafe.As<Matrix4x4, byte>(ref data);
+				Unsafe.WriteUnaligned(ref param[1], data);
+				//Unsafe.CopyBlock(ref param.dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
+				globalParams.Add((MainWindow.backendRenderer.currentWindow, propName), param);
+			}
+			else
+				Unsafe.WriteUnaligned(ref globalParams[(MainWindow.backendRenderer.currentWindow, propName)][1], data);
+
+			//Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
+		}
+		public static void BindGlobalProperty(string propName, in Color data/*, bool store = true*/)
+		{
+			if (!globalParams.ContainsKey((MainWindow.backendRenderer.currentWindow, propName)))
+			{
+				var param = new byte[sizeTable[data.GetType()] + 1];
+				param[0] = COLOR4;
 				//param.DataAddress = Unsafe.As<Matrix4x4, byte>(ref data);
 				Unsafe.WriteUnaligned(ref param[1], data);
 				//Unsafe.CopyBlock(ref param.dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
@@ -332,17 +365,17 @@ namespace SharpAsset
 					idLight++;
 				}
 			}*/
-			foreach (var (key, value) in localParams)
-			{
-				SendToGPU(shader, key, value);
-				//Console.WriteLine("test " + key);
-			}
+
 
 			foreach (var (key, value) in globalParams)
 				if (key.winId == MainWindow.backendRenderer.currentWindow)
 					SendToGPU(shader, key.property, value);
 
-
+			foreach (var (key, value) in localParams)
+			{
+				SendToGPU(shader, key, value);
+				//Console.WriteLine("test " + key);
+			}
 			MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
 
 			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].attribs)

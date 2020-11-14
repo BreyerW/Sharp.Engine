@@ -18,13 +18,12 @@
 
 
 		uniform sampler2D MyTexture;
-		uniform vec4 hoveredColorId;
             in vec2 v_texcoord;
             out vec4 frag_color;
             void main(void)
             {
 vec4 idMap=texture(MyTexture,v_texcoord.xy);
-float condition=float(all(equal(hoveredColorId,vec4(0,0,0,1))));
-            vec4 texColor=mix(vec4(1,1,1,1),vec4(0,0,1,1),float(all(equal(idMap.rgb,hoveredColorId.rgb))));
+//float condition=float(all(equal(colorId,vec4(0,0,0,1))));
+            vec4 texColor=mix(vec4(1,1,1,1),vec4(0,0,1,1),float(all(equal(idMap.rgb,colorId.rgb))));
 			  frag_color = texColor;//float(any(bvec2(enablePicking,isHovered)))
             }
