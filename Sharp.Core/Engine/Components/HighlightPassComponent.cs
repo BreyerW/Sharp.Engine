@@ -72,6 +72,12 @@ namespace Sharp.Engine.Components
 			Draw(selectedWithTransparency);
 			if (Manipulators.hoveredGizmoId is Gizmo.Invalid)
 			{
+				if (hovered.Count is 0 && hoveredWithTransparency.Count is 0)
+				{
+					GL.Enable(EnableCap.DepthTest);
+					Material.BindGlobalProperty("enablePicking", 0f);
+					return;
+				}
 				swapMaterial = hoveredMaterial;
 				GL.Disable(EnableCap.DepthTest);
 				//GL.DepthFunc(DepthFunction.Always);
@@ -82,25 +88,18 @@ namespace Sharp.Engine.Components
 			}
 			else if (Manipulators.hoveredGizmoId < Gizmo.TranslateX)
 			{
-				//Alternative in case changing depthfunc turns out to be more expensive than extra 24 or so draw calls
-
-				/*GL.ColorMask(false, false, false, false);
-				foreach (var i in ..(int)(Gizmo.TranslateX - 1))
-				{
-					if (i == (int)(Manipulators.hoveredGizmoId-1))
-						continue;
-					viewCubeMat.Draw(i, 1);
-				}
-				GL.ColorMask(true, true, true, true);
-				viewCubeMat.Draw((int)Manipulators.hoveredGizmoId - 1, 1);*/
+				///
+				///This code is needed in order to remove highlight of invisible sides of cube
+				///
 
 				GL.ColorMask(false, false, false, false);
-				viewCubeMat.Draw(pass: 1);
-
-				GL.DepthFunc(DepthFunction.Equal);
+				if (Manipulators.hoveredGizmoId is not Gizmo.Invalid + 1)
+					viewCubeMat.Draw(..(int)(Manipulators.hoveredGizmoId-1), pass: 1);
+				if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX - 1)
+					viewCubeMat.Draw((int)Manipulators.hoveredGizmoId..(int)(Gizmo.TranslateX - 1), pass: 1);
+				
 				GL.ColorMask(true, true, true, true);
 				viewCubeMat.Draw((int)Manipulators.hoveredGizmoId - 1, 1);
-				GL.DepthFunc(DepthFunction.Less);
 			}
 			else
 			{

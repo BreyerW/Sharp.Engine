@@ -511,7 +511,7 @@ namespace Sharp.Editor.Views
 					if (index < (int)Gizmo.UniformScale)
 					{
 						Manipulators.SelectedGizmoId = (Gizmo)index;
-						Manipulators.hoveredGizmoId = Gizmo.Invalid;
+						//Manipulators.hoveredGizmoId = Gizmo.Invalid;
 						//Selection.Asset = viewCubeMat;
 					}
 					else

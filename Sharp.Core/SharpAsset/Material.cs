@@ -341,7 +341,7 @@ namespace SharpAsset
 
 			//Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
 		}
-		public void Draw(int subMesh = -1, int pass = 0)
+		public void Draw(Range rangeOfSubMeshes, int pass = 0)
 		{
 			ref var shader = ref Pipeline.Pipeline.Get<Shader>().GetAsset(shadersId[pass]);
 			if (shader.IsAllocated is false) return;
@@ -389,22 +389,22 @@ namespace SharpAsset
 				if (shader.attribArray.TryGetValue(vertAttrib.shaderLocation, out var attrib))
 					MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, attrib.location, vertAttrib.size, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
 			}
-			if (mesh.submeshesDescriptor is null || subMesh is -1)
+			var startIndex = rangeOfSubMeshes.Start.Value;
+			var endIndex = rangeOfSubMeshes.End.Value;
+			if (mesh.submeshesDescriptor is null || (startIndex is 0 && endIndex is 0))
 				MainWindow.backendRenderer.Draw(mesh.indiceType, 0, mesh.Indices.Length);
-			else if (mesh.submeshesDescriptor is not null && subMesh is not -1)
-				MainWindow.backendRenderer.Draw(mesh.indiceType, (subMesh is 0 ? 0 : mesh.submeshesDescriptor[subMesh * 2-2]) * Marshal.SizeOf<uint>(), (subMesh is 0 ? mesh.submeshesDescriptor[0] : mesh.submeshesDescriptor[subMesh * 2] - mesh.submeshesDescriptor[subMesh * 2 - 2]));
-			/*else
+			else if (mesh.submeshesDescriptor is not null)
 			{
-				MainWindow.backendRenderer.Draw(mesh.indiceType, 0, mesh.submeshesDescriptor[0]);
-				for (var i = 2; i < mesh.submeshesDescriptor.Length; i += 2)
-				{
-					var start = mesh.submeshesDescriptor[i - 2] * Marshal.SizeOf<uint>();
-					MainWindow.backendRenderer.Draw(mesh.indiceType, start, mesh.submeshesDescriptor[i] - mesh.submeshesDescriptor[i - 2]);
-				}
-			}*/
+				var start = startIndex is 0 ? 0 : mesh.submeshesDescriptor[startIndex * 2 - 2];
+				MainWindow.backendRenderer.Draw(mesh.indiceType, start * Marshal.SizeOf<uint>(), mesh.submeshesDescriptor[endIndex * 2 - 2] - start);
+			}
 			//var tbo = 0;
 			//MainWindow.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));//TODO: generalize this
 
+		}
+		public void Draw(int subMesh = -1, int pass = 0)
+		{
+			Draw(subMesh is -1 ? .. : subMesh..(subMesh + 1), pass);
 		}
 		private void SendToGPU(in Shader shader, string prop, byte[] data)
 		{

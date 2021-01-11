@@ -16,7 +16,6 @@
 
 		#pragma fragment
             in vec2 v_texcoord;
-			in float switchColor;
             out vec4 frag_color;
             void main(void)
             {
