@@ -341,7 +341,7 @@ namespace SharpAsset
 
 			//Unsafe.CopyBlock(ref (globalParams[propName] as Matrix4Parameter).dataAddress, ref Unsafe.As<Matrix4x4, byte>(ref data), (uint)Unsafe.SizeOf<Matrix4x4>());
 		}
-		public void Draw(int pass)
+		public void Draw(int subMesh = -1, int pass = 0)
 		{
 			ref var shader = ref Pipeline.Pipeline.Get<Shader>().GetAsset(shadersId[pass]);
 			if (shader.IsAllocated is false) return;
@@ -378,28 +378,34 @@ namespace SharpAsset
 			}
 			MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
 
-			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].attribs)
-			{
-				if (shader.attribArray.TryGetValue(vertAttrib.shaderLocation, out var attrib))
-					MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, attrib.location, vertAttrib.size, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
-			}
-
 			MainWindow.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
 			if (mesh.UsageHint is UsageHint.DynamicDraw)
 			{
 				MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
 				MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
 			}
-			MainWindow.backendRenderer.Draw(mesh.indiceType, mesh.Indices.Length);
+			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].attribs)
+			{
+				if (shader.attribArray.TryGetValue(vertAttrib.shaderLocation, out var attrib))
+					MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, attrib.location, vertAttrib.size, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
+			}
+			if (mesh.submeshesDescriptor is null || subMesh is -1)
+				MainWindow.backendRenderer.Draw(mesh.indiceType, 0, mesh.Indices.Length);
+			else if (mesh.submeshesDescriptor is not null && subMesh is not -1)
+				MainWindow.backendRenderer.Draw(mesh.indiceType, (subMesh is 0 ? 0 : mesh.submeshesDescriptor[subMesh * 2-2]) * Marshal.SizeOf<uint>(), (subMesh is 0 ? mesh.submeshesDescriptor[0] : mesh.submeshesDescriptor[subMesh * 2] - mesh.submeshesDescriptor[subMesh * 2 - 2]));
+			/*else
+			{
+				MainWindow.backendRenderer.Draw(mesh.indiceType, 0, mesh.submeshesDescriptor[0]);
+				for (var i = 2; i < mesh.submeshesDescriptor.Length; i += 2)
+				{
+					var start = mesh.submeshesDescriptor[i - 2] * Marshal.SizeOf<uint>();
+					MainWindow.backendRenderer.Draw(mesh.indiceType, start, mesh.submeshesDescriptor[i] - mesh.submeshesDescriptor[i - 2]);
+				}
+			}*/
 			//var tbo = 0;
 			//MainWindow.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));//TODO: generalize this
 
 		}
-		internal void Draw()
-		{
-			Draw(0);
-		}
-
 		private void SendToGPU(in Shader shader, string prop, byte[] data)
 		{
 			if (prop is not "mesh" && shader.uniformArray.ContainsKey(prop))

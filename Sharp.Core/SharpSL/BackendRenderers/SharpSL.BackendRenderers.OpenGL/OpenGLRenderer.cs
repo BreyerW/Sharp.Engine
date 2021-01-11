@@ -117,16 +117,17 @@ namespace SharpSL.BackendRenderers.OpenGL
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareMode, (int)TextureCompareMode.None);
 			}
 		}
-		public void GenerateBuffers(Target target, out int id)
+		public void GenerateBuffers(Target target, Span<int> id)
 		{
-			id = target switch
+			switch (target)
 			{
-				Target.Texture => GL.GenTexture(),
-				Target.Frame => GL.GenFramebuffer(),
-				Target.Shader => GL.CreateProgram(),
-				Target.VertexShader => GL.CreateShader(ShaderType.VertexShader),
-				Target.FragmentShader => GL.CreateShader(ShaderType.FragmentShader),
-				_ => GL.GenBuffer(),
+				case Target.Texture: GL.GenTextures(id.Length, out id[0]); break;
+				case Target.Frame: GL.GenFramebuffers(id.Length, out id[0]); break;
+				case Target.Shader: id[0] = GL.CreateProgram(); break;
+				case Target.VertexShader: id[0] = GL.CreateShader(ShaderType.VertexShader); break;
+				case Target.FragmentShader: id[0] = GL.CreateShader(ShaderType.FragmentShader); break;
+				case Target.OcclusionQuery: GL.GenQueries(id.Length, out id[0]); break;
+				default: GL.GenBuffers(id.Length, out id[0]); break;
 			};
 		}
 
@@ -260,10 +261,10 @@ namespace SharpSL.BackendRenderers.OpenGL
 			}
 		}
 
-		public void Draw(IndiceType indiceType, int length)
+		public void Draw(IndiceType indiceType,int start, int length)
 		{
 
-			GL.DrawElements(PrimitiveType.Triangles, length, (DrawElementsType)indiceType, IntPtr.Zero);
+			GL.DrawElements(PrimitiveType.Triangles, length, (DrawElementsType)indiceType, (IntPtr)start);
 			slot = 0;
 		}
 

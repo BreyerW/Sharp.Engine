@@ -15,7 +15,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Sharp.Engine.Components
+/*namespace Sharp.Engine.Components
 {
 	public class SelectionPassComponent : CommandBufferComponent//TODO: use depth prepass to guide where alpha is and avoid expensive rerender?
 	{
@@ -42,7 +42,7 @@ namespace Sharp.Engine.Components
 				BindFrame();
 				
 				readPixels = -1;
-			}*/
+			}*
 			Material.BindGlobalProperty("enablePicking", 1f);//TODO: test against new version and color+bepu box select
 
 			if (SceneView.mouseLocked is false)
@@ -119,9 +119,9 @@ namespace Sharp.Engine.Components
 					/*if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 					{
 						Manipulators.DrawCombinedGizmos(entity);
-					}*/
+					}*
 				}
-				foreach (var i in (int)Gizmo.ViewCubeMinusX..(int)Gizmo.TranslateX)
+				foreach (var i in ..((int)Gizmo.TranslateX - 1))
 				{
 					var ind = i;
 					var uid = MemoryMarshal.CreateReadOnlySpan(ref ind, 1).AsBytes();
@@ -150,7 +150,7 @@ namespace Sharp.Engine.Components
 								Camera.main.pivot = renderables[index - upperLimit];
 								Selection.Asset = renderables[index - upperLimit];
 							}
-							if (index > (int)Gizmo.ViewCubeLowerRightCornerX)
+							if (index > (int)Gizmo.TranslateX - 1)
 								SceneView.mouseLocked = true;
 						}
 						else
@@ -189,7 +189,7 @@ namespace Sharp.Engine.Components
 
 			/*
 			//if (readPixels is not -1)
-			//	readPixels--;*/
+			//	readPixels--;*
 			Material.BindGlobalProperty("enablePicking", 0f);
 			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 		}

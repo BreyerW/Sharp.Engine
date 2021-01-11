@@ -11,5 +11,6 @@
 		Frame,
 		WriteFrame,
 		ReadFrame,
+		OcclusionQuery,
 	}
 }

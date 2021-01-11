@@ -16,8 +16,6 @@
 
 		#pragma fragment
 
-
-		uniform sampler2D MyTexture;
 		uniform sampler2D CubeTex;
 		uniform sampler2D mask;
 		uniform vec4 xColor;
@@ -30,17 +28,9 @@
             out vec4 frag_color;
             void main(void)
             {
-			if(enablePicking==1){
-				vec4 texColor=texture(MyTexture,v_texcoord.xy);
-				if(all(equal(colorId.rgb,texColor.rgb)))
-					frag_color=vec4(1,1,1,1);
-				else
-					discard;
-			}
-			else{
 			float a =0.33f+0.67f*isHovered;
 		 vec4 maskTex=texture(mask,v_texcoord.xy);
 			vec4 cubeColor=mix(mix(mix(mix(edgeColor,faceColor, texture(CubeTex,v_texcoord.xy).r), xColor,maskTex.x),yColor,maskTex.y),zColor,maskTex.z);
 			  frag_color =vec4(cubeColor.rgb,1);//float(any(bvec2(enablePicking,isHovered)))
-            }
+
 			  }

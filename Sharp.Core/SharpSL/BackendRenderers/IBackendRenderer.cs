@@ -29,7 +29,7 @@ namespace SharpSL.BackendRenderers
 
 		void Allocate(ref byte bitmap, int width, int height, TextureFormat pixelFormat);
 
-		void Draw(IndiceType indiceType, int length);
+		void Draw(IndiceType indiceType, int start, int length);
 
 		void Use(int Program);
 
@@ -50,7 +50,7 @@ namespace SharpSL.BackendRenderers
 		void SendUniform4(int location, ref byte data);//TODO: int stride to differentiate floats ints etc?
 
 		//void StoreGlobalUniform4(int location, ref byte data); //TODO: move shader and material storage to backend renderer?
-		void GenerateBuffers(Target target, out int id);
+		void GenerateBuffers(Target target, Span<int> id);
 
 		void BindBuffers(Target target, int TBO);
 
@@ -82,6 +82,6 @@ namespace SharpSL.BackendRenderers
 
 		void FinishCommands();
 
-		byte[] ReadPixels(int x, int y, int width, int height,TextureFormat pxFormat);
+		byte[] ReadPixels(int x, int y, int width, int height, TextureFormat pxFormat);
 	}
 }

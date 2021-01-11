@@ -171,76 +171,86 @@ namespace Sharp
 				Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
 				//foreach(var pipeline in Pipeline.allPipelines.Values)
 				//	while(pipeline.recentlyLoadedAssets.TryDequeue(out var i)) //TODO
-				
+
 				Time.SetTime();
 				Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
 
-				while (TexturePipeline.recentlyLoadedAssets.TryDequeue(out var i))
-				{
-					ref var tex = ref Pipeline.Get<Texture>().GetAsset(i);
-					MainWindow.backendRenderer.GenerateBuffers(Target.Texture, out tex.TBO);
-
-					MainWindow.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
-					MainWindow.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
-					if (tex.FBO is -2)
-					{
-						MainWindow.backendRenderer.GenerateBuffers(Target.Frame, out tex.FBO);
-						MainWindow.backendRenderer.BindBuffers(Target.Frame, tex.FBO);
-
-						MainWindow.backendRenderer.BindRenderTexture(tex.TBO, TextureRole.Color0);
-
-						MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
-						MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
-					}
-				}
-				while (ShaderPipeline.recentlyLoadedAssets.TryDequeue(out var i))
-				{
-					Console.WriteLine("shader allocation");
-					ref var shader = ref Pipeline.Get<Shader>().GetAsset(i);
-					MainWindow.backendRenderer.GenerateBuffers(Target.Shader, out shader.Program);
-					MainWindow.backendRenderer.GenerateBuffers(Target.VertexShader, out shader.VertexID);
-					MainWindow.backendRenderer.GenerateBuffers(Target.FragmentShader, out shader.FragmentID);
-
-					MainWindow.backendRenderer.Allocate(shader.Program, shader.VertexID, shader.FragmentID, shader.VertexSource, shader.FragmentSource, shader.uniformArray, shader.attribArray);
-				}
-				while (MeshPipeline.recentlyLoadedAssets.TryDequeue(out var i))
-				{
-					ref var mesh = ref Pipeline.Get<Mesh>().GetAsset(i);
-					MainWindow.backendRenderer.GenerateBuffers(Target.Mesh, out mesh.VBO);
-					MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
-					//foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].Values)
-					//	MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, Shader.attribArray[vertAttrib.shaderLocation], vertAttrib.dimension, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
-
-					MainWindow.backendRenderer.GenerateBuffers(Target.Indices, out mesh.EBO);
-					MainWindow.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
-					if (mesh.Indices is not null && mesh.Indices.Length > 0)
-					{
-						MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
-						MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
-					}
-				}
-				foreach (var added in Root.addedEntities)
-				{
-					if (added is CommandBufferComponent cb)
-					{
-						MainWindow.backendRenderer.GenerateBuffers(Target.Frame, out cb.FBO);
-						MainWindow.backendRenderer.BindBuffers(Target.Frame, cb.FBO);
-						foreach (var t in cb.targetTextures)
-						{
-							ref var tex = ref Pipeline.Get<Texture>().GetAsset(t.texId);
-							MainWindow.backendRenderer.BindRenderTexture(tex.TBO, t.role);
-						}
-						MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
-						MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
-					}
-				}
+				GenerateNewBuffers();
 				//IdReferenceResolver._objectsToId.Clear();
 				//IdReferenceResolver._idToObjects.Clear();
 				Root.removedEntities.Clear();
 				Root.addedEntities.Clear();
 			}
 		}
+		private static void GenerateNewBuffers()
+		{
+			Span<int> id = stackalloc int[1];
+			while (TexturePipeline.recentlyLoadedAssets.TryDequeue(out var i))
+			{
+				ref var tex = ref Pipeline.Get<Texture>().GetAsset(i);
+				MainWindow.backendRenderer.GenerateBuffers(Target.Texture, id);
+				tex.TBO = id[0];
+				MainWindow.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
+				MainWindow.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
+				if (tex.FBO is -2)
+				{
+					MainWindow.backendRenderer.GenerateBuffers(Target.Frame, id);
+					tex.FBO = id[0];
+					MainWindow.backendRenderer.BindBuffers(Target.Frame, tex.FBO);
 
+					MainWindow.backendRenderer.BindRenderTexture(tex.TBO, TextureRole.Color0);
+
+					MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
+					MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
+				}
+			}
+			while (ShaderPipeline.recentlyLoadedAssets.TryDequeue(out var i))
+			{
+				Console.WriteLine("shader allocation");
+				ref var shader = ref Pipeline.Get<Shader>().GetAsset(i);
+				MainWindow.backendRenderer.GenerateBuffers(Target.Shader, id);
+				shader.Program = id[0];
+				MainWindow.backendRenderer.GenerateBuffers(Target.VertexShader, id);
+				shader.VertexID = id[0];
+				MainWindow.backendRenderer.GenerateBuffers(Target.FragmentShader, id);
+				shader.FragmentID = id[0];
+				MainWindow.backendRenderer.Allocate(shader.Program, shader.VertexID, shader.FragmentID, shader.VertexSource, shader.FragmentSource, shader.uniformArray, shader.attribArray);
+			}
+			while (MeshPipeline.recentlyLoadedAssets.TryDequeue(out var i))
+			{
+				ref var mesh = ref Pipeline.Get<Mesh>().GetAsset(i);
+				MainWindow.backendRenderer.GenerateBuffers(Target.Mesh, id);
+				mesh.VBO = id[0];
+				MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
+				//foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].Values)
+				//	MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, Shader.attribArray[vertAttrib.shaderLocation], vertAttrib.dimension, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
+
+				MainWindow.backendRenderer.GenerateBuffers(Target.Indices, id);
+				mesh.EBO = id[0];
+				MainWindow.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
+				if (mesh.Indices is not null && mesh.Indices.Length > 0)
+				{
+					MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
+					MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
+				}
+			}
+			foreach (var added in Root.addedEntities)
+			{
+				if (added is CommandBufferComponent cb)
+				{
+					MainWindow.backendRenderer.GenerateBuffers(Target.Frame, id);
+					cb.FBO = id[0];
+					MainWindow.backendRenderer.BindBuffers(Target.Frame, cb.FBO);
+					foreach (var t in cb.targetTextures)
+					{
+						ref var tex = ref Pipeline.Get<Texture>().GetAsset(t.texId);
+						MainWindow.backendRenderer.BindRenderTexture(tex.TBO, t.role);
+					}
+					MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
+					MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
+				}
+			}
+		}
 		private void OnInternalRenderFrame()
 		{
 			MainWindow.backendRenderer.currentWindow = windowId;
@@ -343,69 +353,12 @@ namespace Sharp
 					foreach (var (_, mainV) in MainEditorView.mainViews)
 						mainV.desktop.Update();
 					Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
-					
+
 					Time.SetTime();
 					Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
 
-					while (TexturePipeline.recentlyLoadedAssets.TryDequeue(out var i))
-					{
-						ref var tex = ref Pipeline.Get<Texture>().GetAsset(i);
-						MainWindow.backendRenderer.GenerateBuffers(Target.Texture, out tex.TBO);
+					GenerateNewBuffers();
 
-						MainWindow.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
-						MainWindow.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
-						if (tex.FBO is -2)
-						{
-							MainWindow.backendRenderer.GenerateBuffers(Target.Frame, out tex.FBO);
-							MainWindow.backendRenderer.BindBuffers(Target.Frame, tex.FBO);
-
-							MainWindow.backendRenderer.BindRenderTexture(tex.TBO, TextureRole.Color0);
-
-							MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
-							MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
-						}
-					}
-					while (ShaderPipeline.recentlyLoadedAssets.TryDequeue(out var i))
-					{
-						Console.WriteLine("shader allocation");
-						ref var shader = ref Pipeline.Get<Shader>().GetAsset(i);
-						MainWindow.backendRenderer.GenerateBuffers(Target.Shader, out shader.Program);
-						MainWindow.backendRenderer.GenerateBuffers(Target.VertexShader, out shader.VertexID);
-						MainWindow.backendRenderer.GenerateBuffers(Target.FragmentShader, out shader.FragmentID);
-
-						MainWindow.backendRenderer.Allocate(shader.Program, shader.VertexID, shader.FragmentID, shader.VertexSource, shader.FragmentSource, shader.uniformArray, shader.attribArray);
-					}
-					while (MeshPipeline.recentlyLoadedAssets.TryDequeue(out var i))
-					{
-						ref var mesh = ref Pipeline.Get<Mesh>().GetAsset(i);
-						MainWindow.backendRenderer.GenerateBuffers(Target.Mesh, out mesh.VBO);
-						MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
-						//foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].Values)
-						//	MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, Shader.attribArray[vertAttrib.shaderLocation], vertAttrib.dimension, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
-
-						MainWindow.backendRenderer.GenerateBuffers(Target.Indices, out mesh.EBO);
-						MainWindow.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
-						if (mesh.Indices is not null && mesh.Indices.Length > 0)
-						{
-							MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
-							MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
-						}
-					}
-					foreach (var added in Root.addedEntities)
-					{
-						if (added is CommandBufferComponent cb)
-						{
-							MainWindow.backendRenderer.GenerateBuffers(Target.Frame, out cb.FBO);
-							MainWindow.backendRenderer.BindBuffers(Target.Frame, cb.FBO);
-							foreach (var t in cb.targetTextures)
-							{
-								ref var tex = ref Pipeline.Get<Texture>().GetAsset(t.texId);
-								MainWindow.backendRenderer.BindRenderTexture(tex.TBO, t.role);
-							}
-							MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
-							MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
-						}
-					}
 					Root.removedEntities.Clear();
 					Root.addedEntities.Clear();
 					//IdReferenceResolver._objectsToId.Clear();

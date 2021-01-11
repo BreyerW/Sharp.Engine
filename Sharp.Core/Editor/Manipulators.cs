@@ -11,38 +11,43 @@ namespace Sharp.Editor
 	public enum Gizmo
 	{
 		Invalid,
+
+
+		ViewCubeBottomEdgeZ,
+		ViewCubeBottomEdgeMinusX,
+		ViewCubeBottomEdgeX,
+		ViewCubeRightEdgeZ,
+
+		ViewCubeLeftEdgeZ,
+		ViewCubeTopEdgeZ,
+		ViewCubeTopEdgeX,
+		ViewCubeTopEdgeMinusX,
+
+
+		ViewCubeTopEdgeMinusZ,
+		ViewCubeLeftEdgeMinusZ,
+		ViewCubeRightEdgeMinusZ,
+		ViewCubeBottomEdgeMinusZ,
+
+
+
 		ViewCubeMinusX,
+		ViewCubeMinusZ,
+		ViewCubeY,
 		ViewCubeX,
 		ViewCubeMinusY,
-		ViewCubeY,
-		ViewCubeMinusZ,
 		ViewCubeZ,
 
-		ViewCubeRightEdgeMinusX,
-		ViewCubeLeftEdgeMinusX,
-		ViewCubeBottomEdgeMinusX,
-		ViewCubeTopEdgeMinusX,
-		ViewCubeLeftEdgeX,
-		ViewCubeRightEdgeX,
-		ViewCubeBottomEdgeX,
-		ViewCubeTopEdgeX,
-
-		ViewCubeBottomEdgeMinusZ,
-		ViewCubeTopEdgeZ,
-		ViewCubeTopEdgeMinusZ,
-		ViewCubeBottomEdgeZ,
-
-
+		ViewCubeUpperLeftCornerX,
+		ViewCubeLowerLeftCornerX,
 		ViewCubeLowerRightCornerMinusX,
 		ViewCubeUpperRightCornerMinusX,
-		ViewCubeUpperLeftCornerMinusX,
-		ViewCubeLowerLeftCornerMinusX,
 
-
-		ViewCubeLowerLeftCornerX,
-		ViewCubeUpperLeftCornerX,
 		ViewCubeUpperRightCornerX,
 		ViewCubeLowerRightCornerX,
+		ViewCubeLowerLeftCornerMinusX,
+		ViewCubeUpperLeftCornerMinusX,
+
 		TranslateX,
 		TranslateY,
 		TranslateZ,
@@ -227,7 +232,7 @@ namespace Sharp.Editor
 
 			DrawHelper.cubeMaterialZ.BindProperty("color", zColor);
 		}
-		
+
 		public static void DrawCombinedGizmos(Entity entity, float thickness = 5f)
 		{
 			float scale = (Camera.main.Parent.transform.Position - entity.transform.Position).Length() / 100.0f;
@@ -547,18 +552,19 @@ namespace Sharp.Editor
 				Gizmo.ViewCubeZ => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, 0, 0),
 				Gizmo.ViewCubeMinusZ => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, 180, 0),
 
-				Gizmo.ViewCubeBottomEdgeX => new Vector3(-45, 90, 0),
-				Gizmo.ViewCubeRightEdgeX => new Vector3(0, 45, 0),
-				Gizmo.ViewCubeTopEdgeX => new Vector3(45, 90, 0),
-				Gizmo.ViewCubeLeftEdgeX => new Vector3(0, 135, 0),
-				Gizmo.ViewCubeBottomEdgeMinusX => new Vector3(-45, -90, 0),
-				Gizmo.ViewCubeRightEdgeMinusX => new Vector3(0, -135, 0),
+				Gizmo.ViewCubeBottomEdgeZ => new Vector3(-45, 180, 0),
+				Gizmo.ViewCubeLeftEdgeMinusZ => new Vector3(0, 45, 0),
+				Gizmo.ViewCubeTopEdgeZ => new Vector3(45, 180, 0),
+				Gizmo.ViewCubeTopEdgeMinusZ => new Vector3(45, 0, 0),
 				Gizmo.ViewCubeTopEdgeMinusX => new Vector3(45, -90, 0),
-				Gizmo.ViewCubeLeftEdgeMinusX => new Vector3(0, -45, 0),
-				Gizmo.ViewCubeBottomEdgeZ => new Vector3(45, 0, 0),
-				Gizmo.ViewCubeTopEdgeZ => new Vector3(-45, 0, 0),
-				Gizmo.ViewCubeBottomEdgeMinusZ => new Vector3(-45, 180, 0),
-				Gizmo.ViewCubeTopEdgeMinusZ => new Vector3(45, 180, 0),
+				Gizmo.ViewCubeBottomEdgeMinusZ => new Vector3(-45, 0, 0),
+				Gizmo.ViewCubeBottomEdgeMinusX => new Vector3(-45, -90, 0),
+				Gizmo.ViewCubeRightEdgeMinusZ => new Vector3(0, -45, 0),
+				Gizmo.ViewCubeRightEdgeZ => new Vector3(0, 135, 0),
+				Gizmo.ViewCubeTopEdgeX => new Vector3(45, 90, 0),
+				Gizmo.ViewCubeLeftEdgeZ => new Vector3(0, -135, 0),
+				Gizmo.ViewCubeBottomEdgeX => new Vector3(-45, 90, 0),
+
 
 				Gizmo.ViewCubeLowerLeftCornerX => new Vector3(-45, 135, 0),
 				Gizmo.ViewCubeLowerRightCornerX => new Vector3(-45, 45, 0),

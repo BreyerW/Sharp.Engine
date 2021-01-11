@@ -42,8 +42,21 @@ namespace SharpAsset.Pipeline
 
 			var scene = context.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals);
 			if (!scene.HasMeshes) return null;
-			var internalMesh = new Mesh();
-			internalMesh.FullPath = pathToFile;
+			var internalMesh = new Mesh
+			{
+				UsageHint = UsageHint.DynamicDraw,
+				stride = size,
+				FullPath = pathToFile,
+				VertType = vertType,
+				VBO = -1,
+				EBO = -1
+			};
+			//if (indices[0].GetType() == typeof(ushort))
+			//internalMesh.indiceType = IndiceType.UnsignedShort;
+			//else if (indices[0].GetType() == typeof(uint))
+			internalMesh.indiceType = IndiceType.UnsignedInt;
+			if (scene.MeshCount > 1)
+				internalMesh.submeshesDescriptor = new int[scene.MeshCount * 2];
 			if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(vertType))
 				RegisterAsAttribute.ParseVertexFormat(vertType);
 
@@ -53,6 +66,12 @@ namespace SharpAsset.Pipeline
 			var meshData = new (VertexAttribute attrib, byte[] data)[finalSupportedAttribs.Count()];
 			foreach (var (key, attrib) in finalSupportedAttribs.Indexed())
 				meshData[key] = (attrib, null);
+			List<uint> finalIndices = new();
+			List<byte> finalVertices = new();
+			var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+			var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+			int id = 0;
+			int lastVertCount = 0;
 			foreach (var mesh in scene.Meshes)
 			{
 				if (mesh.HasBones)
@@ -62,10 +81,7 @@ namespace SharpAsset.Pipeline
 					//tree.AddNode(GetPipeline<SkeletonPipeline>().Import(""));
 				}
 				var indices = mesh.GetUnsignedIndices();
-				internalMesh.Indices = MemoryMarshal.AsBytes(indices.AsSpan()).ToArray();
-				//mesh.has
-				var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-				var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+
 				var vertices = new byte[mesh.VertexCount * size].AsSpan();
 
 				foreach (var (key, data) in meshData.Indexed())
@@ -82,22 +98,28 @@ namespace SharpAsset.Pipeline
 						CopyBytes(vertFormat.supportedSpecialAttribs[data.attrib], i, ref meshData[key].data, ref vertices);
 				}
 
-				internalMesh.UsageHint = UsageHint.DynamicDraw;
-				internalMesh.stride = size;
+				finalVertices.AddRange(vertices.ToArray());
 
-				if (indices[0].GetType() == typeof(ushort))
-					internalMesh.indiceType = IndiceType.UnsignedShort;
-				else if (indices[0].GetType() == typeof(uint))
-					internalMesh.indiceType = IndiceType.UnsignedInt;
+				if (lastVertCount is not 0)
+					foreach (var i in ..indices.Length)
+						indices[i] += (uint)lastVertCount;
+				lastVertCount += mesh.VertexCount;
+				finalIndices.AddRange(indices);
+
+				if (scene.MeshCount > 1)
+				{
+					internalMesh.submeshesDescriptor[id * 2] = finalIndices.Count;
+					internalMesh.submeshesDescriptor[id * 2 + 1] = finalVertices.Count;
+				}
 				//if (!Mesh.sharedMeshes.ContainsKey(internalMesh.Name))
 				//Mesh.sharedMeshes.Add(internalMesh.Name, vertices.ToArray());
-				internalMesh.verts = vertices.ToArray();
+
 				bounds = new BoundingBox(min, max);
+				id++;
 			}
+			internalMesh.Indices = MemoryMarshal.AsBytes(CollectionsMarshal.AsSpan(finalIndices)).ToArray();
+			internalMesh.verts = finalVertices.ToArray();
 			internalMesh.bounds = bounds;
-			internalMesh.VertType = vertType;
-			internalMesh.VBO = -1;
-			internalMesh.EBO = -1;
 			return this[Register(internalMesh)];
 		}
 

@@ -36,7 +36,7 @@ namespace SharpAsset
 
 		internal byte[] Indices;
 		internal byte[] verts;
-
+		internal int[] submeshesDescriptor;
 		public BoundingBox bounds;
 
 		internal static Dictionary<string, byte[]> sharedMeshes = new Dictionary<string, byte[]>();
@@ -167,7 +167,11 @@ namespace SharpAsset
 		DynamicRead,
 		DynamicCopy
 	}
-
+	/*public readonly struct SubMeshDescriptor
+	{
+		public readonly int lastVertex;
+	public readonly int lastIndice;
+	}*/
 	public enum IndiceType
 	{
 		UnsignedByte = 5121,

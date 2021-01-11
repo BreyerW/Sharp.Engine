@@ -58,7 +58,7 @@ namespace Sharp.Engine.Components
 			}
 
 			foreach (var asset in Selection.Assets)
-				if (asset is Entity ent)
+				if (asset is Entity ent && ent.name is not "Main Camera")
 				{
 					if (ent.GetComponent<MeshRenderer>().material.IsMainPassTransparent)
 						selectedWithTransparency.Add(ent);
@@ -81,7 +81,27 @@ namespace Sharp.Engine.Components
 				Draw(hoveredWithTransparency);
 			}
 			else if (Manipulators.hoveredGizmoId < Gizmo.TranslateX)
-				viewCubeMat.Draw(1);
+			{
+				//Alternative in case changing depthfunc turns out to be more expensive than extra 24 or so draw calls
+
+				/*GL.ColorMask(false, false, false, false);
+				foreach (var i in ..(int)(Gizmo.TranslateX - 1))
+				{
+					if (i == (int)(Manipulators.hoveredGizmoId-1))
+						continue;
+					viewCubeMat.Draw(i, 1);
+				}
+				GL.ColorMask(true, true, true, true);
+				viewCubeMat.Draw((int)Manipulators.hoveredGizmoId - 1, 1);*/
+
+				GL.ColorMask(false, false, false, false);
+				viewCubeMat.Draw(pass: 1);
+
+				GL.DepthFunc(DepthFunction.Equal);
+				GL.ColorMask(true, true, true, true);
+				viewCubeMat.Draw((int)Manipulators.hoveredGizmoId - 1, 1);
+				GL.DepthFunc(DepthFunction.Less);
+			}
 			else
 			{
 				GL.Disable(EnableCap.DepthTest);
