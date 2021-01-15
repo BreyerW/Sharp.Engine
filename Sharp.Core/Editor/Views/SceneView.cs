@@ -318,34 +318,7 @@ namespace Sharp.Editor.Views
 
 				if (SceneStructureView.tree.SelectedNode is { UserData: Entity })
 				{
-					DrawHelper.lineMaterialX.Draw();
-
-					DrawHelper.lineMaterialY.Draw();
-
-					DrawHelper.lineMaterialZ.Draw();
-					DrawHelper.coneMaterialX.Draw();
-
-					DrawHelper.coneMaterialY.Draw();
-
-					DrawHelper.coneMaterialZ.Draw();
-
-					DrawHelper.planeMaterialXY.Draw();
-
-					DrawHelper.planeMaterialYZ.Draw();
-
-					DrawHelper.planeMaterialZX.Draw();
-
-					DrawHelper.circleMaterialX.Draw();
-
-					DrawHelper.circleMaterialY.Draw();
-
-					DrawHelper.circleMaterialZ.Draw();
-
-					DrawHelper.cubeMaterialX.Draw();
-
-					DrawHelper.cubeMaterialY.Draw();
-
-					DrawHelper.cubeMaterialZ.Draw();
+					DrawHelper.gizmoMaterial.Draw();
 				}
 				viewCubeMat.Draw();
 
@@ -354,54 +327,51 @@ namespace Sharp.Editor.Views
 				if (SceneStructureView.tree.SelectedNode is { UserData: Entity })
 				{
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateX - 1]);
-					DrawHelper.lineMaterialX.Draw();
-					DrawHelper.coneMaterialX.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 0);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateY - 1]);
-					DrawHelper.lineMaterialY.Draw();
-					DrawHelper.coneMaterialY.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 1);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateZ - 1]);
-					DrawHelper.lineMaterialZ.Draw();
-					DrawHelper.coneMaterialZ.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 2);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateXY - 1]);
-					DrawHelper.planeMaterialXY.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 3);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateYZ - 1]);
-					DrawHelper.planeMaterialYZ.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 4);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateZX - 1]);
-					DrawHelper.planeMaterialZX.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 5);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.RotateX - 1]);
-					DrawHelper.circleMaterialX.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 6);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.RotateY - 1]);
-					DrawHelper.circleMaterialY.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 7);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.RotateZ - 1]);
-					DrawHelper.circleMaterialZ.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 8);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.ScaleX - 1]);
-					DrawHelper.cubeMaterialX.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 9);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.ScaleY - 1]);
-					DrawHelper.cubeMaterialY.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 10);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 
 					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.ScaleZ - 1]);
-					DrawHelper.cubeMaterialZ.Draw();
+					DrawHelper.gizmoMaterial.Draw(subMesh: 11);
 					GL.EndQuery(QueryTarget.SamplesPassed);
 				}
 				foreach (var i in ..((int)Gizmo.TranslateX - 1))

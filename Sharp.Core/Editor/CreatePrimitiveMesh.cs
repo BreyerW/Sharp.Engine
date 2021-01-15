@@ -6,14 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 public static class CreatePrimitiveMesh
 {
-
+	//TODO: move all these as method parameters
 	public static int numVertices = 10;
 	public static float radiusTop = 0.5f;
 	public static float radiusBottom = 0.5f;
-	public static float length = 1f;
 	public static bool outside = true;
 	public static bool inside = false;
 
@@ -35,29 +35,48 @@ public static class CreatePrimitiveMesh
 		newMesh.LoadIndices(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan());
 		return newMesh;
 	}
-	public static Mesh GenerateSquare(string name, Vector2 lowerLeft, Vector2 upperRight)
+	public static Mesh GenerateSquare(in Matrix4x4 transform, string name = "square", Color? vertexColor = null)
 	{
-		var mData = new UIVertexFormat[4] {
-						new UIVertexFormat(){ position=new Vector3(lowerLeft.X,lowerLeft.Y,0),texcoords=new Vector2(0,0) },
-						new UIVertexFormat(){ position= new Vector3(lowerLeft.X,upperRight.Y,0),texcoords=new Vector2(0,1) },
-						new UIVertexFormat(){ position=new Vector3(upperRight.X,upperRight.Y,0),texcoords=new Vector2(1,1) },
-						new UIVertexFormat(){ position= new Vector3(upperRight.X,lowerLeft.Y,0),texcoords=new Vector2(1,0) }
-					}.AsSpan();
 		var Mesh = new Mesh
 		{
 			FullPath = name,
 			UsageHint = UsageHint.StaticDraw
 		};
-		Mesh.LoadVertices(mData);
+		var vertices = new UIVertexFormat[4] {
+						new (){position=Vector3.Transform(new (0,0,0),transform),texcoords=new (0,0) },
+						new (){position=Vector3.Transform(new (0,1,0),transform),texcoords=new (0,1) },
+						new (){position=Vector3.Transform(new (1,1,0),transform),texcoords=new (1,1) },
+						new (){position=Vector3.Transform(new (1,0,0),transform),texcoords=new (1,0) }
+					};
+		List<byte> bytes = new();
+		if (vertexColor.HasValue)
+
+			foreach (var i in ..vertices.Length)
+			{
+				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref vertices[i], 1)).ToArray());
+				var color = vertexColor.GetValueOrDefault();
+				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref color, 1)).ToArray());
+
+			}
+		else
+			bytes.AddRange(MemoryMarshal.AsBytes(vertices.AsSpan()).ToArray());
+
+		Mesh.VertType = vertexColor.HasValue ? typeof(VertexColorFormat) : typeof(UIVertexFormat);
+		Mesh.LoadVertices(bytes.ToArray());
 		Mesh.LoadIndices(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan());
-		return Mesh; ;
+		return Mesh;
 	}
 	public static Mesh GenerateEditorCube()
 	{
 		return Unsafe.Unbox<Mesh>(Pipeline.Get<Mesh>().Import(Application.projectPath + @"\Content\viewcube.dae"));
 	}
-	public static Mesh GenerateCylinder(string meshName = "cylinder")
+	public static Mesh GenerateCylinder(in Matrix4x4 transform, string meshName = "cylinder", Color? vertexColor = null)
 	{
+		var newMesh = new Mesh
+		{
+			FullPath = meshName,
+			UsageHint = UsageHint.StaticDraw
+		};
 		Vector3 end_point = Vector3.Zero;
 		Vector3 axis = Vector3.UnitX;
 		Vector3 v1;
@@ -74,9 +93,9 @@ public static class CreatePrimitiveMesh
 		var vBottom2 = v2 * (radiusBottom / v2.Length());
 		// Make the top end cap.
 		// Make the end point.
-		var vertices = new List<UIVertexFormat>();
+		List<UIVertexFormat> vertices = new();
 		ushort pt0 = (ushort)vertices.Count; // Index of end_point.
-		vertices.Add(new UIVertexFormat() { position = end_point });
+		vertices.Add(new() { position = Vector3.Transform(end_point, transform) });
 		var indices = new List<ushort>();
 		float theta = 0;
 		float dtheta = 2 * MathF.PI / numVertices;
@@ -87,11 +106,11 @@ public static class CreatePrimitiveMesh
 		{
 			for (int i = 0; i < numVertices; i++)
 			{
-				vertices.Add(new UIVertexFormat()
+				vertices.Add(new()
 				{
-					position = end_point +
+					position = Vector3.Transform(end_point +
 					MathF.Cos(theta) * vTop1 +
-					MathF.Sin(theta) * vTop2
+					MathF.Sin(theta) * vTop2, transform)
 				});
 				theta += dtheta;
 			}
@@ -111,9 +130,9 @@ public static class CreatePrimitiveMesh
 		// Make the end point.
 		pt0 = (ushort)vertices.Count; // Index of end_point2.
 		Vector3 end_point2 = end_point + axis;
-		vertices.Add(new UIVertexFormat()
+		vertices.Add(new()
 		{
-			position = end_point2
+			position = Vector3.Transform(end_point2, transform)
 		});
 
 		// Make the bottom points.
@@ -122,11 +141,11 @@ public static class CreatePrimitiveMesh
 			theta = 0;
 			for (int i = 0; i < numVertices; i++)
 			{
-				vertices.Add(new UIVertexFormat()
+				vertices.Add(new()
 				{
-					position = end_point2 +
+					position = Vector3.Transform(end_point2 +
 					MathF.Cos(theta) * vBottom1 +
-					MathF.Sin(theta) * vBottom2
+					MathF.Sin(theta) * vBottom2, transform)
 				});
 				theta += dtheta;
 			}
@@ -153,20 +172,34 @@ public static class CreatePrimitiveMesh
 			Vector3 p1 = end_point +
 				MathF.Cos(theta) * vTop1 +
 				MathF.Sin(theta) * vTop2;
-			vertices.Add(new UIVertexFormat()
-			{
-				position = p1
-			});
 			Vector3 p2 = end_point2 +
 				MathF.Cos(theta) * vBottom1 +
 				MathF.Sin(theta) * vBottom2;
-			vertices.Add(new UIVertexFormat()
+			vertices.Add(new()
 			{
-				position = p2
+				position = Vector3.Transform(p1, transform)
+			});
+
+			vertices.Add(new()
+			{
+				position = Vector3.Transform(p2, transform)
 			});
 			theta += dtheta;
 		}
+		List<byte> bytes = new();
+		var verts = CollectionsMarshal.AsSpan(vertices);
+		if (vertexColor.HasValue)
+			foreach (var i in ..vertices.Count)
+			{
+				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref verts[i], 1)).ToArray());
+				var color = vertexColor.GetValueOrDefault();
+				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref color, 1)).ToArray());
 
+			}
+		else
+			bytes.AddRange(MemoryMarshal.AsBytes(verts).ToArray());
+		newMesh.VertType = vertexColor.HasValue ? typeof(VertexColorFormat) : typeof(UIVertexFormat);
+		newMesh.LoadVertices(bytes.ToArray());
 		// Make the side triangles.
 		pt1 = (ushort)(vertices.Count - 2);
 		pt2 = (ushort)(pt1 + 1);
@@ -187,164 +220,25 @@ public static class CreatePrimitiveMesh
 			pt2 = pt4;
 			pt4 += 2;
 		}
-		// can't access Camera.current
-		//newCone.transform.position = Camera.current.transform.position + Camera.current.transform.forward * 5.0f;
-		/*	int multiplier = (outside ? 1 : 0) + (inside ? 1 : 0);
-			int offset = (outside && inside ? 2 * numVertices : 0);
-			UIVertexFormat[] vertices = new UIVertexFormat[2 * multiplier * numVertices]; // 0..n-1: top, n..2n-1: bottom
-			Vector3[] normals = new Vector3[2 * multiplier * numVertices];
-			ushort[] tris;
-			float slope = MathF.Atan((radiusBottom - radiusTop) / length); // (rad difference)/height
-			float slopeSin = MathF.Sin(slope);
-			float slopeCos = MathF.Cos(slope);
-			int i;
-			for (i = 0; i < numVertices; i++)
-			{
-				float angle = 2 * MathF.PI * i / numVertices;
-				float angleSin = MathF.Sin(angle);
-				float angleCos = MathF.Cos(angle);
-				float angleHalf = 2 * MathF.PI * (i + 0.5f) / numVertices; // for degenerated normals at cone tips
-				float angleHalfSin = MathF.Sin(angleHalf);
-				float angleHalfCos = MathF.Cos(angleHalf);
 
-				vertices[i].position = new Vector3(radiusTop * angleCos, radiusTop * angleSin, 0);
-				vertices[i + numVertices].position = new Vector3(radiusBottom * angleCos, radiusBottom * angleSin, length);
-
-				/*	if (radiusTop == 0)
-						normals[i] = new Vector3(angleHalfCos * slopeCos, angleHalfSin * slopeCos, -slopeSin);
-					else
-						normals[i] = new Vector3(angleCos * slopeCos, angleSin * slopeCos, -slopeSin);
-					if (radiusBottom == 0)
-						normals[i + numVertices] = new Vector3(angleHalfCos * slopeCos, angleHalfSin * slopeCos, -slopeSin);
-					else
-						normals[i + numVertices] = new Vector3(angleCos * slopeCos, angleSin * slopeCos, -slopeSin);
-				*
-				vertices[i].texcoords = new Vector2(1.0f * i / numVertices, 1);
-				vertices[i + numVertices].texcoords = new Vector2(1.0f * i / numVertices, 0);
-
-				if (outside && inside)
-				{
-					// vertices and uvs are identical on inside and outside, so just copy
-					vertices[i + 2 * numVertices] = vertices[i];
-					vertices[i + 3 * numVertices] = vertices[i + numVertices];
-				}
-				if (inside)
-				{
-					// invert normals
-					//normals[i + offset] = -normals[i];
-					//normals[i + numVertices + offset] = -normals[i + numVertices];
-				}
-			}
-			//mesh.normals = normals;
-
-			// create triangles
-			// here we need to take care of point order, depending on inside and outside
-			int cnt = 0;
-			if (radiusTop == 0)
-			{
-				// top cone
-				tris = new ushort[numVertices * 3 * multiplier];
-				if (outside)
-					for (i = 0; i < numVertices; i++)
-					{
-						tris[cnt++] = (ushort)(i + numVertices);
-						tris[cnt++] = (ushort)i;
-						if (i == numVertices - 1)
-							tris[cnt++] = (ushort)numVertices;
-						else
-							tris[cnt++] = (ushort)(i + 1 + numVertices);
-					}
-				if (inside)
-					for (i = offset; i < numVertices + offset; i++)
-					{
-						tris[cnt++] = (ushort)i;
-						tris[cnt++] = (ushort)(i + numVertices);
-						if (i == numVertices - 1 + offset)
-							tris[cnt++] = (ushort)(numVertices + offset);
-						else
-							tris[cnt++] = (ushort)(i + 1 + numVertices);
-					}
-			}
-			else if (radiusBottom == 0)
-			{
-				// bottom cone
-				tris = new ushort[numVertices * 3 * multiplier];
-				if (outside)
-					for (i = 0; i < numVertices; i++)
-					{
-						tris[cnt++] = (ushort)i;
-						if (i == numVertices - 1)
-							tris[cnt++] = 0;
-						else
-							tris[cnt++] = (ushort)(i + 1);
-						tris[cnt++] = (ushort)(i + numVertices);
-					}
-				if (inside)
-					for (i = offset; i < numVertices + offset; i++)
-					{
-						if (i == numVertices - 1 + offset)
-							tris[cnt++] = (ushort)offset;
-						else
-							tris[cnt++] = (ushort)(i + 1);
-						tris[cnt++] = (ushort)i;
-						tris[cnt++] = (ushort)(i + numVertices);
-					}
-			}
-			else
-			{
-				// truncated cone
-				tris = new ushort[numVertices * 6 * multiplier];
-				if (outside)
-					for (i = 0; i < numVertices; i++)
-					{
-						ushort ip1 = (ushort)(i + 1);
-						if (ip1 == numVertices)
-							ip1 = 0;
-
-						tris[cnt++] = (ushort)i;
-						tris[cnt++] = ip1;
-						tris[cnt++] = (ushort)(i + numVertices);
-
-						tris[cnt++] = (ushort)(ip1 + numVertices);
-						tris[cnt++] = (ushort)(i + numVertices);
-						tris[cnt++] = ip1;
-					}
-				if (inside)
-					for (i = offset; i < numVertices + offset; i++)
-					{
-						ushort ip1 = (ushort)(i + 1);
-						if (ip1 == numVertices + offset)
-							ip1 = (ushort)offset;
-
-						tris[cnt++] = ip1;
-						tris[cnt++] = (ushort)i;
-						tris[cnt++] = (ushort)(i + numVertices);
-
-						tris[cnt++] = (ushort)(i + numVertices);
-						tris[cnt++] = (ushort)(ip1 + numVertices);
-						tris[cnt++] = ip1;
-					}
-			}*/
-		var newMesh = new Mesh
-		{
-			FullPath = meshName,
-			UsageHint = UsageHint.StaticDraw
-		};
 		newMesh.LoadIndices<ushort>(indices.ToArray());
-		newMesh.LoadVertices<UIVertexFormat>(vertices.ToArray());
+
+		radiusBottom = 0.5f;
 		return newMesh;
 	}
-	public static Mesh GenerateCone()
+	public static Mesh GenerateCone(in Matrix4x4 transform, string name = "cone", Color? vertexColor = null)
 	{
 		if (radiusTop > float.Epsilon)
 			radiusBottom = 0;
-		return GenerateCylinder("cone");
+		return GenerateCylinder(transform, name, vertexColor);
 	}
-	public static Mesh GenerateCube()
+	public static Mesh GenerateCube(in Matrix4x4 transform, string name = "cube", Color? vertexColor = null)
 	{
-		float length = 1f;
-		float width = 1f;
-		float height = 1f;
+		var newMesh = new Mesh
+		{
+			FullPath = name,
+			UsageHint = UsageHint.StaticDraw
+		};
 		#region UVs
 		Vector2 _00 = new Vector2(0f, 0f);
 		Vector2 _10 = new Vector2(1f, 0f);
@@ -353,48 +247,61 @@ public static class CreatePrimitiveMesh
 
 		#endregion
 		#region Vertices
-		Vector3 p0 = new Vector3(0, 0, 0);
-		Vector3 p1 = new Vector3(length, 0, 0);
-		Vector3 p2 = new Vector3(length, 0, width);
-		Vector3 p3 = new Vector3(0, 0, width);
+		Vector3 p0 = Vector3.Transform(new Vector3(0, 0, 0), transform);
+		Vector3 p1 = Vector3.Transform(new Vector3(1, 0, 0), transform);
+		Vector3 p2 = Vector3.Transform(new Vector3(1, 0, 1), transform);
+		Vector3 p3 = Vector3.Transform(new Vector3(0, 0, 1), transform);
 
-		Vector3 p4 = new Vector3(0, height, 0);
-		Vector3 p5 = new Vector3(length, height, 0);
-		Vector3 p6 = new Vector3(length, height, width);
-		Vector3 p7 = new Vector3(0, height, width);
+		Vector3 p4 = Vector3.Transform(new Vector3(0, 1, 0), transform);
+		Vector3 p5 = Vector3.Transform(new Vector3(1, 1, 0), transform);
+		Vector3 p6 = Vector3.Transform(new Vector3(1, 1, 1), transform);
+		Vector3 p7 = Vector3.Transform(new Vector3(0, 1, 1), transform);
 
 		var vertices = new UIVertexFormat[]
 		{
-					new UIVertexFormat(){position=p0, texcoords=_11 },
-					new UIVertexFormat(){position=p1, texcoords=_01 },
-					new UIVertexFormat(){position=p2, texcoords=_00 },
-					new UIVertexFormat(){position=p3, texcoords=_10 },
+					new (){position=p0, texcoords=_11 },
+					new (){position=p1, texcoords=_01 },
+					new (){position=p2, texcoords=_00 },
+					new (){position=p3, texcoords=_10 },
 
-					new UIVertexFormat(){position=p7, texcoords=_11 },
-					new UIVertexFormat(){position=p4, texcoords=_01 },
-					new UIVertexFormat(){position=p0, texcoords=_00 },
-					new UIVertexFormat(){position=p3, texcoords=_10 },
+					new (){position=p7, texcoords=_11 },
+					new (){position=p4, texcoords=_01 },
+					new (){position=p0, texcoords=_00 },
+					new (){position=p3, texcoords=_10 },
 
-					new UIVertexFormat(){position=p4, texcoords=_11 },
-					new UIVertexFormat(){position=p5, texcoords=_01 },
-					new UIVertexFormat(){position=p1, texcoords=_00 },
-					new UIVertexFormat(){position=p0, texcoords=_10 },
+					new (){position=p4, texcoords=_11 },
+					new (){position=p5, texcoords=_01 },
+					new (){position=p1, texcoords=_00 },
+					new (){position=p0, texcoords=_10 },
 
-					new UIVertexFormat(){position=p6, texcoords=_11 },
-					new UIVertexFormat(){position=p7, texcoords=_01 },
-					new UIVertexFormat(){position=p3, texcoords=_00 },
-					new UIVertexFormat(){position=p2, texcoords=_10 },
+					new (){position=p6, texcoords=_11 },
+					new (){position=p7, texcoords=_01 },
+					new (){position=p3, texcoords=_00 },
+					new (){position=p2, texcoords=_10 },
 
-					new UIVertexFormat(){position=p5, texcoords=_11 },
-					new UIVertexFormat(){position=p6, texcoords=_01 },
-					new UIVertexFormat(){position=p2, texcoords=_00 },
-					new UIVertexFormat(){position=p1, texcoords=_10 },
+					new (){position=p5, texcoords=_11 },
+					new (){position=p6, texcoords=_01 },
+					new (){position=p2, texcoords=_00 },
+					new (){position=p1, texcoords=_10 },
 
-					new UIVertexFormat(){position=p7, texcoords=_11 },
-					new UIVertexFormat(){position=p6, texcoords=_01 },
-					new UIVertexFormat(){position=p5, texcoords=_00 },
-					new UIVertexFormat(){position=p4, texcoords=_10 }
+					new (){position=p7, texcoords=_11 },
+					new (){position=p6, texcoords=_01 },
+					new (){position=p5, texcoords=_00 },
+					new (){position=p4, texcoords=_10 }
 		};
+		List<byte> bytes = new();
+		if (vertexColor.HasValue)
+			foreach (var i in ..vertices.Length)
+			{
+				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref vertices[i], 1)).ToArray());
+				var color = vertexColor.GetValueOrDefault();
+				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref color, 1)).ToArray());
+
+			}
+		else
+			bytes.AddRange(MemoryMarshal.AsBytes(vertices.AsSpan()).ToArray());
+		newMesh.VertType = vertexColor.HasValue ? typeof(VertexColorFormat) : typeof(UIVertexFormat);
+		newMesh.LoadVertices(bytes.ToArray());
 		#endregion
 
 		/*			#region Normales
@@ -431,7 +338,7 @@ public static class CreatePrimitiveMesh
 
 		#region Triangles
 		ushort[] indices = new ushort[]
-		{
+	{
 	// Bottom
 	3, 1, 0,
 	3, 2, 1,			
@@ -456,14 +363,9 @@ public static class CreatePrimitiveMesh
 	3 + 4 * 5, 1 + 4 * 5, 0 + 4 * 5,
 	3 + 4 * 5, 2 + 4 * 5, 1 + 4 * 5,
 
-		};
+	};
 		#endregion
-		var newMesh = new Mesh
-		{
-			FullPath = "cube",
-			UsageHint = UsageHint.StaticDraw
-		};
-		newMesh.LoadVertices<UIVertexFormat>(vertices);
+
 		newMesh.LoadIndices<ushort>(indices);
 		return newMesh;
 	}
@@ -535,7 +437,6 @@ public static class CreatePrimitiveMesh
 			UsageHint = UsageHint.StaticDraw
 		};
 		newMesh.LoadIndices<ushort>(indices);
-		newMesh.LoadVertices<UIVertexFormat>(vertices);
 		return newMesh;
 	}
 	internal static Mesh GenerateEditorDisc(Vector3 startAxis, Vector3 nextAxis)
@@ -613,14 +514,18 @@ public static class CreatePrimitiveMesh
 		newMesh.LoadVertices<UIVertexFormat>(vertices);
 		return newMesh;
 	}
-	public static Mesh GenerateTorus()
+	public static Mesh GenerateTorus(in Matrix4x4 transform, string name = "torus", Color? vertexColor = null)
 	{
 		float radius = 1f;
-		float tube = 0.02f;
+		float tube = 0.025f;
 		int radialSegments = numVertices;
 		int tubularSegments = numVertices;
 		float arc = 360f;
-
+		var newMesh = new Mesh
+		{
+			FullPath = name,
+			UsageHint = UsageHint.StaticDraw
+		};
 		//List<Vector2> uvs = new List<Vector2>();
 		List<UIVertexFormat> vertices = new List<UIVertexFormat>();
 		//List<Vector3> normals = new List<Vector3>();
@@ -643,7 +548,7 @@ public static class CreatePrimitiveMesh
 				vertex.Y = (radius + tube * MathF.Cos(v)) * MathF.Sin(u);
 				vertex.Z = tube * MathF.Sin(v);
 
-				vertices.Add(new UIVertexFormat() { position = vertex });
+				vertices.Add(new UIVertexFormat() { position = Vector3.Transform(vertex, transform) });
 
 				//uvs.Add(new Vector2(i / (float)tubularSegments, j / (float)radialSegments));
 				//Vector3 normal = vertex - center;
@@ -651,7 +556,20 @@ public static class CreatePrimitiveMesh
 				//normals.Add(normal);
 			}
 		}
+		List<byte> bytes = new();
+		var verts = CollectionsMarshal.AsSpan(vertices);
+		if (vertexColor.HasValue)
+			foreach (var i in ..vertices.Count)
+			{
+				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref verts[i], 1)).ToArray());
+				var color = vertexColor.GetValueOrDefault();
+				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref color, 1)).ToArray());
 
+			}
+		else
+			bytes.AddRange(MemoryMarshal.AsBytes(verts).ToArray());
+		newMesh.VertType = vertexColor.HasValue ? typeof(VertexColorFormat) : typeof(UIVertexFormat);
+		newMesh.LoadVertices(bytes.ToArray());
 
 		for (var j = 1; j <= radialSegments; j++)
 		{
@@ -673,13 +591,7 @@ public static class CreatePrimitiveMesh
 
 		}
 
-		var newMesh = new Mesh
-		{
-			FullPath = "torus",
-			UsageHint = UsageHint.StaticDraw
-		};
 		newMesh.LoadIndices<ushort>(indices.ToArray());
-		newMesh.LoadVertices<UIVertexFormat>(vertices.ToArray());
 		return newMesh;
 	}
 }

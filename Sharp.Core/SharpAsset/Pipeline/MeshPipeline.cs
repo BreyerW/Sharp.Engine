@@ -20,19 +20,27 @@ namespace SharpAsset.Pipeline
 		private static readonly VertexAttribute[] supportedAttribs = (VertexAttribute[])Enum.GetValues(typeof(VertexAttribute));
 		private static BoundingBox bounds;
 		private static Type vertType;
-		private static int size;
-
+		private static int vertStride;
+		private static int indexStride;
 		static MeshPipeline()
 		{
-			SetVertexContext<BasicVertexFormat>();
+			SetMeshContext<uint, BasicVertexFormat>();
 		}
 
 		public static void SetVertexContext<T>() where T : struct, IVertex
 		{
 			vertType = typeof(T);
-			size = Unsafe.SizeOf<T>();
+			vertStride = Marshal.SizeOf<T>();
 		}
-
+		public static void SetIndexContext<T>() where T : struct
+		{
+			indexStride = Marshal.SizeOf<T>();
+		}
+		public static void SetMeshContext<TIndex, TVertex>() where TIndex : struct where TVertex : struct, IVertex
+		{
+			SetIndexContext<TIndex>();
+			SetVertexContext<TVertex>();
+		}
 		public override IAsset Import(string pathToFile)
 		{
 			if (base.Import(pathToFile) is IAsset asset) return asset;
@@ -45,18 +53,14 @@ namespace SharpAsset.Pipeline
 			var internalMesh = new Mesh
 			{
 				UsageHint = UsageHint.DynamicDraw,
-				stride = size,
 				FullPath = pathToFile,
 				VertType = vertType,
 				VBO = -1,
-				EBO = -1
+				EBO = -1,
+				indexStride = indexStride
 			};
-			//if (indices[0].GetType() == typeof(ushort))
-			//internalMesh.indiceType = IndiceType.UnsignedShort;
-			//else if (indices[0].GetType() == typeof(uint))
-			internalMesh.indiceType = IndiceType.UnsignedInt;
 			if (scene.MeshCount > 1)
-				internalMesh.submeshesDescriptor = new int[scene.MeshCount * 2];
+				internalMesh.subMeshesDescriptor = new int[scene.MeshCount * 2];
 			if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(vertType))
 				RegisterAsAttribute.ParseVertexFormat(vertType);
 
@@ -71,7 +75,6 @@ namespace SharpAsset.Pipeline
 			var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
 			var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
 			int id = 0;
-			int lastVertCount = 0;
 			foreach (var mesh in scene.Meshes)
 			{
 				if (mesh.HasBones)
@@ -80,9 +83,9 @@ namespace SharpAsset.Pipeline
 					//foreach (var tree in AssetsView.tree.Values)
 					//tree.AddNode(GetPipeline<SkeletonPipeline>().Import(""));
 				}
-				var indices = mesh.GetUnsignedIndices();
+				var indices = mesh.GetUnsignedIndices();//TODO: convert to bytes then switching indices type will be piss easy
 
-				var vertices = new byte[mesh.VertexCount * size].AsSpan();
+				var vertices = new byte[mesh.VertexCount * vertStride].AsSpan();
 
 				foreach (var (key, data) in meshData.Indexed())
 					meshData[key].data = mesh.GetAttribute(data.attrib);
@@ -97,19 +100,17 @@ namespace SharpAsset.Pipeline
 					foreach (var (key, data) in meshData.Indexed())
 						CopyBytes(vertFormat.supportedSpecialAttribs[data.attrib], i, ref meshData[key].data, ref vertices);
 				}
-
+				if (id is not 0)
+					foreach (var i in ..indices.Length)
+						indices[i] += (uint)(finalVertices.Count / vertStride);
 				finalVertices.AddRange(vertices.ToArray());
 
-				if (lastVertCount is not 0)
-					foreach (var i in ..indices.Length)
-						indices[i] += (uint)lastVertCount;
-				lastVertCount += mesh.VertexCount;
 				finalIndices.AddRange(indices);
 
 				if (scene.MeshCount > 1)
 				{
-					internalMesh.submeshesDescriptor[id * 2] = finalIndices.Count;
-					internalMesh.submeshesDescriptor[id * 2 + 1] = finalVertices.Count;
+					internalMesh.subMeshesDescriptor[id * 2] = finalIndices.Count;
+					internalMesh.subMeshesDescriptor[id * 2 + 1] = finalVertices.Count;
 				}
 				//if (!Mesh.sharedMeshes.ContainsKey(internalMesh.Name))
 				//Mesh.sharedMeshes.Add(internalMesh.Name, vertices.ToArray());
@@ -125,7 +126,7 @@ namespace SharpAsset.Pipeline
 
 		private void CopyBytes(RegisterAsAttribute format, int index, ref byte[] attribBytes, ref Span<byte> vertBytes)
 		{
-			var offset = index * size + format.offset;
+			var offset = index * vertStride + format.offset;
 			var slice = vertBytes.Slice(offset, format.stride);
 			for (var i = 0; i < format.stride; i++)
 				slice[i] = attribBytes[index * assimpStride + i];

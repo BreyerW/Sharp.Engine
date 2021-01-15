@@ -5,13 +5,13 @@
 			in vec2 vertex_texcoord;
 			out vec2 v_texcoord;
             uniform mat4 camView;
-            uniform mat4 camOrtho;
+            uniform mat4 camProjection;
 			uniform mat4 model;
 
             void main(void)
             {
 				v_texcoord = vertex_texcoord;
-                gl_Position = model* vec4(vertex_position, 1.0);
+                gl_Position = camProjection * camView * model* vec4(vertex_position, 1.0);
 			 }
 
 		#pragma fragment

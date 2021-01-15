@@ -29,7 +29,7 @@ namespace SharpSL.BackendRenderers
 
 		void Allocate(ref byte bitmap, int width, int height, TextureFormat pixelFormat);
 
-		void Draw(IndiceType indiceType, int start, int length);
+		void Draw(int indexStride, int start, int length);
 
 		void Use(int Program);
 

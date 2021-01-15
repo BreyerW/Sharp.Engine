@@ -391,16 +391,16 @@ namespace SharpAsset
 			}
 			var startIndex = rangeOfSubMeshes.Start.Value;
 			var endIndex = rangeOfSubMeshes.End.Value;
-			if (mesh.submeshesDescriptor is null || (startIndex is 0 && endIndex is 0))
-				MainWindow.backendRenderer.Draw(mesh.indiceType, 0, mesh.Indices.Length);
-			else if (mesh.submeshesDescriptor is not null)
+			if (mesh.subMeshesDescriptor is null || (startIndex is 0 && endIndex is 0))
+				MainWindow.backendRenderer.Draw(mesh.indexStride, 0, mesh.Indices.Length);
+			else if (mesh.subMeshesDescriptor is not null)
 			{
-				var start = startIndex is 0 ? 0 : mesh.submeshesDescriptor[startIndex * 2 - 2];
-				MainWindow.backendRenderer.Draw(mesh.indiceType, start * Marshal.SizeOf<uint>(), mesh.submeshesDescriptor[endIndex * 2 - 2] - start);
+				var start = startIndex is 0 ? 0 : mesh.subMeshesDescriptor[startIndex * 2 - 2];
+				MainWindow.backendRenderer.Draw(mesh.indexStride, start, mesh.subMeshesDescriptor[endIndex * 2 - 2] - start);
 			}
 			//var tbo = 0;
 			//MainWindow.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));//TODO: generalize this
-
+			
 		}
 		public void Draw(int subMesh = -1, int pass = 0)
 		{

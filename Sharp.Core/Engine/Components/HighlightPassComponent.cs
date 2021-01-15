@@ -94,16 +94,17 @@ namespace Sharp.Engine.Components
 
 				GL.ColorMask(false, false, false, false);
 				if (Manipulators.hoveredGizmoId is not Gizmo.Invalid + 1)
-					viewCubeMat.Draw(..(int)(Manipulators.hoveredGizmoId-1), pass: 1);
+					viewCubeMat.Draw(..(int)(Manipulators.hoveredGizmoId - 1), pass: 1);
 				if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX - 1)
 					viewCubeMat.Draw((int)Manipulators.hoveredGizmoId..(int)(Gizmo.TranslateX - 1), pass: 1);
-				
+
 				GL.ColorMask(true, true, true, true);
 				viewCubeMat.Draw((int)Manipulators.hoveredGizmoId - 1, 1);
 			}
 			else
 			{
-				GL.Disable(EnableCap.DepthTest);
+				//GL.Disable(EnableCap.DepthTest);
+				GL.DepthFunc(DepthFunction.Always);
 				var editorHovered = new Color(0, 0, 255, 255);
 				if (SceneStructureView.tree.SelectedNode is not null)
 				{
@@ -112,51 +113,18 @@ namespace Sharp.Engine.Components
 					//foreach (var selected in SceneStructureView.tree.SelectedNode)
 					if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 					{
-						Material material = Manipulators.hoveredGizmoId switch
-						{
-							Gizmo.TranslateX =>
-								DrawHelper.lineMaterialX,
-							Gizmo.TranslateY =>
-								DrawHelper.lineMaterialY,
-							Gizmo.TranslateZ =>
-								DrawHelper.lineMaterialZ,
-							Gizmo.TranslateXY =>
-								DrawHelper.planeMaterialXY,
-							Gizmo.TranslateYZ =>
-								DrawHelper.planeMaterialYZ,
-							Gizmo.TranslateZX =>
-								DrawHelper.planeMaterialZX,
-							Gizmo.RotateX =>
-								DrawHelper.circleMaterialX,
-							Gizmo.RotateY =>
-								DrawHelper.circleMaterialY,
-							Gizmo.RotateZ =>
-								DrawHelper.circleMaterialZ,
-							Gizmo.ScaleX =>
-								DrawHelper.cubeMaterialX,
-							Gizmo.ScaleY =>
-								DrawHelper.cubeMaterialY,
-							Gizmo.ScaleZ =>
-								DrawHelper.cubeMaterialZ,
-							_ => null
-						};
-						Material extra = Manipulators.hoveredGizmoId switch
-						{
-							Gizmo.TranslateX =>
-								DrawHelper.coneMaterialX,
-							Gizmo.TranslateY =>
-								DrawHelper.coneMaterialY,
-							Gizmo.TranslateZ =>
-								DrawHelper.coneMaterialZ,
-							_ => null
-						};
-						extra?.BindProperty("color", editorHovered);
-						extra?.Draw();
-						material?.BindProperty("color", editorHovered);
-						material?.Draw();
+						/*GL.ColorMask(false, false, false, false);
+						if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX)
+							DrawHelper.gizmoMaterial.Draw(..(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX + 1), pass: 1);
+						if (Manipulators.hoveredGizmoId is not Gizmo.ScaleZ)
+							DrawHelper.gizmoMaterial.Draw((Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX)..(Gizmo.ScaleZ - Gizmo.ViewCubeUpperLeftCornerMinusX - 1), pass: 1);
+
+						GL.ColorMask(true, true, true, true);*/
+						DrawHelper.gizmoMaterial.Draw(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX - 1, 1);
+
 					}
 				}
-				Manipulators.ResetGizmoColors();
+				GL.DepthFunc(DepthFunction.Less);
 			}
 			GL.Enable(EnableCap.DepthTest);
 			//if (readPixels is not -1)

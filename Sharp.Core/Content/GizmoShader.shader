@@ -2,11 +2,12 @@
 
 #pragma vertex
 in vec3 vertex_position;
+in vec4 vertex_color;
+out vec4 v_color;
 uniform mat4 camView;
 uniform mat4 camProjection;
 uniform mat4 model;
 uniform vec2 viewPort;
-uniform vec2 len;
 //uniform vec3 axis;
 
             void main(void)
@@ -24,15 +25,16 @@ uniform vec2 len;
 				total[2][1] = mix(0.0, total[2][1], 1 - axis.z);
 				total[2][2] = mix(1.0, total[2][2], 1 - axis.z);
 				*/
-				gl_Position = camProjection * camView *model* vec4(vertex_position.xy* len,vertex_position.z*len.y, 1.0);
-            }
+				gl_Position = camProjection * camView *model* vec4(vertex_position.xyz, 1.0);
+				v_color = vertex_color;
+			}
 
 		#pragma fragment
-
+			in vec4 v_color;
             out vec4 frag_color;
 			uniform vec4 color;
 
             void main(void)
             {
-	         frag_color =color;
+	         frag_color =v_color;
             }

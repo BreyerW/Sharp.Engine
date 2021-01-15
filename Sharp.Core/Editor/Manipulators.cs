@@ -77,95 +77,7 @@ namespace Sharp.Editor
 		public static Gizmo SelectedGizmoId
 		{
 			get => selectedGizmoId;
-			set
-			{
-				switch (selectedGizmoId)
-				{
-					case Gizmo.TranslateX:
-						DrawHelper.lineMaterialX.BindProperty("color", xColor);
-						DrawHelper.coneMaterialX.BindProperty("color", xColor);
-						break;
-					case Gizmo.TranslateY:
-						DrawHelper.lineMaterialY.BindProperty("color", yColor);
-						DrawHelper.coneMaterialX.BindProperty("color", yColor);
-						break;
-					case Gizmo.TranslateZ:
-						DrawHelper.lineMaterialZ.BindProperty("color", zColor);
-						DrawHelper.coneMaterialX.BindProperty("color", zColor);
-						break;
-					case Gizmo.TranslateXY:
-						DrawHelper.planeMaterialXY.BindProperty("color", zColor);
-						break;
-					case Gizmo.TranslateYZ:
-						DrawHelper.planeMaterialYZ.BindProperty("color", xColor);
-						break;
-					case Gizmo.TranslateZX:
-						DrawHelper.planeMaterialZX.BindProperty("color", yColor);
-						break;
-					case Gizmo.RotateX:
-						DrawHelper.circleMaterialX.BindProperty("color", xColor);
-						break;
-					case Gizmo.RotateY:
-						DrawHelper.circleMaterialY.BindProperty("color", yColor);
-						break;
-					case Gizmo.RotateZ:
-						DrawHelper.circleMaterialZ.BindProperty("color", zColor);
-						break;
-					case Gizmo.ScaleX:
-						DrawHelper.cubeMaterialX.BindProperty("color", xColor);
-						break;
-					case Gizmo.ScaleY:
-						DrawHelper.cubeMaterialY.BindProperty("color", yColor);
-						break;
-					case Gizmo.ScaleZ:
-						DrawHelper.cubeMaterialZ.BindProperty("color", zColor);
-						break;
-				}
-				switch (value)
-				{
-					case Gizmo.TranslateX:
-						DrawHelper.lineMaterialX.BindProperty("color", selectedColor);
-						DrawHelper.coneMaterialX.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.TranslateY:
-						DrawHelper.lineMaterialY.BindProperty("color", selectedColor);
-						DrawHelper.coneMaterialY.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.TranslateZ:
-						DrawHelper.lineMaterialZ.BindProperty("color", selectedColor);
-						DrawHelper.coneMaterialZ.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.TranslateXY:
-						DrawHelper.planeMaterialXY.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.TranslateYZ:
-						DrawHelper.planeMaterialYZ.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.TranslateZX:
-						DrawHelper.planeMaterialZX.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.RotateX:
-						DrawHelper.circleMaterialX.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.RotateY:
-						DrawHelper.circleMaterialY.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.RotateZ:
-						DrawHelper.circleMaterialZ.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.ScaleX:
-						DrawHelper.cubeMaterialX.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.ScaleY:
-						DrawHelper.cubeMaterialY.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.ScaleZ:
-						DrawHelper.cubeMaterialZ.BindProperty("color", selectedColor);
-						break;
-					case Gizmo.Invalid: ResetGizmoColors(); break;
-				}
-				selectedGizmoId = value;
-			}
+			set=>selectedGizmoId = value;
 		}
 		internal static Gizmo hoveredGizmoId = Gizmo.Invalid;
 		internal static float? rotAngleOrigin;
@@ -201,37 +113,6 @@ namespace Sharp.Editor
 		{
 			DrawCombinedGizmos(entity, 3f);
 		}
-		internal static void ResetGizmoColors()
-		{
-			DrawHelper.lineMaterialX.BindProperty("color", xColor);
-
-			DrawHelper.lineMaterialY.BindProperty("color", yColor);
-
-			DrawHelper.lineMaterialZ.BindProperty("color", zColor);
-			DrawHelper.coneMaterialX.BindProperty("color", xColor);
-
-			DrawHelper.coneMaterialY.BindProperty("color", yColor);
-
-			DrawHelper.coneMaterialZ.BindProperty("color", zColor);
-
-			DrawHelper.planeMaterialXY.BindProperty("color", zColor);
-
-			DrawHelper.planeMaterialYZ.BindProperty("color", xColor);
-
-			DrawHelper.planeMaterialZX.BindProperty("color", yColor);
-
-			DrawHelper.circleMaterialX.BindProperty("color", xColor);
-
-			DrawHelper.circleMaterialY.BindProperty("color", yColor);
-
-			DrawHelper.circleMaterialZ.BindProperty("color", zColor);
-
-			DrawHelper.cubeMaterialX.BindProperty("color", xColor);
-
-			DrawHelper.cubeMaterialY.BindProperty("color", yColor);
-
-			DrawHelper.cubeMaterialZ.BindProperty("color", zColor);
-		}
 
 		public static void DrawCombinedGizmos(Entity entity, float thickness = 5f)
 		{
@@ -247,14 +128,10 @@ namespace Sharp.Editor
 			}
 			var scaleMat = Matrix4x4.CreateScale(scale, scale, scale);
 
-			var rotationX = Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, NumericsExtensions.Deg2Rad * 90);
-			var rotationY = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, NumericsExtensions.Deg2Rad * 90);
-			var rotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, NumericsExtensions.Deg2Rad * 90);
 
 			//TODO: convert cube to ball for scale gizmo?
-			DrawHelper.DrawRotationGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel);
-			DrawHelper.DrawScaleGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel, scaleOffset, SelectedGizmoId);
-			DrawHelper.DrawTranslationGizmo(scaleMat * rotationX * mModel, scaleMat * rotationY * mModel, scaleMat * rotationZ * mModel);
+			DrawHelper.DrawGizmo(scaleMat * mModel);
+
 			if (rotVectSource.HasValue)
 			{
 				var fullAngle = NumericsExtensions.CalculateAngle(rotVectSource.Value, currentAngle);
@@ -339,7 +216,6 @@ namespace Sharp.Editor
 			startMat = default;
 			transformOrigin = default;
 			transformationPlane = default;
-			ResetGizmoColors();
 		}
 
 		private static Vector3 GetAxis()

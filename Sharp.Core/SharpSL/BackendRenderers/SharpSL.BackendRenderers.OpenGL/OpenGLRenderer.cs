@@ -261,10 +261,15 @@ namespace SharpSL.BackendRenderers.OpenGL
 			}
 		}
 
-		public void Draw(IndiceType indiceType,int start, int length)
+		public void Draw(int indexStride, int start, int length)
 		{
-
-			GL.DrawElements(PrimitiveType.Triangles, length, (DrawElementsType)indiceType, (IntPtr)start);
+			var eleType = indexStride switch
+			{
+				2 => DrawElementsType.UnsignedShort,
+				4 => DrawElementsType.UnsignedInt,
+				_ => throw new NotSupportedException("Indexes other than ushort and uint are not supported")
+			};
+			GL.DrawElements(PrimitiveType.Triangles, length, eleType, (IntPtr)(start * indexStride));
 			slot = 0;
 		}
 
