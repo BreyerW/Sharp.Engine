@@ -9,7 +9,7 @@ namespace Sharp.Core
 	/// <summary>
 	/// A resizable collection of bits.
 	/// </summary>
-	public struct Bitask
+	public struct BitMask
 	{
 		private static int BitSize = (sizeof(uint) * 8) - 1;
 		private static int ByteSize = 5;  // log_2(BitSize + 1)
@@ -17,7 +17,7 @@ namespace Sharp.Core
 		[JsonProperty(IsReference = false)]
 		private uint[] bits;
 
-		public Bitask(int startValue)
+		public BitMask(int startValue)
 		{
 			bits = new uint[1];
 			if (startValue is 1)
@@ -79,7 +79,7 @@ namespace Sharp.Core
 		{
 			Array.Clear(bits, 0, bits.Length);
 		}
-		public bool HasNoFlags(in Bitask flags)
+		public bool HasNoFlags(in BitMask flags)
 		{
 			if (flags.bits.Length is 0)//means Everything
 				return false;
@@ -100,7 +100,7 @@ namespace Sharp.Core
 			}
 			return true;
 		}
-		public bool HasFlags(in Bitask flags)
+		public bool HasFlags(in BitMask flags)
 		{
 			if (flags.bits.Length is 0)
 				return true;
@@ -122,7 +122,7 @@ namespace Sharp.Core
 			}
 			return true;
 		}
-		public bool HasAnyFlags(in Bitask flags)
+		public bool HasAnyFlags(in BitMask flags)
 		{
 			if (flags.bits is null)
 				throw new ArgumentNullException(nameof(flags.bits));

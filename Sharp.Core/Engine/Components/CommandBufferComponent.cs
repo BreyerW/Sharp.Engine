@@ -24,7 +24,7 @@ namespace Sharp.Engine.Components
 				prevPass = value;
 			}
 		}
-		private static Bitask rendererMask = new Bitask(0);
+		private static BitMask rendererMask = new BitMask(0);
 		private bool screenSpace;
 		public bool ScreenSpace
 		{
@@ -125,7 +125,7 @@ namespace Sharp.Engine.Components
 			MainWindow.backendRenderer.ClearColor(0f, 0f, 0f, 0f);
 
 		}
-		public void DrawPass(Bitask mask)
+		public void DrawPass(BitMask mask)
 		{
 			PreparePass();
 			var renderables = Entity.FindAllWithComponentsAndTags(rendererMask, mask).GetEnumerator();

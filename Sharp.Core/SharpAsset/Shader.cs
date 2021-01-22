@@ -44,7 +44,9 @@ namespace SharpAsset
 
 		public void Dispose()
 		{
-			MainWindow.backendRenderer.Delete(Program, VertexID, FragmentID);
+			MainWindow.backendRenderer.DeleteBuffer(SharpSL.Target.Shader, Program);
+			MainWindow.backendRenderer.DeleteBuffer(SharpSL.Target.VertexShader, VertexID);
+			MainWindow.backendRenderer.DeleteBuffer(SharpSL.Target.FragmentShader, FragmentID);
 		}
 
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)

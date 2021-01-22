@@ -92,13 +92,13 @@ namespace Sharp.Engine.Components
 				///This code is needed in order to remove highlight of invisible sides of cube
 				///
 
-				GL.ColorMask(false, false, false, false);
+				MainWindow.backendRenderer.SetColorMask(false, false, false, false);
 				if (Manipulators.hoveredGizmoId is not Gizmo.Invalid + 1)
 					viewCubeMat.Draw(..(int)(Manipulators.hoveredGizmoId - 1), pass: 1);
 				if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX - 1)
 					viewCubeMat.Draw((int)Manipulators.hoveredGizmoId..(int)(Gizmo.TranslateX - 1), pass: 1);
 
-				GL.ColorMask(true, true, true, true);
+				MainWindow.backendRenderer.SetColorMask(true, true, true, true);
 				viewCubeMat.Draw((int)Manipulators.hoveredGizmoId - 1, 1);
 			}
 			else

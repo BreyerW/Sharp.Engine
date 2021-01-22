@@ -11,7 +11,7 @@ namespace Sharp
 	[Serializable, JsonObject]
 	public sealed class Entity : IEngineObject
 	{
-		internal static MultiValueDictionary<(Bitask components, Bitask tags), Entity> tagsMapping = new();//key is bit position also make it for system parts where mask defines what components entity has at least once
+		internal static MultiValueDictionary<(BitMask components, BitMask tags), Entity> tagsMapping = new();//key is bit position also make it for system parts where mask defines what components entity has at least once
 		[JsonIgnore]
 		public Entity parent;
 		public bool visible;//TODO: mark all objects as not visible every frame then when frustrum culling in bepuphysic or physx mark them as visible
@@ -20,11 +20,11 @@ namespace Sharp
 		[JsonIgnore]
 		public List<Entity> childs = new List<Entity>();
 		public string name = "Entity Object";
-		private Bitask tagsMask = new(0);
+		private BitMask tagsMask = new(0);
 
-		private Bitask componentsMask = new(0);
+		private BitMask componentsMask = new(0);
 		[JsonProperty]
-		public Bitask ComponentsMask
+		public BitMask ComponentsMask
 		{
 			get => componentsMask;
 			private set
@@ -35,7 +35,7 @@ namespace Sharp
 			}
 		}
 		[JsonProperty]
-		public Bitask TagsMask
+		public BitMask TagsMask
 		{
 			get => tagsMask;
 			set
@@ -61,7 +61,7 @@ namespace Sharp
 
 			return Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z));
 		}
-		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithTags(Bitask mask, bool cull = false)
+		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithTags(BitMask mask, bool cull = false)
 		{
 			if (cull)
 			{
@@ -75,7 +75,7 @@ namespace Sharp
 						yield return value;
 
 		}
-		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithComponents(Bitask mask, bool cull = false)
+		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithComponents(BitMask mask, bool cull = false)
 		{
 			if (cull)
 			{
@@ -89,7 +89,7 @@ namespace Sharp
 						yield return value;
 
 		}
-		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithComponentsAndTags(Bitask componentsMask, Bitask tagsMask, bool cullComponents = false, bool cullTags = false)
+		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithComponentsAndTags(BitMask componentsMask, BitMask tagsMask, bool cullComponents = false, bool cullTags = false)
 		{
 			if (cullComponents && cullTags)
 			{

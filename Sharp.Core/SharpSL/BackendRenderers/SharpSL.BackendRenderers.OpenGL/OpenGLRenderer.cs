@@ -41,7 +41,10 @@ namespace SharpSL.BackendRenderers.OpenGL
 			//GL.Finish();
 			// GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
 		}
-
+		public void GetQueryResult(int id, out int result)
+		{
+			GL.GetQueryObject(id, GetQueryObjectParam.QueryResult, out result);
+		}
 		public byte[] ReadPixels(int x, int y, int width, int height, TextureFormat pxFormat)
 		{
 			(var pixelFormat, byte[] pixel) = pxFormat switch
@@ -130,7 +133,32 @@ namespace SharpSL.BackendRenderers.OpenGL
 				default: GL.GenBuffers(id.Length, out id[0]); break;
 			};
 		}
-
+		public void DeleteBuffers(Target target, Span<int> id)
+		{
+			switch (target)
+			{
+				case Target.Texture: GL.DeleteTextures(id.Length, ref id[0]); break;
+				case Target.Frame: GL.DeleteFramebuffers(id.Length, ref id[0]); break;
+				case Target.Shader: GL.DeleteProgram(id[0]); break;
+				case Target.VertexShader: GL.DeleteShader(id[0]); break;
+				case Target.FragmentShader: GL.DeleteShader(id[0]); break;
+				case Target.OcclusionQuery: GL.DeleteQueries(id.Length, ref id[0]); break;
+				default: GL.DeleteBuffers(id.Length, ref id[0]); break;
+			};
+		}
+		public void DeleteBuffer(Target target, int id)
+		{
+			switch (target)
+			{
+				case Target.Texture: GL.DeleteTexture(id); break;
+				case Target.Frame: GL.DeleteFramebuffer(id); break;
+				case Target.Shader: GL.DeleteProgram(id); break;
+				case Target.VertexShader: GL.DeleteShader(id); break;
+				case Target.FragmentShader: GL.DeleteShader(id); break;
+				case Target.OcclusionQuery: GL.DeleteQuery(id); break;
+				default: GL.DeleteBuffer(id); break;
+			};
+		}
 		public void BindBuffers(Target target, int id)
 		{
 			switch (target)
@@ -272,17 +300,6 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.DrawElements(PrimitiveType.Triangles, length, eleType, (IntPtr)(start * indexStride));
 			slot = 0;
 		}
-
-		public void Delete(int Program, int VertexID, int FragmentID)
-		{
-			if (Program != 0)
-				GL.DeleteProgram(Program);
-			if (FragmentID != 0)
-				GL.DeleteShader(FragmentID);
-			if (VertexID != 0)
-				GL.DeleteShader(VertexID);
-		}
-
 		public void Viewport(int x, int y, int width, int height)
 		{
 			GL.Viewport(x, y, width, height);
@@ -391,6 +408,27 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.Uniform4(location, 1, ref Unsafe.As<byte, float>(ref data));
 		}
 
+		public QueryScope StartQuery(Target target, int id)
+		{
+			var query = target switch
+			{
+				Target.OcclusionQuery => QueryTarget.SamplesPassed,
+				_ => QueryTarget.SamplesPassed
+			};
+			GL.BeginQuery(query, id);
+			return new QueryScope(this, target);
+		}
+		public void EndQuery(Target target)
+		{
+			switch (target)
+			{
+				case Target.OcclusionQuery: GL.EndQuery(QueryTarget.SamplesPassed); break;
+			}
+		}
+		public void SetColorMask(bool r, bool g, bool b, bool a)
+		{
+			GL.ColorMask(r,g,b,a);
+		}
 		#endregion IBackendRenderer implementation
 	}
 }

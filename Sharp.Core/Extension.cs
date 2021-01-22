@@ -24,7 +24,7 @@ namespace Sharp
 			[typeof(CommandBufferComponent)] = 2,
 		};//TODO: replace with generated enum?
 
-		public static ref readonly Bitask SetTag(this in Bitask mask, string tag)
+		public static ref readonly BitMask SetTag(this in BitMask mask, string tag)
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
 			if (tag is "Nothing")
@@ -41,7 +41,7 @@ namespace Sharp
 
 			return ref bitmask;
 		}
-		public static ref readonly Bitask ClearTag(this in Bitask mask, string tag)
+		public static ref readonly BitMask ClearTag(this in BitMask mask, string tag)
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
 			if (tag is "Nothing")
@@ -58,7 +58,7 @@ namespace Sharp
 
 			return ref bitmask;
 		}
-		public static ref readonly Bitask SetTag(this in Bitask mask, Component tag)
+		public static ref readonly BitMask SetTag(this in BitMask mask, Component tag)
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
 			if (tag is Renderer)
@@ -77,7 +77,7 @@ namespace Sharp
 			bitmask.SetFlag(index);
 			return ref bitmask;
 		}
-		public static ref readonly Bitask ClearTag(this in Bitask mask, Component tag)
+		public static ref readonly BitMask ClearTag(this in BitMask mask, Component tag)
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
 			if (tag is Renderer)

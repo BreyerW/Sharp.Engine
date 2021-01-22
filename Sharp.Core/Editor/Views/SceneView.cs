@@ -19,7 +19,7 @@ namespace Sharp.Editor.Views
 {
 	public class SceneView : View
 	{
-		private static Bitask rendererMask = new(0);
+		private static BitMask rendererMask = new(0);
 		private int cell_size = 32;
 		private int grid_size = 4096;
 		private static Material highlight;
@@ -287,10 +287,10 @@ namespace Sharp.Editor.Views
 			while (renderers.MoveNext())
 				renderables.AddRange(renderers.Current);
 			//renderables.Sort(new OrderByDistanceToCamera());
-			if (renderables.Count + (int)Gizmo.UniformScale > ids.Length)
+			if (renderables.Count + (int)Gizmo.UniformScale > ids.Length || renderables.Count + (int)Gizmo.UniformScale < ids.Length)
 			{
 				if (ids is not null)
-					GL.DeleteQueries(ids.Length, ids);
+					MainWindow.backendRenderer.DeleteBuffers(Target.OcclusionQuery, ids);
 				ids = new int[renderables.Count + (int)Gizmo.UniformScale];
 				MainWindow.backendRenderer.GenerateBuffers(Target.OcclusionQuery, ids);
 			}
@@ -313,7 +313,7 @@ namespace Sharp.Editor.Views
 			{
 				Material.BindGlobalProperty("enablePicking", 1f);
 
-				GL.ColorMask(false, false, false, false);
+				MainWindow.backendRenderer.SetColorMask(false, false, false, false);
 				GL.Enable(EnableCap.DepthTest);//disable when all objects or when depth peeling to be selected or enabled + less when only top most
 
 				if (SceneStructureView.tree.SelectedNode is { UserData: Entity })
@@ -326,59 +326,46 @@ namespace Sharp.Editor.Views
 
 				if (SceneStructureView.tree.SelectedNode is { UserData: Entity })
 				{
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateX - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 0);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateX - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 0);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateY - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 1);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateY - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 1);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateZ - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 2);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateZ - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 2);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateXY - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 3);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateXY - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 3);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateYZ - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 4);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateYZ - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 4);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.TranslateZX - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 5);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateZX - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 5);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.RotateX - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 6);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.RotateX - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 6);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.RotateY - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 7);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.RotateY - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 7);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.RotateZ - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 8);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.RotateZ - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 8);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.ScaleX - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 9);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.ScaleX - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 9);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.ScaleY - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 10);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.ScaleY - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 10);
 
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[(int)Gizmo.ScaleZ - 1]);
-					DrawHelper.gizmoMaterial.Draw(subMesh: 11);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.ScaleZ - 1]))
+						DrawHelper.gizmoMaterial.Draw(subMesh: 11);
 				}
 				foreach (var i in ..((int)Gizmo.TranslateX - 1))
 				{
-					GL.BeginQuery(QueryTarget.SamplesPassed, ids[i]);
-					viewCubeMat.Draw(subMesh: i);
-					GL.EndQuery(QueryTarget.SamplesPassed);
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[i]))
+						viewCubeMat.Draw(subMesh: i);
 				}
 
 				MainWindow.backendRenderer.ClearDepth();
@@ -400,9 +387,8 @@ namespace Sharp.Editor.Views
 					var renderer = renderables[i - (int)Gizmo.UniformScale].GetComponent<MeshRenderer>();
 					if (renderer is { active: true })//TODO: sort front to back
 					{
-						GL.BeginQuery(QueryTarget.SamplesPassed, ids[i]);
-						renderer.Render();
-						GL.EndQuery(QueryTarget.SamplesPassed);
+						using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[i]))
+							renderer.Render();
 					}
 				}
 				Material.BindGlobalProperty("enablePicking", 0f);
@@ -411,7 +397,7 @@ namespace Sharp.Editor.Views
 
 			MainWindow.backendRenderer.Viewport(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
 			MainWindow.backendRenderer.Clip(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
-			GL.ColorMask(true, true, true, true);
+			MainWindow.backendRenderer.SetColorMask(true, true, true, true);
 
 			MainWindow.backendRenderer.ClearColor(0.15f, 0.15f, 0.15f, 1f);
 			MainWindow.backendRenderer.ClearBuffer();
@@ -467,7 +453,7 @@ namespace Sharp.Editor.Views
 			int result;
 			foreach (var i in ..ids.Length)//TODO: move to the end of rendering to minimize stall?
 			{
-				GL.GetQueryObject(ids[i], GetQueryObjectParam.QueryResult, out result);
+				MainWindow.backendRenderer.GetQueryResult(ids[i], out result);
 				if (result is not 0)
 				{
 					index = i + 1;

@@ -268,6 +268,7 @@ namespace Sharp
 		internal readonly IDictionary<Guid, object> _idToObjects = new Dictionary<Guid, object>();
 		internal readonly IDictionary<object, Guid> _objectsToId = new Dictionary<object, Guid>();
 		private IEngineObject rootObj = null;
+		private bool rootAlreadyChecked = false;
 		//Resolves $ref during deserialization
 		public object ResolveReference(object context, string reference)
 		{
@@ -292,13 +293,14 @@ namespace Sharp
 		//Resolves if $id or $ref should be used during serialization
 		public bool IsReferenced(object context, object value)
 		{
-			if (rootObj is null && value is IEngineObject eObj)
+			if (rootAlreadyChecked is false && value is IEngineObject eObj)
 			{
 				rootObj = eObj;
 				return false;
 			}
-			return rootObj is not null ? false : _objectsToId.ContainsKey(value);
-			//return _objectsToId.ContainsKey(value);
+			rootAlreadyChecked = true;
+			//return rootObj is not null && value is IEngineObject ? true : _objectsToId.ContainsKey(value);
+			return false;//rootObj is not null ? false : _objectsToId.ContainsKey(value);
 		}
 		//Resolves $id during deserialization
 		public void AddReference(object context, string reference, object value)
@@ -308,7 +310,7 @@ namespace Sharp
 			//Extension.objectToIdMapping.TryGetValue(value, out var id);
 			Extension.objectToIdMapping.TryAdd(value, anotherId);
 			_idToObjects[anotherId] = value;
-			_objectsToId[value] = anotherId;
+			_objectsToId.TryAdd(value, anotherId);
 		}
 	}
 
@@ -317,7 +319,6 @@ namespace Sharp
 		internal const string refProperty = "$ref";
 		internal const string idProperty = "$id";
 		internal const string valuesProperty = "$values";
-
 
 		public override IList ReadJson(JsonReader reader, Type objectType, IList existingValue, bool hasExistingValue, JsonSerializer serializer)
 		{

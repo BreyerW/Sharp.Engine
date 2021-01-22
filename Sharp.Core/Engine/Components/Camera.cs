@@ -117,7 +117,7 @@ namespace Sharp
 		public Entity pivot;
 		public Vector2 MouseRotation;
 		public Vector3 Movement;
-		public Bitask cullingTags = new(0);
+		public BitMask cullingTags = new(0);
 		public float Speed { get; set; }
 		public float Acceleration { get; set; }
 		public float ZNear { get; set; }

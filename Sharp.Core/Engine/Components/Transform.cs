@@ -99,7 +99,8 @@ namespace Sharp.Engine.Components
 		//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
 		public Transform(Entity p) : base(p)
 		{
-			onTransformChanged += () => Console.WriteLine("transform changed");
+			onTransformChanged += test;
 		}
+		private void test() => Console.WriteLine("transform changed");
 	}
 }

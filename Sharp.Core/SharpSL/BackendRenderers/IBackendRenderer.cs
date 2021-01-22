@@ -32,9 +32,9 @@ namespace SharpSL.BackendRenderers
 		void Draw(int indexStride, int start, int length);
 
 		void Use(int Program);
-
-		void Delete(int Program, int VertexID, int FragmentID);
-
+		void GetQueryResult(int id, out int result);
+		void DeleteBuffers(Target target, Span<int> id);
+		void DeleteBuffer(Target target, int id);
 		void SendMatrix4(int location, ref byte mat);
 
 		//void Send(ref int location,ref int[] i);
@@ -83,5 +83,23 @@ namespace SharpSL.BackendRenderers
 		void FinishCommands();
 
 		byte[] ReadPixels(int x, int y, int width, int height, TextureFormat pxFormat);
+		void SetColorMask(bool r,bool g,bool b,bool a);
+		QueryScope StartQuery(Target target,int id);
+		void EndQuery(Target target);
 	}
+	public readonly ref struct QueryScope
+	{
+		private readonly IBackendRenderer renderer;
+		private readonly Target target;
+		public QueryScope(IBackendRenderer r,Target t)
+		{
+			renderer = r;
+			target = t;
+		}
+		public void Dispose()
+		{
+			renderer.EndQuery(target);
+		}
+	}
+
 }

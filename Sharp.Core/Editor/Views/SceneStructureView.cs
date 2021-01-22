@@ -30,6 +30,16 @@ namespace Sharp.Editor.Views
 		private void Tree_SelectedNodeChanged(Control sender, TreeNode value)
 		{
 			if (value is null || Selection.Asset == value.UserData) return;
+
+			/*
+			 if (value is null)
+			{
+				Manipulators.SelectedGizmoId = Gizmo.Invalid;
+				Manipulators.hoveredGizmoId = Gizmo.Invalid;
+				return;
+			}
+			if (Selection.Asset == value.UserData) return;
+			 */
 			Selection.Asset = value.UserData;
 
 			// var node = sender as TreeNode; if (Selection.Asset == node.Content) tree.UnselectAll();
