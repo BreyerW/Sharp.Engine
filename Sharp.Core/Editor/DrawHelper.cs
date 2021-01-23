@@ -21,8 +21,8 @@ namespace Sharp.Editor
 
 			ref var circleMesh = ref Pipeline.Get<Mesh>().GetAsset("gizmo");
 			FillMaterial(out gizmoMaterial, shader, circleMesh, Manipulators.xColor);
-			var s = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GizmoHighlightPassShader.shader");
-			gizmoMaterial.BindShader(1, s);
+			gizmoMaterial.BindProperty("highlightColor", new Color(0.75f, 0.75f, 0.75f, 0.75f));
+			gizmoMaterial.BindProperty("enableHighlight", 0);
 
 			var gridShader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GridEditorShader.shader");
 
@@ -51,7 +51,21 @@ namespace Sharp.Editor
 		public static void DrawGizmo(in Matrix4x4 rotAndScaleMat)
 		{
 			gizmoMaterial.BindProperty("model", rotAndScaleMat);
-			gizmoMaterial.Draw();
+			if (Manipulators.hoveredGizmoId is >= Gizmo.TranslateX)
+			{
+				if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX)
+					gizmoMaterial.Draw(..(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX - 1));
+
+				gizmoMaterial.BindProperty("enableHighlight", 1);
+				gizmoMaterial.Draw(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX - 1);
+				gizmoMaterial.BindProperty("enableHighlight", 0);
+
+				if (Manipulators.hoveredGizmoId is not Gizmo.ScaleZ)
+					gizmoMaterial.Draw((Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX)..(Gizmo.UniformScale - Gizmo.ViewCubeUpperLeftCornerMinusX - 1));
+
+			}
+			else
+				gizmoMaterial.Draw();
 		}
 	}
 }

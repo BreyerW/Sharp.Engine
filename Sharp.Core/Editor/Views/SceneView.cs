@@ -23,7 +23,6 @@ namespace Sharp.Editor.Views
 		private int cell_size = 32;
 		private int grid_size = 4096;
 		private static Material highlight;
-		private static Material editorHighlight;
 		private static Material viewCubeMat;
 		private static int[] ids = Array.Empty<int>();
 		//public static Scene physScene;
@@ -82,19 +81,17 @@ namespace Sharp.Editor.Views
 			viewCubeMat = new Material();
 
 			viewCubeMat.BindShader(0, shader);
-			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ViewCubeHighlightPassShader.shader");
-			viewCubeMat.BindShader(1, shader);
-			viewCubeMat.BindProperty("colorId", Color.Transparent);
 			viewCubeMat.BindProperty("CubeTex", cubeTexture);
 			viewCubeMat.BindProperty("mask", mask);
 			viewCubeMat.BindProperty("edgeColor", new Color(150, 150, 150, 255));
+			viewCubeMat.BindProperty("highlightColor", new Color(0.75f, 0.75f, 0.75f, 0.75f));
+			viewCubeMat.BindProperty("enableHighlight", 0);
 			viewCubeMat.BindProperty("faceColor", new Color(100, 100, 100, 255));//192 as light alternative?
 			viewCubeMat.BindProperty("xColor", new Color(255, 75, 75, 255));//Manipulators.xColor
 			viewCubeMat.BindProperty("yColor", new Color(100, 255, 100, 255));//Manipulators.yColor
 			viewCubeMat.BindProperty("zColor", new Color(80, 150, 255, 255));//Manipulators.zColor
 			viewCubeMat.BindProperty("mesh", viewCubeMesh);
 			HighlightPassComponent.viewCubeMat = viewCubeMat;
-			//SelectionPassComponent.viewCubeMat = viewCubeMat;
 			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightShader.shader");
 			ref var screenMesh = ref Pipeline.Get<Mesh>().GetAsset("screen_space_square");
 
@@ -108,16 +105,8 @@ namespace Sharp.Editor.Views
 			ref var sceneDepthTexture = ref Pipeline.Get<Texture>().GetAsset("depthTarget");
 			highlight.BindProperty("SceneDepthTex", sceneDepthTexture);
 			highlight.BindProperty("outline_color", Manipulators.selectedColor);
-			highlight.BindProperty("overlay_color", new Color(255, 255, 255, 255));
 			highlight.BindProperty("mesh", screenMesh);
 
-			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\EditorHighlightShader.shader");
-
-			editorHighlight = new Material();
-			editorHighlight.BindShader(0, shader);
-			editorHighlight.BindProperty("MyTexture", selectionTexture);
-			editorHighlight.BindProperty("outline_color", new Color(255, 255, 255, 255));//Manipulators.selectedColor
-			editorHighlight.BindProperty("mesh", screenMesh);
 		}
 		public SceneView(uint attachToWindow) : base(attachToWindow)
 		{
@@ -439,15 +428,27 @@ namespace Sharp.Editor.Views
 			{
 				//foreach (var selected in SceneStructureView.tree.SelectedChildren)
 				{
+
 					Manipulators.DrawCombinedGizmos(e);
 				}
 			}
 
-			viewCubeMat.Draw();
-			GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.OneMinusSrcAlpha);
-			editorHighlight.Draw();
-			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-			//GL.Enable(EnableCap.Blend);
+			if (Manipulators.hoveredGizmoId is < Gizmo.TranslateX and not Gizmo.Invalid)
+			{
+
+				if (Manipulators.hoveredGizmoId is not Gizmo.Invalid + 1)
+					viewCubeMat.Draw(..(int)(Manipulators.hoveredGizmoId - 1));
+
+				viewCubeMat.BindProperty("enableHighlight", 1);
+				viewCubeMat.Draw((int)Manipulators.hoveredGizmoId - 1);
+				viewCubeMat.BindProperty("enableHighlight", 0);
+
+				if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX - 1)
+					viewCubeMat.Draw((int)Manipulators.hoveredGizmoId..(int)(Gizmo.TranslateX - 1));
+
+			}
+			else
+				viewCubeMat.Draw();
 
 			var index = -1;
 			int result;

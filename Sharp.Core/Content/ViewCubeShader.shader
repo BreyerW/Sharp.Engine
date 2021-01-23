@@ -23,14 +23,17 @@
 		uniform vec4 zColor;
 		uniform vec4 edgeColor;
 		uniform vec4 faceColor;
+		uniform vec4 highlightColor;
+		uniform float enableHighlight;
 		uniform float isHovered;
             in vec2 v_texcoord;
             out vec4 frag_color;
             void main(void)
             {
-			float a =0.33f+0.67f*isHovered;
-		 vec4 maskTex=texture(mask,v_texcoord.xy);
-			vec4 cubeColor=mix(mix(mix(mix(edgeColor,faceColor, texture(CubeTex,v_texcoord.xy).r), xColor,maskTex.x),yColor,maskTex.y),zColor,maskTex.z);
-			  frag_color =vec4(cubeColor.rgb,1);//float(any(bvec2(enablePicking,isHovered)))
+				float a =0.33f+0.67f*isHovered;
+				vec4 maskTex=texture(mask,v_texcoord.xy);
+				vec4 cubeColor=mix(mix(mix(mix(edgeColor,faceColor, texture(CubeTex,v_texcoord.xy).r), xColor,maskTex.x),yColor,maskTex.y),zColor,maskTex.z);
+				vec4 highlight = highlightColor * enableHighlight;
+				frag_color =highlight+ vec4(cubeColor.rgb,1)*(1-highlight.a);//float(any(bvec2(enablePicking,isHovered)))
 
 			  }

@@ -8,6 +8,8 @@ uniform mat4 camView;
 uniform mat4 camProjection;
 uniform mat4 model;
 uniform vec2 viewPort;
+uniform vec4 highlightColor;
+uniform float enableHighlight;
 //uniform vec3 axis;
 
             void main(void)
@@ -33,8 +35,12 @@ uniform vec2 viewPort;
 			in vec4 v_color;
             out vec4 frag_color;
 			uniform vec4 color;
+			uniform vec4 highlightColor;
+			uniform float enableHighlight;
 
             void main(void)
             {
-	         frag_color =v_color;
+				vec4 highlight = highlightColor * enableHighlight;
+
+	         frag_color = highlight + vec4(v_color.rgb, 1) * (1 - highlight.a);
             }

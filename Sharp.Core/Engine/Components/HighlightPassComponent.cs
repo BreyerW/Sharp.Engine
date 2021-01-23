@@ -14,15 +14,13 @@ namespace Sharp.Engine.Components
 {
 	public class HighlightPassComponent : CommandBufferComponent
 	{
-		private int readPixels = 2;
-		private (int x, int y) mouseClick;
 		internal static Material viewCubeMat;
 		private static Material selectedMaterial;
 		private static Material hoveredMaterial;
 		public HighlightPassComponent(Entity parent) : base(parent)
 		{
 			ScreenSpace = true;
-			CreateNewTemporaryTexture("highlightScene", TextureRole.Color0, 0, 0, TextureFormat.RGB);//TODO: convert this to GL_R32UI or GL_RB32UI, more than 64 bit is unlikely to be necessary, also optimize size to 1 pixel and rect when multiselecting
+			CreateNewTemporaryTexture("highlightScene", TextureRole.Color0, 0, 0, TextureFormat.R);
 			CreateNewTemporaryTexture("highlightDepth", TextureRole.Depth, 0, 0, TextureFormat.DepthFloat);
 
 
@@ -74,7 +72,7 @@ namespace Sharp.Engine.Components
 			{
 				if (hovered.Count is 0 && hoveredWithTransparency.Count is 0)
 				{
-					GL.Enable(EnableCap.DepthTest);
+					//GL.Enable(EnableCap.DepthTest);
 					Material.BindGlobalProperty("enablePicking", 0f);
 					return;
 				}
@@ -85,51 +83,9 @@ namespace Sharp.Engine.Components
 				swapMaterial = null;
 				Material.BindGlobalProperty("colorId", new Color(0, 255, 0, 255));
 				Draw(hoveredWithTransparency);
+				GL.Enable(EnableCap.DepthTest);
 			}
-			else if (Manipulators.hoveredGizmoId < Gizmo.TranslateX)
-			{
-				///
-				///This code is needed in order to remove highlight of invisible sides of cube
-				///
-
-				MainWindow.backendRenderer.SetColorMask(false, false, false, false);
-				if (Manipulators.hoveredGizmoId is not Gizmo.Invalid + 1)
-					viewCubeMat.Draw(..(int)(Manipulators.hoveredGizmoId - 1), pass: 1);
-				if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX - 1)
-					viewCubeMat.Draw((int)Manipulators.hoveredGizmoId..(int)(Gizmo.TranslateX - 1), pass: 1);
-
-				MainWindow.backendRenderer.SetColorMask(true, true, true, true);
-				viewCubeMat.Draw((int)Manipulators.hoveredGizmoId - 1, 1);
-			}
-			else
-			{
-				//GL.Disable(EnableCap.DepthTest);
-				GL.DepthFunc(DepthFunction.Always);
-				var editorHovered = new Color(0, 0, 255, 255);
-				if (SceneStructureView.tree.SelectedNode is not null)
-				{
-					//MainWindow.backendRenderer.WriteDepth(true);
-					//MainWindow.backendRenderer.ClearDepth();
-					//foreach (var selected in SceneStructureView.tree.SelectedNode)
-					if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
-					{
-						/*GL.ColorMask(false, false, false, false);
-						if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX)
-							DrawHelper.gizmoMaterial.Draw(..(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX + 1), pass: 1);
-						if (Manipulators.hoveredGizmoId is not Gizmo.ScaleZ)
-							DrawHelper.gizmoMaterial.Draw((Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX)..(Gizmo.ScaleZ - Gizmo.ViewCubeUpperLeftCornerMinusX - 1), pass: 1);
-
-						GL.ColorMask(true, true, true, true);*/
-						DrawHelper.gizmoMaterial.Draw(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX - 1, 1);
-
-					}
-				}
-				GL.DepthFunc(DepthFunction.Less);
-			}
-			GL.Enable(EnableCap.DepthTest);
-			//if (readPixels is not -1)
 			Material.BindGlobalProperty("enablePicking", 0f);
-			//	readPixels--;
 
 		}
 	}
