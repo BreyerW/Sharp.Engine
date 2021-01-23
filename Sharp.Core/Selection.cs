@@ -144,13 +144,12 @@ namespace Sharp
 				return null;
 			reader.Read();
 			var id = reader.ReadAsString();
-
-			if (serializer.ReferenceResolver.ResolveReference(serializer, id) is not IDictionary obj)
+			if (existingValue is null)
 			{
-				obj = serializer.ContractResolver.ResolveContract(objectType).DefaultCreator() as IDictionary;
-				serializer.ReferenceResolver.AddReference(serializer, id, obj);
+				existingValue = serializer.ContractResolver.ResolveContract(objectType).DefaultCreator() as IDictionary;
+				serializer.ReferenceResolver.AddReference(serializer, id, existingValue);
 			}
-			obj.Clear();
+			existingValue.Clear();
 			ReadOnlySpan<char> name = "";
 			int dotPos = -1;
 			if (reader.TokenType == JsonToken.String)
@@ -163,7 +162,10 @@ namespace Sharp
 			{
 				if (reader.Path.AsSpan().SequenceEqual(name)) break;
 				if (reader.TokenType == JsonToken.EndArray /*&& reader.Value as string is "pairs"*/)
+				{
+					reader.Read();
 					break;
+				}
 				while (reader.Value as string is not "key") reader.Read();
 				reader.Read();
 				var generics = objectType.GetGenericArguments();
@@ -171,10 +173,10 @@ namespace Sharp
 				while (reader.Value as string is not "value") reader.Read();
 				reader.Read();
 				var value = serializer.Deserialize(reader, generics[1]);
-				obj.Add(key, value);
+				existingValue.Add(key, value);
 				reader.Read();
 			}
-			return obj;
+			return existingValue;
 		}
 
 		public override void WriteJson(JsonWriter writer, IDictionary value, JsonSerializer serializer)
@@ -197,70 +199,7 @@ namespace Sharp
 			writer.WriteEndObject();
 		}
 	}
-	public class ReferenceConverter : JsonConverter
-	{
-		public override bool CanWrite => false;
-		public override bool CanConvert(Type objectType)
-		{
-			return objectType != typeof(string) && !objectType.IsValueType && !typeof(IList).IsAssignableFrom(objectType) && !typeof(Delegate).IsAssignableFrom(objectType) && !typeof(MulticastDelegate).IsAssignableFrom(objectType);
-		}
-		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-		{
-			if (reader.TokenType is JsonToken.Null)
-				return null;
-			reader.Read();
-			var id = reader.ReadAsString();
-			var obj = serializer.ReferenceResolver.ResolveReference(serializer, id);
 
-			if (obj is null)
-			{
-				obj = serializer.ContractResolver.ResolveContract(objectType).DefaultCreator();
-				serializer.ReferenceResolver.AddReference(serializer, id, obj);
-			}
-			ReadOnlySpan<char> name = "";
-			int dotPos = -1;
-			if (reader.TokenType == JsonToken.String)
-			{
-				dotPos = reader.Path.LastIndexOf('.');
-				if (dotPos > -1)
-					name = reader.Path.AsSpan()[..dotPos];
-			}
-			while (reader.Read())
-			{
-				if (reader.Path.AsSpan().SequenceEqual(name)) break;
-				if (reader.TokenType is JsonToken.PropertyName)
-				{
-					var memName = reader.Value as string;
-					var member = objectType.GetMember(memName, MemberTypes.Property | MemberTypes.Field, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
-					if (member.Length is 0) continue;
-					reader.Read();
-
-					if (member[0] is PropertyInfo p)
-					{
-						if (p.CanWrite is false)
-						{
-							var baseT = objectType.BaseType;
-							while (baseT is not null && p.CanWrite is false)
-							{
-								p = baseT.GetProperty(memName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
-								baseT = baseT.BaseType;
-							}
-						}
-						p.SetValue(obj, serializer.Deserialize(reader, p.PropertyType));
-					}
-					else if (member[0] is FieldInfo f)
-					{
-						f.SetValue(obj, serializer.Deserialize(reader, f.FieldType));
-					}
-				}
-			}
-			return obj;
-		}
-		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-		{
-			throw new NotImplementedException();
-		}
-	}
 	//TODO: use IEngineObject for engine references and use listreferenceconverter and DelegateConverter for list and delegates but other references wont be supported ?
 	//TODO: removing component that doesnt exist after selection changed, smoothing out scenestructure rebuild after redo/undo, fix bug with ispropertydirty, add transform component
 	public class IdReferenceResolver : IReferenceResolver//TODO: if nothing else works try custom converter with CanConvert=>value.IsReferenceType;
@@ -299,8 +238,7 @@ namespace Sharp
 				return false;
 			}
 			rootAlreadyChecked = true;
-			//return rootObj is not null && value is IEngineObject ? true : _objectsToId.ContainsKey(value);
-			return false;//rootObj is not null ? false : _objectsToId.ContainsKey(value);
+			return rootObj is not null && value is Component or Entity ? true : _objectsToId.ContainsKey(value);
 		}
 		//Resolves $id during deserialization
 		public void AddReference(object context, string reference, object value)

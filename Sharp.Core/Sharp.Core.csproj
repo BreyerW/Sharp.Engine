@@ -124,7 +124,6 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0-rc.1.20451.14" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.2.2" />
     <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.0.0-preview2" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="OpenTK" Version="2.0.0" />
     <PackageReference Include="Puresharp" Version="0.0.0" />
     <PackageReference Include="RangeForeach" Version="0.0.1" />
@@ -143,6 +142,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Newtonsoft.Json-master\Src\Newtonsoft.Json\Newtonsoft.Json.csproj" />
     <ProjectReference Include="..\Sharp.FossilDelta\Sharp.FossilDelta.csproj" />
     <ProjectReference Include="..\Sharp.SQUID\Sharp.SQUID.csproj" />
     <ProjectReference Include="..\Typography.MsdfGen.Core\Typography.MsdfGen.Core.csproj" />

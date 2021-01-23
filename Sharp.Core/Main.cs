@@ -20,14 +20,15 @@ namespace Sharp
 		internal static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
 		{
 			ContractResolver = new UninitializedResolver() { IgnoreSerializableAttribute = false },
-			Converters = new List<JsonConverter>() { new DictionaryConverter(), /*new EntityConverter(),*/ new DelegateConverter(), new ListReferenceConverter(),/*new IAssetConverter(), new IEngineConverter(),*/new PtrConverter(), new ReferenceConverter() },
+			Converters = new List<JsonConverter>() { new DictionaryConverter(),/* new EntityConverter(),*/  new DelegateConverter(), new ListReferenceConverter(),/* new IAssetConverter(), new IEngineConverter(), */ new PtrConverter() },
 			PreserveReferencesHandling = PreserveReferencesHandling.All,
 			ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
 			TypeNameHandling = TypeNameHandling.All,
-			ObjectCreationHandling = ObjectCreationHandling.Replace,
+			//ObjectCreationHandling = ObjectCreationHandling.Replace,
+			ObjectCreationHandling = ObjectCreationHandling.Reuse,
 			ReferenceResolverProvider = () => new IdReferenceResolver(),
 			NullValueHandling = NullValueHandling.Ignore,
-			//DefaultValueHandling = DefaultValueHandling.Populate
+			DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
 		};
 		public static void Main(string[] args)
 		{
@@ -43,7 +44,7 @@ namespace Sharp
 
 			CreatePrimitiveMesh.numVertices = 33;
 			var gizmo = GenerateArrows(rotationX, rotationY, rotationZ);
-			GeneratePlanes(ref gizmo,rotationX, rotationY, rotationZ);
+			GeneratePlanes(ref gizmo, rotationX, rotationY, rotationZ);
 			GenerateCircles(ref gizmo, rotationX, rotationY, rotationZ);
 			GenerateCubes(ref gizmo, rotationX, rotationY, rotationZ);
 
@@ -112,7 +113,7 @@ namespace Sharp
 			arrow.AddSubMesh(ref arrowZ);
 			return arrow;
 		}
-		private static void GenerateCubes(ref Mesh gizmo,in Matrix4x4 rotationX, in Matrix4x4 rotationY, in Matrix4x4 rotationZ)
+		private static void GenerateCubes(ref Mesh gizmo, in Matrix4x4 rotationX, in Matrix4x4 rotationY, in Matrix4x4 rotationZ)
 		{
 			var scaleCube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(4) * Matrix4x4.CreateTranslation(20, -2, -2) * rotationX, vertexColor: Manipulators.xColor);
 			var scaleCubeY = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(4) * Matrix4x4.CreateTranslation(20, -2, -2) * rotationY, vertexColor: Manipulators.yColor);
@@ -125,11 +126,11 @@ namespace Sharp
 		{
 			var fixRotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, NumericsExtensions.Deg2Rad * 180);
 			var gizmo_square = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationZ, vertexColor: Manipulators.xColor);
-			
+
 			var gizmo_squareY = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationX, vertexColor: Manipulators.yColor);
 
 			var gizmo_squareZ = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationY * fixRotation, vertexColor: Manipulators.zColor);
-			
+
 			gizmo.AddSubMesh(ref gizmo_squareZ);
 			gizmo.AddSubMesh(ref gizmo_square);
 			gizmo.AddSubMesh(ref gizmo_squareY);

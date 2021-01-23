@@ -22,6 +22,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Typography.OpenFont", "Typo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Text.Json", "System.Text.Json\System.Text.Json.csproj", "{81AEA99F-4103-4F8B-A446-5F8394D627A0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Newtonsoft.Json", "Newtonsoft.Json-master\Src\Newtonsoft.Json\Newtonsoft.Json.csproj", "{73CE0579-16DF-42A5-86A4-8144B6A45483}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -143,6 +145,24 @@ Global
 		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Release|x64.Build.0 = Release|Any CPU
 		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Release|x86.ActiveCfg = Release|Any CPU
 		{81AEA99F-4103-4F8B-A446-5F8394D627A0}.Release|x86.Build.0 = Release|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Debug|x64.Build.0 = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Debug|x86.Build.0 = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.DebugFormat|Any CPU.ActiveCfg = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.DebugFormat|Any CPU.Build.0 = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.DebugFormat|x64.ActiveCfg = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.DebugFormat|x64.Build.0 = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.DebugFormat|x86.ActiveCfg = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.DebugFormat|x86.Build.0 = Debug|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Release|x64.ActiveCfg = Release|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Release|x64.Build.0 = Release|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Release|x86.ActiveCfg = Release|Any CPU
+		{73CE0579-16DF-42A5-86A4-8144B6A45483}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
