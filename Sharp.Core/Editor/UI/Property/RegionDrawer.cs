@@ -57,7 +57,7 @@ namespace Sharp.Editor.UI.Property
 			polyfill2dMat = new Material();
 			polyfill2dMat.BindShader(0, (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\Polyfill2dEditorShader.shader"));
 			polyfill2dMat.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("dynamic_polyfill"));
-
+			
 			line2dMat = new Material();
 			line2dMat.BindShader(0,(Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\LineShader.shader"));
 			line2dMat.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("dynamic_curve"));
@@ -172,6 +172,7 @@ namespace Sharp.Editor.UI.Property
 			{
 				this.lines[j] = lines[j].ToArray();
 			}
+			//Console.WriteLine("drawing");
 		}
 
 		internal bool LineIntersection(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, ref Vector2 result)

@@ -474,7 +474,7 @@ namespace Newtonsoft.Json.Serialization
 						bool createdFromNonDefaultCreator = false;
 						JsonObjectContract objectContract = (JsonObjectContract)contract;
 						object targetObject;
-						existingValue =(id is not null? Serializer?.ReferenceResolver?.ResolveReference(new object(), id) : null) ?? existingValue;
+						existingValue = (id is not null ? Serializer?.ReferenceResolver?.ResolveReference(new object(), id) : null) ?? existingValue;
 
 						// check that if type name handling is being used that the existing value is compatible with the specified type
 						if (existingValue != null && (resolvedObjectType == objectType || resolvedObjectType.IsAssignableFrom(existingValue.GetType())))
@@ -525,7 +525,7 @@ namespace Newtonsoft.Json.Serialization
 						existingValue = (id is not null ? Serializer?.ReferenceResolver?.ResolveReference(new object(), id) : null) as IDictionary ?? existingValue;
 						if (existingValue == null)
 						{
-							IDictionary dictionary =  CreateNewDictionary(reader, dictionaryContract, out bool createdFromNonDefaultCreator);
+							IDictionary dictionary = CreateNewDictionary(reader, dictionaryContract, out bool createdFromNonDefaultCreator);
 
 							if (createdFromNonDefaultCreator)
 							{
@@ -846,7 +846,7 @@ namespace Newtonsoft.Json.Serialization
 			MiscellaneousUtils.Assert(contract != null);
 
 			JsonArrayContract arrayContract = EnsureArrayContract(reader, objectType, contract);
-			existingValue = (id is not null ? Serializer?.ReferenceResolver?.ResolveReference(new object(), id) : null) as IList?? existingValue;
+			existingValue = (id is not null ? Serializer?.ReferenceResolver?.ResolveReference(new object(), id) : null) as IList ?? existingValue;
 
 			if (existingValue == null)
 			{

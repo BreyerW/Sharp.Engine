@@ -25,6 +25,7 @@ namespace Sharp.Editor.Views
 		private static Material highlight;
 		private static Material viewCubeMat;
 		private static int[] ids = Array.Empty<int>();
+		internal static bool leftCtrlPressed = false;
 		//public static Scene physScene;
 		//public static Physics physEngine;
 
@@ -130,6 +131,12 @@ namespace Sharp.Editor.Views
 		private void SceneView_KeyUp(Control sender, KeyEventArgs args)
 		{
 			//Console.WriteLine("keyup");
+			if (args.Key == Keys.LEFTCONTROL)
+			{
+				if (Manipulators.selectedGizmoId is Gizmo.Invalid)
+					Manipulators.useUniformScale = false;
+				leftCtrlPressed = false;
+			}
 		}
 
 		private void UI_MouseUp(Control sender, MouseEventArgs args)
@@ -143,7 +150,7 @@ namespace Sharp.Editor.Views
 		{
 			if (mouseLocked)
 			{
-				if (Manipulators.SelectedGizmoId is Gizmo.Invalid)
+				if (Manipulators.selectedGizmoId is Gizmo.Invalid)
 				{
 					Camera.main.Rotate(Squid.UI.MouseDelta.x, Squid.UI.MouseDelta.y, 0.3f);//maybe divide delta by fov?
 				}
@@ -160,11 +167,11 @@ namespace Sharp.Editor.Views
 						//foreach (var selected in SceneStructureView.tree.SelectedChildren)
 						if (SceneStructureView.tree.SelectedNode?.UserData is Entity entity)
 						{
-							if (Manipulators.SelectedGizmoId < Gizmo.RotateX)
+							if (Manipulators.selectedGizmoId < Gizmo.RotateX)
 							{
 								Manipulators.HandleTranslation(entity, ref ray);
 							}
-							else if (Manipulators.SelectedGizmoId is < Gizmo.ScaleX)
+							else if (Manipulators.selectedGizmoId is < Gizmo.ScaleX)
 							{
 								Manipulators.HandleRotation(entity, ref ray);
 							}
@@ -202,7 +209,8 @@ namespace Sharp.Editor.Views
 				Camera.main.moved = false;
 				Camera.main.SetModelviewMatrix();
 			}
-
+			if (args.Key == Keys.LEFTCONTROL)
+				leftCtrlPressed = true;
 			if (args.Key == Keys.Q)
 				Camera.main.Move(Vector3.UnitY, 1f, 0f);
 			if (args.Key == Keys.E)
@@ -219,10 +227,10 @@ namespace Sharp.Editor.Views
 
 		private void Panel_MouseUp(Control sender, MouseEventArgs args)
 		{
-			if (Manipulators.SelectedGizmoId is not Gizmo.Invalid and < Gizmo.TranslateX)
+			if (Manipulators.selectedGizmoId is not Gizmo.Invalid and < Gizmo.TranslateX)
 				Manipulators.HandleViewCube(SceneStructureView.tree.SelectedNode?.UserData as Entity);
 			mouseLocked = false;
-			Manipulators.SelectedGizmoId = Gizmo.Invalid;
+			Manipulators.selectedGizmoId = Gizmo.Invalid;
 		}
 
 		private void Panel_MouseDown(Control sender, MouseEventArgs args)
@@ -230,7 +238,7 @@ namespace Sharp.Editor.Views
 			if (args.Button is 1)
 			{
 				mouseLocked = true;
-				Manipulators.SelectedGizmoId = Gizmo.Invalid;
+				Manipulators.selectedGizmoId = Gizmo.Invalid;
 			}
 			else if (args.Button is 0)
 			{
@@ -428,7 +436,6 @@ namespace Sharp.Editor.Views
 			{
 				//foreach (var selected in SceneStructureView.tree.SelectedChildren)
 				{
-
 					Manipulators.DrawCombinedGizmos(e);
 				}
 			}
@@ -467,9 +474,9 @@ namespace Sharp.Editor.Views
 				{
 					if (index < (int)Gizmo.UniformScale)
 					{
-						Manipulators.SelectedGizmoId = (Gizmo)index;
-						//Manipulators.hoveredGizmoId = Gizmo.Invalid;
-						//Selection.Asset = viewCubeMat;
+						if (leftCtrlPressed && index is > (int)Gizmo.RotateZ)
+							Manipulators.useUniformScale = true;
+						Manipulators.selectedGizmoId = (Gizmo)index;
 					}
 					else
 					{
@@ -495,6 +502,8 @@ namespace Sharp.Editor.Views
 				}
 				else
 				{
+					if (leftCtrlPressed && index is > (int)Gizmo.RotateZ)
+						Manipulators.useUniformScale = true;
 					Manipulators.hoveredGizmoId = (Gizmo)index;
 					Selection.HoveredObject = null;
 				}

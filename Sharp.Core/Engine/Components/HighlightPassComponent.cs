@@ -47,7 +47,7 @@ namespace Sharp.Engine.Components
 			List<Entity> selectedWithTransparency = new();
 			List<Entity> hoveredWithTransparency = new();
 
-			if (Manipulators.SelectedGizmoId is Gizmo.Invalid && Selection.HoveredObject is Entity e)
+			if (Manipulators.selectedGizmoId is Gizmo.Invalid && Selection.HoveredObject is Entity e)
 			{
 				if (e.GetComponent<MeshRenderer>().material.IsMainPassTransparent)
 					hoveredWithTransparency.Add(e);

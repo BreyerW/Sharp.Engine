@@ -10,12 +10,11 @@ using System.Runtime.InteropServices;
 using Font = SharpAsset.Font;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.Shapes;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Advanced;
-using SixLabors.Shapes;
-using System.IO;
-using BepuUtilities;
+using SixLabors.ImageSharp.Drawing.Processing;
 
 namespace SharpSL.BackendRenderers
 {
@@ -33,12 +32,12 @@ namespace SharpSL.BackendRenderers
 		{
 			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\SDFShader.shader");
 			sdfMaterial = new Material();
-			sdfMaterial.BindShader(0,shader);
+			sdfMaterial.BindShader(0, shader);
 			sdfMaterial.BindProperty("color", fontColor);
 			sdfMaterial.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("square"));
 
 			squareMaterial = new Material();
-			squareMaterial.BindShader(0,(Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ColoredEditorShader.shader"));
+			squareMaterial.BindShader(0, (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ColoredEditorShader.shader"));
 			squareMaterial.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("square"));
 			squareMaterial.BindProperty("len", Vector2.One);
 
@@ -180,10 +179,8 @@ namespace SharpSL.BackendRenderers
 			var builder = new GlyphPathBuilder(face);
 			advance = face.GetHAdvanceWidthFromGlyphIndex(glyph.GlyphIndex);
 			bearingX = face.GetHFrontSideBearingFromGlyphIndex(glyph.GlyphIndex);*/
-			RendererOptions style = new RendererOptions(face, 72);
 			//TextMeasurer.TryMeasureCharacterBounds(MemoryMarshal.CreateReadOnlySpan(ref c, 1), style, out var bounds);
 			var glyph = face.GetGlyph(c);
-			var glyphs = TextBuilder.GenerateGlyphs("" + c, style);
 			var origin = Vector2.Zero;
 			var nextPowerOfTwo = (int)Math.Ceiling(Math.Pow(2, (int)Math.Log(18, 2) + 1));
 			if (c != ' ')
@@ -231,15 +228,16 @@ namespace SharpSL.BackendRenderers
 				{
 					allowed = invalid != c;
 				}
-				using Image<Alpha8> img = new Image<Alpha8>(Configuration.Default, nextPowerOfTwo, nextPowerOfTwo, new Alpha8(0));
-				img.Mutate(i => i.Fill(new GraphicsOptions(true), SixLabors.ImageSharp.Color.Black, glyphs));
+				using Image<A8> img = new Image<A8>(Configuration.Default, nextPowerOfTwo, nextPowerOfTwo, new A8(0));
+				img.Mutate(i => i.DrawText("" + c, face, SixLabors.ImageSharp.Color.White, new PointF(0f, -3f)));
+				img.TryGetSinglePixelSpan(out var span);
 				tex = new Texture()
 				{
 					FullPath = c + "_" + f.Name.ToString() + ".generated",
 					TBO = -1,
 					FBO = -1,
 					format = TextureFormat.A,
-					bitmap = MemoryMarshal.AsBytes(img.GetPixelSpan()).ToArray(),
+					bitmap = MemoryMarshal.AsBytes(span).ToArray(),
 					width = img.Width,
 					height = img.Height
 				};
@@ -300,7 +298,7 @@ namespace SharpSL.BackendRenderers
 			return name is "default" ? 0 : FontPipeline.nameToKey.IndexOf(name);
 		}
 
-		public Point GetTextSize(string text, int font, float fontSize, int position = -1)
+		public Squid.Point GetTextSize(string text, int font, float fontSize, int position = -1)
 		{
 			ref var f = ref Pipeline.Get<Font>().GetAsset(font);
 			var v = Vector2.Zero;
@@ -333,7 +331,7 @@ namespace SharpSL.BackendRenderers
 				if (xoffset > v.X) v.X = xoffset;
 				i++;
 			}
-			return new Point((int)v.X, (int)v.Y);
+			return new Squid.Point((int)v.X, (int)v.Y);
 		}
 
 		public int GetTexture(string name)
@@ -342,10 +340,10 @@ namespace SharpSL.BackendRenderers
 			return TexturePipeline.nameToKey.IndexOf(System.IO.Path.GetFileNameWithoutExtension(name));
 		}
 
-		public Point GetTextureSize(int texture)
+		public Squid.Point GetTextureSize(int texture)
 		{
 			ref var texture2d = ref Pipeline.Get<Texture>().GetAsset(texture);
-			return new Point(texture2d.width, texture2d.height);
+			return new Squid.Point(texture2d.width, texture2d.height);
 		}
 
 		public void Scissor(int x, int y, int width, int height)

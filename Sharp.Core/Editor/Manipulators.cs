@@ -73,12 +73,7 @@ namespace Sharp.Editor
 		public static readonly Color zColor = new Color(0xFFAA0000);
 		public static bool preserveInsignificantCameraAngleWithViewCube = false;
 		internal static Material discMaterial;
-		private static Gizmo selectedGizmoId = Gizmo.Invalid;
-		public static Gizmo SelectedGizmoId
-		{
-			get => selectedGizmoId;
-			set=>selectedGizmoId = value;
-		}
+		public static Gizmo selectedGizmoId = Gizmo.Invalid;
 		internal static Gizmo hoveredGizmoId = Gizmo.Invalid;
 		internal static float? rotAngleOrigin;
 		internal static float angle;
@@ -93,6 +88,7 @@ namespace Sharp.Editor
 		internal static Vector3 translationPlaneOrigin;
 		internal static Matrix4x4 startMat;
 		internal static Matrix4x4 mModel;
+		internal static bool useUniformScale = false;
 		//
 
 		static Manipulators()
@@ -216,15 +212,16 @@ namespace Sharp.Editor
 			startMat = default;
 			transformOrigin = default;
 			transformationPlane = default;
+			useUniformScale = false; 
 		}
 
 		private static Vector3 GetAxis()
 		{
-			if (SelectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateXY or Gizmo.RotateX or Gizmo.ScaleX)
+			if (selectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateXY or Gizmo.RotateX or Gizmo.ScaleX)
 			{
 				return Vector3.UnitX;
 			}
-			else if (SelectedGizmoId is Gizmo.TranslateY or Gizmo.TranslateYZ or Gizmo.RotateY or Gizmo.ScaleY)
+			else if (selectedGizmoId is Gizmo.TranslateY or Gizmo.TranslateYZ or Gizmo.RotateY or Gizmo.ScaleY)
 			{
 				return Vector3.UnitY;
 			}
@@ -255,9 +252,9 @@ namespace Sharp.Editor
 				Matrix4x4.Decompose(entity.transform.ModelMatrix, out var scale, out var rot, out var trans);
 				// 1 axis constraint
 				mModel.DecomposeDirections(out var right, out var up, out var forward);
-				if (SelectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateY or Gizmo.TranslateZ)
+				if (selectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateY or Gizmo.TranslateZ)
 				{
-					var direction = SelectedGizmoId switch
+					var direction = selectedGizmoId switch
 					{
 						Gizmo.TranslateX => right,
 						Gizmo.TranslateY => up,
@@ -309,7 +306,7 @@ namespace Sharp.Editor
 					Vector3 orthoVector = Vector3.Cross(movePlaneNormal[i], cameraToModelNormalized);
 					movePlaneNormal[i] = Vector3.Cross(movePlaneNormal[i], orthoVector).Normalize();
 				}
-				var index = SelectedGizmoId switch
+				var index = selectedGizmoId switch
 				{
 					Gizmo.TranslateX => 1,
 					Gizmo.TranslateY => 0,//TODO: choose 0 or 2 based on camera view?
@@ -399,12 +396,12 @@ namespace Sharp.Editor
 				Vector3[] movePlanNormal = { right,up,forward,
 			   -Camera.main.Parent.transform.Forward/*free movement*/
 				};
-				var index = SelectedGizmoId switch
+				var index = selectedGizmoId switch
 				{
 					Gizmo.RotateX => 0,
 					Gizmo.RotateY => 1,//TODO: choose 0 or 2 based on camera view?
 					Gizmo.RotateZ => 2,
-					_ => throw new NotSupportedException($"Rotate doesnt support {SelectedGizmoId}")
+					_ => throw new NotSupportedException($"Rotate doesnt support {selectedGizmoId}")
 				};
 				// pickup plan
 				var plane = BuildPlane(entity.transform.Position, movePlanNormal[index]);
@@ -419,7 +416,7 @@ namespace Sharp.Editor
 		}
 		public static void HandleViewCube(Entity entity)//null means orbit camera around camera focus point rather than selected object
 		{
-			var rotateVector = SelectedGizmoId switch
+			var rotateVector = selectedGizmoId switch
 			{
 				Gizmo.ViewCubeX => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, 90, 0),
 				Gizmo.ViewCubeMinusX => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, -90, 0),
@@ -494,7 +491,7 @@ namespace Sharp.Editor
 				// 1 axis constraint
 				Matrix4x4.Decompose(entity.transform.ModelMatrix, out var scale, out var rot, out var trans);
 
-				var direction = SelectedGizmoId switch
+				var direction = selectedGizmoId switch
 				{
 					Gizmo.ScaleX => entity.transform.Right,
 					Gizmo.ScaleY => entity.transform.Up,
@@ -532,7 +529,7 @@ namespace Sharp.Editor
 				float ratio = Vector3.Dot(axisValue, baseVector + delta) / Vector3.Dot(axisValue, baseVector);
 				//if (float.IsNaN(ratio) || float.IsInfinity(ratio)) ratio = float.MaxValue;
 				var newScale = Math.Clamp(MathF.Max(ratio, 0.001f), float.MinValue, float.MaxValue);
-				var vScale = SelectedGizmoId switch
+				var vScale = useUniformScale ? new Vector3(newScale, newScale, newScale) : selectedGizmoId switch
 				{
 					Gizmo.ScaleX => new Vector3(newScale, 1, 1),
 					Gizmo.ScaleY => new Vector3(1, newScale, 1),
@@ -543,6 +540,7 @@ namespace Sharp.Editor
 				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(vScale);
 				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
 				Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
+
 				entity.transform.Scale = vScale;//new Vector3(float.IsNaN(newScale.X) || float.IsInfinity(newScale.X) ? 1 : newScale.X, float.IsNaN(newScale.Y) || float.IsInfinity(newScale.Y) ? 1 : newScale.Y, float.IsNaN(newScale.Z) || float.IsInfinity(newScale.Z) ? 1 : newScale.Z);
 				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
 			}
@@ -550,12 +548,12 @@ namespace Sharp.Editor
 			{
 				Vector3[] movePlanNormal = { entity.transform.Right, entity.transform.Up, entity.transform.Forward };
 
-				var index = SelectedGizmoId switch
+				var index = selectedGizmoId switch
 				{
 					Gizmo.ScaleX => 1,
 					Gizmo.ScaleY => 0,//TODO: choose 0 or 2 based on camera view?
 					Gizmo.ScaleZ => 1,
-					_ => throw new NotSupportedException($"Scale doesnt support {SelectedGizmoId}")
+					_ => throw new NotSupportedException($"Scale doesnt support {selectedGizmoId}")
 				};
 				startMat = entity.transform.ModelMatrix;
 				startMat.DecomposeDirections(out var right, out var up, out var forward);

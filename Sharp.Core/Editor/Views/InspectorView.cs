@@ -119,7 +119,6 @@ namespace Sharp.Editor.Views
 				foreach (var removal in Root.removedEntities)
 					if (removal is Entity ent)
 					{
-						idToViewMapping[ent].Parent = null;
 						idToViewMapping.Remove(ent);
 					}
 					else if (removal is Component component)

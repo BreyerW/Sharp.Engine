@@ -93,7 +93,7 @@ namespace Sharp.Editor.Views
 			curveSettings.hTickStyle.labelColor = new Color(0, 0, 0, 0.32f);
 			curveSettings.hTickStyle.distLabel = 30;
 			curveSettings.hTickStyle.centerLabel = true;
-			
+
 			AllowFocus = true;
 
 			menu = new Menu(new Squid.Window());
@@ -149,6 +149,14 @@ namespace Sharp.Editor.Views
 		}
 		private void CurvesView_Update(Control sender)
 		{
+			if (drawer.Parent.Parent.Parent is null)
+			{
+				MainWindow.windows[attachedToWindow].Close();
+				Parent = null;
+				drawer = null;
+				return;
+			}
+
 			ref var curves = ref drawer.Value;
 
 			Color c = new Color(drawer.curveColor.R, drawer.curveColor.G, drawer.curveColor.B, (byte)(drawer.curveColor.A * 0.75f));
@@ -179,7 +187,7 @@ namespace Sharp.Editor.Views
 					var keyId = 0;
 					foreach (var button in draggableButtons)
 					{
-						var keyframe=curves[j].keys[keyId];
+						var keyframe = curves[j].keys[keyId];
 						var keyframePos = new Vector2(keyframe.time, keyframe.value);
 						var point = RegionDrawer.CurveToViewSpace(keyframePos, scale, translation);
 						(_, _, var inTan, var outTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)button.UserData;

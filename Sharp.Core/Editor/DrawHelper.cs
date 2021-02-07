@@ -53,16 +53,25 @@ namespace Sharp.Editor
 			gizmoMaterial.BindProperty("model", rotAndScaleMat);
 			if (Manipulators.hoveredGizmoId is >= Gizmo.TranslateX)
 			{
-				if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX)
-					gizmoMaterial.Draw(..(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX - 1));
+				if (Manipulators.useUniformScale is false)
+				{
+					if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX)
+						gizmoMaterial.Draw(..(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX - 1));
 
-				gizmoMaterial.BindProperty("enableHighlight", 1);
-				gizmoMaterial.Draw(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX - 1);
-				gizmoMaterial.BindProperty("enableHighlight", 0);
+					gizmoMaterial.BindProperty("enableHighlight", 1);
+					gizmoMaterial.Draw(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX - 1);
+					gizmoMaterial.BindProperty("enableHighlight", 0);
 
-				if (Manipulators.hoveredGizmoId is not Gizmo.ScaleZ)
-					gizmoMaterial.Draw((Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX)..(Gizmo.UniformScale - Gizmo.ViewCubeUpperLeftCornerMinusX - 1));
-
+					if (Manipulators.hoveredGizmoId is not Gizmo.ScaleZ)
+						gizmoMaterial.Draw((Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX)..(Gizmo.UniformScale - Gizmo.ViewCubeUpperLeftCornerMinusX - 1));
+				}
+				else
+				{
+					gizmoMaterial.Draw(..9);
+					gizmoMaterial.BindProperty("enableHighlight", 1);
+					gizmoMaterial.Draw(9..);
+					gizmoMaterial.BindProperty("enableHighlight", 0);
+				}
 			}
 			else
 				gizmoMaterial.Draw();
