@@ -1,5 +1,5 @@
-﻿using Microsoft.Toolkit.HighPerformance.Extensions;
-using Sharp.Commands;
+﻿//https://github.com/CedricGuillemet/ImGuizmo/blob/master/ImGuizmo.cpp
+
 using Sharp.Editor.Views;
 using SharpAsset;
 using SharpAsset.Pipeline;
@@ -11,7 +11,6 @@ namespace Sharp.Editor
 	public enum Gizmo
 	{
 		Invalid,
-
 
 		ViewCubeBottomEdgeZ,
 		ViewCubeBottomEdgeMinusX,
@@ -60,23 +59,27 @@ namespace Sharp.Editor
 		ScaleX,
 		ScaleY,
 		ScaleZ,
+		RotateScreen,
 		UniformScale,
 
 	}
 	public static class Manipulators
 	{
+		private const float snapTension = 0.5f;
 		private static readonly int halfCircleSegments = 64;
 		public static readonly Color selectedColor = new Color(0xFF1080FF);
 		public static readonly Color fillColor = new Color(0x801080FF);
 		public static readonly Color xColor = new Color(0xFF0000AA);
 		public static readonly Color yColor = new Color(0xFF00AA00);
 		public static readonly Color zColor = new Color(0xFFAA0000);
+		public static readonly Color screenRotColor = new Color(0xFF888888);
 		public static bool preserveInsignificantCameraAngleWithViewCube = false;
 		internal static Material discMaterial;
 		public static Gizmo selectedGizmoId = Gizmo.Invalid;
 		internal static Gizmo hoveredGizmoId = Gizmo.Invalid;
 		internal static float? rotAngleOrigin;
 		internal static float angle;
+		private static Plane translationPlane;
 		internal static Vector3 currentAngle = Vector3.Zero;
 		internal static Vector3? relativeOrigin;
 		internal static Vector3? planeOrigin;
@@ -123,10 +126,9 @@ namespace Sharp.Editor
 				mModel = Matrix4x4.CreateTranslation(entity.transform.Position);
 			}
 			var scaleMat = Matrix4x4.CreateScale(scale, scale, scale);
-
-
-			//TODO: convert cube to ball for scale gizmo?
-			DrawHelper.DrawGizmo(scaleMat * mModel);
+			var finalMat = scaleMat * mModel;
+			var alignToScreen = scaleMat * Matrix4x4.CreateBillboard(entity.transform.Position, Camera.main.Parent.transform.Position, Camera.main.ViewMatrix.Up(), Camera.main.ViewMatrix.Forward());//
+			DrawHelper.DrawGizmo(finalMat, alignToScreen);
 
 			if (rotVectSource.HasValue)
 			{
@@ -212,7 +214,7 @@ namespace Sharp.Editor
 			startMat = default;
 			transformOrigin = default;
 			transformationPlane = default;
-			useUniformScale = false; 
+			useUniformScale = false;
 		}
 
 		private static Vector3 GetAxis()
@@ -251,41 +253,27 @@ namespace Sharp.Editor
 				Vector3 delta = newOrigin - entity.transform.Position;
 				Matrix4x4.Decompose(entity.transform.ModelMatrix, out var scale, out var rot, out var trans);
 				// 1 axis constraint
-				mModel.DecomposeDirections(out var right, out var up, out var forward);
 				if (selectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateY or Gizmo.TranslateZ)
 				{
-					var direction = selectedGizmoId switch
+					mModel.DecomposeDirections(out var right, out var up, out var forward);
+					var (direction, snapLimit) = selectedGizmoId switch
 					{
-						Gizmo.TranslateX => right,
-						Gizmo.TranslateY => up,
-						_ => forward
+						Gizmo.TranslateX => (right, SceneView.translateSnap.X),
+						Gizmo.TranslateY => (up, SceneView.translateSnap.Y),
+						_ => (forward, SceneView.translateSnap.Z)
 					};
 					Vector3 axisValue = direction; //.Normalize();// direction;
 					float lengthOnAxis = Vector3.Dot(axisValue, delta);
+					if (SceneView.snapMode)
+						ComputeSnap(ref lengthOnAxis, snapLimit); //lengthOnAxis = MathF.Abs(lengthOnAxis) > snapLimit ? MathF.CopySign(snapLimit, lengthOnAxis) : 0;
 					delta = axisValue * lengthOnAxis;
 				}
-
-				// snap
-				/*if (snap)
+				else if (SceneView.snapMode)
 				{
-					vec_t cumulativeDelta = gContext.mModel.v.position + delta - gContext.mMatrixOrigin;
-					if (SceneView.globalMode is false)
-					{
-						matrix_t modelSourceNormalized = gContext.mModelSource;
-						modelSourceNormalized.OrthoNormalize();
-						matrix_t modelSourceNormalizedInverse;
-						modelSourceNormalizedInverse.Inverse(modelSourceNormalized);
-						cumulativeDelta.TransformVector(modelSourceNormalizedInverse);
-						ComputeSnap(cumulativeDelta, snap);
-						cumulativeDelta.TransformVector(modelSourceNormalized);
-					}
-					else
-					{
-						ComputeSnap(cumulativeDelta, snap);
-					}
-					delta = gContext.mMatrixOrigin + cumulativeDelta - gContext.mModel.v.position;
-
-				}*/
+					ComputeSnap(ref delta.X, SceneView.translateSnap.X);
+					ComputeSnap(ref delta.Y, SceneView.translateSnap.Y);
+					ComputeSnap(ref delta.Z, SceneView.translateSnap.Z);
+				}
 				// compute matrix & delta
 				entity.transform.Position = trans + delta;
 				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scaleSource.Value);
@@ -298,7 +286,7 @@ namespace Sharp.Editor
 				mModel.DecomposeDirections(out var right, out var up, out var forward);
 				Vector3[] movePlaneNormal = { right, up, forward,
 				 right, up, forward,
-			   -Camera.main.Parent.transform.Forward/*free movement*/ };
+			   -Camera.main.ViewMatrix.Forward()/*free movement*/ };
 
 				Vector3 cameraToModelNormalized = Vector3.Normalize(entity.transform.Position - Camera.main.Parent.transform.Position);
 				for (int i = 0; i < 3; i++)
@@ -322,9 +310,28 @@ namespace Sharp.Editor
 				transformationPlane = new Vector4(plane.Normal, plane.D);
 				float len = ray.IntersectPlane(transformationPlane); // near plan
 				var newPos = ray.origin + ray.direction * len;
-				scaleSource = new Vector3(entity.transform.Right.Length(), entity.transform.Up.Length(), entity.transform.Forward.Length());
+				entity.transform.ModelMatrix.DecomposeDirections(out var eRight, out var eUp, out var eForward);
+				scaleSource = new Vector3(eRight.Length(), eUp.Length(), eForward.Length());
 				relativeOrigin = (newPos - entity.transform.Position) * (1.0f / Camera.main.AspectRatio);
 
+			}
+		}
+		static void ComputeSnap(ref float value, float snap)
+		{
+			if (snap <= float.Epsilon)
+			{
+				return;
+			}
+
+			float modulo = value % snap;
+			float moduloRatio = MathF.Abs(modulo) / snap;
+			if (moduloRatio < snapTension)
+			{
+				value -= modulo;
+			}
+			else if (moduloRatio > (1.0f - snapTension))
+			{
+				value = value - modulo + snap * ((value < 0.0f) ? -1.0f : 1.0f);
 			}
 		}
 		private static Vector3 MakePositive(Vector3 euler)
@@ -352,7 +359,7 @@ namespace Sharp.Editor
 		public static void HandleRotation(Entity entity, ref Ray ray)
 		{
 
-			if (SceneView.globalMode is false)
+			if (SceneView.globalMode is false || selectedGizmoId is Gizmo.RotateScreen)
 			{
 				mModel = entity.transform.ModelMatrix;
 				mModel.OrthoNormalize();
@@ -363,19 +370,24 @@ namespace Sharp.Editor
 			}
 			if (rotVectSource.HasValue)
 			{
-				/*if (type == ROTATE_SCREEN)
-				{
-					applyRotationLocaly = true;
-				}*/
 				angle = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
-				/*if (snap)
+				if (SceneView.snapMode)
 				{
-					float snapInRadian = snap[0] * DEG2RAD;
-					ComputeSnap(&gContext.mRotationAngle, snapInRadian);
-				}*/
+					var snapInRadian = selectedGizmoId switch
+					{
+						Gizmo.RotateX => SceneView.rotateSnap.X,
+						Gizmo.RotateY => SceneView.rotateSnap.Y,
+						Gizmo.RotateZ => SceneView.rotateSnap.Z,
+						_ => SceneView.screenRotateSnap
+					};
+					snapInRadian *= NumericsExtensions.Deg2Rad;
+					ComputeSnap(ref angle, snapInRadian);
+				}
 				var rotationAxisLocalSpace = Vector3.TransformNormal(new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z), mModel.Inverted());
 				rotationAxisLocalSpace.Normalize();
-				var deltaRot = Quaternion.Normalize(Quaternion.CreateFromAxisAngle(rotationAxisLocalSpace, angle - rotAngleOrigin.Value));
+				var deltaInRad = angle - rotAngleOrigin.Value;
+
+				var deltaRot = Quaternion.Normalize(Quaternion.CreateFromAxisAngle(rotationAxisLocalSpace, deltaInRad));
 				var len = ComputeLength(ref ray, entity.transform.Position);
 				currentAngle = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
 				rotAngleOrigin = angle;
@@ -394,18 +406,20 @@ namespace Sharp.Editor
 			{
 				mModel.DecomposeDirections(out var right, out var up, out var forward);
 				Vector3[] movePlanNormal = { right,up,forward,
-			   -Camera.main.Parent.transform.Forward/*free movement*/
+			   -Camera.main.ViewMatrix.Forward()
 				};
 				var index = selectedGizmoId switch
 				{
 					Gizmo.RotateX => 0,
 					Gizmo.RotateY => 1,//TODO: choose 0 or 2 based on camera view?
 					Gizmo.RotateZ => 2,
+					Gizmo.RotateScreen => 3,
 					_ => throw new NotSupportedException($"Rotate doesnt support {selectedGizmoId}")
 				};
 				// pickup plan
 				var plane = BuildPlane(entity.transform.Position, movePlanNormal[index]);
-				scaleSource = new Vector3(entity.transform.Right.Length(), entity.transform.Up.Length(), entity.transform.Forward.Length());
+				entity.transform.ModelMatrix.DecomposeDirections(out var eRight, out var eUp, out var eForward);
+				scaleSource = new Vector3(eRight.Length(), eUp.Length(), eForward.Length());
 				transformationPlane = new Vector4(plane.Normal, plane.D);
 				float len = ray.IntersectPlane(transformationPlane); // near plan
 				var localPos = ray.origin + ray.direction * len - entity.transform.Position;
@@ -491,44 +505,30 @@ namespace Sharp.Editor
 				// 1 axis constraint
 				Matrix4x4.Decompose(entity.transform.ModelMatrix, out var scale, out var rot, out var trans);
 
-				var direction = selectedGizmoId switch
+				var (direction, snapLimit) = selectedGizmoId switch
 				{
-					Gizmo.ScaleX => entity.transform.Right,
-					Gizmo.ScaleY => entity.transform.Up,
-					_ => entity.transform.Forward
+					Gizmo.ScaleX => (entity.transform.ModelMatrix.Right(), SceneView.scaleSnap.X),
+					Gizmo.ScaleY => (entity.transform.ModelMatrix.Up(), SceneView.scaleSnap.Y),
+					_ => (entity.transform.ModelMatrix.Forward(), SceneView.scaleSnap.Z)
 				};
 				Vector3 axisValue = direction;// direction;
 				float lengthOnAxis = Vector3.Dot(axisValue, delta);
 				delta = axisValue * lengthOnAxis;
 
-				// snap
-				/*if (snap)
-				{
-					vec_t cumulativeDelta = gContext.mModel.v.position + delta - gContext.mMatrixOrigin;
-					if (applyRotationLocaly)
-					{
-						matrix_t modelSourceNormalized = gContext.mModelSource;
-						modelSourceNormalized.OrthoNormalize();
-						matrix_t modelSourceNormalizedInverse;
-						modelSourceNormalizedInverse.Inverse(modelSourceNormalized);
-						cumulativeDelta.TransformVector(modelSourceNormalizedInverse);
-						ComputeSnap(cumulativeDelta, snap);
-						cumulativeDelta.TransformVector(modelSourceNormalized);
-					}
-					else
-					{
-						ComputeSnap(cumulativeDelta, snap);
-					}
-					delta = gContext.mMatrixOrigin + cumulativeDelta - gContext.mModel.v.position;
-
-				}*/
 				// compute matrix & delta
 
 				scaleOffset = delta;
 				Vector3 baseVector = translationPlaneOrigin - entity.transform.Position;
 				float ratio = Vector3.Dot(axisValue, baseVector + delta) / Vector3.Dot(axisValue, baseVector);
 				//if (float.IsNaN(ratio) || float.IsInfinity(ratio)) ratio = float.MaxValue;
-				var newScale = Math.Clamp(MathF.Max(ratio, 0.001f), float.MinValue, float.MaxValue);
+				var newScale = Math.Clamp(MathF.Max(ratio, 0.00001f), float.MinValue, float.MaxValue);
+				if (SceneView.snapMode)
+				{
+					newScale -= 1f;
+					ComputeSnap(ref newScale, snapLimit);
+					newScale += 1f;
+					newScale = Math.Clamp(MathF.Max(newScale, 0.00001f), float.MinValue, float.MaxValue);
+				}
 				var vScale = useUniformScale ? new Vector3(newScale, newScale, newScale) : selectedGizmoId switch
 				{
 					Gizmo.ScaleX => new Vector3(newScale, 1, 1),
@@ -538,6 +538,7 @@ namespace Sharp.Editor
 				};
 				vScale = vScale * scaleSource.Value;
 				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(vScale);
+
 				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
 				Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
 
@@ -546,7 +547,8 @@ namespace Sharp.Editor
 			}
 			else
 			{
-				Vector3[] movePlanNormal = { entity.transform.Right, entity.transform.Up, entity.transform.Forward };
+				entity.transform.ModelMatrix.DecomposeDirections(out var eRight, out var eUp, out var eForward);
+				Vector3[] movePlanNormal = { eRight, eUp, eForward };
 
 				var index = selectedGizmoId switch
 				{

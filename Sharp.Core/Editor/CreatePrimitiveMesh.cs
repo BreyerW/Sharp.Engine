@@ -514,10 +514,9 @@ public static class CreatePrimitiveMesh
 		newMesh.LoadVertices<UIVertexFormat>(vertices);
 		return newMesh;
 	}
-	public static Mesh GenerateTorus(in Matrix4x4 transform, string name = "torus", Color? vertexColor = null)
+	public static Mesh GenerateTorus(in Matrix4x4 transform, string name = "torus", float tubeRadius = 0.025f, Color? vertexColor = null)
 	{
 		float radius = 1f;
-		float tube = 0.025f;
 		int radialSegments = numVertices;
 		int tubularSegments = numVertices;
 		float arc = 360f;
@@ -544,9 +543,9 @@ public static class CreatePrimitiveMesh
 				center.Y = radius * MathF.Sin(u);
 
 				var vertex = new Vector3();
-				vertex.X = (radius + tube * MathF.Cos(v)) * MathF.Cos(u);
-				vertex.Y = (radius + tube * MathF.Cos(v)) * MathF.Sin(u);
-				vertex.Z = tube * MathF.Sin(v);
+				vertex.X = (radius + tubeRadius * MathF.Cos(v)) * MathF.Cos(u);
+				vertex.Y = (radius + tubeRadius * MathF.Cos(v)) * MathF.Sin(u);
+				vertex.Z = tubeRadius * MathF.Sin(v);
 
 				vertices.Add(new UIVertexFormat() { position = Vector3.Transform(vertex, transform) });
 

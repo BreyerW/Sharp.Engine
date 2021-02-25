@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Numerics;
 using SharpAsset;
+using SharpSL.BackendRenderers;
 
 namespace Sharp.Editor
 {

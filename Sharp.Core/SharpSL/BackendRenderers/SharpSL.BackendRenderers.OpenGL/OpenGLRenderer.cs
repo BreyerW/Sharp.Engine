@@ -2,7 +2,6 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using SharpAsset;
-using Squid;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -11,6 +10,14 @@ using System.Text;
 
 namespace SharpSL.BackendRenderers.OpenGL
 {
+	/*public class GLBindings : IBindingsContext
+	{
+		internal Func<string, IntPtr> getProcAddr;
+		public IntPtr GetProcAddress(string procName)
+		{
+			return GetProcAddress(procName);
+		}
+	}*/
 	public class OpenGLRenderer : IBackendRenderer
 	{
 		#region IBackendRenderer implementation
@@ -32,6 +39,8 @@ namespace SharpSL.BackendRenderers.OpenGL
 		{
 			new GraphicsContext(ContextHandle.Zero, (function) => GetProcAddress(function),
 																	() => new ContextHandle(GetCurrentContext()));
+			//var bindings = new GLBindings() { getProcAddr = GetProcAddress };
+			//GL.LoadBindings(bindings);
 			return GetCurrentContext();
 		}
 
@@ -269,10 +278,10 @@ namespace SharpSL.BackendRenderers.OpenGL
 			Console.WriteLine("start attrib query");
 			for (int i = 0; i < numOfAttribs; i++)
 			{
-				GL.GetActiveAttrib(Program, i, stringBuilder.Capacity, out _, out var size, out attribType, stringBuilder);
-				Console.WriteLine(stringBuilder.ToString() + " " + attribType + " : " + size);
-				if (!attribArray.ContainsKey(stringBuilder.ToString()))
-					attribArray.Add(stringBuilder.ToString(), (GL.GetAttribLocation(Program, stringBuilder.ToString()), size)); //TODO: change to bindAttrib via parsing all vertex formats and binding all fields?
+				GL.GetActiveAttrib(Program, i, stringBuilder.Capacity, out _, out var size, out attribType, out var name);
+				Console.WriteLine(name + " " + attribType + " : " + size);
+				if (!attribArray.ContainsKey(name))
+					attribArray.Add(name, (GL.GetAttribLocation(Program, name), size)); //TODO: change to bindAttrib via parsing all vertex formats and binding all fields?
 			}
 
 			GL.GetProgram(Program, GetProgramParameterName.ActiveUniforms, out var numOfUniforms);
@@ -282,10 +291,10 @@ namespace SharpSL.BackendRenderers.OpenGL
 			Console.WriteLine("start uni query");
 			for (int i = 0; i < numOfUniforms; i++)
 			{
-				GL.GetActiveUniform(Program, i, stringBuilder.Capacity, out _, out var size, out uniType, stringBuilder);
-				Console.WriteLine(stringBuilder.ToString() + " " + uniType + " : " + size);
-				if (!uniformArray.ContainsKey(stringBuilder.ToString()))
-					uniformArray.Add(stringBuilder.ToString(), i);
+				GL.GetActiveUniform(Program, i, stringBuilder.Capacity, out _, out var size, out uniType, out var name);
+				Console.WriteLine(name + " " + uniType + " : " + size);
+				if (!uniformArray.ContainsKey(name))
+					uniformArray.Add(name, i);
 			}
 		}
 
@@ -427,7 +436,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 		}
 		public void SetColorMask(bool r, bool g, bool b, bool a)
 		{
-			GL.ColorMask(r,g,b,a);
+			GL.ColorMask(r, g, b, a);
 		}
 		#endregion IBackendRenderer implementation
 	}

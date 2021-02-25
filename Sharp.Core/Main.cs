@@ -47,8 +47,10 @@ namespace Sharp
 			GeneratePlanes(ref gizmo, rotationX, rotationY, rotationZ);
 			GenerateCircles(ref gizmo, rotationX, rotationY, rotationZ);
 			GenerateCubes(ref gizmo, rotationX, rotationY, rotationZ);
+			var screenRotate = CreatePrimitiveMesh.GenerateTorus(Matrix4x4.CreateScale(25) * Matrix4x4.Identity, "screen_circle", 0.015f, vertexColor: Manipulators.screenRotColor);
 
 			Pipeline.Get<Mesh>().Register(gizmo);
+			Pipeline.Get<Mesh>().Register(screenRotate);
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCube(Matrix4x4.Identity));
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCylinder(Matrix4x4.Identity));
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCone(Matrix4x4.Identity));

@@ -52,7 +52,7 @@ namespace Sharp
 						return GetCurvePosition(virtualPos);
 
 					case WrapMode.Linear:// linear y = a*x +b with a tangeant of last point
-						return first.value - NumericsExtensions.RadiansToDegrees(first.inTangent) * (first.time - position);
+						return first.value - first.inTangent*NumericsExtensions.Rad2Deg * (first.time - position);
 				}
 			}
 			else if (position > last.time)
@@ -88,7 +88,7 @@ namespace Sharp
 						return GetCurvePosition(virtualPos);
 
 					case WrapMode.Linear:  // linear y = a*x +b with a tangeant of last point
-						return last.value + NumericsExtensions.RadiansToDegrees(last.outTangent) * (position - last.time);
+						return last.value + last.outTangent * NumericsExtensions.Rad2Deg * (position - last.time);
 				}
 			}
 

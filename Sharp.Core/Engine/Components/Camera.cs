@@ -60,7 +60,7 @@ namespace Sharp
 		{
 			get
 			{
-				return Parent.transform.ModelMatrix;
+				return Parent.transform.ModelMatrix.Inverted();
 			}
 			internal set
 			{
@@ -95,7 +95,6 @@ namespace Sharp
 			ZNear = 0.2f;
 			ZFar = 5000f;
 			Material.BindGlobalProperty("camNearFar", new Vector2(ZNear, ZFar));
-			//Orientation = TargetOrientation;
 			SetProjectionMatrix();
 			cullingTags.SetTag("Nothing");
 		}
@@ -105,12 +104,6 @@ namespace Sharp
 		#region Members
 
 		#region Properties
-
-		//public Quaternion Orientation { get; set; }
-
-		//public Vector3 TargetPosition { get; set; }
-		//public Quaternion TargetOrientation { get; set; }
-		//public Quaternion TargetOrientationY { get; set; }
 
 		public float MouseYSensitivity = 1f;
 		public float MouseXSensitivity = 1f;
@@ -190,7 +183,7 @@ namespace Sharp
 			vec.Z = time;
 			vec.W = 1.0f;
 
-			var viewInv = ViewMatrix.Inverted();
+			var viewInv = ViewMatrix;//.Inverted();
 			var projInv = main.projectionMatrix.Inverted();
 			vec.Transform(projInv).Transform(viewInv);
 
@@ -299,7 +292,7 @@ namespace Sharp
 
 				var rotationMatrix = Matrix4x4.CreateRotationY(newAngles.Y) * Matrix4x4.CreateRotationX(newAngles.X);
 				ViewMatrix = rotationMatrix;
-				var pos = Vector3.Transform(localPos, ViewMatrix.Inverted());
+				var pos = Vector3.Transform(localPos, ViewMatrix);
 				var newCameraPos = pivot.transform.Position - pos;
 				ViewMatrix = Matrix4x4.CreateTranslation(-newCameraPos) * rotationMatrix;
 				Parent.transform.Position = newCameraPos;

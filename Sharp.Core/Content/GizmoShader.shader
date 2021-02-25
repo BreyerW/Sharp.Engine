@@ -11,7 +11,9 @@ uniform vec2 viewPort;
 uniform vec4 highlightColor;
 uniform float enableHighlight;
 //uniform vec3 axis;
-
+mat4 mix(mat4 m1, mat4 m2, float factor) {
+	return (m1 * (1.0 - factor)) + (m2 * factor);
+}
             void main(void)
             {
 				//billboard matrix along specified axis 

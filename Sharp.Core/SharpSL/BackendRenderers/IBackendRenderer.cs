@@ -11,6 +11,21 @@ namespace SharpSL.BackendRenderers
 		Color0,
 		Color1,
 	}
+	public enum AttributeType
+	{
+		Byte = 5120,
+		UnsignedByte,
+		Short,
+		UnsignedShort,
+		Int,
+		UnsignedInt,
+		Float,
+		Double = 5130,
+		HalfFloat,
+		Fixed,
+		UnsignedInt2101010Rev = 33640,
+		Int2101010Rev = 36255
+	}
 	public interface IBackendRenderer
 	{
 		uint currentWindow { get; set; }
@@ -83,15 +98,15 @@ namespace SharpSL.BackendRenderers
 		void FinishCommands();
 
 		byte[] ReadPixels(int x, int y, int width, int height, TextureFormat pxFormat);
-		void SetColorMask(bool r,bool g,bool b,bool a);
-		QueryScope StartQuery(Target target,int id);
+		void SetColorMask(bool r, bool g, bool b, bool a);
+		QueryScope StartQuery(Target target, int id);
 		void EndQuery(Target target);
 	}
 	public readonly ref struct QueryScope
 	{
 		private readonly IBackendRenderer renderer;
 		private readonly Target target;
-		public QueryScope(IBackendRenderer r,Target t)
+		public QueryScope(IBackendRenderer r, Target t)
 		{
 			renderer = r;
 			target = t;

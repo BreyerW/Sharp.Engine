@@ -111,12 +111,7 @@ namespace Sharp
 			}
 			return id;
 		}
-		public static void DecomposeDirections(in this Matrix4x4 mat, out Vector3 right, out Vector3 up, out Vector3 forward)
-		{
-			right = new Vector3(mat.M11, mat.M12, mat.M13);
-			up = new Vector3(mat.M21, mat.M22, mat.M23);
-			forward = new Vector3(mat.M31, mat.M32, mat.M33);
-		}
+
 		public static void OrthoNormalize(in this Matrix4x4 mat)
 		{
 			ref var matref = ref Unsafe.AsRef(mat);

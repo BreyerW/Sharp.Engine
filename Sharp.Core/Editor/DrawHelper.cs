@@ -10,7 +10,7 @@ namespace Sharp.Editor
 		private static Shader shader;
 		internal static Material gridLineMaterial;
 		internal static Material gizmoMaterial;
-
+		internal static Material screenGizmoMaterial;
 		public static float gridSize = 256;
 		public static float cellSize = 16;
 
@@ -23,6 +23,11 @@ namespace Sharp.Editor
 			FillMaterial(out gizmoMaterial, shader, circleMesh, Manipulators.xColor);
 			gizmoMaterial.BindProperty("highlightColor", new Color(0.75f, 0.75f, 0.75f, 0.75f));
 			gizmoMaterial.BindProperty("enableHighlight", 0);
+
+			ref var screenCircleMesh = ref Pipeline.Get<Mesh>().GetAsset("screen_circle");
+			FillMaterial(out screenGizmoMaterial, shader, screenCircleMesh, Manipulators.screenRotColor);
+			screenGizmoMaterial.BindProperty("highlightColor", new Color(0.75f, 0.75f, 0.75f, 0.75f));
+			screenGizmoMaterial.BindProperty("enableHighlight", 0);
 
 			var gridShader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GridEditorShader.shader");
 
@@ -48,12 +53,13 @@ namespace Sharp.Editor
 			gridLineMaterial.Draw();
 		}
 
-		public static void DrawGizmo(in Matrix4x4 rotAndScaleMat)
+		public static void DrawGizmo(in Matrix4x4 rotAndScaleMat, in Matrix4x4 alignToScreen)
 		{
 			gizmoMaterial.BindProperty("model", rotAndScaleMat);
+			screenGizmoMaterial.BindProperty("model", alignToScreen);
 			if (Manipulators.hoveredGizmoId is >= Gizmo.TranslateX)
 			{
-				if (Manipulators.useUniformScale is false)
+				if ((Manipulators.useUniformScale is false || (Manipulators.useUniformScale is true && Manipulators.hoveredGizmoId is not Gizmo.ScaleX and not Gizmo.ScaleY and not Gizmo.ScaleZ)) && Manipulators.hoveredGizmoId is not Gizmo.RotateScreen)
 				{
 					if (Manipulators.hoveredGizmoId is not Gizmo.TranslateX)
 						gizmoMaterial.Draw(..(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX - 1));
@@ -61,20 +67,31 @@ namespace Sharp.Editor
 					gizmoMaterial.BindProperty("enableHighlight", 1);
 					gizmoMaterial.Draw(Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX - 1);
 					gizmoMaterial.BindProperty("enableHighlight", 0);
-
 					if (Manipulators.hoveredGizmoId is not Gizmo.ScaleZ)
-						gizmoMaterial.Draw((Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX)..(Gizmo.UniformScale - Gizmo.ViewCubeUpperLeftCornerMinusX - 1));
+						gizmoMaterial.Draw((Manipulators.hoveredGizmoId - Gizmo.ViewCubeUpperLeftCornerMinusX)..(Gizmo.UniformScale - Gizmo.ViewCubeUpperLeftCornerMinusX - 2));
+					screenGizmoMaterial.Draw();
 				}
-				else
+				else if (Manipulators.hoveredGizmoId is not Gizmo.RotateScreen)
 				{
 					gizmoMaterial.Draw(..9);
 					gizmoMaterial.BindProperty("enableHighlight", 1);
 					gizmoMaterial.Draw(9..);
 					gizmoMaterial.BindProperty("enableHighlight", 0);
+					screenGizmoMaterial.Draw();
+				}
+				else
+				{
+					gizmoMaterial.Draw();
+					screenGizmoMaterial.BindProperty("enableHighlight", 1);
+					screenGizmoMaterial.Draw();
+					screenGizmoMaterial.BindProperty("enableHighlight", 0);
 				}
 			}
 			else
+			{
 				gizmoMaterial.Draw();
+				screenGizmoMaterial.Draw();
+			}
 		}
 	}
 }

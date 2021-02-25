@@ -33,6 +33,11 @@ namespace Sharp.Editor.Views
 		public static List<Renderer> renderers = new List<Renderer>();
 		public static Queue<IStartableComponent> startables = new Queue<IStartableComponent>();
 		public static bool globalMode = false;
+		public static bool snapMode = false;
+		public static Vector3 translateSnap = new Vector3(100, 100, 100);
+		public static Vector3 scaleSnap = new Vector3(1, 1, 1);
+		public static Vector3 rotateSnap = new Vector3(90, 90, 90);
+		public static float screenRotateSnap = 90;
 		internal static Vector2 localMousePos;
 		internal static Vector2 mouseDela;
 		internal static Point? locPos = null;
@@ -171,7 +176,7 @@ namespace Sharp.Editor.Views
 							{
 								Manipulators.HandleTranslation(entity, ref ray);
 							}
-							else if (Manipulators.selectedGizmoId is < Gizmo.ScaleX)
+							else if (Manipulators.selectedGizmoId is < Gizmo.ScaleX or Gizmo.RotateScreen)
 							{
 								Manipulators.HandleRotation(entity, ref ray);
 							}
@@ -316,6 +321,7 @@ namespace Sharp.Editor.Views
 				if (SceneStructureView.tree.SelectedNode is { UserData: Entity })
 				{
 					DrawHelper.gizmoMaterial.Draw();
+					DrawHelper.screenGizmoMaterial.Draw();
 				}
 				viewCubeMat.Draw();
 
@@ -323,42 +329,17 @@ namespace Sharp.Editor.Views
 
 				if (SceneStructureView.tree.SelectedNode is { UserData: Entity })
 				{
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateX - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 0);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateY - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 1);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateZ - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 2);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateXY - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 3);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateYZ - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 4);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateZX - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 5);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.RotateX - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 6);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.RotateY - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 7);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.RotateZ - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 8);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.ScaleX - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 9);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.ScaleY - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 10);
-
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.ScaleZ - 1]))
-						DrawHelper.gizmoMaterial.Draw(subMesh: 11);
+					foreach (var i in ..(Gizmo.UniformScale - Gizmo.TranslateX - 1))
+					{
+						using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateX - 1 + i]))
+							DrawHelper.gizmoMaterial.Draw(subMesh: i);
+					}
+					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.RotateScreen - 1]))
+					{
+						DrawHelper.screenGizmoMaterial.Draw();
+					}
 				}
+
 				foreach (var i in ..((int)Gizmo.TranslateX - 1))
 				{
 					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[i]))
@@ -495,7 +476,7 @@ namespace Sharp.Editor.Views
 			}
 			else if (index is not -1)
 			{
-				if (index > (int)Gizmo.ScaleZ)
+				if (index > (int)Gizmo.UniformScale - 1)
 				{
 					Selection.HoveredObject = renderables[index - (int)Gizmo.UniformScale - 1];
 					Manipulators.hoveredGizmoId = Gizmo.Invalid;

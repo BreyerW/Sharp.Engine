@@ -2,7 +2,7 @@
 using System;
 using Sharp;
 using System.Linq;
-using OpenTK.Graphics.ES10;
+using OpenTK.Graphics;
 using System.IO;
 
 namespace SharpAsset.Pipeline
