@@ -143,8 +143,8 @@ namespace SharpAsset
 			}
 			if (merge is false)
 			{
-				subMeshesDescriptor[subMeshesDescriptor.Length - 2] = (Indices.Length + mesh.Indices.Length) / indexStride;
-				subMeshesDescriptor[subMeshesDescriptor.Length - 1] = (verts.Length + mesh.verts.Length) / mesh.vertStride;
+				subMeshesDescriptor[^2] = (Indices.Length + mesh.Indices.Length) / indexStride;
+				subMeshesDescriptor[^1] = (verts.Length + mesh.verts.Length) / mesh.vertStride;
 			}
 			Array.Resize(ref verts, verts.Length + mesh.verts.Length);
 			var slice = verts.AsSpan()[oldVertsLength..];
@@ -172,7 +172,7 @@ namespace SharpAsset
 			var eObject = new Entity();
 
 			eObject.transform.Position = worldPos;
-			var angles = eObject.transform.Rotation * NumericsExtensions.Deg2Rad;
+			var angles = eObject.transform.Rotation * (float)NumericsExtensions.Deg2Rad;
 			eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 			var renderer = eObject.AddComponent<MeshRenderer>();
 			var shader = (Shader)Pipeline.Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TextureOnlyShader.shader");

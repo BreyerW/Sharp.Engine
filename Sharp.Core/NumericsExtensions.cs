@@ -92,7 +92,7 @@ namespace Sharp
 		{
 			if (n < 0)
 			{
-				throw new ArgumentOutOfRangeException("n", "Must be positive.");
+				throw new ArgumentOutOfRangeException(nameof(n), "Must be positive.");
 			}
 			return (float)Math.Pow(2, Math.Ceiling(Math.Log((double)n, 2)));
 		}
@@ -106,7 +106,7 @@ namespace Sharp
 		{
 			if (n < 0)
 			{
-				throw new ArgumentOutOfRangeException("n", "Must be positive.");
+				throw new ArgumentOutOfRangeException(nameof(n), "Must be positive.");
 			}
 			return Math.Pow(2, Math.Ceiling(Math.Log((double)n, 2)));
 		}

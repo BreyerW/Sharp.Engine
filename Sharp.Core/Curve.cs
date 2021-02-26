@@ -19,7 +19,7 @@ namespace Sharp
 		{
 			//Array.Sort(keys, new KeyframeComparer());//move out of evaluate
 			Keyframe first = keys[0];
-			Keyframe last = keys[keys.Length - 1];
+			Keyframe last = keys[^1];
 
 			if (position < first.time)
 			{
@@ -52,7 +52,7 @@ namespace Sharp
 						return GetCurvePosition(virtualPos);
 
 					case WrapMode.Linear:// linear y = a*x +b with a tangeant of last point
-						return first.value - first.inTangent*NumericsExtensions.Rad2Deg * (first.time - position);
+						return first.value - first.inTangent * (float)NumericsExtensions.Rad2Deg * (first.time - position);
 				}
 			}
 			else if (position > last.time)
@@ -88,7 +88,7 @@ namespace Sharp
 						return GetCurvePosition(virtualPos);
 
 					case WrapMode.Linear:  // linear y = a*x +b with a tangeant of last point
-						return last.value + last.outTangent * NumericsExtensions.Rad2Deg * (position - last.time);
+						return last.value + last.outTangent * (float)NumericsExtensions.Rad2Deg * (position - last.time);
 				}
 			}
 
@@ -98,7 +98,7 @@ namespace Sharp
 
 		private int GetNumberOfCycle(float position)
 		{
-			float cycle = (position - keys[0].time) / (keys[keys.Length - 1].time - keys[0].time);
+			float cycle = (position - keys[0].time) / (keys[^1].time - keys[0].time);
 			if (cycle < 0f)
 				cycle--;
 			return (int)cycle;
@@ -140,7 +140,7 @@ namespace Sharp
 		public int AddKey(ref Keyframe key)
 		{
 			Array.Resize(ref keys, keys.Length + 1);
-			keys[keys.Length - 1] = key;
+			keys[^1] = key;
 			Array.Sort(keys, new KeyframeComparer());
 			return Array.IndexOf(keys, key);
 		}

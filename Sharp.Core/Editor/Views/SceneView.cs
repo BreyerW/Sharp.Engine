@@ -60,7 +60,7 @@ namespace Sharp.Editor.Views
 		{
 			var e = new Entity();
 			e.transform.Position = new Vector3(0f, 10f, 0f);
-			var angles = e.transform.Rotation * NumericsExtensions.Deg2Rad;
+			var angles = e.transform.Rotation * (float)NumericsExtensions.Deg2Rad;
 			e.transform.ModelMatrix = Matrix4x4.CreateScale(e.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(e.transform.Position);
 			var cam = e.AddComponent<Camera>();
 			Camera.main = cam;
@@ -276,7 +276,7 @@ namespace Sharp.Editor.Views
 			while (startables.Count != 0)
 				startables.Dequeue().Start();
 			//SelectionPassComponent.clip = (Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
-			var angles = Camera.main.Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
+			var angles = Camera.main.Parent.transform.Rotation * (float)NumericsExtensions.Deg2Rad;
 			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(-angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
 
 			var m = Matrix4x4.CreateScale(40) * rotationMatrix * Matrix4x4.CreateTranslation(Size.x - 70, 70, 0) * Matrix4x4.CreateOrthographicOffCenter(0, Camera.main.Width, Camera.main.Height, 0, -100f, 100f);

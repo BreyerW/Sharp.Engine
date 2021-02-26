@@ -134,7 +134,7 @@ namespace Sharp.Editor
 			{
 				var fullAngle = NumericsExtensions.CalculateAngle(rotVectSource.Value, currentAngle);
 				CreatePrimitiveMesh.numVertices = halfCircleSegments;
-				CreatePrimitiveMesh.totalAngleDeg = fullAngle * NumericsExtensions.Rad2Deg;
+				CreatePrimitiveMesh.totalAngleDeg = fullAngle * (float)NumericsExtensions.Rad2Deg;
 				CreatePrimitiveMesh.innerRadius = 0.80f;
 				var disc = CreatePrimitiveMesh.GenerateEditorDisc(rotVectSource.Value, currentAngle);
 				ref var origDisc = ref Pipeline.Get<Mesh>().GetAsset("editor_disc");
@@ -336,7 +336,7 @@ namespace Sharp.Editor
 		}
 		private static Vector3 MakePositive(Vector3 euler)
 		{
-			float negativeFlip = -0.0001f * NumericsExtensions.Rad2Deg;
+			float negativeFlip = -0.0001f * (float)NumericsExtensions.Rad2Deg;
 			float positiveFlip = 360.0f + negativeFlip;
 
 			if (euler.X < negativeFlip)
@@ -380,7 +380,7 @@ namespace Sharp.Editor
 						Gizmo.RotateZ => SceneView.rotateSnap.Z,
 						_ => SceneView.screenRotateSnap
 					};
-					snapInRadian *= NumericsExtensions.Deg2Rad;
+					snapInRadian *= (float)NumericsExtensions.Deg2Rad;
 					ComputeSnap(ref angle, snapInRadian);
 				}
 				var rotationAxisLocalSpace = Vector3.TransformNormal(new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z), mModel.Inverted());
@@ -399,14 +399,15 @@ namespace Sharp.Editor
 				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
 				//entity.transform.Rotation = (rot * deltaRot).ToEulerAngles() * NumericsExtensions.Rad2Deg;
 
-				entity.transform.Rotation += deltaRot.ToEulerAngles() * NumericsExtensions.Rad2Deg;
+				entity.transform.Rotation += deltaRot.ToEulerAngles() * (float)NumericsExtensions.Rad2Deg;
 
 			}
 			else
 			{
+				var camDir = Camera.main.Parent.transform.Rotation is { Y: 180f, X: 0, Z: 0 } ? Vector3.UnitZ : Vector3.TransformNormal(Vector3.UnitZ, Matrix4x4.CreateBillboard(entity.transform.Position, Camera.main.Parent.transform.Position, Camera.main.ViewMatrix.Up(), Camera.main.ViewMatrix.Forward())).Normalized();
 				mModel.DecomposeDirections(out var right, out var up, out var forward);
 				Vector3[] movePlanNormal = { right,up,forward,
-			   -Camera.main.ViewMatrix.Forward()
+			   -camDir
 				};
 				var index = selectedGizmoId switch
 				{
@@ -536,7 +537,7 @@ namespace Sharp.Editor
 					Gizmo.ScaleZ => new Vector3(1, 1, newScale),
 					_ => Vector3.One
 				};
-				vScale = vScale * scaleSource.Value;
+				vScale *= scaleSource.Value;
 				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(vScale);
 
 				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);

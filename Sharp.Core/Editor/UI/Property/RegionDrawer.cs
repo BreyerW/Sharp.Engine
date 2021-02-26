@@ -259,10 +259,10 @@ namespace Sharp.Editor.UI.Property
 					points.Add(new Vector2(num, keyframe2.value));
 				}
 			}
-			if (keys[keys.Length - 1].time <= maxTime)
+			if (keys[^1].time <= maxTime)
 			{
-				points.Add(new Vector2(keys[keys.Length - 1].time, keys[keys.Length - 1].value));
-				points.Add(new Vector2(maxX, keys[keys.Length - 1].value));
+				points.Add(new Vector2(keys[^1].time, keys[^1].value));
+				points.Add(new Vector2(maxX, keys[^1].value));
 			}
 		}
 

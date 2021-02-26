@@ -381,7 +381,7 @@ public static class CreatePrimitiveMesh
 		var indices = new ushort[2 * numVertices * 3 + 3];
 
 		bool bFullDisc = (totalAngleDeg > 359.99f);
-		float fTotalRange = (totalAngleDeg) * NumericsExtensions.Deg2Rad;
+		float fTotalRange = (totalAngleDeg) * (float)NumericsExtensions.Deg2Rad;
 		float fDelta = (bFullDisc) ? fTotalRange / numVertices : fTotalRange / (numVertices - 1);
 		float fUVRatio = innerRadius / outerRadius;
 		for (int k = 0; k < numVertices; ++k)
@@ -447,7 +447,7 @@ public static class CreatePrimitiveMesh
 		var indices = new ushort[2 * numVertices * 3 + 3];
 
 		bool bFullDisc = (totalAngleDeg > 359.99f);
-		float fTotalRange = (totalAngleDeg) * NumericsExtensions.Deg2Rad;
+		float fTotalRange = (totalAngleDeg) * (float)NumericsExtensions.Deg2Rad;
 		float fDelta = (bFullDisc) ? fTotalRange / numVertices : fTotalRange / (numVertices - 1);
 		float fUVRatio = innerRadius / outerRadius;
 		var cross = Vector3.Cross(startAxis, nextAxis).Normalize();
@@ -539,12 +539,12 @@ public static class CreatePrimitiveMesh
 				var u = i / (float)tubularSegments * arc * NumericsExtensions.Deg2Rad;
 				var v = j / (float)radialSegments * MathF.PI * 2.0f;
 
-				center.X = radius * MathF.Cos(u);
-				center.Y = radius * MathF.Sin(u);
+				center.X = radius * MathF.Cos((float)u);
+				center.Y = radius * MathF.Sin((float)u);
 
 				var vertex = new Vector3();
-				vertex.X = (radius + tubeRadius * MathF.Cos(v)) * MathF.Cos(u);
-				vertex.Y = (radius + tubeRadius * MathF.Cos(v)) * MathF.Sin(u);
+				vertex.X = (radius + tubeRadius * MathF.Cos(v)) * MathF.Cos((float)u);
+				vertex.Y = (radius + tubeRadius * MathF.Cos(v)) * MathF.Sin((float)u);
 				vertex.Z = tubeRadius * MathF.Sin(v);
 
 				vertices.Add(new UIVertexFormat() { position = Vector3.Transform(vertex, transform) });
