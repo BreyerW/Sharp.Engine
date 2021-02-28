@@ -41,7 +41,7 @@ namespace Sharp.Core.Editor.UI.Component
 					if (delta != Vector3.Zero)
 					{
 						Matrix4x4.Decompose(t.ModelMatrix, out var scale, out var rot, out var trans);
-						var deltaRot = Quaternion.Normalize(Quaternion.CreateFromYawPitchRoll((delta.Y) * (float)NumericsExtensions.Deg2Rad, (delta.X) * (float)NumericsExtensions.Deg2Rad, (delta.Z) * (float)NumericsExtensions.Deg2Rad));
+						var deltaRot = Quaternion.Normalize(Quaternion.CreateFromYawPitchRoll((delta.Y) * NumericsExtensions.Deg2Rad, (delta.X) * NumericsExtensions.Deg2Rad, (delta.Z) * NumericsExtensions.Deg2Rad));
 						Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scale);
 						Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
 						Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot * deltaRot);

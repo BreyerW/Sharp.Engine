@@ -1,30 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using Assimp;
-using System.Threading;
 using System.Numerics;
 using System.IO;
 using Sharp;
-using Sharp.Editor.Views;
 using System.Runtime.CompilerServices;
-using System.Linq;
 using System.Runtime.InteropServices;
+using Sharp.Core;
 
 namespace SharpAsset.Pipeline
 {
 	[SupportedFiles(".fbx", ".dae", ".obj")]
 	public class MeshPipeline : Pipeline<Mesh>
 	{
-		public ThreadLocal<AssimpContext> context = new ThreadLocal<AssimpContext>(() => new AssimpContext());
-		private static readonly int assimpStride = Unsafe.SizeOf<Vector3D>();
 		private static readonly VertexAttribute[] supportedAttribs = (VertexAttribute[])Enum.GetValues(typeof(VertexAttribute));
-		private static BoundingBox bounds;
 		private static Type vertType;
 		private static int vertStride;
 		private static int indexStride;
+		private static Func<string, IEnumerable<(string, int, byte[])>> import;
+
 		static MeshPipeline()
 		{
 			SetMeshContext<uint, BasicVertexFormat>();
+			import = PluginManager.ImportAPI<Func<string, IEnumerable<(string, int, byte[])>>>("MeshLoader", "Import");
 		}
 
 		public static void SetVertexContext<T>() where T : struct, IVertex
@@ -48,8 +45,6 @@ namespace SharpAsset.Pipeline
 			//if (!SupportedFileFormatsAttribute.supportedFileFormats.Contains (format))
 			//throw new NotSupportedException (format+" format is not supported");
 
-			var scene = context.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals);
-			if (!scene.HasMeshes) return null;
 			var internalMesh = new Mesh
 			{
 				UsageHint = UsageHint.DynamicDraw,
@@ -57,259 +52,98 @@ namespace SharpAsset.Pipeline
 				VertType = vertType,
 				VBO = -1,
 				EBO = -1,
-				indexStride = indexStride
+				indexStride = indexStride,
 			};
-			if (scene.MeshCount > 1)
-				internalMesh.subMeshesDescriptor = new int[scene.MeshCount * 2];
 			if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(vertType))
 				RegisterAsAttribute.ParseVertexFormat(vertType);
 
-			var vertex = Activator.CreateInstance(vertType);//RuntimeHelpers.GetUninitializedObject(type)
 			var vertFormat = RegisterAsAttribute.registeredVertexFormats[vertType];
-			var finalSupportedAttribs = supportedAttribs.Where((attrib) => vertFormat.supportedSpecialAttribs.ContainsKey(attrib) && scene.Meshes[0].HasAttribute(attrib));
-			var meshData = new (VertexAttribute attrib, byte[] data)[finalSupportedAttribs.Count()];
-			foreach (var (key, attrib) in finalSupportedAttribs.Indexed())
-				meshData[key] = (attrib, null);
-			List<uint> finalIndices = new();
-			List<byte> finalVertices = new();
-			var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-			var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+
+			byte[] finalIndices = new byte[0];
+			byte[] finalVertices = new byte[0];
 			int id = 0;
-			foreach (var mesh in scene.Meshes)
+			int vertsCount = 0;
+			(Vector3 Min, Vector3 Max) largestBound = default;
+			foreach (var (attribName, stride, data) in import(pathToFile))
 			{
-				if (mesh.HasBones)
+				if (attribName is "meshCount")
 				{
-					//Get<Skeleton>().scene = scene;
-					//foreach (var tree in AssetsView.tree.Values)
-					//tree.AddNode(GetPipeline<SkeletonPipeline>().Import(""));
+					if (stride > 1)
+						internalMesh.subMeshesDescriptor = new int[stride * 2];
 				}
-				var indices = mesh.GetUnsignedIndices();//TODO: convert to bytes then switching indices type will be piss easy
-
-				var vertices = new byte[mesh.VertexCount * vertStride].AsSpan();
-
-				foreach (var (key, data) in meshData.Indexed())
-					meshData[key].data = mesh.GetAttribute(data.attrib);
-
-				for (int i = 0; i < mesh.VertexCount; i++)
+				else if (attribName is "indices")
 				{
-					var tmpVec = new Vector3(mesh.Vertices[i].X, mesh.Vertices[i].Y, mesh.Vertices[i].Z);
-
-					min = Vector3.Min(min, tmpVec);
-					max = Vector3.Max(max, tmpVec);
-
-					foreach (var (key, data) in meshData.Indexed())
-						CopyBytes(vertFormat.supportedSpecialAttribs[data.attrib], i, ref meshData[key].data, ref vertices);
+					Array.Resize(ref finalIndices, finalIndices.Length + data.Length);
+					if (id is not 0)
+					{
+						foreach (var i in ..stride)
+						{
+							ref var addr = ref finalIndices.AsSpan()[finalIndices.Length - data.Length + i * indexStride];
+							Unsafe.WriteUnaligned(ref addr, Unsafe.ReadUnaligned<uint>(ref data[i * indexStride]) + (uint)(finalVertices.Length / vertStride));
+						}
+					}
+					else
+						Unsafe.CopyBlockUnaligned(ref finalIndices[0], ref data[0], (uint)data.Length);
 				}
-				if (id is not 0)
-					foreach (var i in ..indices.Length)
-						indices[i] += (uint)(finalVertices.Count / vertStride);
-				finalVertices.AddRange(vertices.ToArray());
-
-				finalIndices.AddRange(indices);
-
-				if (scene.MeshCount > 1)
+				else if (attribName is "vertsCount")
 				{
-					internalMesh.subMeshesDescriptor[id * 2] = finalIndices.Count;
-					internalMesh.subMeshesDescriptor[id * 2 + 1] = finalVertices.Count;
+					vertsCount = stride;
+					Array.Resize(ref finalVertices, finalVertices.Length + vertStride * vertsCount);
 				}
-				//if (!Mesh.sharedMeshes.ContainsKey(internalMesh.Name))
-				//Mesh.sharedMeshes.Add(internalMesh.Name, vertices.ToArray());
-
-				bounds = new BoundingBox(min, max);
-				id++;
+				else if (attribName is "vertices")
+				{
+					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.POSITION];
+					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
+					if (internalMesh.subMeshesDescriptor is not null)
+					{
+						internalMesh.subMeshesDescriptor[id * 2] = finalIndices.Length / indexStride;
+						internalMesh.subMeshesDescriptor[id * 2 + 1] = finalVertices.Length;
+						id++;
+					}
+				}
+				else if (attribName is "normals")
+				{
+					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.NORMAL];
+					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
+				}
+				else if (attribName[..2] is "uv")
+				{
+					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.UV];
+					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
+				}
+				else if (attribName[..5] is "color")
+				{
+					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.NORMAL];
+					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
+				}
+				else if (attribName is "extents")
+				{
+					var Min = Unsafe.ReadUnaligned<Vector3>(ref data[0]);
+					var Max = Unsafe.ReadUnaligned<Vector3>(ref data[stride]);
+					largestBound.Min = Vector3.Min(largestBound.Min, Min);
+					largestBound.Max = Vector3.Min(largestBound.Max, Max);
+					//if (!Mesh.sharedMeshes.ContainsKey(internalMesh.Name))
+					//Mesh.sharedMeshes.Add(internalMesh.Name, vertices.ToArray());
+				}
 			}
-			internalMesh.Indices = MemoryMarshal.AsBytes(CollectionsMarshal.AsSpan(finalIndices)).ToArray();
-			internalMesh.verts = finalVertices.ToArray();
-			internalMesh.bounds = bounds;
+			internalMesh.Indices = finalIndices;
+			internalMesh.verts = finalVertices;
+			internalMesh.bounds = new Sharp.BoundingBox(largestBound.Min, largestBound.Max);
 			return this[Register(internalMesh)];
 		}
 
-		private void CopyBytes(RegisterAsAttribute format, int index, ref byte[] attribBytes, ref Span<byte> vertBytes)
+		private void CopyBytes(RegisterAsAttribute format, int count, byte[] vertices, byte[] data, int dataStride)
 		{
-			var offset = index * vertStride + format.offset;
-			var slice = vertBytes.Slice(offset, format.stride);
-			for (var i = 0; i < format.stride; i++)
-				slice[i] = attribBytes[index * assimpStride + i];
+			ref var pointer = ref vertices.AsSpan()[vertices.Length - count * vertStride];
+			foreach (var i in ..count)
+			{
+				ref var addr = ref Unsafe.Add(ref pointer, i * vertStride + format.offset);
+				Unsafe.CopyBlockUnaligned(ref addr, ref data[i * dataStride], (uint)format.stride);
+			}
 		}
-
-		//	public Matrix4 CalculateModelMatrix(){
-		//	return Matrix4.Scale(Scale) * Matrix4.CreateRotationX(Rotation.X) * Matrix4.CreateRotationY(Rotation.Y) * Matrix4.CreateRotationZ(Rotation.Z) * Matrix4.CreateTranslation(Position);
-		//}
 		public override void Export(string pathToExport, string format)
 		{
 			throw new NotImplementedException();
 		}
 	}
-
-	internal static class AssmipMeshExtension
-	{
-		public static bool HasAttribute(this Assimp.Mesh mesh, VertexAttribute vertAttrib, int level = 0)
-		{
-			return vertAttrib switch
-			{
-				VertexAttribute.POSITION => true,
-				VertexAttribute.UV => mesh.HasTextureCoords(level),
-				VertexAttribute.NORMAL => mesh.HasNormals,
-				VertexAttribute.COLOR4 => mesh.HasVertexColors(level),
-				_ => false,
-			};
-		}
-
-		public static byte[] GetAttribute(this Assimp.Mesh mesh, VertexAttribute vertAttrib, int level = 0)
-		{
-			return vertAttrib switch
-			{
-				VertexAttribute.POSITION => MemoryMarshal.AsBytes(mesh.Vertices.ToArray().AsSpan()).ToArray(),
-				VertexAttribute.UV => MemoryMarshal.AsBytes(mesh.TextureCoordinateChannels[level].ToArray().AsSpan()).ToArray(),
-				VertexAttribute.NORMAL => MemoryMarshal.AsBytes(mesh.Normals.ToArray().AsSpan()).ToArray(),
-				VertexAttribute.COLOR4 => MemoryMarshal.AsBytes(mesh.VertexColorChannels[level].ToArray().AsSpan()).ToArray(),
-				_ => throw new NotSupportedException(vertAttrib + " attribute not supported"),
-			};
-		}
-	}
-
-	/*[SupportedFiles(".fbx", ".dae", ".obj")]
-    public class MeshPipeline : Pipeline<Mesh>
-    {
-        public ThreadLocal<AssimpContext> asset = new ThreadLocal<AssimpContext>(() => new AssimpContext());
-
-        private static BoundingBox bounds;
-        private static Type vertType;
-        private static Func<IVertex[], byte[]> convertVerts;
-        private static int size;
-
-        static MeshPipeline()
-        {
-            SetVertexContext<BasicVertexFormat>();
-        }
-
-        public static void SetVertexContext<T>() where T : struct, IVertex
-        {
-            vertType = typeof(T);
-            size = Unsafe.SizeOf<T>();
-        }
-
-        public override IAsset Import(string pathToFile)
-        {
-            var format = Path.GetExtension(pathToFile);
-            //if (!SupportedFileFormatsAttribute.supportedFileFormats.Contains (format))
-            //throw new NotSupportedException (format+" format is not supported");
-
-            var scene = asset.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals);
-            var internalMesh = new Mesh();
-            internalMesh.FullPath = pathToFile;
-            if (!RegisterAsAttribute.registeredVertexFormats.ContainsKey(vertType))
-                RegisterAsAttribute.ParseVertexFormat(vertType);
-            var vertex = Activator.CreateInstance(vertType);//RuntimeHelpers.GetUninitializedObject(type)
-            foreach (var mesh in scene.Meshes)
-            {
-                if (mesh.HasBones)
-                {
-                    GetPipeline<SkeletonPipeline>().scene = scene;
-                    foreach (var tree in AssetsView.tree.Values)
-                        tree.AddNode(GetPipeline<SkeletonPipeline>().Import(""));
-                }
-                var indices = mesh.GetUnsignedIndices();
-                internalMesh.Indices = new Span<uint>(indices).AsBytes().ToArray();//(ushort[])(object)
-                //mesh.has
-                var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-                var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-                var vertices = new IVertex[mesh.VertexCount];
-                var vertsCopy = Array.CreateInstance(vertType, mesh.VertexCount);
-
-                var watch = System.Diagnostics.Stopwatch.StartNew();
-                for (int i = 0; i < mesh.VertexCount; i++)
-                {
-                    vertices[i] = RuntimeHelpers.GetObjectValue(vertex) as IVertex;
-
-                    var tmpVec = new Vector3(mesh.Vertices[i].X, mesh.Vertices[i].Y, mesh.Vertices[i].Z);
-
-                    min = Vector3.ComponentMin(min, tmpVec);
-                    max = Vector3.ComponentMax(max, tmpVec);
-                    if (mesh.HasVertices)
-                    {
-                        FillVertexAttrib(vertType, VertexAttribute.POSITION, ref vertices[i], new Vector3(mesh.Vertices[i].X, mesh.Vertices[i].Y, mesh.Vertices[i].Z)); //redo with ref-return?
-                    }
-                    if (mesh.HasVertexColors(0) && RegisterAsAttribute.registeredVertexFormats[vertType].ContainsKey(VertexAttribute.COLOR))
-                    {
-                        //baseVertData.Color.r = mesh.VertexColorChannels [0] [i].R;
-                        //baseVertData.Color.g = mesh.VertexColorChannels [0] [i].G;
-                        //baseVertData.Color.b = mesh.VertexColorChannels [0] [i].B;
-                        //baseVertData.Color.a = mesh.VertexColorChannels [0] [i].A;
-                    }
-                    if (mesh.HasTextureCoords(0))
-                    {
-                        FillVertexAttrib(vertType, VertexAttribute.UV, ref vertices[i], new Vector2(mesh.TextureCoordinateChannels[0][i].X, mesh.TextureCoordinateChannels[0][i].Y));//was 1-texcoord.y
-                    }
-                    if (mesh.HasNormals)
-                    {
-                        FillVertexAttrib(vertType, VertexAttribute.NORMAL, ref vertices[i], new Vector3(mesh.Normals[i].X, mesh.Normals[i].Y, mesh.Normals[i].Z));
-                    }
-                    //vertsCopy.SetValue(vertices[i], i);
-                }
-                Array.Copy(vertices, vertsCopy, vertsCopy.Length);
-                watch.Stop();
-                Console.WriteLine("cast: " + watch.ElapsedTicks);
-                internalMesh.UsageHint = UsageHint.DynamicDraw;
-                internalMesh.stride = size;
-                internalMesh.vertType = vertType;
-                if (indices[0].GetType() == typeof(ushort))
-                    internalMesh.indiceType = IndiceType.UnsignedShort;
-                else if (indices[0].GetType() == typeof(uint))
-                    internalMesh.indiceType = IndiceType.UnsignedInt;
-                var ptr = GCHandle.Alloc(vertsCopy, GCHandleType.Pinned);
-                var bytes = Span<byte>.DangerousCreate(vertsCopy, ref Unsafe.As<byte[]>(vertsCopy)[0], vertsCopy.Length * size).ToArray();
-                ptr.Free();
-                if (!Mesh.sharedMeshes.ContainsKey(internalMesh.Name))
-                    Mesh.sharedMeshes.Add(internalMesh.Name, bytes);
-
-                bounds = new BoundingBox(min, max);
-            }
-            internalMesh.bounds = bounds;
-
-            return internalMesh;
-        }
-
-        private void FillVertexAttrib(Type vertType, VertexAttribute vertAttrib, ref IVertex vert, Vector3 param)
-        {
-            if (!RegisterAsAttribute.registeredVertexFormats[vertType].ContainsKey(vertAttrib))
-                return;
-            if (RegisterAsAttribute.registeredVertexFormats[vertType][vertAttrib].generatedFillers.Count > 1)
-            {
-                RegisterAsAttribute.registeredVertexFormats[vertType][vertAttrib].generatedFillers[0](vert, param.X);
-                RegisterAsAttribute.registeredVertexFormats[vertType][vertAttrib].generatedFillers[1](vert, param.Y);
-                RegisterAsAttribute.registeredVertexFormats[vertType][vertAttrib].generatedFillers[2](vert, param.Z);
-            }
-            else
-                RegisterAsAttribute.registeredVertexFormats[vertType][vertAttrib].generatedFillers[0](vert, param);
-        }
-
-        private void FillVertexAttrib(Type vertType, VertexAttribute vertAttrib, ref IVertex vert, Vector2 param)
-        {
-            if (!RegisterAsAttribute.registeredVertexFormats[vertType].ContainsKey(vertAttrib))
-                return;
-            if (RegisterAsAttribute.registeredVertexFormats[vertType][vertAttrib].generatedFillers.Count > 1)
-            {
-                RegisterAsAttribute.registeredVertexFormats[vertType][vertAttrib].generatedFillers[0](vert, param.X);
-                RegisterAsAttribute.registeredVertexFormats[vertType][vertAttrib].generatedFillers[1](vert, param.Y);
-            }
-            else
-                RegisterAsAttribute.registeredVertexFormats[vertType][vertAttrib].generatedFillers[0](vert, param);
-        }
-
-        //	public Matrix4 CalculateModelMatrix(){
-        //	return Matrix4.Scale(Scale) * Matrix4.CreateRotationX(Rotation.X) * Matrix4.CreateRotationY(Rotation.Y) * Matrix4.CreateRotationZ(Rotation.Z) * Matrix4.CreateTranslation(Position);
-        //}
-        public override void Export(string pathToExport, string format)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override ref Mesh GetAsset(int index)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-     */
 }

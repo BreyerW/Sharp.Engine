@@ -38,9 +38,9 @@ namespace Sharp
 
 			Pipeline.Initialize();
 
-			var rotationX = Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, (float)NumericsExtensions.Deg2Rad * 90);
-			var rotationY = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, (float)NumericsExtensions.Deg2Rad * 90);
-			var rotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, -(float)NumericsExtensions.Deg2Rad * 90);
+			var rotationX = Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, NumericsExtensions.Deg2Rad * 90);
+			var rotationY = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, NumericsExtensions.Deg2Rad * 90);
+			var rotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, -NumericsExtensions.Deg2Rad * 90);
 
 			CreatePrimitiveMesh.numVertices = 33;
 			var gizmo = GenerateArrows(rotationX, rotationY, rotationZ);
@@ -126,7 +126,7 @@ namespace Sharp
 		}
 		private static void GeneratePlanes(ref Mesh gizmo, in Matrix4x4 rotationX, in Matrix4x4 rotationY, in Matrix4x4 rotationZ)
 		{
-			var fixRotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, (float)NumericsExtensions.Deg2Rad * 180);
+			var fixRotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, NumericsExtensions.Deg2Rad * 180);
 			var gizmo_square = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationZ, vertexColor: Manipulators.xColor);
 
 			var gizmo_squareY = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationX, vertexColor: Manipulators.yColor);

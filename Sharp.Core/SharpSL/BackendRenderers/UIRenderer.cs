@@ -11,9 +11,7 @@ using Font = SharpAsset.Font;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Shapes;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 
 namespace SharpSL.BackendRenderers
@@ -21,8 +19,6 @@ namespace SharpSL.BackendRenderers
 	public class UIRenderer : ISquidRenderer
 	{
 		private static int currentFont = -1;
-		//Typeface face = default;
-		//private static StbTrueType.stbtt_fontinfo face = new StbTrueType.stbtt_fontinfo();
 		private static SixLabors.Fonts.Font face;
 		private static Material sdfMaterial;
 		private static Material squareMaterial;

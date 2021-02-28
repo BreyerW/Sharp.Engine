@@ -57,7 +57,7 @@ namespace Sharp
 		public Quaternion ToQuaterion(Vector3 angles)
 		{
 			// Assuming the angles are in radians.
-			angles *= (float)NumericsExtensions.Deg2Rad;
+			angles *= NumericsExtensions.Deg2Rad;
 
 			return Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z));
 		}

@@ -2,7 +2,6 @@
 using Sharp;
 using SharpAsset.Pipeline;
 using SharpSL;
-using SixLabors.ImageSharp.Processing;
 using System;
 using System.Buffers;
 using System.Collections;

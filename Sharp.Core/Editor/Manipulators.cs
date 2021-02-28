@@ -127,7 +127,7 @@ namespace Sharp.Editor
 			}
 			var scaleMat = Matrix4x4.CreateScale(scale, scale, scale);
 			var finalMat = scaleMat * mModel;
-			var alignToScreen = scaleMat * Matrix4x4.CreateBillboard(entity.transform.Position, Camera.main.Parent.transform.Position, Camera.main.ViewMatrix.Up(), Camera.main.ViewMatrix.Forward());//
+			var alignToScreen = scaleMat * Matrix4x4.CreateBillboard(entity.transform.Position, Camera.main.Parent.transform.Position, Camera.main.ViewMatrix.Up(), Camera.main.ViewMatrix.Forward());
 			DrawHelper.DrawGizmo(finalMat, alignToScreen);
 
 			if (rotVectSource.HasValue)
@@ -380,7 +380,7 @@ namespace Sharp.Editor
 						Gizmo.RotateZ => SceneView.rotateSnap.Z,
 						_ => SceneView.screenRotateSnap
 					};
-					snapInRadian *= (float)NumericsExtensions.Deg2Rad;
+					snapInRadian *= NumericsExtensions.Deg2Rad;
 					ComputeSnap(ref angle, snapInRadian);
 				}
 				var rotationAxisLocalSpace = Vector3.TransformNormal(new Vector3(transformationPlane.X, transformationPlane.Y, transformationPlane.Z), mModel.Inverted());
@@ -404,7 +404,7 @@ namespace Sharp.Editor
 			}
 			else
 			{
-				var camDir = Camera.main.Parent.transform.Rotation is { Y: 180f, X: 0, Z: 0 } ? Vector3.UnitZ : Vector3.TransformNormal(Vector3.UnitZ, Matrix4x4.CreateBillboard(entity.transform.Position, Camera.main.Parent.transform.Position, Camera.main.ViewMatrix.Up(), Camera.main.ViewMatrix.Forward())).Normalized();
+				var camDir = Camera.main.Parent.transform.Rotation is { Y: var y, X: 0, Z: 0 } && y % 180f is 0 ? Vector3.UnitZ : Vector3.TransformNormal(Vector3.UnitZ, Matrix4x4.CreateBillboard(entity.transform.Position, Camera.main.Parent.transform.Position, Camera.main.ViewMatrix.Up(), Camera.main.ViewMatrix.Forward())).Normalized();
 				mModel.DecomposeDirections(out var right, out var up, out var forward);
 				Vector3[] movePlanNormal = { right,up,forward,
 			   -camDir

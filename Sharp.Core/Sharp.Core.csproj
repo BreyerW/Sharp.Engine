@@ -5,6 +5,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <StartupObject>Sharp.MainClass</StartupObject>
     <ApplicationIcon />
+    <Configurations>Debug;Release;test</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -112,8 +113,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AssimpNet" Version="4.1.0" />
-    <PackageReference Include="BepuPhysics" Version="2.0.0" />
+    <PackageReference Include="BepuPhysics" Version="2.3.0" />
     <PackageReference Include="ColorSharp" Version="0.11.0.32448" />
     <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
     <PackageReference Include="EditableStream" Version="0.3.0" />
@@ -121,6 +121,7 @@
     <PackageReference Include="FastMember" Version="1.5.0" />
     <PackageReference Include="JsonDiffPatch.Net" Version="2.1.0" />
     <PackageReference Include="Lidgren.Network.Portable" Version="1.0.1" />
+    <PackageReference Include="McMaster.NETCore.Plugins" Version="1.4.0-beta.41" />
     <PackageReference Include="Microsoft.Experimental.Collections" Version="1.0.6-e190117-3" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0-rc.1.20451.14" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.2.2" />
@@ -133,17 +134,18 @@
     <PackageReference Include="SharpAvi" Version="2.1.2" />
     <PackageReference Include="SharpCompress" Version="0.26.0" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0013" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
     <PackageReference Include="SixLabors.Shapes" Version="1.0.0-beta0009" />
     <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
     <PackageReference Include="SmallBlockMemoryStream" Version="1.0.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0-preview.8.20407.11" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0-preview.1.21102.12" />
     <PackageReference Include="System.Text.Json" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Newtonsoft.Json-master\Src\Newtonsoft.Json\Newtonsoft.Json.csproj" />
+    <ProjectReference Include="..\PluginAbstraction\PluginAbstraction.csproj" />
     <ProjectReference Include="..\Sharp.FossilDelta\Sharp.FossilDelta.csproj" />
     <ProjectReference Include="..\Sharp.SQUID\Sharp.SQUID.csproj" />
     <ProjectReference Include="..\Typography.MsdfGen.Core\Typography.MsdfGen.Core.csproj" />

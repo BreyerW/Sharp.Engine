@@ -1,13 +1,11 @@
 ﻿using System;
-using Assimp;
-using Assimp.Configs;
 using System.Numerics;
 using System.Linq;
 using System.Collections.Generic;
 
 namespace SharpAsset.Pipeline
 {
-	public class SkeletonPipeline : Pipeline
+	/*public class SkeletonPipeline : Pipeline
 	{
 		public Scene scene;
 		private Dictionary<string, Assimp.Bone> boneNames;
@@ -117,5 +115,5 @@ namespace SharpAsset.Pipeline
 			};
 			return m;
 		}
-	}
+	}*/
 }

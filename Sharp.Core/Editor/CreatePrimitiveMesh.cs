@@ -381,7 +381,7 @@ public static class CreatePrimitiveMesh
 		var indices = new ushort[2 * numVertices * 3 + 3];
 
 		bool bFullDisc = (totalAngleDeg > 359.99f);
-		float fTotalRange = (totalAngleDeg) * (float)NumericsExtensions.Deg2Rad;
+		float fTotalRange = (totalAngleDeg) * NumericsExtensions.Deg2Rad;
 		float fDelta = (bFullDisc) ? fTotalRange / numVertices : fTotalRange / (numVertices - 1);
 		float fUVRatio = innerRadius / outerRadius;
 		for (int k = 0; k < numVertices; ++k)
@@ -447,7 +447,7 @@ public static class CreatePrimitiveMesh
 		var indices = new ushort[2 * numVertices * 3 + 3];
 
 		bool bFullDisc = (totalAngleDeg > 359.99f);
-		float fTotalRange = (totalAngleDeg) * (float)NumericsExtensions.Deg2Rad;
+		float fTotalRange = (totalAngleDeg) * NumericsExtensions.Deg2Rad;
 		float fDelta = (bFullDisc) ? fTotalRange / numVertices : fTotalRange / (numVertices - 1);
 		float fUVRatio = innerRadius / outerRadius;
 		var cross = Vector3.Cross(startAxis, nextAxis).Normalize();
