@@ -16,12 +16,14 @@ namespace SharpAsset.Pipeline
 		private static Type vertType;
 		private static int vertStride;
 		private static int indexStride;
-		private static Func<string, IEnumerable<(string, int, byte[])>> import;
+		private static int vec3Stride = Marshal.SizeOf<Vector3>();
+		private static int color4Stride = Marshal.SizeOf<Color>();
+		private static Func<string, IEnumerable<object>> import;
 
 		static MeshPipeline()
 		{
 			SetMeshContext<uint, BasicVertexFormat>();
-			import = PluginManager.ImportAPI<Func<string, IEnumerable<(string, int, byte[])>>>("MeshLoader", "Import");
+			import = PluginManager.ImportAPI<Func<string, IEnumerable<object>>>("MeshLoader", "Import");
 		}
 
 		public static void SetVertexContext<T>() where T : struct, IVertex
@@ -62,77 +64,70 @@ namespace SharpAsset.Pipeline
 			byte[] finalIndices = new byte[0];
 			byte[] finalVertices = new byte[0];
 			int id = 0;
-			int vertsCount = 0;
 			(Vector3 Min, Vector3 Max) largestBound = default;
-			foreach (var (attribName, stride, data) in import(pathToFile))
+			List<int> subMeshesDescription = new();
+
+			foreach (var data in import(pathToFile))
 			{
-				if (attribName is "meshCount")
+				var meshData = Unsafe.As<MeshData>(data);
+				if (id is 1)
 				{
-					if (stride > 1)
-						internalMesh.subMeshesDescriptor = new int[stride * 2];
+					subMeshesDescription.Add(finalIndices.Length / indexStride);
+					subMeshesDescription.Add(finalVertices.Length);
 				}
-				else if (attribName is "indices")
+				Array.Resize(ref finalIndices, finalIndices.Length + meshData.indices.Length);
+				if (id is not 0)
 				{
-					Array.Resize(ref finalIndices, finalIndices.Length + data.Length);
-					if (id is not 0)
+					foreach (var i in ..(meshData.indices.Length / indexStride))
 					{
-						foreach (var i in ..stride)
-						{
-							ref var addr = ref finalIndices.AsSpan()[finalIndices.Length - data.Length + i * indexStride];
-							Unsafe.WriteUnaligned(ref addr, Unsafe.ReadUnaligned<uint>(ref data[i * indexStride]) + (uint)(finalVertices.Length / vertStride));
-						}
+						ref var addr = ref finalIndices.AsSpan()[finalIndices.Length - meshData.indices.Length + i * indexStride];
+						Unsafe.WriteUnaligned(ref addr, Unsafe.ReadUnaligned<uint>(ref meshData.indices[i * indexStride]) + (uint)(finalVertices.Length / vertStride));
 					}
-					else
-						Unsafe.CopyBlockUnaligned(ref finalIndices[0], ref data[0], (uint)data.Length);
 				}
-				else if (attribName is "vertsCount")
+				else
+					Unsafe.CopyBlockUnaligned(ref finalIndices[0], ref meshData.indices[0], (uint)meshData.indices.Length);
+
+				largestBound.Min = Vector3.Min(largestBound.Min, meshData.minExtents);
+				largestBound.Max = Vector3.Min(largestBound.Max, meshData.maxExtents);
+
+				Array.Resize(ref finalVertices, finalVertices.Length + vertStride * meshData.vertices.Length);
+
+				if (id is not 0)
 				{
-					vertsCount = stride;
-					Array.Resize(ref finalVertices, finalVertices.Length + vertStride * vertsCount);
+					subMeshesDescription.Add(finalIndices.Length / indexStride);
+					subMeshesDescription.Add(finalVertices.Length);
 				}
-				else if (attribName is "vertices")
+
+				if (meshData.vertices is not null)
 				{
 					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.POSITION];
-					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
-					if (internalMesh.subMeshesDescriptor is not null)
-					{
-						internalMesh.subMeshesDescriptor[id * 2] = finalIndices.Length / indexStride;
-						internalMesh.subMeshesDescriptor[id * 2 + 1] = finalVertices.Length;
-						id++;
-					}
+					CopyBytes(attribProps, meshData.vertices.Length, finalVertices, MemoryMarshal.AsBytes(meshData.vertices.AsSpan()), vec3Stride);
 				}
-				else if (attribName is "normals")
+				if (meshData.normals is not null)
 				{
 					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.NORMAL];
-					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
+					CopyBytes(attribProps, meshData.vertices.Length, finalVertices, MemoryMarshal.AsBytes(meshData.normals.AsSpan()), vec3Stride);
 				}
-				else if (attribName[..2] is "uv")
+				if (meshData.uv0 is not null)
 				{
 					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.UV];
-					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
+					CopyBytes(attribProps, meshData.vertices.Length, finalVertices, MemoryMarshal.AsBytes(meshData.uv0.AsSpan()), vec3Stride);
 				}
-				else if (attribName[..5] is "color")
+				if (meshData.color0 is not null)
 				{
-					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.NORMAL];
-					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
+					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.COLOR4];
+					CopyBytes(attribProps, meshData.vertices.Length, finalVertices, MemoryMarshal.AsBytes(meshData.color0.AsSpan()), color4Stride);
 				}
-				else if (attribName is "extents")
-				{
-					var Min = Unsafe.ReadUnaligned<Vector3>(ref data[0]);
-					var Max = Unsafe.ReadUnaligned<Vector3>(ref data[stride]);
-					largestBound.Min = Vector3.Min(largestBound.Min, Min);
-					largestBound.Max = Vector3.Min(largestBound.Max, Max);
-					//if (!Mesh.sharedMeshes.ContainsKey(internalMesh.Name))
-					//Mesh.sharedMeshes.Add(internalMesh.Name, vertices.ToArray());
-				}
+				id++;
 			}
 			internalMesh.Indices = finalIndices;
 			internalMesh.verts = finalVertices;
-			internalMesh.bounds = new Sharp.BoundingBox(largestBound.Min, largestBound.Max);
+			internalMesh.subMeshesDescriptor = subMeshesDescription.ToArray();
+			internalMesh.bounds = new BoundingBox(largestBound.Min, largestBound.Max);
 			return this[Register(internalMesh)];
 		}
 
-		private void CopyBytes(RegisterAsAttribute format, int count, byte[] vertices, byte[] data, int dataStride)
+		private void CopyBytes(RegisterAsAttribute format, int count, byte[] vertices, Span<byte> data, int dataStride)
 		{
 			ref var pointer = ref vertices.AsSpan()[vertices.Length - count * vertStride];
 			foreach (var i in ..count)
@@ -145,5 +140,15 @@ namespace SharpAsset.Pipeline
 		{
 			throw new NotImplementedException();
 		}
+	}
+	public class MeshData
+	{
+		public Vector3 minExtents;
+		public Vector3 maxExtents;
+		public byte[] indices;
+		public Vector3[] vertices;
+		public Vector3[] normals;
+		public Vector3[] uv0;
+		public Color[] color0;
 	}
 }

@@ -5,6 +5,7 @@ using System.IO;
 using System.Numerics;
 using Sharp;
 using SharpAsset.Pipeline;
+using System.Runtime.CompilerServices;
 
 namespace SharpAsset
 {
@@ -24,7 +25,7 @@ namespace SharpAsset
 				else
 				{
 					var mets = FontPipeline.loadMetrics(Name.ToString(), Size, c);
-					var tex = FontPipeline.generateTexture(Name.ToString(), Size, c);
+					var tex = Unsafe.As<TextureData>(FontPipeline.generateTexture(Name.ToString(), Size, c));
 					var newTex = new Texture()
 					{
 						FullPath = c + "_" + Name.ToString() + ".generated",
@@ -33,7 +34,7 @@ namespace SharpAsset
 						format = TextureFormat.A,
 						width = tex.width,
 						height = tex.height,
-						bitmap = tex.pixels
+						bitmap = tex.bitmap
 					};
 					Pipeline.Pipeline.Get<Texture>().Register(newTex);
 					data = new CharData() { metrics = mets, texture = newTex };
@@ -47,7 +48,7 @@ namespace SharpAsset
 		public ReadOnlySpan<char> Name { get { return Path.GetFileNameWithoutExtension(FullPath.AsSpan()); } set { } }
 		public ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath.AsSpan()); } set { } }
 
-		public float Size { get; set; }//reset ascender and descender on size change?
+		public float Size { get; set; }//TODO: reset ascender and descender on size change?
 		public ushort EmSize;
 		public short Ascender;
 		public short Descender;

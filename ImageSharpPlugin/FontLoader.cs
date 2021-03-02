@@ -30,7 +30,7 @@ namespace ImageSharpPlugin
 			var glyph = face.GetGlyph(c);
 			return (PixelToPointSize(glyph.Instance.LeftSideBearing, face.Size, face.EmSize), PixelToPointSize(glyph.Instance.AdvanceWidth, face.Size, face.EmSize));
 		}
-		public static (ushort,short, short) LoadFontData(string fontName, float size)
+		public static FontData LoadFontData(string fontName, float size)
 		{
 			Font face = null;
 			if (loadedFonts.TryFind(fontName, out var fam))
@@ -40,7 +40,7 @@ namespace ImageSharpPlugin
 			else
 				face = SystemFonts.CreateFont(fontName, size);
 
-			return (face.EmSize,face.Ascender, face.Descender);
+			return new FontData() { emSize = face.EmSize, ascender = face.Ascender, descender = face.Descender };
 		}
 		public static Vector2 LoadKerning(string fontName, float size, char c, char next)
 		{
@@ -56,7 +56,7 @@ namespace ImageSharpPlugin
 			var nextGlyph = face.GetGlyph(next).Instance;
 			return face.Instance.GetOffset(glyph, nextGlyph);
 		}
-		public static (int, int, byte[]) GenerateTextureForChar(string fontName, float size, char c)
+		public static TextureData GenerateTextureForChar(string fontName, float size, char c)
 		{
 			var fam = loadedFonts.Find(fontName);
 			var face = fam.CreateFont(size);
@@ -64,12 +64,22 @@ namespace ImageSharpPlugin
 			using Image<A8> img = new Image<A8>(Configuration.Default, nextPowerOfTwo, nextPowerOfTwo, new A8(0));
 			img.Mutate(i => i.DrawText("" + c, face, Color.White, new PointF(0f, -3f)));
 			img.TryGetSinglePixelSpan(out var span);
-			return (img.Width, img.Height, MemoryMarshal.AsBytes(span).ToArray());
+			return new TextureData()
+			{
+				width = img.Width,
+				height = img.Height,
+				bitmap = MemoryMarshal.AsBytes(span).ToArray()
+			};
 		}
 		private static float PixelToPointSize(float px, float size, float emSize)
 		{
 			return (px * size) / (emSize);
 		}
 	}
-
+	public class FontData
+	{
+		public ushort emSize;
+		public short ascender;
+		public short descender;
+	}
 }

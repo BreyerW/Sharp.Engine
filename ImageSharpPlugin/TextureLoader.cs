@@ -7,16 +7,24 @@ namespace ImageSharpPlugin
 {
 	public static class TextureLoader
 	{
-		public static IEnumerable<(string, int, byte[])> Import(string pathToFile)
+		public static TextureData Import(string pathToFile)
 		{
 			using (var image = Image.Load<Bgra32>(pathToFile))
 			{
-				int[] dim = new[] { image.Width, image.Height };
-				yield return ("dimensions", Marshal.SizeOf<int>(), MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref dim[0], 2)).ToArray());
-
 				image.TryGetSinglePixelSpan(out var span);
-				yield return ("data", Marshal.SizeOf<Bgra32>(), MemoryMarshal.AsBytes(span).ToArray());
+				return new TextureData()
+				{
+					width = image.Width,
+					height = image.Height,
+					bitmap = MemoryMarshal.AsBytes(span).ToArray()
+				};
 			}
 		}
+	}
+	public class TextureData
+	{
+		public int width;
+		public int height;
+		public byte[] bitmap;
 	}
 }

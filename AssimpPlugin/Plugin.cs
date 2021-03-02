@@ -23,7 +23,7 @@ namespace AssimpPlugin
 
 		public IEnumerable<Delegate> ExportAPI()
 		{
-			yield return (Func<string, IEnumerable<(string, int, byte[])>>)MeshLoader.Import;
+			yield return (Func<string, IEnumerable<MeshData>>)MeshLoader.Import;
 		}
 	}
 }

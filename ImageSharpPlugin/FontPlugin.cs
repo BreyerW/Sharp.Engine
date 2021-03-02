@@ -11,9 +11,9 @@ namespace ImageSharpPlugin
 		{
 			yield return (Func<string, bool>)FontLoader.Import;
 			yield return (Func<string, float, char, (float, float)>)FontLoader.LoadMetrics;
-			yield return (Func<string, float, (ushort,short, short)>)FontLoader.LoadFontData;
+			yield return (Func<string, float, FontData>)FontLoader.LoadFontData;
 			yield return (Func<string, float, char, char, Vector2>)FontLoader.LoadKerning;
-			yield return (Func<string, float, char, (int, int, byte[])>)FontLoader.GenerateTextureForChar;
+			yield return (Func<string, float, char, TextureData>)FontLoader.GenerateTextureForChar;
 		}
 
 		public string GetName()

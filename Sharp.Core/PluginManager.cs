@@ -48,7 +48,9 @@ namespace Sharp.Core
 
 					}
 					foreach (var API in plugin.ExportAPI())
+					{
 						plugins[name].Add(API.Method.Name, API);
+					}
 				}
 			}
 		}
