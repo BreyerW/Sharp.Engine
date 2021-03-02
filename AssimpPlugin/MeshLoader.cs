@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Assimp;
 using System.Threading;
 using System.Runtime.InteropServices;
+using PluginAbstraction;
 
 namespace AssimpPlugin
 {

@@ -27,7 +27,7 @@ namespace Sharp.Core
 				{
 					var loader = PluginLoader.CreateFromAssemblyFile(
 						pluginDll,
-						sharedTypes: new[] { typeof(IPlugin), typeof(IEnumerable<Delegate>), typeof(string) });
+						sharedTypes: new[] { typeof(IPlugin), typeof(IEnumerable<Delegate>), typeof(string), typeof(ExportAttribute) });
 					loaders.Add(loader);
 				}
 			}
@@ -35,19 +35,20 @@ namespace Sharp.Core
 			// Create an instance of plugin types
 			foreach (var loader in loaders)
 			{
-				foreach (var pluginType in loader
+				var types = loader
 					.LoadDefaultAssembly()
-					.GetTypes()
-					.Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract))
+					.GetTypes();
+				foreach (var pluginType in types.Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract))
 				{
 					// This assumes the implementation of IPlugin has a parameterless constructor
 					IPlugin plugin = (IPlugin)Activator.CreateInstance(pluginType);
 					var name = plugin.GetName();
-					if (plugins.TryAdd(name, new Dictionary<string, Delegate>()))
+					if (plugins.TryAdd(name, new Dictionary<string, Delegate>()) is false)
 					{
-						foreach (var API in plugin.ExportAPI())
-							plugins[name].Add(API.Method.Name, API);
+
 					}
+					foreach (var API in plugin.ExportAPI())
+						plugins[name].Add(API.Method.Name, API);
 				}
 			}
 		}

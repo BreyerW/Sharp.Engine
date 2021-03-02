@@ -6,10 +6,7 @@ namespace AssimpPlugin
 {
 	public class Plugin : IPlugin
 	{
-		public IEnumerable<Delegate> ExportAPI()
-		{
-			yield return (Func<string, IEnumerable<(string, int, byte[])>>)MeshLoader.Import;
-		}
+
 		public void ImportAPI(Dictionary<string, Dictionary<string, Delegate>> plugins)
 		{
 			throw new NotImplementedException();
@@ -24,6 +21,9 @@ namespace AssimpPlugin
 			return "1.0";
 		}
 
-
+		public IEnumerable<Delegate> ExportAPI()
+		{
+			yield return (Func<string, IEnumerable<(string, int, byte[])>>)MeshLoader.Import;
+		}
 	}
 }

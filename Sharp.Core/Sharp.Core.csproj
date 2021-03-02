@@ -133,11 +133,6 @@
     <PackageReference Include="SDL2.Core" Version="2.2.0" />
     <PackageReference Include="SharpAvi" Version="2.1.2" />
     <PackageReference Include="SharpCompress" Version="0.26.0" />
-    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0013" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
-    <PackageReference Include="SixLabors.Shapes" Version="1.0.0-beta0009" />
-    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
     <PackageReference Include="SmallBlockMemoryStream" Version="1.0.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0-preview.1.21102.12" />
     <PackageReference Include="System.Text.Json" Version="4.7.0" />

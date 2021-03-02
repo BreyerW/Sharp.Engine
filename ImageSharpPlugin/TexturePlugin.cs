@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ImageSharpPlugin
 {
-	public class Plugin : IPlugin
+	public class TexturePlugin : IPlugin
 	{
 		public IEnumerable<Delegate> ExportAPI()
 		{

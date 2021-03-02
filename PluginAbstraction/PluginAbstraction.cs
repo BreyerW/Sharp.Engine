@@ -14,4 +14,12 @@ namespace PluginAbstraction
 		/// <param name="plugins"></param>
 		void ImportAPI(Dictionary<string, Dictionary<string, Delegate>> plugins);
 	}
+	public class ExportAttribute : Attribute
+	{
+		public string plugin;
+		public ExportAttribute(string plugin)
+		{
+			this.plugin = plugin;
+		}
+	}
 }

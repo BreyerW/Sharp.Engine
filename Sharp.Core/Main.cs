@@ -62,7 +62,7 @@ namespace Sharp
 			var dSquare = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.Identity, "dynamic_square");
 			dSquare.UsageHint = UsageHint.DynamicDraw;
 			Pipeline.Get<Mesh>().Register(dSquare);
-			Pipeline.Get<Font>().Import(@"C:\Windows\Fonts\times.ttf");
+			Pipeline.Get<Font>().Import(@"C:\Windows\Fonts\Arial.ttf");
 
 
 

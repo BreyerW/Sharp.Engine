@@ -1,20 +1,12 @@
 ﻿using Fossil;
 using Newtonsoft.Json;
-using Sharp.Editor.Views;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.IO;
-using System.Reflection;
-using FastMember;
 using System.Collections;
 using System.Text;
 using Microsoft.Collections.Extensions;
 using System.Numerics;
-using Sharp.Engine.Components;
-using Newtonsoft.Json.Linq;
 using System.Linq;
-using SixLabors.Shapes;
 
 namespace Sharp.Editor
 {

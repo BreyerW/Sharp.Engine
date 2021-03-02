@@ -2,6 +2,7 @@
 using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+
 namespace ImageSharpPlugin
 {
 	public static class TextureLoader
