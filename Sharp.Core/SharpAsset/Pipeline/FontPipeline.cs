@@ -1,6 +1,7 @@
 ﻿using Sharp.Core;
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace SharpAsset.Pipeline
 {
@@ -26,5 +27,11 @@ namespace SharpAsset.Pipeline
 			font.Descender = data.descender;
 			return this[Register(font)];
 		}
+	}
+	public class FontData
+	{
+		public ushort emSize;
+		public short ascender;
+		public short descender;
 	}
 }

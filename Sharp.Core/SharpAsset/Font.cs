@@ -48,7 +48,7 @@ namespace SharpAsset
 		public ReadOnlySpan<char> Name { get { return Path.GetFileNameWithoutExtension(FullPath.AsSpan()); } set { } }
 		public ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath.AsSpan()); } set { } }
 
-		public float Size { get; set; }//reset ascender and descender on size change?
+		public float Size { get; set; }//TODO: reset ascender and descender on size change?
 		public ushort EmSize;
 		public short Ascender;
 		public short Descender;

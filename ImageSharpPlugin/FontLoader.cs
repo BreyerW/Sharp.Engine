@@ -87,4 +87,10 @@ namespace ImageSharpPlugin
 			throw new NotImplementedException();
 		}
 	}
+	public class FontData
+	{
+		public ushort emSize;
+		public short ascender;
+		public short descender;
+	}
 }
