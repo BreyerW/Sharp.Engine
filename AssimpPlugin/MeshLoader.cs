@@ -4,51 +4,70 @@ using Assimp;
 using System.Threading;
 using System.Runtime.InteropServices;
 using PluginAbstraction;
+using System.Runtime.CompilerServices;
 
 namespace AssimpPlugin
 {
-	public static class MeshLoader
+	public class MeshLoader : IMeshLoaderPlugin
 	{
 		private static ThreadLocal<AssimpContext> context = new ThreadLocal<AssimpContext>(() => new AssimpContext());
 
-		public static IEnumerable<(string, int, byte[])> Import(string pathToFile)
+		public IEnumerable<MeshData> Import(string pathToFile)
 		{
 			var scene = context.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals);
 
 			if (!scene.HasMeshes) yield break;
 
-			yield return ("meshCount", scene.MeshCount, null);
-
 			foreach (var mesh in scene.Meshes)
 			{
+				var data = new IntermediateMeshData();
+
 				var indices = mesh.GetUnsignedIndices();//TODO: convert to bytes then switching indices type will be piss easy
-				yield return ("indices", indices.Length, MemoryMarshal.AsBytes(indices.AsSpan()).ToArray());
-				if (mesh.HasBones)
+				data.indices = MemoryMarshal.AsBytes(indices.AsSpan()).ToArray();
+				data.minExtents = mesh.BoundingBox.Min;
+				data.maxExtents = mesh.BoundingBox.Max;
+				if (mesh.HasVertices)
+					data.vertices = mesh.Vertices.ToArray();
+
+				if (mesh.HasNormals)
+					data.normals = mesh.Normals.ToArray();
+				if (mesh.HasTextureCoords(0))
+					data.uv0 = mesh.TextureCoordinateChannels[0].ToArray();
+				if (mesh.HasVertexColors(0))
+					data.color0 = mesh.VertexColorChannels[0].ToArray();
+
+				yield return Unsafe.As<MeshData>(data);
+			}
+			/*if (mesh.HasBones)
 				{
 					//Get<Skeleton>().scene = scene;
 					//foreach (var tree in AssetsView.tree.Values)
 					//tree.AddNode(GetPipeline<SkeletonPipeline>().Import(""));
-				}
-				if (mesh.HasVertices)
-				{
-					yield return ("vertsCount", mesh.Vertices.Count, null);
-					yield return ("vertices", Marshal.SizeOf<Vector3D>(), MemoryMarshal.AsBytes(CollectionsMarshal.AsSpan(mesh.Vertices)).ToArray());
-				}
-				if (mesh.HasNormals)
-					yield return ("normals", Marshal.SizeOf<Vector3D>(), MemoryMarshal.AsBytes(CollectionsMarshal.AsSpan(mesh.Normals)).ToArray());
-				foreach (var level in ..mesh.TextureCoordinateChannelCount)
-				{
-					if (mesh.HasTextureCoords(level))
-						yield return ($"uv{level}", Marshal.SizeOf<Vector3D>(), MemoryMarshal.AsBytes(CollectionsMarshal.AsSpan(mesh.TextureCoordinateChannels[level])).ToArray());
-				}
-				foreach (var level in ..mesh.VertexColorChannelCount)
-				{
-					if (mesh.HasVertexColors(level))
-						yield return ($"color{level}", Marshal.SizeOf<Color4D>(), MemoryMarshal.AsBytes(CollectionsMarshal.AsSpan(mesh.VertexColorChannels[level])).ToArray());
-				}
-				var extents = new[] { mesh.BoundingBox.Min, mesh.BoundingBox.Max };
-				yield return ("extents", Marshal.SizeOf<Vector3D>(), MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref extents[0], 2)).ToArray());
-			}
+				}*/
 		}
+		public string GetName()
+		{
+			return "MeshLoader";
+		}
+
+		public string GetVersion()
+		{
+			return "1.0";
+		}
+
+		public void ImportPlugins(Dictionary<string, object> plugins)
+		{
+			throw new NotImplementedException();
+		}
+	}
+	public class IntermediateMeshData
+	{
+		public Vector3D minExtents;
+		public Vector3D maxExtents;
+		public byte[] indices;
+		public Vector3D[] vertices;
+		public Vector3D[] normals;
+		public Vector3D[] uv0;
+		public Color4D[] color0;
 	}
 }

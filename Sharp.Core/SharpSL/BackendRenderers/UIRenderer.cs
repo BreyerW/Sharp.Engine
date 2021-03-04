@@ -12,7 +12,6 @@ namespace SharpSL.BackendRenderers
 {
 	public class UIRenderer : ISquidRenderer
 	{
-		private static int currentFont = -1;
 		private static Material sdfMaterial;
 		private static Material squareMaterial;
 		private static Material texturedSquareMaterial;
@@ -49,7 +48,7 @@ namespace SharpSL.BackendRenderers
 		//return pt / resolution * dpi;
 		//}
 
-		float PixelToPointSize(float px,Font f)
+		float PixelToPointSize(float px, Font f)
 		{
 			return (px * f.Size) / (f.EmSize);
 		}
@@ -58,7 +57,7 @@ namespace SharpSL.BackendRenderers
 			var chars = text.AsSpan();
 			ref var realFont = ref Pipeline.Get<Font>().GetAsset(font);
 			var col = new Color((uint)color);
-			float penX = 0, penY = PixelToPointSize(realFont.Ascender + realFont.Descender,realFont);
+			float penX = 0, penY = PixelToPointSize(realFont.Ascender + realFont.Descender, realFont);
 			float stringWidth = 0; // the measured width of the string
 			float stringHeight = 0; // the measured height of the string
 			float overrun = 0;
@@ -122,13 +121,13 @@ namespace SharpSL.BackendRenderers
 				#endregion Overrun
 
 				// Advance pen positions for drawing the next character.
-				penX += metrics.Advance + 1; //2 == Spacing? same as Metrics.HorizontalAdvance?
-											 //penY += m.advance.Y;
+				penX += PixelToPointSize(metrics.Advance, realFont) + 1; //2 == Spacing? same as Metrics.HorizontalAdvance?
+																		 //penY += m.advance.Y;
 
 				#region Kerning (for NEXT character)
 
 				// Adjust for kerning between this character and the next.
-				var kerning = i is 0 ? 0 : realFont.GetKerningData(chars[i],chars[i-1]).X;
+				var kerning = i is 0 ? 0 : realFont.GetKerningData(chars[i], chars[i - 1]).X;
 				//kern = 0;
 				penX += kerning / 100f; //TODO: figure out number to scale kerning
 
@@ -211,7 +210,7 @@ namespace SharpSL.BackendRenderers
 				var g = fontData.metrics;
 				var kerning = i is 0 ? 0 : f.GetKerningData(span[i], span[i - 1]).X;
 
-				xoffset += kerning / 100f + g.Advance + 1;
+				xoffset += kerning / 100f + PixelToPointSize(g.Advance, f) + 1;
 				newHeight = fontData.texture.height + yoffset;
 				if (newHeight > v.Y)
 				{

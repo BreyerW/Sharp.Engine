@@ -8,12 +8,6 @@ namespace SharpAsset.Pipeline
 	[SupportedFiles(".bmp", ".jpg", ".png", ".dds")]
 	public class TexturePipeline : Pipeline<Texture>
 	{
-		private static Func<string, IEnumerable<(string, int, byte[])>> import;
-		static TexturePipeline()
-		{
-			import = PluginManager.ImportAPI<Func<string, IEnumerable<(string, int, byte[])>>>("TextureLoader", "Import");
-		}
-
 		public override IAsset Import(string pathToFile)
 		{
 			if (base.Import(pathToFile) is IAsset asset) return asset;
@@ -24,19 +18,13 @@ namespace SharpAsset.Pipeline
 			texture.FullPath = pathToFile;
 			//Console.WriteLine (IsPowerOfTwo(texture.bitmap.Width) +" : "+IsPowerOfTwo(texture.bitmap.Height));
 			//var format=ImageInfo.(pathToFile); 
-			foreach (var (attribName, stride, data) in import(pathToFile))
-			{
-				if (attribName is "dimensions")
-				{
-					texture.width = Unsafe.ReadUnaligned<int>(ref data[0]);
-					texture.height = Unsafe.ReadUnaligned<int>(ref data[stride]);
-				}
-				else if (attribName is "data")
-				{
-					texture.bitmap = GC.AllocateUninitializedArray<byte>(data.Length);
-					Unsafe.CopyBlockUnaligned(ref texture.bitmap[0], ref data[0], (uint)data.Length);
-				}
-			}
+			var data = PluginManager.textureLoader.Import(pathToFile);
+
+			texture.width = data.width;
+			texture.height = data.height;
+			texture.bitmap = GC.AllocateUninitializedArray<byte>(data.bitmap.Length);
+			Unsafe.CopyBlockUnaligned(ref texture.bitmap[0], ref data.bitmap[0], (uint)data.bitmap.Length);
+
 			return this[Register(texture)];
 		}
 

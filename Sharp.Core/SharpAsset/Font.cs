@@ -5,6 +5,7 @@ using System.IO;
 using System.Numerics;
 using Sharp;
 using SharpAsset.Pipeline;
+using Sharp.Core;
 
 namespace SharpAsset
 {
@@ -23,8 +24,8 @@ namespace SharpAsset
 				}
 				else
 				{
-					var mets = FontPipeline.loadMetrics(Name.ToString(), Size, c);
-					var tex = FontPipeline.generateTexture(Name.ToString(), Size, c);
+					var mets = PluginManager.fontLoader.LoadMetrics(Name.ToString(), Size, c);
+					var tex = PluginManager.fontLoader.GenerateTextureForChar(Name.ToString(), Size, c);
 					var newTex = new Texture()
 					{
 						FullPath = c + "_" + Name.ToString() + ".generated",
@@ -33,7 +34,7 @@ namespace SharpAsset
 						format = TextureFormat.A,
 						width = tex.width,
 						height = tex.height,
-						bitmap = tex.pixels
+						bitmap = tex.bitmap
 					};
 					Pipeline.Pipeline.Get<Texture>().Register(newTex);
 					data = new CharData() { metrics = mets, texture = newTex };
@@ -62,7 +63,7 @@ namespace SharpAsset
 		}
 		public Vector2 GetKerningData(char c, char next)
 		{
-			return FontPipeline.loadKerning(Name.ToString(), Size, c, next);
+			return PluginManager.fontLoader.LoadKerning(Name.ToString(), Size, c, next);
 		}
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)
 		{

@@ -10,7 +10,12 @@ namespace Sharp.Core
 {
 	public static class PluginManager
 	{
-		private static readonly Dictionary<string, Dictionary<string, Delegate>> plugins = new();
+		private static readonly Dictionary<string, IPlugin> plugins = new();
+
+		public static ISerializerPlugin serializer;
+		public static IMeshLoaderPlugin meshLoader;
+		public static ITextureLoaderPlugin textureLoader;
+		public static IFontLoaderPlugin fontLoader;
 
 		[ModuleInitializer]
 		internal static void LoadPlugins()
@@ -27,7 +32,7 @@ namespace Sharp.Core
 				{
 					var loader = PluginLoader.CreateFromAssemblyFile(
 						pluginDll,
-						sharedTypes: new[] { typeof(IPlugin), typeof(IEnumerable<Delegate>), typeof(string), typeof(ExportAttribute) });
+						config=>config.PreferSharedTypes=true);
 					loaders.Add(loader);
 				}
 			}
@@ -43,22 +48,16 @@ namespace Sharp.Core
 					// This assumes the implementation of IPlugin has a parameterless constructor
 					IPlugin plugin = (IPlugin)Activator.CreateInstance(pluginType);
 					var name = plugin.GetName();
-					if (plugins.TryAdd(name, new Dictionary<string, Delegate>()) is false)
+					plugins.TryAdd(name, plugin);
+					switch(plugin)
 					{
-
+						case ISerializerPlugin ser: serializer = ser; break;
+						case IMeshLoaderPlugin mLoader: meshLoader = mLoader; break;
+						case ITextureLoaderPlugin texLoader: textureLoader = texLoader; break;
+						case IFontLoaderPlugin fLoader: fontLoader = fLoader; break;
 					}
-					foreach (var API in plugin.ExportAPI())
-						plugins[name].Add(API.Method.Name, API);
 				}
 			}
-		}
-		public static T ImportAPI<T>(string plugin, string methodName) where T : Delegate
-		{
-			if (plugins.TryGetValue(plugin, out var APIs))
-				if (APIs.TryGetValue(methodName, out var method))
-					return method as T;
-
-			return null;
 		}
 	}
 }

@@ -16,12 +16,12 @@ namespace SharpAsset.Pipeline
 		private static Type vertType;
 		private static int vertStride;
 		private static int indexStride;
-		private static Func<string, IEnumerable<(string, int, byte[])>> import;
+		private static int vec3Stride = Marshal.SizeOf<Vector3>();
+		private static int color4Stride = Marshal.SizeOf<Color>();
 
 		static MeshPipeline()
 		{
 			SetMeshContext<uint, BasicVertexFormat>();
-			import = PluginManager.ImportAPI<Func<string, IEnumerable<(string, int, byte[])>>>("MeshLoader", "Import");
 		}
 
 		public static void SetVertexContext<T>() where T : struct, IVertex
@@ -62,77 +62,69 @@ namespace SharpAsset.Pipeline
 			byte[] finalIndices = new byte[0];
 			byte[] finalVertices = new byte[0];
 			int id = 0;
-			int vertsCount = 0;
 			(Vector3 Min, Vector3 Max) largestBound = default;
-			foreach (var (attribName, stride, data) in import(pathToFile))
+			List<int> subMeshesDescription = new();
+
+			foreach (var data in PluginManager.meshLoader.Import(pathToFile))
 			{
-				if (attribName is "meshCount")
+				if (id is 1)
 				{
-					if (stride > 1)
-						internalMesh.subMeshesDescriptor = new int[stride * 2];
+					subMeshesDescription.Add(finalIndices.Length / indexStride);
+					subMeshesDescription.Add(finalVertices.Length);
 				}
-				else if (attribName is "indices")
+				Array.Resize(ref finalIndices, finalIndices.Length + data.indices.Length);
+				if (id is not 0)
 				{
-					Array.Resize(ref finalIndices, finalIndices.Length + data.Length);
-					if (id is not 0)
+					foreach (var i in ..(data.indices.Length / indexStride))
 					{
-						foreach (var i in ..stride)
-						{
-							ref var addr = ref finalIndices.AsSpan()[finalIndices.Length - data.Length + i * indexStride];
-							Unsafe.WriteUnaligned(ref addr, Unsafe.ReadUnaligned<uint>(ref data[i * indexStride]) + (uint)(finalVertices.Length / vertStride));
-						}
+						ref var addr = ref finalIndices.AsSpan()[finalIndices.Length - data.indices.Length + i * indexStride];
+						Unsafe.WriteUnaligned(ref addr, Unsafe.ReadUnaligned<uint>(ref data.indices[i * indexStride]) + (uint)(finalVertices.Length / vertStride));
 					}
-					else
-						Unsafe.CopyBlockUnaligned(ref finalIndices[0], ref data[0], (uint)data.Length);
 				}
-				else if (attribName is "vertsCount")
+				else
+					Unsafe.CopyBlockUnaligned(ref finalIndices[0], ref data.indices[0], (uint)data.indices.Length);
+
+				largestBound.Min = Vector3.Min(largestBound.Min, data.minExtents);
+				largestBound.Max = Vector3.Min(largestBound.Max, data.maxExtents);
+
+				Array.Resize(ref finalVertices, finalVertices.Length + vertStride * data.vertices.Length);
+
+				if (id is not 0)
 				{
-					vertsCount = stride;
-					Array.Resize(ref finalVertices, finalVertices.Length + vertStride * vertsCount);
+					subMeshesDescription.Add(finalIndices.Length / indexStride);
+					subMeshesDescription.Add(finalVertices.Length);
 				}
-				else if (attribName is "vertices")
+
+				if (data.vertices is not null)
 				{
 					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.POSITION];
-					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
-					if (internalMesh.subMeshesDescriptor is not null)
-					{
-						internalMesh.subMeshesDescriptor[id * 2] = finalIndices.Length / indexStride;
-						internalMesh.subMeshesDescriptor[id * 2 + 1] = finalVertices.Length;
-						id++;
-					}
+					CopyBytes(attribProps, data.vertices.Length, finalVertices, MemoryMarshal.AsBytes(data.vertices.AsSpan()), vec3Stride);
 				}
-				else if (attribName is "normals")
+				if (data.normals is not null)
 				{
 					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.NORMAL];
-					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
+					CopyBytes(attribProps, data.vertices.Length, finalVertices, MemoryMarshal.AsBytes(data.normals.AsSpan()), vec3Stride);
 				}
-				else if (attribName[..2] is "uv")
+				if (data.uv0 is not null)
 				{
 					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.UV];
-					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
+					CopyBytes(attribProps, data.vertices.Length, finalVertices, MemoryMarshal.AsBytes(data.uv0.AsSpan()), vec3Stride);
 				}
-				else if (attribName[..5] is "color")
+				if (data.color0 is not null)
 				{
-					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.NORMAL];
-					CopyBytes(attribProps, vertsCount, finalVertices, data, stride);
+					var attribProps = vertFormat.supportedSpecialAttribs[VertexAttribute.COLOR4];
+					CopyBytes(attribProps, data.vertices.Length, finalVertices, MemoryMarshal.AsBytes(data.color0.AsSpan()), color4Stride);
 				}
-				else if (attribName is "extents")
-				{
-					var Min = Unsafe.ReadUnaligned<Vector3>(ref data[0]);
-					var Max = Unsafe.ReadUnaligned<Vector3>(ref data[stride]);
-					largestBound.Min = Vector3.Min(largestBound.Min, Min);
-					largestBound.Max = Vector3.Min(largestBound.Max, Max);
-					//if (!Mesh.sharedMeshes.ContainsKey(internalMesh.Name))
-					//Mesh.sharedMeshes.Add(internalMesh.Name, vertices.ToArray());
-				}
+				id++;
 			}
 			internalMesh.Indices = finalIndices;
 			internalMesh.verts = finalVertices;
-			internalMesh.bounds = new Sharp.BoundingBox(largestBound.Min, largestBound.Max);
+			internalMesh.subMeshesDescriptor = subMeshesDescription.ToArray();
+			internalMesh.bounds = new BoundingBox(largestBound.Min, largestBound.Max);
 			return this[Register(internalMesh)];
 		}
 
-		private void CopyBytes(RegisterAsAttribute format, int count, byte[] vertices, byte[] data, int dataStride)
+		private void CopyBytes(RegisterAsAttribute format, int count, byte[] vertices, Span<byte> data, int dataStride)
 		{
 			ref var pointer = ref vertices.AsSpan()[vertices.Length - count * vertStride];
 			foreach (var i in ..count)

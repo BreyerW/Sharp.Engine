@@ -6,18 +6,20 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using System;
 using System.Runtime.InteropServices;
 using System.Numerics;
+using PluginAbstraction;
+using System.Collections.Generic;
 
 namespace ImageSharpPlugin
 {
-	public static class FontLoader
+	public class FontLoader : IFontLoaderPlugin
 	{
 		private static FontCollection loadedFonts = new();
-		public static bool Import(string pathToFileOrSystemFont)
+		public bool Import(string pathToFileOrSystemFont)
 		{
 			FontFamily fam = pathToFileOrSystemFont.Contains('\\') ? loadedFonts.Install(pathToFileOrSystemFont) : SystemFonts.Find(pathToFileOrSystemFont);
 			return fam is not null;
 		}
-		public static (float, float) LoadMetrics(string fontName, float size, char c)
+		public (float, float) LoadMetrics(string fontName, float size, char c)
 		{
 			Font face = null;
 			if (loadedFonts.TryFind(fontName, out var fam))
@@ -28,9 +30,9 @@ namespace ImageSharpPlugin
 				face = SystemFonts.CreateFont(fontName, size);
 
 			var glyph = face.GetGlyph(c);
-			return (PixelToPointSize(glyph.Instance.LeftSideBearing, face.Size, face.EmSize), PixelToPointSize(glyph.Instance.AdvanceWidth, face.Size, face.EmSize));
+			return (glyph.Instance.LeftSideBearing, glyph.Instance.AdvanceWidth);
 		}
-		public static (ushort,short, short) LoadFontData(string fontName, float size)
+		public FontData LoadFontData(string fontName, float size)
 		{
 			Font face = null;
 			if (loadedFonts.TryFind(fontName, out var fam))
@@ -40,9 +42,9 @@ namespace ImageSharpPlugin
 			else
 				face = SystemFonts.CreateFont(fontName, size);
 
-			return (face.EmSize,face.Ascender, face.Descender);
+			return new FontData() { emSize = face.EmSize, ascender = face.Ascender, descender = face.Descender };
 		}
-		public static Vector2 LoadKerning(string fontName, float size, char c, char next)
+		public Vector2 LoadKerning(string fontName, float size, char c, char next)
 		{
 			Font face = null;
 			if (loadedFonts.TryFind(fontName, out var fam))
@@ -56,7 +58,7 @@ namespace ImageSharpPlugin
 			var nextGlyph = face.GetGlyph(next).Instance;
 			return face.Instance.GetOffset(glyph, nextGlyph);
 		}
-		public static (int, int, byte[]) GenerateTextureForChar(string fontName, float size, char c)
+		public TextureData GenerateTextureForChar(string fontName, float size, char c)
 		{
 			var fam = loadedFonts.Find(fontName);
 			var face = fam.CreateFont(size);
@@ -64,12 +66,25 @@ namespace ImageSharpPlugin
 			using Image<A8> img = new Image<A8>(Configuration.Default, nextPowerOfTwo, nextPowerOfTwo, new A8(0));
 			img.Mutate(i => i.DrawText("" + c, face, Color.White, new PointF(0f, -3f)));
 			img.TryGetSinglePixelSpan(out var span);
-			return (img.Width, img.Height, MemoryMarshal.AsBytes(span).ToArray());
+			return new TextureData()
+			{
+				width = img.Width,
+				height = img.Height,
+				bitmap = MemoryMarshal.AsBytes(span).ToArray()
+			};
 		}
-		private static float PixelToPointSize(float px, float size, float emSize)
+		public string GetName()
 		{
-			return (px * size) / (emSize);
+			return "FontLoader";
+		}
+
+		public string GetVersion()
+		{
+			return "1.0";
+		}
+		public void ImportPlugins(Dictionary<string, object> plugins)
+		{
+			throw new NotImplementedException();
 		}
 	}
-
 }

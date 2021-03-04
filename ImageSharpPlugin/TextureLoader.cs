@@ -2,21 +2,39 @@
 using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using PluginAbstraction;
 
 namespace ImageSharpPlugin
 {
-	public static class TextureLoader
+	public class TextureLoader : ITextureLoaderPlugin
 	{
-		public static IEnumerable<(string, int, byte[])> Import(string pathToFile)
+		public TextureData Import(string pathToFile)
 		{
 			using (var image = Image.Load<Bgra32>(pathToFile))
 			{
-				int[] dim = new[] { image.Width, image.Height };
-				yield return ("dimensions", Marshal.SizeOf<int>(), MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref dim[0], 2)).ToArray());
-
 				image.TryGetSinglePixelSpan(out var span);
-				yield return ("data", Marshal.SizeOf<Bgra32>(), MemoryMarshal.AsBytes(span).ToArray());
+				return new TextureData()
+				{
+					width = image.Width,
+					height = image.Height,
+					bitmap = MemoryMarshal.AsBytes(span).ToArray()
+				};
 			}
 		}
+		public string GetName()
+		{
+			return "TextureLoader";
+		}
+
+		public string GetVersion()
+		{
+			return "1.0";
+		}
+
+		public void ImportPlugins(Dictionary<string, object> plugins)
+		{
+			throw new System.NotImplementedException();
+		}
 	}
+
 }
