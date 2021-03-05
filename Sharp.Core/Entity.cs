@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Text.Json.Serialization;
 using Microsoft.Collections.Extensions;
-using Newtonsoft.Json;
 using Sharp.Core;
 using Sharp.Engine.Components;
 
 namespace Sharp
 {
-	[Serializable, JsonObject]
+	[Serializable]//, JsonObject
 	public sealed class Entity : IEngineObject
 	{
 		internal static MultiValueDictionary<(BitMask components, BitMask tags), Entity> tagsMapping = new();//key is bit position also make it for system parts where mask defines what components entity has at least once
@@ -23,7 +23,8 @@ namespace Sharp
 		private BitMask tagsMask = new(0);
 
 		private BitMask componentsMask = new(0);
-		[JsonProperty]
+		[JsonInclude]
+		//[JsonProperty]
 		public BitMask ComponentsMask
 		{
 			get => componentsMask;
@@ -34,7 +35,8 @@ namespace Sharp
 				componentsMask = value;
 			}
 		}
-		[JsonProperty]
+		[JsonInclude]
+		//[JsonProperty]
 		public BitMask TagsMask
 		{
 			get => tagsMask;
@@ -191,7 +193,7 @@ namespace Sharp
 				child.Dispose();
 			tagsMapping.Remove((componentsMask, tagsMask), this);
 			Extension.entities.RemoveEngineObject(this);
-			Extension.objectToIdMapping.Remove(this);
+			PluginManager.serializer.objToIdMapping.Remove(this);
 		}
 
 		public override string ToString()

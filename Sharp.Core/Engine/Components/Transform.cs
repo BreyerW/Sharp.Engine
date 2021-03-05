@@ -1,9 +1,7 @@
-﻿using Newtonsoft.Json;
-using Sharp.Core.Editor;
-using System;
+﻿using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 namespace Sharp.Engine.Components
 {
@@ -11,13 +9,17 @@ namespace Sharp.Engine.Components
 	{
 		private readonly static int mat4x4Stride = Marshal.SizeOf<Matrix4x4>();
 		//[NonSerializable]
-		[JsonProperty]
+		[JsonInclude]
+		//[JsonProperty]
 		private Matrix4x4 modelMatrix = Matrix4x4.Identity;
-		[JsonProperty]
+		[JsonInclude]
+		//[JsonProperty]
 		private Vector3 position = Vector3.Zero;
-		[JsonProperty]
+		[JsonInclude]
+		//[JsonProperty]
 		private Vector3 eulerAngles = Vector3.Zero;
-		[JsonProperty]
+		[JsonInclude]
+		//[JsonProperty]
 		private Vector3 scale = Vector3.One;
 		//[JsonProperty]
 		//private Quaternion rotation;
@@ -30,7 +32,8 @@ namespace Sharp.Engine.Components
 				return ref modelMatrix;
 			}
 		}
-		[JsonProperty]
+		[JsonInclude]
+		//[JsonProperty]
 		public Action onTransformChanged { get; set; }
 
 		public Vector3 Position

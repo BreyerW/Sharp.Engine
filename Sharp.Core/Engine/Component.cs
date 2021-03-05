@@ -1,8 +1,10 @@
 ﻿
 using Newtonsoft.Json;
+using Sharp.Core;
 using Sharp.Editor.Attribs;
 using Sharp.Engine.Components;
 using System;
+using System.Text.Json.Serialization;
 
 namespace Sharp
 {
@@ -38,7 +40,8 @@ namespace Sharp
 		//  } = { { { 80, 45 }, { 80, 45 }, { 80, 45 } } };
 		//[CurveRange()]
 		private Entity parent;
-		[NonSerializable, JsonProperty]
+		[JsonInclude]
+		[NonSerializable]//, JsonProperty
 		public Entity Parent
 		{
 			get => parent;
@@ -60,7 +63,8 @@ namespace Sharp
 		{
 			active = false;
 			Extension.entities.RemoveEngineObject(this);
-			Extension.objectToIdMapping.Remove(this);
+			//Extension.objectToIdMapping.Remove(this);
+			PluginManager.serializer.objToIdMapping.Remove(this);
 		}
 
 		public bool Equals(Component other)

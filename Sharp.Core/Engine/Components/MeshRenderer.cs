@@ -1,10 +1,6 @@
 ﻿using SharpAsset;
-using SharpAsset.Pipeline;
 using System;
 using Sharp.Engine.Components;
-using SharpSL;
-using System.Runtime.InteropServices;
-using Newtonsoft.Json;
 
 namespace Sharp
 {

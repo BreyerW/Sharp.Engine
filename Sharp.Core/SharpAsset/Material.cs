@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using Sharp;
+﻿using Sharp;
+using Sharp.Core;
 using SharpAsset.Pipeline;
 using SharpSL;
 using System;
@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 /*[StructLayout(LayoutKind.Explicit, Pack = 2)]
 public struct Matrix4X4
@@ -67,10 +68,12 @@ namespace SharpAsset
 			[typeof(float)] = Marshal.SizeOf<float>(),
 			[typeof(uint)] = Marshal.SizeOf<uint>(),
 		};
-		[JsonProperty]
+		[JsonInclude]
+		//[JsonProperty]
 		private int[] shadersId = Array.Empty<int>();
 		private static Dictionary<(uint winId, string property), byte[]> globalParams = new Dictionary<(uint winId, string property), byte[]>();
-		[JsonProperty]
+
+		[JsonInclude]//[JsonProperty]
 		private Dictionary<string, byte[]> localParams;
 		/*public Shader Shader
 		{
@@ -460,8 +463,8 @@ namespace SharpAsset
 		// This code added to correctly implement the disposable pattern.
 		public void Dispose()
 		{
-			Extension.objectToIdMapping.Remove(localParams);
-			Extension.objectToIdMapping.Remove(this);
+			PluginManager.serializer.objToIdMapping.Remove(localParams);
+			PluginManager.serializer.objToIdMapping.Remove(this);
 			foreach (var (_, item) in localParams)
 				item.Dispose();
 			// Do not change this code. Put cleanup code in Dispose(bool disposing) above.

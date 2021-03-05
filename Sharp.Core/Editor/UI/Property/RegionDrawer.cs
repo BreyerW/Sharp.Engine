@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Sharp.Editor.Attribs;
+﻿using Sharp.Editor.Attribs;
 using Sharp.Editor.Views;
 using SharpAsset;
 using SharpAsset.Pipeline;

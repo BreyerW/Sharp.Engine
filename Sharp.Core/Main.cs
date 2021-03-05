@@ -1,35 +1,17 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using SDL2;
 using Sharp.Editor;
 using Sharp.Editor.Views;
 using SharpAsset;
 using SharpAsset.Pipeline;
 using SharpSL.BackendRenderers.OpenGL;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Sharp
 {
 	internal class MainClass
 	{
-		internal static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
-		{
-			ContractResolver = new UninitializedResolver() { IgnoreSerializableAttribute = false },
-			Converters = new List<JsonConverter>() { new DictionaryConverter(),/* new EntityConverter(),*/  new DelegateConverter(), new ArrayReferenceConverter(), new ListReferenceConverter(),/* new IAssetConverter(), new IEngineConverter(), */ new PtrConverter() },
-			PreserveReferencesHandling = PreserveReferencesHandling.All,
-			ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-			TypeNameHandling = TypeNameHandling.All,
-			//ObjectCreationHandling = ObjectCreationHandling.Replace,
-			ObjectCreationHandling = ObjectCreationHandling.Reuse,
-			ReferenceResolverProvider = () => new IdReferenceResolver(),
-			NullValueHandling = NullValueHandling.Ignore,
-			DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
-		};
 		public static void Main(string[] args)
 		{
 			MainEditorView.editorBackendRenderer = new EditorOpenGLRenderer();
@@ -145,18 +127,6 @@ namespace Sharp
 			gizmo.AddSubMesh(ref circle);
 			gizmo.AddSubMesh(ref circleY);
 			gizmo.AddSubMesh(ref circleZ);
-		}
-	}
-	class UninitializedResolver : DefaultContractResolver
-	{
-		protected override JsonObjectContract CreateObjectContract(Type objectType)
-		{
-			JsonObjectContract contract = base.CreateObjectContract(objectType);
-			contract.DefaultCreator = () =>
-			{
-				return RuntimeHelpers.GetUninitializedObject(objectType);
-			};
-			return contract;
 		}
 	}
 }

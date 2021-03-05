@@ -1,5 +1,4 @@
 ﻿using Fossil;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections;
@@ -7,6 +6,7 @@ using System.Text;
 using Microsoft.Collections.Extensions;
 using System.Numerics;
 using System.Linq;
+using Sharp.Core;
 
 namespace Sharp.Editor
 {
@@ -21,7 +21,7 @@ namespace Sharp.Editor
 	public class UndoCommand : IMenuCommand
 	{
 		private static Dictionary<Guid, (string label, byte[] undo, byte[] redo)> saveState = new Dictionary<Guid, (string label, byte[] undo, byte[] redo)>();
-		internal static DictionarySlim<IEngineObject, string> prevStates = new();
+		internal static DictionarySlim<IEngineObject, byte[]> prevStates = new();
 		internal static LinkedList<History> snapshots = new LinkedList<History>();
 
 		internal static LinkedListNode<History> currentHistory;
@@ -83,9 +83,8 @@ namespace Sharp.Editor
 				{
 					var obj = index.GetInstanceObject<IEngineObject>();
 					ref var patched = ref prevStates.GetOrAddValueRef(obj);
-					var objToBePatched = Encoding.Unicode.GetBytes(patched);
-					patched = Encoding.Unicode.GetString(Delta.Apply(objToBePatched, undo));
-					JsonConvert.DeserializeObject(patched, obj.GetType(), MainClass.serializerSettings);
+					patched = Delta.Apply(patched, undo);
+					PluginManager.serializer.Deserialize(patched, obj.GetType());
 					/*getter(target) = val;
 				if (val is Material m)
 				{
@@ -125,15 +124,16 @@ namespace Sharp.Editor
 
 						if (added is Entity ent)
 						{
-							prevStates.GetOrAddValueRef(ent) = JsonConvert.SerializeObject(ent, ent.GetType(), MainClass.serializerSettings);
-							saveState[ent.GetInstanceID()] = ("addedEntity", null, Encoding.Unicode.GetBytes(prevStates.GetOrAddValueRef(ent)));
+							prevStates.GetOrAddValueRef(ent) = PluginManager.serializer.Serialize(ent, ent.GetType());
+							saveState[ent.GetInstanceID()] = ("addedEntity", null, prevStates.GetOrAddValueRef(ent));
 						}
 						else if (added is Component comp)
 						{
 							if (prevStates.TryGetValue(comp, out _)) throw new InvalidOperationException("unexpected add to already existing key");
 
-							prevStates.GetOrAddValueRef(comp) = JsonConvert.SerializeObject(comp, comp.GetType(), MainClass.serializerSettings);
-							saveState[comp.GetInstanceID()] = ("addedComponent", Encoding.Unicode.GetBytes(comp.GetType().AssemblyQualifiedName), Encoding.Unicode.GetBytes(prevStates.GetOrAddValueRef(comp)));
+							prevStates.GetOrAddValueRef(comp) = PluginManager.serializer.Serialize(comp, comp.GetType());
+
+							saveState[comp.GetInstanceID()] = ("addedComponent", Encoding.Unicode.GetBytes(comp.GetType().AssemblyQualifiedName), prevStates.GetOrAddValueRef(comp));
 						}
 					};
 				if (Root.removedEntities.Count > 0)
@@ -144,7 +144,7 @@ namespace Sharp.Editor
 				{
 					foreach (var (comp, state) in prevStates)
 					{
-						var token = JsonConvert.SerializeObject(comp, comp.GetType(), MainClass.serializerSettings);
+						var token = PluginManager.serializer.Serialize(comp, comp.GetType());
 
 						if (!state.AsSpan().SequenceEqual(token.AsSpan()))
 						{
@@ -156,12 +156,12 @@ namespace Sharp.Editor
 							//MemoryMarshal.AsBytes();
 							//if(SpanHelper.IsPrimitive<T>())
 							var str = token;
-							var currObjInBytes = Encoding.Unicode.GetBytes(str);
+							var currObjInBytes = str;
 							if (state is null /*|| saveState[comp.GetInstanceID()].ContainsKey("addedComponent")*/)
 								saveState[comp.GetInstanceID()] = ("changed", null, currObjInBytes);
 							else
 							{
-								var prevObjInBytes = Encoding.Unicode.GetBytes(state);
+								var prevObjInBytes = state;
 								var delta2 = Delta.Create(currObjInBytes, prevObjInBytes);
 								var delta1 = Delta.Create(prevObjInBytes, currObjInBytes);
 								saveState[comp.GetInstanceID()] = ("changed", delta2, delta1);

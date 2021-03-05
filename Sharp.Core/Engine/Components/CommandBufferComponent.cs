@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿
 using Sharp.Core;
 using SharpAsset;
 using SharpAsset.Pipeline;
@@ -6,7 +6,7 @@ using SharpSL;
 using SharpSL.BackendRenderers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using OpenTK.Graphics.OpenGL;
+using System.Text.Json.Serialization;
 
 namespace Sharp.Engine.Components
 {
@@ -15,7 +15,8 @@ namespace Sharp.Engine.Components
 	{
 		protected Camera cam;
 		private CommandBufferComponent prevPass = null;
-		[JsonProperty]
+		[JsonInclude]
+		//[JsonProperty]
 		public CommandBufferComponent PrevPass
 		{
 			get => prevPass;

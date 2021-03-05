@@ -1,8 +1,7 @@
-﻿using BepuUtilities.Memory;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Text.Json.Serialization;
 
 namespace Sharp.Core
 {
@@ -13,8 +12,8 @@ namespace Sharp.Core
 	{
 		private static int BitSize = (sizeof(uint) * 8) - 1;
 		private static int ByteSize = 5;  // log_2(BitSize + 1)
-
-		[JsonProperty(IsReference = false)]
+		[JsonInclude]
+		//[JsonProperty(IsReference = false)]
 		private uint[] bits;
 
 		public BitMask(int startValue)

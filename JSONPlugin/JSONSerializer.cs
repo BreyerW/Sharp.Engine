@@ -22,14 +22,16 @@ namespace JSONPlugin
 			NullValueHandling = NullValueHandling.Ignore,
 			DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
 		};
-		internal static Func<Dictionary<object, Guid>> mapping;
-		public Func<Dictionary<object, Guid>> objToIdMapping { set => mapping = value; }
+		internal static Dictionary<object, Guid> mapping = new();
+		internal static Func<object, bool> isEngineObject;
+		public Dictionary<object, Guid> objToIdMapping => mapping;
+
+		public Func<object, bool> IsEngineObject { set => isEngineObject = value; }
 
 		public object Deserialize(byte[] data, Type type)
 		{
 			var str = Encoding.Unicode.GetString(data);
-			var o = JsonConvert.DeserializeObject(str, type, serializerSettings);
-			return o;
+			return JsonConvert.DeserializeObject(str, type, serializerSettings);
 		}
 		public byte[] Serialize(object obj, Type type)
 		{

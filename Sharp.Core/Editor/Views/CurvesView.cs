@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using Sharp.Editor.UI;
 using Sharp.Editor.UI.Property;
 using SharpAsset;
 using SharpAsset.Pipeline;
 using Squid;
-using OpenTK.Graphics.OpenGL;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Sharp.Editor.Views
 {

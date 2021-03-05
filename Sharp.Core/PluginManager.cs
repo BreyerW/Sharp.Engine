@@ -32,7 +32,7 @@ namespace Sharp.Core
 				{
 					var loader = PluginLoader.CreateFromAssemblyFile(
 						pluginDll,
-						config=>config.PreferSharedTypes=true);
+						config => config.PreferSharedTypes = true);
 					loaders.Add(loader);
 				}
 			}
@@ -49,7 +49,7 @@ namespace Sharp.Core
 					IPlugin plugin = (IPlugin)Activator.CreateInstance(pluginType);
 					var name = plugin.GetName();
 					plugins.TryAdd(name, plugin);
-					switch(plugin)
+					switch (plugin)
 					{
 						case ISerializerPlugin ser: serializer = ser; break;
 						case IMeshLoaderPlugin mLoader: meshLoader = mLoader; break;
@@ -58,6 +58,7 @@ namespace Sharp.Core
 					}
 				}
 			}
+			serializer.IsEngineObject = (obj) => obj is Component or Entity;
 		}
 	}
 }

@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Sharp.Core;
+﻿using Sharp.Core;
 using SharpAsset;
 using System;
 using System.Collections.Generic;

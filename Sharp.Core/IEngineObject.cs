@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using Sharp.Core;
 using System;
 
 namespace Sharp
@@ -22,9 +22,10 @@ namespace Sharp
 				}
 			}
 		}*/
-		void IDisposable.Dispose() => Extension.objectToIdMapping.Remove(this);
-		bool IEquatable<IEngineObject>.Equals(IEngineObject other){
+		void IDisposable.Dispose() => PluginManager.serializer.objToIdMapping.Remove(this);
+		bool IEquatable<IEngineObject>.Equals(IEngineObject other)
+		{
 			return this == other;
-}
+		}
 	}
 }

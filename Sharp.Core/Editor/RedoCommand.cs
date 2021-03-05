@@ -1,13 +1,7 @@
-﻿using FastMember;
-using Fossil;
-using Newtonsoft.Json;
-using Sharp.Editor.Views;
-using Sharp.Engine.Components;
+﻿using Fossil;
+using Sharp.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Sharp.Editor
@@ -35,11 +29,11 @@ namespace Sharp.Editor
 			{
 				if (label is "addedEntity")
 				{
-					var str = Encoding.Unicode.GetString(redo);
-					var component = JsonConvert.DeserializeObject(str, typeof(Entity), MainClass.serializerSettings) as Entity;
+					var component = PluginManager.serializer.Deserialize(redo, typeof(Entity)) as Entity;
+
 					component.components = new List<Component>();
 					component.childs = new List<Entity>();
-					UndoCommand.prevStates.GetOrAddValueRef(component) = str;
+					UndoCommand.prevStates.GetOrAddValueRef(component) = redo;
 					//component.AddRestoredObject(index);
 					Extension.entities.AddRestoredEngineObject(component, index);
 					/*var entity = Entity.CreateEntityForEditor();
@@ -58,9 +52,8 @@ namespace Sharp.Editor
 				else if (label is "changed")
 				{
 					ref var patched = ref UndoCommand.prevStates.GetOrAddValueRef(index.GetInstanceObject<IEngineObject>());
-					var objToBePatched = Encoding.Unicode.GetBytes(patched);
-					patched = Encoding.Unicode.GetString(Delta.Apply(objToBePatched, redo));
-					JsonConvert.DeserializeObject(patched, index.GetInstanceObject<IEngineObject>().GetType(), MainClass.serializerSettings);
+					patched = Delta.Apply(patched, redo);
+					PluginManager.serializer.Deserialize(patched, index.GetInstanceObject<IEngineObject>().GetType());
 					//Console.WriteLine(object.ReferenceEquals(index.GetInstanceObject(),UndoCommand.prevStates.FirstOrDefault((obj) => obj.Key.GetInstanceID() == index).Key));
 				}
 				if (label is "selected")
@@ -71,11 +64,9 @@ namespace Sharp.Editor
 			}
 			foreach (var (id, list) in componentsToBeAdded)
 			{
-				//Extension.objectToIdMapping.TryGetValue(componentsToBeAdded.Keys[0],out _);
-				var str = Encoding.Unicode.GetString(list.redo);
-				var component = JsonConvert.DeserializeObject(str, Type.GetType(Encoding.Unicode.GetString(list.undo)), MainClass.serializerSettings) as Component;
+				var component = PluginManager.serializer.Deserialize(list.redo, Type.GetType(Encoding.Unicode.GetString(list.undo))) as Component;
 				component.Parent.components.Add(component);
-				UndoCommand.prevStates.GetOrAddValueRef(component) = str;
+				UndoCommand.prevStates.GetOrAddValueRef(component) = list.redo;
 				//component.AddRestoredObject(id);
 				Extension.entities.AddRestoredEngineObject(component, id);
 

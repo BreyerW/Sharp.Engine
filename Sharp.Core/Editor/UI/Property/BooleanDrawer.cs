@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using Squid;
+﻿using Squid;
 using System.Reflection;
 
 namespace Sharp.Editor.UI.Property

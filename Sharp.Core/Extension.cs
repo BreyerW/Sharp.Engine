@@ -104,9 +104,9 @@ namespace Sharp
 		internal static Dictionary<object, Guid> objectToIdMapping = new Dictionary<object, Guid>();//TODO: remove on destroy?
 		public static Guid GetInstanceID<T>(this T obj) where T : class
 		{
-			if (!objectToIdMapping.TryGetValue(obj, out var id))
+			if (!PluginManager.serializer.objToIdMapping.TryGetValue(obj, out var id))
 			{
-				objectToIdMapping.Add(obj, id = Guid.NewGuid());
+				PluginManager.serializer.objToIdMapping.Add(obj, id = Guid.NewGuid());
 				//throw new InvalidOperationException("attempted to add new entity this shouldnt be happening");
 			}
 			return id;
@@ -139,7 +139,7 @@ namespace Sharp
 		}*/
 		public static void Dispose<T>(this T obj) where T : class
 		{
-			objectToIdMapping.Remove(obj);
+			PluginManager.serializer.objToIdMapping.Remove(obj);
 		}
 		public static IEngineObject GetInstanceObject(in this Guid id)
 		{
@@ -148,7 +148,7 @@ namespace Sharp
 		}
 		internal static void AddRestoredObject<T>(this T obj, in Guid id) where T : class
 		{
-			objectToIdMapping.Add(obj, id);
+			PluginManager.serializer.objToIdMapping.Add(obj, id);
 		}
 		public static IntPtr GetFieldOffset(this FieldInfo fi) => fi.DeclaringType.IsValueType ? GetStructFieldOffset(fi.FieldHandle) : GetFieldOffset(fi.FieldHandle);
 
