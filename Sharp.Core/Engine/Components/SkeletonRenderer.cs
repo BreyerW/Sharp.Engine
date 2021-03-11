@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Sharp
 {
-	public class SkeletonRenderer : Renderer
+/*	public class SkeletonRenderer : Renderer
 	{
 		public Skeleton skele;
 
@@ -38,6 +38,6 @@ namespace Sharp
              entityObject.Scale = new Vector3(20, 20, 20);
              entityObject.SetModelMatrix();
              skele.MVP = entityObject.ModelMatrix * Camera.main.ModelViewMatrix * Camera.main.ProjectionMatrix;
-         }*/
-	}
+         }*
+	}*/
 }

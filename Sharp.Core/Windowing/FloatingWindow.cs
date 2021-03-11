@@ -11,8 +11,8 @@ namespace Sharp
 
         public override void OnRenderFrame()
         {
-            //MainWindow.backendRenderer.Scissor(0, 0, Size.width, Size.height);
-            //MainWindow.backendRenderer.ClearBuffer();
+            //PluginManager.backendRenderer.Scissor(0, 0, Size.width, Size.height);
+            //PluginManager.backendRenderer.ClearBuffer();
         }
     }
 }

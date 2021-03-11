@@ -1,6 +1,7 @@
 ﻿using System;
 using Squid;
 using System.Collections.Generic;
+using Sharp.Core;
 
 namespace Sharp.Editor.Views
 {
@@ -19,7 +20,7 @@ namespace Sharp.Editor.Views
 		protected View(uint attachToWindow)
 		{
 			attachedToWindow = attachToWindow;
-			MainWindow.backendRenderer.currentWindow = attachToWindow;
+			PluginManager.backendRenderer.currentWindow = attachToWindow;
 			Button.AutoSize = AutoSize.Horizontal;
 			NoEvents = false;
 		}

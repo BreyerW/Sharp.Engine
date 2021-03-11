@@ -6,15 +6,18 @@ using Microsoft.Collections.Extensions;
 using Sharp.Core;
 using Sharp.Engine.Components;
 
+
 namespace Sharp
 {
-	[Serializable]//, JsonObject
+	delegate bool MaskCheck(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags);
+
 	public sealed class Entity : IEngineObject
 	{
+
 		internal static MultiValueDictionary<(BitMask components, BitMask tags), Entity> tagsMapping = new();//key is bit position also make it for system parts where mask defines what components entity has at least once
 		[JsonIgnore]
 		public Entity parent;
-		public bool visible;//TODO: mark all objects as not visible every frame then when frustrum culling in bepuphysic or physx mark them as visible
+		//public bool visible;//TODO: mark all objects as not visible every frame then when frustrum culling in bepuphysic or physx mark them as visible
 		[JsonIgnore]
 		public Transform transform;//TODO: remove it and make caching responsibility of user
 		[JsonIgnore]
@@ -23,8 +26,8 @@ namespace Sharp
 		private BitMask tagsMask = new(0);
 
 		private BitMask componentsMask = new(0);
+
 		[JsonInclude]
-		//[JsonProperty]
 		public BitMask ComponentsMask
 		{
 			get => componentsMask;
@@ -36,7 +39,6 @@ namespace Sharp
 			}
 		}
 		[JsonInclude]
-		//[JsonProperty]
 		public BitMask TagsMask
 		{
 			get => tagsMask;
@@ -91,33 +93,24 @@ namespace Sharp
 						yield return value;
 
 		}
-		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithComponentsAndTags(BitMask componentsMask, BitMask tagsMask, bool cullComponents = false, bool cullTags = false)
+		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWith(BitMask componentsMask, BitMask tagsMask, bool cullComponents = false, bool cullTags = false)
 		{
-			if (cullComponents && cullTags)
+			MaskCheck condition = (cullComponents, cullTags) switch
 			{
-				foreach (var (key, value) in tagsMapping)
-					if (key.components.HasNoFlags(componentsMask) && key.tags.HasNoFlags(tagsMask))
-						yield return value;
-			}
-			else if (cullComponents is false && cullTags is false)
-			{
-				foreach (var (key, value) in tagsMapping)
-					if (key.components.HasFlags(componentsMask) && key.tags.HasFlags(tagsMask))
-						yield return value;
-			}
-			else if (cullComponents is false && cullTags)
-			{
-				foreach (var (key, value) in tagsMapping)
-					if (key.components.HasFlags(componentsMask) && key.tags.HasNoFlags(tagsMask))
-						yield return value;
-			}
-			else
-			{
-				foreach (var (key, value) in tagsMapping)
-					if (key.components.HasNoFlags(componentsMask) && key.tags.HasFlags(tagsMask))
-						yield return value;
-			}
+				(false, false) => compsAndTags,
+				(true, true) => nCompsAndnTags,
+				(false, true) => compsAndnTags,
+				(true, false) => nCompsAndTags,
+			};
+			foreach (var (key, value) in tagsMapping)
+				if (condition(key.components, key.tags, componentsMask, tagsMask))
+					yield return value;
 		}
+		private static bool compsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasFlags(components) && tagsMask.HasFlags(tags);
+		private static bool nCompsAndnTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasNoFlags(tags);
+		private static bool nCompsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasFlags(tags);
+		private static bool compsAndnTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasFlags(components) && tagsMask.HasNoFlags(tags);
+
 		public static Vector3 rotationMatrixToEulerAngles(Matrix4x4 mat)
 		{
 			//assert(isRotationMatrix(R));

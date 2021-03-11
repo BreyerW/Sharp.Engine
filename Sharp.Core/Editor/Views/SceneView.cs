@@ -1,5 +1,4 @@
-﻿//using PhysX;
-using SharpAsset.Pipeline;
+﻿using SharpAsset.AssetPipeline;
 using Squid;
 using System;
 using System.Collections.Generic;
@@ -8,12 +7,8 @@ using System.Numerics;
 using Sharp.Engine.Components;
 using SharpAsset;
 using SharpSL;
-using OpenTK.Graphics.OpenGL;
-using System.Runtime.CompilerServices;
 using Sharp.Core;
-using System.Runtime.InteropServices;
-using Microsoft.Toolkit.HighPerformance.Extensions;
-using System.Reflection;
+using PluginAbstraction;
 
 namespace Sharp.Editor.Views
 {
@@ -42,15 +37,6 @@ namespace Sharp.Editor.Views
 		internal static Vector2 mouseDela;
 		internal static Point? locPos = null;
 		public static bool mouseLocked = false;
-		/*DebugProc DebugCallbackInstance = DebugCallback;
-
-		static void DebugCallback(DebugSource source, DebugType type, int id,
-			DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
-		{
-			string msg = Marshal.PtrToStringAnsi(message);
-			Console.WriteLine("[GL] {0}; {1}; {2}; {3}; {4};",
-				source, type, id, severity, msg);
-		}*/
 		static SceneView()
 		{
 			LoadScene();
@@ -130,7 +116,7 @@ namespace Sharp.Editor.Views
 			Button.Text = "Scene";
 			AllowFocus = true;
 			ids = new int[(int)Gizmo.UniformScale];
-			MainWindow.backendRenderer.GenerateBuffers(Target.OcclusionQuery, ids);
+			PluginManager.backendRenderer.GenerateBuffers(Target.OcclusionQuery, ids);
 		}
 
 		private void SceneView_KeyUp(Control sender, KeyEventArgs args)
@@ -283,40 +269,47 @@ namespace Sharp.Editor.Views
 
 			viewCubeMat.BindProperty("model", m);
 
-			var renderables = new List<Entity>();
-			var rs = Entity.FindAllWithComponentsAndTags(rendererMask, Camera.main.cullingTags, cullTags: true);
+			var renderables = new List<Renderer>();
+			var transparentRenderables = new List<Renderer>();
+			var rs = Entity.FindAllWith(rendererMask, Camera.main.cullingTags, cullTags: true);
 			var renderers = rs.GetEnumerator();
 			while (renderers.MoveNext())
-				renderables.AddRange(renderers.Current);
-			//renderables.Sort(new OrderByDistanceToCamera());
-			if (renderables.Count + (int)Gizmo.UniformScale > ids.Length || renderables.Count + (int)Gizmo.UniformScale < ids.Length)
+			{
+				foreach (var renderable in renderers.Current)
+				{
+					var renderer = renderable.GetComponent<MeshRenderer>();
+					if (renderer.material.IsBlendRequiredForPass(0))
+						transparentRenderables.Add(renderer);
+					else
+						renderables.Add(renderer);
+				}
+			}
+
+			transparentRenderables.Sort(new OrderByDistanceToCamera());
+
+			if (renderables.Count + transparentRenderables.Count + (int)Gizmo.UniformScale > ids.Length || renderables.Count + transparentRenderables.Count + (int)Gizmo.UniformScale < ids.Length)
 			{
 				if (ids is not null)
-					MainWindow.backendRenderer.DeleteBuffers(Target.OcclusionQuery, ids);
-				ids = new int[renderables.Count + (int)Gizmo.UniformScale];
-				MainWindow.backendRenderer.GenerateBuffers(Target.OcclusionQuery, ids);
+					PluginManager.backendRenderer.DeleteBuffers(Target.OcclusionQuery, ids);
+				ids = new int[renderables.Count + transparentRenderables.Count + (int)Gizmo.UniformScale];
+				PluginManager.backendRenderer.GenerateBuffers(Target.OcclusionQuery, ids);
 			}
 			var commandBuffers = Camera.main.Parent.GetAllComponents<CommandBufferComponent>();
 			foreach (var command in commandBuffers)
 				command.Execute();
 
-			MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
-			MainWindow.backendRenderer.Viewport(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
-			MainWindow.backendRenderer.Clip(Squid.UI.MousePosition.x, Canvas.Size.y - Squid.UI.MousePosition.y, 1, 1);//TODO: 3x3 or more for rubber band style?
+			PluginManager.backendRenderer.BindBuffers(Target.Frame, 0);
+			PluginManager.backendRenderer.Viewport(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
+			PluginManager.backendRenderer.Clip(Squid.UI.MousePosition.x - 1, Canvas.Size.y - Squid.UI.MousePosition.y - 1, 1, 1);//TODO: 3x3 or more for rubber band style?
 
-			//MainWindow.backendRenderer.SetStandardState();
-			//MainWindow.backendRenderer.ClearColor(0f, 0f, 0f, 0f);
-			MainWindow.backendRenderer.ClearBuffer();
+			PluginManager.backendRenderer.ClearBuffer();
 
-			GL.Disable(EnableCap.Blend);
-			//blit from SceneCommand to this framebuffer instead
-			//MainWindow.backendRenderer.WriteDepth(false);
+			PluginManager.backendRenderer.DisableState(RenderState.Blend);
 			if (mouseLocked is false)
 			{
-				Material.BindGlobalProperty("enablePicking", 1f);
 
-				MainWindow.backendRenderer.SetColorMask(false, false, false, false);
-				GL.Enable(EnableCap.DepthTest);//disable when all objects or when depth peeling to be selected or enabled + less when only top most
+				PluginManager.backendRenderer.SetColorMask(false, false, false, false);
+				PluginManager.backendRenderer.EnableState(RenderState.DepthTest);//disable when all objects or when depth peeling to be selected or enabled + less when only top most
 
 				if (SceneStructureView.tree.SelectedNode is { UserData: Entity })
 				{
@@ -325,16 +318,16 @@ namespace Sharp.Editor.Views
 				}
 				viewCubeMat.Draw();
 
-				GL.DepthFunc(DepthFunction.Equal);
+				PluginManager.backendRenderer.SetDepthFunc(DepthFunc.Equal);
 
 				if (SceneStructureView.tree.SelectedNode is { UserData: Entity })
 				{
 					foreach (var i in ..(Gizmo.UniformScale - Gizmo.TranslateX - 1))
 					{
-						using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateX - 1 + i]))
+						using (PluginManager.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.TranslateX - 1 + i]))
 							DrawHelper.gizmoMaterial.Draw(subMesh: i);
 					}
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.RotateScreen - 1]))
+					using (PluginManager.backendRenderer.StartQuery(Target.OcclusionQuery, ids[(int)Gizmo.RotateScreen - 1]))
 					{
 						DrawHelper.screenGizmoMaterial.Draw();
 					}
@@ -342,77 +335,85 @@ namespace Sharp.Editor.Views
 
 				foreach (var i in ..((int)Gizmo.TranslateX - 1))
 				{
-					using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[i]))
+					using (PluginManager.backendRenderer.StartQuery(Target.OcclusionQuery, ids[i]))
 						viewCubeMat.Draw(subMesh: i);
 				}
-
-				MainWindow.backendRenderer.ClearDepth();
-				GL.DepthFunc(DepthFunction.Less);
+				//PluginManager.backendRenderer.Clip(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
+				PluginManager.backendRenderer.SetDepthFunc(DepthFunc.Less);
+				PluginManager.backendRenderer.ClearDepth();
 				foreach (var renderable in renderables)
 				{
-					var renderer = renderable.GetComponent<MeshRenderer>();
-					if (renderer is { active: true })//TODO: sort front to back
+					if (renderable is { active: true })
 					{
-						renderer.Render();
+						renderable.Render();
 					}
 				}
-
-				GL.Enable(EnableCap.DepthTest);//disable when all objects or when depth peeling to be selected or enabled + less when only top most
-				GL.DepthFunc(DepthFunction.Equal);
-				//GL.Enable(EnableCap.CullFace);
-				foreach (var i in (int)Gizmo.UniformScale..ids.Length)
+				Material.BindGlobalProperty("enablePicking", 1f);
+				foreach (var renderable in transparentRenderables)
 				{
-					var renderer = renderables[i - (int)Gizmo.UniformScale].GetComponent<MeshRenderer>();
-					if (renderer is { active: true })//TODO: sort front to back
+					if (renderable is { active: true })
 					{
-						using (MainWindow.backendRenderer.StartQuery(Target.OcclusionQuery, ids[i]))
-							renderer.Render();
+						renderable.Render();
 					}
 				}
 				Material.BindGlobalProperty("enablePicking", 0f);
-				//MainWindow.backendRenderer.WriteDepth(true);
-			}
+				//PluginManager.backendRenderer.Clip(Squid.UI.MousePosition.x - 1, Canvas.Size.y - Squid.UI.MousePosition.y - 1, 1, 1);//TODO: 3x3 or more for rubber band style?
 
-			MainWindow.backendRenderer.Viewport(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
-			MainWindow.backendRenderer.Clip(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
-			MainWindow.backendRenderer.SetColorMask(true, true, true, true);
-
-			MainWindow.backendRenderer.ClearColor(0.15f, 0.15f, 0.15f, 1f);
-			MainWindow.backendRenderer.ClearBuffer();
-			GL.DepthFunc(DepthFunction.Less);
-			//GL.Disable(EnableCap.CullFace);
-			//GL.Enable(EnableCap.DepthTest);
-			GL.Enable(EnableCap.Blend);
-			//blit from SceneCommand to this framebuffer instead
-			MainWindow.backendRenderer.WriteDepth(true);
-			renderers = rs.GetEnumerator();
-			//var level = 0;
-			while (renderers.MoveNext())
-				foreach (var renderable in renderers.Current)
+				PluginManager.backendRenderer.EnableState(RenderState.DepthTest);//disable when all objects or when depth peeling to be selected or enabled + less when only top most
+				PluginManager.backendRenderer.SetDepthFunc(DepthFunc.Equal);
+				var queryOffset = (int)Gizmo.UniformScale;
+				foreach (var i in ..renderables.Count)
 				{
-					var renderer = renderable.GetComponent<MeshRenderer>();
-					if (renderer is { active: true })
+					var renderer = renderables[i];
+					if (renderer is { active: true })//TODO: sort front to back
 					{
-						//renderer.material.BindProperty("darkening", level++);
-						renderer.Render();
+						using (PluginManager.backendRenderer.StartQuery(Target.OcclusionQuery, ids[i + queryOffset]))
+							renderer.Render();
 					}
 				}
-			//MainWindow.backendRenderer.WriteDepth(false);
-			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
+				queryOffset += renderables.Count;
+				foreach (var i in ..transparentRenderables.Count)//TODO: can temporarily replace shader to simpler one since correct depth is already filled in previous step
+				{
+					var renderer = transparentRenderables[i];
+					if (renderer is { active: true })
+					{
+						using (PluginManager.backendRenderer.StartQuery(Target.OcclusionQuery, ids[i + queryOffset]))
+							renderer.Render();
+					}
+				}
+			}
 
-			//MainWindow.backendRenderer.ClearDepth();
-			//MainWindow.backendRenderer.WriteDepth(false);
+			PluginManager.backendRenderer.Viewport(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
+			PluginManager.backendRenderer.Clip(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
+			PluginManager.backendRenderer.SetColorMask(true, true, true, true);
+
+			PluginManager.backendRenderer.ClearColor(0.15f, 0.15f, 0.15f, 1f);
+			PluginManager.backendRenderer.ClearBuffer();
+			PluginManager.backendRenderer.SetDepthFunc(DepthFunc.Less);
+
+			//blit from SceneCommand to this framebuffer instead
+			PluginManager.backendRenderer.EnableState(RenderState.DepthMask);
+			foreach (var renderable in renderables)
+			{
+				if (renderable is { active: true })
+				{
+					renderable.Render();
+				}
+			}
+			PluginManager.backendRenderer.EnableState(RenderState.Blend);
+			foreach (var renderable in transparentRenderables)
+			{
+				if (renderable is { active: true })
+				{
+					renderable.Render();
+				}
+			}
+			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
 
 			highlight.Draw();
 
-			//if (viewCubeMat.TryGetProperty("isHovered", out float isHovered) && isHovered is 0f)
-			{
-				//GL.CullFace(CullFaceMode.FrontAndBack);
-				//MainWindow.backendRenderer.WriteDepth(false);
-			}
-
-			MainWindow.backendRenderer.ClearDepth();
-			MainWindow.backendRenderer.WriteDepth(true);
+			PluginManager.backendRenderer.ClearDepth();
+			PluginManager.backendRenderer.EnableState(RenderState.DepthMask);
 			if (SceneStructureView.tree.SelectedNode?.UserData is Entity e)
 			{
 				//foreach (var selected in SceneStructureView.tree.SelectedChildren)
@@ -440,12 +441,30 @@ namespace Sharp.Editor.Views
 
 			var index = -1;
 			int result;
+			bool editorObjPicked = false;
+			bool opaqueObjPicked = false;
+			bool transparentObjPicked = false;
+
 			foreach (var i in ..ids.Length)//TODO: move to the end of rendering to minimize stall?
 			{
-				MainWindow.backendRenderer.GetQueryResult(ids[i], out result);
+				PluginManager.backendRenderer.GetQueryResult(ids[i], out result);
 				if (result is not 0)
 				{
-					index = i + 1;
+					if (i + 1 < (int)Gizmo.UniformScale)
+					{
+						index = i + 1;
+						editorObjPicked = true;
+					}
+					else if (i < (int)Gizmo.UniformScale + renderables.Count)
+					{
+						index = i - (int)Gizmo.UniformScale;
+						opaqueObjPicked = true;
+					}
+					else
+					{
+						index = i - (int)Gizmo.UniformScale - renderables.Count;
+						transparentObjPicked = true;
+					}
 					break;
 				}
 			}
@@ -453,18 +472,23 @@ namespace Sharp.Editor.Views
 			{
 				if (index is not -1)
 				{
-					if (index < (int)Gizmo.UniformScale)
+					if (editorObjPicked)
 					{
 						if (leftCtrlPressed && index is > (int)Gizmo.RotateZ)
 							Manipulators.useUniformScale = true;
 						Manipulators.selectedGizmoId = (Gizmo)index;
 					}
+					else if (opaqueObjPicked)
+					{
+						Camera.main.pivot = renderables[index].Parent;
+						Selection.Asset = renderables[index].Parent;
+					}
 					else
 					{
-						Camera.main.pivot = renderables[index - (int)Gizmo.UniformScale - 1];
-						Selection.Asset = renderables[index - (int)Gizmo.UniformScale - 1];
+						Camera.main.pivot = transparentRenderables[index].Parent;
+						Selection.Asset = transparentRenderables[index].Parent;
 					}
-					if (index > (int)Gizmo.TranslateX - 1)
+					if (editorObjPicked && index > (int)Gizmo.TranslateX - 1)
 						mouseLocked = true;
 				}
 				else
@@ -476,9 +500,14 @@ namespace Sharp.Editor.Views
 			}
 			else if (index is not -1)
 			{
-				if (index > (int)Gizmo.UniformScale - 1)
+				if (opaqueObjPicked)
 				{
-					Selection.HoveredObject = renderables[index - (int)Gizmo.UniformScale - 1];
+					Selection.HoveredObject = renderables[index].Parent;
+					Manipulators.hoveredGizmoId = Gizmo.Invalid;
+				}
+				else if (transparentObjPicked)
+				{
+					Selection.HoveredObject = transparentRenderables[index].Parent;
 					Manipulators.hoveredGizmoId = Gizmo.Invalid;
 				}
 				else
@@ -494,16 +523,16 @@ namespace Sharp.Editor.Views
 				Manipulators.hoveredGizmoId = Gizmo.Invalid;
 				Selection.HoveredObject = null;
 			}
-			MainWindow.backendRenderer.Viewport(0, 0, Canvas.Size.x, Canvas.Size.y);
+			PluginManager.backendRenderer.Viewport(0, 0, Canvas.Size.x, Canvas.Size.y);
 		}
 	}
 
-	internal class OrderByDistanceToCamera : IComparer<Entity>
+	internal class OrderByDistanceToCamera : IComparer<Renderer>
 	{
-		public int Compare(Entity x, Entity y)
+		public int Compare(Renderer x, Renderer y)
 		{
-			var xDistance = (x.transform.Position - Camera.main.Parent.transform.Position).Length();
-			var yDistance = (y.transform.Position - Camera.main.Parent.transform.Position).Length();
+			var xDistance = (x.Parent.transform.Position - Camera.main.Parent.transform.Position).Length();
+			var yDistance = (y.Parent.transform.Position - Camera.main.Parent.transform.Position).Length();
 			if (xDistance > yDistance) return 1;
 			return -1;
 			//return 0;

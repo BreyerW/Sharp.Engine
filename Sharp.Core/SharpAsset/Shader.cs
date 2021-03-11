@@ -2,18 +2,12 @@
 using System.IO;
 using System.Collections.Generic;
 using Sharp;
-using Sharp.Editor.Views;
 using System.Numerics;
+using Sharp.Core;
+using PluginAbstraction;
 
 namespace SharpAsset
 {
-	public enum BlendEquation
-	{
-		None,
-		One,
-		OneMinuSrcAlpha,
-		SrcAlpha
-	}
 	[Serializable]
 	public struct Shader : IAsset//move backendrenderer here?
 	{
@@ -21,7 +15,7 @@ namespace SharpAsset
 		public ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath); } set { } }
 
 		public string FullPath { get; set; }
-		public bool IsAllocated => !(Program is -1);
+		public bool IsAllocated => Program is not -1;
 		public string VertexSource;
 		public string FragmentSource;
 
@@ -44,9 +38,9 @@ namespace SharpAsset
 
 		public void Dispose()
 		{
-			MainWindow.backendRenderer.DeleteBuffer(SharpSL.Target.Shader, Program);
-			MainWindow.backendRenderer.DeleteBuffer(SharpSL.Target.VertexShader, VertexID);
-			MainWindow.backendRenderer.DeleteBuffer(SharpSL.Target.FragmentShader, FragmentID);
+			PluginManager.backendRenderer.DeleteBuffer(Target.Shader, Program);
+			PluginManager.backendRenderer.DeleteBuffer(Target.VertexShader, VertexID);
+			PluginManager.backendRenderer.DeleteBuffer(Target.FragmentShader, FragmentID);
 		}
 
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)

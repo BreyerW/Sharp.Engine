@@ -16,6 +16,7 @@ namespace Sharp.Core
 		public static IMeshLoaderPlugin meshLoader;
 		public static ITextureLoaderPlugin textureLoader;
 		public static IFontLoaderPlugin fontLoader;
+		public static IBackendRenderer backendRenderer;
 
 		[ModuleInitializer]
 		internal static void LoadPlugins()
@@ -55,6 +56,7 @@ namespace Sharp.Core
 						case IMeshLoaderPlugin mLoader: meshLoader = mLoader; break;
 						case ITextureLoaderPlugin texLoader: textureLoader = texLoader; break;
 						case IFontLoaderPlugin fLoader: fontLoader = fLoader; break;
+						case IBackendRenderer br: backendRenderer = br; break;
 					}
 				}
 			}

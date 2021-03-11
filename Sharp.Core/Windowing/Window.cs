@@ -10,11 +10,12 @@ using System.Collections;
 using System.IO;
 using SharpAsset;
 using System.Text;
-using SharpAsset.Pipeline;
+using SharpAsset.AssetPipeline;
 using SharpSL;
 using Microsoft.Collections.Extensions;
 using Sharp.Engine.Components;
-using SharpSL.BackendRenderers;
+using Sharp.Core;
+using PluginAbstraction;
 
 namespace Sharp
 {
@@ -188,73 +189,73 @@ namespace Sharp
 			while (TexturePipeline.recentlyLoadedAssets.TryDequeue(out var i))
 			{
 				ref var tex = ref Pipeline.Get<Texture>().GetAsset(i);
-				MainWindow.backendRenderer.GenerateBuffers(Target.Texture, id);
+				PluginManager.backendRenderer.GenerateBuffers(Target.Texture, id);
 				tex.TBO = id[0];
-				MainWindow.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
-				MainWindow.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
+				PluginManager.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
+				PluginManager.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
 				if (tex.FBO is -2)
 				{
-					MainWindow.backendRenderer.GenerateBuffers(Target.Frame, id);
+					PluginManager.backendRenderer.GenerateBuffers(Target.Frame, id);
 					tex.FBO = id[0];
-					MainWindow.backendRenderer.BindBuffers(Target.Frame, tex.FBO);
+					PluginManager.backendRenderer.BindBuffers(Target.Frame, tex.FBO);
 
-					MainWindow.backendRenderer.BindRenderTexture(tex.TBO, TextureRole.Color0);
+					PluginManager.backendRenderer.BindRenderTexture(tex.TBO, TextureRole.Color0);
 
-					MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
-					MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
+					PluginManager.backendRenderer.BindBuffers(Target.Frame, 0);
+					PluginManager.backendRenderer.BindBuffers(Target.Texture, 0);
 				}
 			}
 			while (ShaderPipeline.recentlyLoadedAssets.TryDequeue(out var i))
 			{
 				Console.WriteLine("shader allocation");
 				ref var shader = ref Pipeline.Get<Shader>().GetAsset(i);
-				MainWindow.backendRenderer.GenerateBuffers(Target.Shader, id);
+				PluginManager.backendRenderer.GenerateBuffers(Target.Shader, id);
 				shader.Program = id[0];
-				MainWindow.backendRenderer.GenerateBuffers(Target.VertexShader, id);
+				PluginManager.backendRenderer.GenerateBuffers(Target.VertexShader, id);
 				shader.VertexID = id[0];
-				MainWindow.backendRenderer.GenerateBuffers(Target.FragmentShader, id);
+				PluginManager.backendRenderer.GenerateBuffers(Target.FragmentShader, id);
 				shader.FragmentID = id[0];
-				MainWindow.backendRenderer.Allocate(shader.Program, shader.VertexID, shader.FragmentID, shader.VertexSource, shader.FragmentSource, shader.uniformArray, shader.attribArray);
+				PluginManager.backendRenderer.Allocate(shader.Program, shader.VertexID, shader.FragmentID, shader.VertexSource, shader.FragmentSource, shader.uniformArray, shader.attribArray);
 			}
 			while (MeshPipeline.recentlyLoadedAssets.TryDequeue(out var i))
 			{
 				ref var mesh = ref Pipeline.Get<Mesh>().GetAsset(i);
-				MainWindow.backendRenderer.GenerateBuffers(Target.Mesh, id);
+				PluginManager.backendRenderer.GenerateBuffers(Target.Mesh, id);
 				mesh.VBO = id[0];
-				MainWindow.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
+				PluginManager.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
 				//foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].Values)
-				//	MainWindow.backendRenderer.BindVertexAttrib(vertAttrib.type, Shader.attribArray[vertAttrib.shaderLocation], vertAttrib.dimension, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
+				//	PluginManager.backendRenderer.BindVertexAttrib(vertAttrib.type, Shader.attribArray[vertAttrib.shaderLocation], vertAttrib.dimension, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
 
-				MainWindow.backendRenderer.GenerateBuffers(Target.Indices, id);
+				PluginManager.backendRenderer.GenerateBuffers(Target.Indices, id);
 				mesh.EBO = id[0];
-				MainWindow.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
+				PluginManager.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
 				if (mesh.Indices is not null && mesh.Indices.Length > 0)
 				{
-					MainWindow.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
-					MainWindow.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
+					PluginManager.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
+					PluginManager.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
 				}
 			}
 			foreach (var added in Root.addedEntities)
 			{
 				if (added is CommandBufferComponent cb)
 				{
-					MainWindow.backendRenderer.GenerateBuffers(Target.Frame, id);
+					PluginManager.backendRenderer.GenerateBuffers(Target.Frame, id);
 					cb.FBO = id[0];
-					MainWindow.backendRenderer.BindBuffers(Target.Frame, cb.FBO);
+					PluginManager.backendRenderer.BindBuffers(Target.Frame, cb.FBO);
 					foreach (var t in cb.targetTextures)
 					{
 						ref var tex = ref Pipeline.Get<Texture>().GetAsset(t.texId);
-						MainWindow.backendRenderer.BindRenderTexture(tex.TBO, t.role);
+						PluginManager.backendRenderer.BindRenderTexture(tex.TBO, t.role);
 					}
-					MainWindow.backendRenderer.BindBuffers(Target.Frame, 0);
-					MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
+					PluginManager.backendRenderer.BindBuffers(Target.Frame, 0);
+					PluginManager.backendRenderer.BindBuffers(Target.Texture, 0);
 				}
 			}
 		}
 		private void OnInternalRenderFrame()
 		{
-			MainWindow.backendRenderer.currentWindow = windowId;
-			MainWindow.backendRenderer.MakeCurrent(handle, contexts[0]);
+			PluginManager.backendRenderer.currentWindow = windowId;
+			PluginManager.backendRenderer.MakeCurrent(handle, contexts[0]);
 
 			OnRenderFrame();
 
@@ -262,8 +263,7 @@ namespace Sharp
 			if (mainView.desktop is null) return;
 
 			mainView.Render();
-			MainWindow.backendRenderer.FinishCommands();
-			MainWindow.backendRenderer.SwapBuffers(handle);
+			PluginManager.backendRenderer.SwapBuffers(handle);
 		}
 
 		public abstract void OnRenderFrame();
@@ -367,7 +367,7 @@ namespace Sharp
 					break;
 
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_EXPOSED:
-					MainWindow.backendRenderer.EnableScissor();
+					PluginManager.backendRenderer.EnableState(RenderState.ScissorTest);
 					if (MainEditorView.mainViews.TryGetValue(evt.windowID, out mainView))
 						UI.currentCanvas = mainView.desktop;
 					foreach (var (_, mainV) in MainEditorView.mainViews)

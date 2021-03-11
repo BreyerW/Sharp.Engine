@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SharpAsset.Pipeline
+namespace SharpAsset.AssetPipeline
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class SupportedFilesAttribute : Attribute

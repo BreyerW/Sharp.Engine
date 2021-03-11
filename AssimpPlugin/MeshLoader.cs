@@ -14,7 +14,7 @@ namespace AssimpPlugin
 
 		public IEnumerable<MeshData> Import(string pathToFile)
 		{
-			var scene = context.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals);
+			var scene = context.Value.ImportFile(pathToFile, PostProcessPreset.TargetRealTimeMaximumQuality | PostProcessSteps.FlipUVs | PostProcessSteps.Triangulate | PostProcessSteps.MakeLeftHanded | PostProcessSteps.GenerateSmoothNormals | PostProcessSteps.FixInFacingNormals | PostProcessSteps.GenerateBoundingBoxes);
 
 			if (!scene.HasMeshes) yield break;
 

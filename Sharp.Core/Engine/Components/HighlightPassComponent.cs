@@ -1,14 +1,10 @@
 ﻿using Sharp.Core;
 using Sharp.Editor;
-using Sharp.Editor.Views;
-using Sharp.Engine.Components;
 using SharpAsset;
-using SharpSL.BackendRenderers;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
-using OpenTK.Graphics.OpenGL;
-using SharpAsset.Pipeline;
+using SharpAsset.AssetPipeline;
+using PluginAbstraction;
 
 namespace Sharp.Engine.Components
 {
@@ -42,26 +38,28 @@ namespace Sharp.Engine.Components
 		{
 			PreparePass();
 			Material.BindGlobalProperty("enablePicking", 1f);
-			List<Entity> selected = new();
-			List<Entity> hovered = new();
-			List<Entity> selectedWithTransparency = new();
-			List<Entity> hoveredWithTransparency = new();
+			List<Renderer> selected = new();
+			List<Renderer> hovered = new();
+			List<Renderer> selectedWithTransparency = new();
+			List<Renderer> hoveredWithTransparency = new();
 
 			if (Manipulators.selectedGizmoId is Gizmo.Invalid && Selection.HoveredObject is Entity e)
 			{
-				if (e.GetComponent<MeshRenderer>().material.IsMainPassTransparent)
-					hoveredWithTransparency.Add(e);
+				var renderer = e.GetComponent<Renderer>();
+				if (renderer.material.IsBlendRequiredForPass(0))
+					hoveredWithTransparency.Add(renderer);
 				else
-					hovered.Add(e);
+					hovered.Add(renderer);
 			}
 
 			foreach (var asset in Selection.Assets)
 				if (asset is Entity ent && ent.name is not "Main Camera")
 				{
-					if (ent.GetComponent<MeshRenderer>().material.IsMainPassTransparent)
-						selectedWithTransparency.Add(ent);
+					var renderer = ent.GetComponent<Renderer>();
+					if (renderer.material.IsBlendRequiredForPass(0))
+						selectedWithTransparency.Add(renderer);
 					else
-						selected.Add(ent);
+						selected.Add(renderer);
 				}
 			swapMaterial = selectedMaterial;
 			Draw(selected);
@@ -77,13 +75,13 @@ namespace Sharp.Engine.Components
 					return;
 				}
 				swapMaterial = hoveredMaterial;
-				GL.Disable(EnableCap.DepthTest);
+				PluginManager.backendRenderer.DisableState(RenderState.DepthTest);
 				//GL.DepthFunc(DepthFunction.Always);
 				Draw(hovered);
 				swapMaterial = null;
-				Material.BindGlobalProperty("colorId", new Color(0, 255, 0, 255));
+				Material.BindGlobalProperty("colorId", new Color(127,0, 0, 255));
 				Draw(hoveredWithTransparency);
-				GL.Enable(EnableCap.DepthTest);
+				PluginManager.backendRenderer.EnableState(RenderState.DepthTest);
 			}
 			Material.BindGlobalProperty("enablePicking", 0f);
 

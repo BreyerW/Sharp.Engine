@@ -3,7 +3,7 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace SharpAsset.Pipeline
+namespace SharpAsset.AssetPipeline
 {
 	[SupportedFiles(".ttf", ".otf")]
 	internal class FontPipeline : Pipeline<Font>

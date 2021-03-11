@@ -1,8 +1,8 @@
-﻿using SharpSL;
-using Squid;
+﻿using Squid;
 using System.Collections.Generic;
 using System.Numerics;
 using System;
+using Sharp.Core;
 using SharpSL.BackendRenderers;
 
 namespace Sharp.Editor.Views
@@ -16,8 +16,6 @@ namespace Sharp.Editor.Views
 
 		//public SplitContainer splitter = new SplitContainer();
 		public bool needRedraw = false;
-
-		public static IEditorBackendRenderer editorBackendRenderer;
 
 		static MainEditorView()
 		{
@@ -150,10 +148,10 @@ namespace Sharp.Editor.Views
 		public void Render()
 		{
 			currentMainView = this;
-			MainWindow.backendRenderer.Viewport(0, 0, desktop.Size.x, desktop.Size.y);
-			//MainWindow.backendRenderer.Clip(0, 0, desktop.Size.x, desktop.Size.y);
-			MainWindow.backendRenderer.ClearBuffer();
-			MainWindow.backendRenderer.ClearColor();
+			PluginManager.backendRenderer.Viewport(0, 0, desktop.Size.x, desktop.Size.y);
+			//PluginManager.backendRenderer.Clip(0, 0, desktop.Size.x, desktop.Size.y);
+			PluginManager.backendRenderer.ClearBuffer();
+			PluginManager.backendRenderer.ClearColor();
 			//desktop.NoEvents = Window.UnderMouseWindowId == attachedToWindow;
 			desktop.Draw();
 		}

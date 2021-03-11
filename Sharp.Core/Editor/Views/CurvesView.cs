@@ -3,7 +3,7 @@ using System.Numerics;
 using Sharp.Editor.UI;
 using Sharp.Editor.UI.Property;
 using SharpAsset;
-using SharpAsset.Pipeline;
+using SharpAsset.AssetPipeline;
 using Squid;
 
 namespace Sharp.Editor.Views
@@ -651,7 +651,7 @@ namespace Sharp.Editor.Views
 
 			var max = drawer.curvesRange.height + (drawer.curvesRange.y < 0 ? drawer.curvesRange.y : 0);
 			var maxY = drawer.curvesRange.width + (drawer.curvesRange.x < 0 ? drawer.curvesRange.x : 0);
-			//MainWindow.backendRenderer.WriteDepth(false);
+			//PluginManager.backendRenderer.WriteDepth(false);
 			ref var curve = ref Pipeline.Get<Mesh>().GetAsset("dynamic_curve");
 			Color c;
 			RegionDrawer.line2dMat.BindProperty("width", 2f);
@@ -690,7 +690,7 @@ namespace Sharp.Editor.Views
 
 			GridGUI();
 			RegionDrawer.polyfill2dMat.Draw();
-			//MainWindow.backendRenderer.WriteDepth();
+			//PluginManager.backendRenderer.WriteDepth();
 			if (selectedControl != null)
 			{
 				var col = new Color(190, 200, 200, 200);
@@ -800,7 +800,7 @@ namespace Sharp.Editor.Views
 
 		protected override void DrawBefore()
 		{
-			// MainWindow.backendRenderer.ChangeShader();
+			// PluginManager.backendRenderer.ChangeShader();
 			OnGUI();
 		}
 

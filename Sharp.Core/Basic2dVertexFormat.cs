@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Numerics;
 using SharpAsset;
-using SharpSL.BackendRenderers;
+using PluginAbstraction;
 
 namespace Sharp
 {

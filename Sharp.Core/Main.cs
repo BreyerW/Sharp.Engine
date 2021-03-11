@@ -1,9 +1,10 @@
+using PluginAbstraction;
 using SDL2;
+using Sharp.Core;
 using Sharp.Editor;
 using Sharp.Editor.Views;
 using SharpAsset;
-using SharpAsset.Pipeline;
-using SharpSL.BackendRenderers.OpenGL;
+using SharpAsset.AssetPipeline;
 using System.Globalization;
 using System.Numerics;
 using System.Threading;
@@ -14,8 +15,6 @@ namespace Sharp
 	{
 		public static void Main(string[] args)
 		{
-			MainEditorView.editorBackendRenderer = new EditorOpenGLRenderer();
-			MainWindow.backendRenderer = new OpenGLRenderer();
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
 
 			Pipeline.Initialize();
@@ -54,16 +53,16 @@ namespace Sharp
 			//SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 2);
 			//SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, (int)SDL.SDL_GLcontext.);
 
-			MainWindow.backendRenderer.Start();
+			PluginManager.backendRenderer.Start();
 
 			var dummy = SDL.SDL_CreateWindow("", 0, 0, 1, 1, SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN | SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL); //convert dummy to splash screen?
 																																			 //
 			SDL.SDL_GL_CreateContext(dummy);
-			var id = MainWindow.backendRenderer.CreateContext(SDL.SDL_GL_GetProcAddress, SDL.SDL_GL_GetCurrentContext);
+			var id = PluginManager.backendRenderer.CreateContext(SDL.SDL_GL_GetProcAddress, SDL.SDL_GL_GetCurrentContext);
 			MainWindow.contexts.Add(id);
 
-			MainWindow.backendRenderer.MakeCurrent += SDL.SDL_GL_MakeCurrent;
-			MainWindow.backendRenderer.SwapBuffers += SDL.SDL_GL_SwapWindow;
+			PluginManager.backendRenderer.MakeCurrent += SDL.SDL_GL_MakeCurrent;
+			PluginManager.backendRenderer.SwapBuffers += SDL.SDL_GL_SwapWindow;
 
 			var mWin = new MainWindow("test"); //Console.WriteLine("alpha: " + graphic.GraphicsMode.ColorFormat.Alpha);
 
@@ -73,8 +72,7 @@ namespace Sharp
 			//var mWin2 = new MainWindow("test2");
 			//mWin2.Initialize(new AssetsView(mWin2.windowId));
 			SDL.SDL_DestroyWindow(dummy);
-			MainWindow.backendRenderer.EnableScissor();
-
+			PluginManager.backendRenderer.EnableState(RenderState.ScissorTest);
 			Window.PollWindows();
 			SDL.SDL_Quit();
 		}

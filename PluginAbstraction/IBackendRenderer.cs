@@ -1,15 +1,83 @@
 ﻿using System;
 using System.Collections.Generic;
-using SharpAsset;
 
-namespace SharpSL.BackendRenderers
+namespace PluginAbstraction
 {
+	public enum UsageHint
+	{
+		StreamDraw = 35040,
+		StreamRead,
+		StreamCopy,
+		StaticDraw = 35044,
+		StaticRead,
+		StaticCopy,
+		DynamicDraw = 35048,
+		DynamicRead,
+		DynamicCopy
+	}
+	public enum TextureFormat
+	{
+		R,
+		RGB,
+		RGBA,
+		RUInt,
+		RGUInt,
+		RGBUInt,
+		RGBAUInt,
+		A,
+		RGBAFloat,
+		RG16_SNorm,
+		DepthFloat,
+	}
+	public enum Target
+	{
+		Texture,
+		Shader,
+		VertexShader,
+		FragmentShader,
+		Mesh,
+		Indices,
+		Frame,
+		WriteFrame,
+		ReadFrame,
+		OcclusionQuery,
+	}
+	public enum BlendEquation
+	{
+		None,
+		Default,
+		One,
+		OneMinuSrcAlpha,
+		SrcAlpha
+	}
 	public enum TextureRole
 	{
 		Depth,
 		Stencil,
 		Color0,
 		Color1,
+	}
+	public enum DepthFunc
+	{
+		Never,
+		Less,
+		Lequal,
+		Equal,
+		NotEqual,
+		Gequal,
+		Greater,
+		Always
+	}
+	[Flags]
+	public enum RenderState
+	{
+		DepthTest = 1 << 1,
+		DepthMask = 1 << 2,
+		Blend = 1 << 3,
+		Texture2D = 1 << 4,
+		CullFace = 1 << 5,
+		CullBack = 1 << 6,
+		ScissorTest = 1 << 7
 	}
 	public enum AttributeType
 	{
@@ -72,8 +140,6 @@ namespace SharpSL.BackendRenderers
 
 		void BindVertexAttrib(AttributeType type, int shaderLoc, int dim, int stride, int offset);//vertextype and IndicesType move to SL
 
-		void SetupGraphic();
-
 		void ClearBuffer();
 
 		void ClearColor();
@@ -83,22 +149,17 @@ namespace SharpSL.BackendRenderers
 
 		void ClearDepth();
 
-		void EnableScissor();
-
 		void Viewport(int x, int y, int width, int height);
-
-		void SetStandardState();
-
-		void SetFlatColorState();
-
-		void WriteDepth(bool enable = true);
 
 		void Clip(int x, int y, int width, int height);
 
-		void FinishCommands();
 
 		byte[] ReadPixels(int x, int y, int width, int height, TextureFormat pxFormat);
 		void SetColorMask(bool r, bool g, bool b, bool a);
+		void SetBlendState(BlendEquation dstColor, BlendEquation srcColor, BlendEquation dstAlpha, BlendEquation srcAlpha);
+		void SetDepthFunc(DepthFunc func);
+		void EnableState(RenderState state);
+		void DisableState(RenderState state);
 		QueryScope StartQuery(Target target, int id);
 		void EndQuery(Target target);
 	}
@@ -116,5 +177,4 @@ namespace SharpSL.BackendRenderers
 			renderer.EndQuery(target);
 		}
 	}
-
 }

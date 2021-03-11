@@ -1,4 +1,5 @@
 ﻿#version 130
+#pragma enable blend
 #pragma vertex
             in vec3 vertex_position;
 			in vec2 vertex_texcoord;
@@ -29,6 +30,6 @@
 
             void main(void)
             {
-            vec4 texColor= texture(MyTexture,v_texcoord.xy);
-	         frag_color =texColor;//*darkening
+            vec4 texColor= texture(MyTexture,v_texcoord.xy)*0.7f;
+	         frag_color =AlphaAwarePicking(texColor);//*darkening
             }

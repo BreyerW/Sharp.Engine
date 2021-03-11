@@ -99,9 +99,7 @@ namespace Sharp
 			return ref bitmask;
 		}
 		internal static Root entities = new Root();
-		//TODO: delete implicit id someday if someone really want to keep track of cyclic references and doesnt own source code
-		//they can wrap - or extend if not sealed - said class and implement IEngineObject
-		internal static Dictionary<object, Guid> objectToIdMapping = new Dictionary<object, Guid>();//TODO: remove on destroy?
+
 		public static Guid GetInstanceID<T>(this T obj) where T : class
 		{
 			if (!PluginManager.serializer.objToIdMapping.TryGetValue(obj, out var id))
@@ -130,8 +128,9 @@ namespace Sharp
 		}
 		public static T GetInstanceObject<T>(in this Guid id) where T : class
 		{
-			Root.idToObjectMapping.TryGetValue(id, out var obj);
-			return (T)obj;
+			return PluginManager.serializer.objToIdMapping.GetKey(id) as T;
+			//Root.idToObjectMapping.TryGetValue(id, out var obj);
+			//return (T)obj;
 		}
 		/*public static void Dispose(in this Guid id)
 		{
@@ -143,8 +142,9 @@ namespace Sharp
 		}
 		public static IEngineObject GetInstanceObject(in this Guid id)
 		{
-			Root.idToObjectMapping.TryGetValue(id, out var obj);
-			return obj;
+			return PluginManager.serializer.objToIdMapping.GetKey(id) as IEngineObject;
+			//Root.idToObjectMapping.TryGetValue(id, out var obj);
+			//return obj;
 		}
 		internal static void AddRestoredObject<T>(this T obj, in Guid id) where T : class
 		{
@@ -206,11 +206,9 @@ namespace Sharp
 		public static HashSet<IEngineObject> addedEntities = new HashSet<IEngineObject>();
 		public static HashSet<IEngineObject> removedEntities = new HashSet<IEngineObject>();
 		internal static List<Entity> root = new List<Entity>();
-		internal static Dictionary<Guid, IEngineObject> idToObjectMapping = new Dictionary<Guid, IEngineObject>();
 
 		internal void AddEngineObject(IEngineObject obj)
 		{
-			idToObjectMapping.Add(obj.GetInstanceID(), obj);
 			addedEntities.Add(obj);
 			if (obj is Entity e && e.parent is null)
 			{
@@ -226,12 +224,9 @@ namespace Sharp
 			if (obj is Entity e && e.parent is null)
 				root.Remove(e);
 			removedEntities.Add(obj);
-			var id = obj.GetInstanceID();
-			idToObjectMapping.Remove(id);
 		}
 		internal void AddRestoredEngineObject(IEngineObject obj, in Guid id)
 		{
-			idToObjectMapping.Add(id, obj);
 			addedEntities.Add(obj);
 			if (obj is Entity e && e.parent is null)
 			{

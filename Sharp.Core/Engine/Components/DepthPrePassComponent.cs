@@ -1,7 +1,8 @@
 ﻿using BepuUtilities;
+using PluginAbstraction;
+using Sharp.Core;
 using SharpAsset;
-using SharpAsset.Pipeline;
-using SharpSL.BackendRenderers;
+using SharpAsset.AssetPipeline;
 using System;
 
 namespace Sharp.Engine.Components
@@ -14,14 +15,14 @@ namespace Sharp.Engine.Components
 			CreateNewTemporaryTexture("depthTarget", TextureRole.Depth, 0, 0, TextureFormat.DepthFloat);
 			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightMaskPassShader.shader");
 			swapMaterial = new Material();
-			swapMaterial.BindShader(0,shader);
+			swapMaterial.BindShader(0, shader);
 			ScreenSpace = true;
 		}
 		public override void Execute()
 		{
-			MainWindow.backendRenderer.WriteDepth(true);
+			PluginManager.backendRenderer.EnableState(RenderState.DepthMask);
 			DrawPass();
-			MainWindow.backendRenderer.WriteDepth(false);
+			PluginManager.backendRenderer.DisableState(RenderState.DepthMask);
 
 		}
 	}

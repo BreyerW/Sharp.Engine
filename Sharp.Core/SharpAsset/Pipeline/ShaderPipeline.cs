@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using PluginAbstraction;
 using Sharp;
 using SharpSL;
 
-namespace SharpAsset.Pipeline
+namespace SharpAsset.AssetPipeline
 {
 	[SupportedFiles(".shader", ".glsl")]
 	public class ShaderPipeline : Pipeline<Shader>
@@ -37,9 +38,11 @@ namespace SharpAsset.Pipeline
 		{
 			int vertexShaderOffset = 0, fragmentShaderOffset = 0, lineCount = 0;
 			string version = "";
+			ReadOnlySpan<char> blend = "";
+			bool blendFound = false;
 			foreach (string line in shaderBuffer)
 			{
-				if (line.Contains("#pragma vertex"))//TODO: process #pragma transparency + blend equations
+				if (line.Contains("#pragma vertex"))
 				{
 					vertexShaderOffset = lineCount + 1;
 				}
@@ -50,6 +53,11 @@ namespace SharpAsset.Pipeline
 				else if (line.Contains("#version"))
 				{
 					version = line;
+				}
+				else if (line.Contains("#pragma enable blend"))
+				{
+					blend = line.AsSpan()["#pragma enable blend".Length..];
+					blendFound = true;
 				}
 				lineCount++;
 			}
@@ -67,6 +75,23 @@ namespace SharpAsset.Pipeline
 			ProcessIncludes(vertexShaderBuffer, out var vertexShader);
 			ProcessIncludes(fragmentShaderBuffer, out var fragmentShader);
 
+			var dstColor = BlendEquation.None;
+			var srcColor = BlendEquation.None;
+			var dstAlpha = BlendEquation.None;
+			var srcAlpha = BlendEquation.None;
+
+			if (blendFound && blend.Length is not 0)
+			{
+
+			}
+			else if (blendFound)
+			{
+				dstColor = BlendEquation.Default;
+				srcColor = BlendEquation.Default;
+				dstAlpha = BlendEquation.Default;
+				srcAlpha = BlendEquation.Default;
+			}
+
 			var shader = new Shader()
 			{
 				uniformArray = new Dictionary<string, int>(),
@@ -74,10 +99,10 @@ namespace SharpAsset.Pipeline
 				FullPath = name,
 				VertexSource = vertexShader,
 				FragmentSource = fragmentShader,
-				dstColor = BlendEquation.None,
-				srcColor = BlendEquation.None,
-				dstAlpha = BlendEquation.None,
-				srcAlpha = BlendEquation.None,
+				dstColor = dstColor,
+				srcColor = srcColor,
+				dstAlpha = dstAlpha,
+				srcAlpha = srcAlpha,
 			};
 			return shader;
 		}

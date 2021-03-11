@@ -1,21 +1,13 @@
 ﻿using System;
-using System.Linq;
 using SDL2;
 using Sharp.Editor.Views;
 using System.Numerics;
-using SharpSL.BackendRenderers;
-using Sharp.Windowing;
 using Squid;
-using SharpAsset.Pipeline;
-using Sharp.Editor;
-using System.Runtime.InteropServices;
-using SharpAsset;
 
 namespace Sharp
 {
 	public class MainWindow : Window
 	{
-		internal static IBackendRenderer backendRenderer;
 		public static Vector2 lastPos;
 
 		public MainWindow(string title) : base(title, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE)
@@ -25,8 +17,7 @@ namespace Sharp
 
 		public void Initialize(params View[] viewsToOpen)
 		{
-			backendRenderer.SetupGraphic();
-			
+
 			Control parent = MainEditorView.mainViews[windowId].desktop;
 			var margin = new Margin(0, 50, 0, 30);
 			foreach (var (id, view) in viewsToOpen.Indexed())

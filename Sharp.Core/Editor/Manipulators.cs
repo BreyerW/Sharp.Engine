@@ -1,8 +1,9 @@
 ﻿//https://github.com/CedricGuillemet/ImGuizmo/blob/master/ImGuizmo.cpp
 
+using PluginAbstraction;
 using Sharp.Editor.Views;
 using SharpAsset;
-using SharpAsset.Pipeline;
+using SharpAsset.AssetPipeline;
 using System;
 using System.Numerics;
 

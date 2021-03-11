@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using PluginAbstraction;
 using Sharp.Core;
 
-namespace SharpAsset.Pipeline
+namespace SharpAsset.AssetPipeline
 {
 	[SupportedFiles(".bmp", ".jpg", ".png", ".dds")]
 	public class TexturePipeline : Pipeline<Texture>

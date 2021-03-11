@@ -164,10 +164,10 @@ vec4 currColor=texture(MyTexture, uv);
 // depth.
 if(texture(MyTexture, uv+depth_offset).r==1)
 {
-vec4 dtap0 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2(-2, -2));
-vec4 dtap1 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2( 0, -2));
-vec4 dtap2 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2(-2,  0));
-vec4 dtap3 =GatherRed(SelectionDepthTex, uv+depth_offset, ivec2( 0,  0));
+vec4 dtap0 =GatherRed(SelectionDepthTex, uv + depth_offset, ivec2(-2, -2));
+vec4 dtap1 =GatherRed(SelectionDepthTex, uv + depth_offset, ivec2( 0, -2));
+vec4 dtap2 =GatherRed(SelectionDepthTex, uv + depth_offset, ivec2(-2,  0));
+vec4 dtap3 =GatherRed(SelectionDepthTex, uv + depth_offset, ivec2( 0,  0));
 float d0 = min(dtap0.x, min(dtap0.y, min(dtap0.z, dtap0.w)));
 float d1 = min(dtap1.x, min(dtap1.y, min(dtap1.z, dtap1.w)));
 float d2 = min(dtap2.x, min(dtap2.y, min(dtap2.z, dtap2.w)));
@@ -175,7 +175,7 @@ float d3 = min(dtap3.x, min(dtap3.y, min(dtap3.z, dtap3.w)));
 float d = min(d0, min(d1, min(d2, d3)));
 
 // Sample scene depth, scn_depth holds linear depth.
-float scnd = texture(SceneDepthTex, uv+depth_offset).r;
+float scnd = texture(SceneDepthTex, uv).r;
 
 // Linearize d and compare it with scene depth to determine if outline is
 // behind an object.=

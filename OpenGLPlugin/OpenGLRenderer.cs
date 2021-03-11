@@ -1,24 +1,17 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-using SharpAsset;
+using PluginAbstraction;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using AttributeType = PluginAbstraction.AttributeType;
 
 namespace SharpSL.BackendRenderers.OpenGL
 {
-	/*public class GLBindings : IBindingsContext
-	{
-		internal Func<string, IntPtr> getProcAddr;
-		public IntPtr GetProcAddress(string procName)
-		{
-			return GetProcAddress(procName);
-		}
-	}*/
-	public class OpenGLRenderer : IBackendRenderer
+	public class OpenGLRenderer : IBackendRenderer, IPlugin
 	{
 		#region IBackendRenderer implementation
 
@@ -43,13 +36,6 @@ namespace SharpSL.BackendRenderers.OpenGL
 			//GL.LoadBindings(bindings);
 			return GetCurrentContext();
 		}
-
-		public void FinishCommands()
-		{
-			//GL.Flush();
-			//GL.Finish();
-			// GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
-		}
 		public void GetQueryResult(int id, out int result)
 		{
 			GL.GetQueryObject(id, GetQueryObjectParam.QueryResult, out result);
@@ -73,28 +59,6 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.ReadPixels(x, y, width, height, pixelFormat, PixelType.UnsignedByte, pixel);
 
 			return pixel;
-		}
-		public void SetStandardState()
-		{
-			GL.DepthMask(true);
-			GL.CullFace(CullFaceMode.Back);
-			GL.Disable(EnableCap.Blend);
-			GL.Enable(EnableCap.DepthTest);
-			GL.DepthFunc(DepthFunction.Less);
-
-			//GL.Enable(EnableCap.DebugOutput);
-			//GL.Enable(EnableCap.DebugOutputSynchronous);
-		}
-
-		public void SetFlatColorState()
-		{
-			GL.Disable(EnableCap.Texture2D);
-			GL.Disable(EnableCap.Dither);
-			GL.Enable(EnableCap.DepthTest);
-			//GL.Disable(EnableCap.DepthTest);
-			GL.Disable(EnableCap.CullFace);
-			GL.Disable(EnableCap.Blend);
-			GL.Disable(EnableCap.AlphaTest);
 		}
 
 		public void Use(int Program)
@@ -312,7 +276,6 @@ namespace SharpSL.BackendRenderers.OpenGL
 		public void Viewport(int x, int y, int width, int height)
 		{
 			GL.Viewport(x, y, width, height);
-			// GL.Scissor(x, y, width, height);
 		}
 
 		public void Clip(int x, int y, int width, int height)
@@ -340,23 +303,6 @@ namespace SharpSL.BackendRenderers.OpenGL
 		{
 			//GL.Enable(EnableCap.Blend);
 			GL.Clear(ClearBufferMask.DepthBufferBit);
-		}
-
-		public void EnableScissor()
-		{
-			GL.Enable(EnableCap.ScissorTest);
-		}
-
-		public void SetupGraphic()
-		{
-			GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-			GL.Hint(HintTarget.LineSmoothHint, HintMode.Nicest);
-			GL.Hint(HintTarget.PointSmoothHint, HintMode.Nicest);
-			GL.Hint(HintTarget.PolygonSmoothHint, HintMode.Nicest);
-		}
-		public void WriteDepth(bool enable = true)
-		{
-			GL.DepthMask(enable);
 		}
 
 		public void BindVertexAttrib(AttributeType type, int shaderLoc, int dim, int stride, int offset)
@@ -437,6 +383,110 @@ namespace SharpSL.BackendRenderers.OpenGL
 		public void SetColorMask(bool r, bool g, bool b, bool a)
 		{
 			GL.ColorMask(r, g, b, a);
+		}
+
+		public void SetBlendState(BlendEquation srcColor, BlendEquation dstColor, BlendEquation srcAlpha, BlendEquation dstAlpha)
+		{
+			var srcC = srcColor switch
+			{
+				_ => BlendingFactorSrc.SrcAlpha,
+			};
+			var dstC = dstColor switch
+			{
+				_ => BlendingFactorDest.OneMinusSrcAlpha,
+			};
+			var srcA = dstColor switch
+			{
+				_ => BlendingFactorSrc.One,
+			};
+			var dstA = dstColor switch
+			{
+				_ => BlendingFactorDest.Zero,
+			};
+			GL.BlendFuncSeparate(srcC, dstC, srcA, dstA);
+		}
+		public void EnableState(RenderState state)
+		{
+			if (state.HasFlag(RenderState.Blend))
+				GL.Enable(EnableCap.Blend);
+			if (state.HasFlag(RenderState.DepthTest))
+				GL.Enable(EnableCap.DepthTest);
+			if (state.HasFlag(RenderState.Blend))
+				GL.Enable(EnableCap.Blend);
+			if (state.HasFlag(RenderState.DepthMask))
+				GL.DepthMask(true);
+			if (state.HasFlag(RenderState.Texture2D))
+				GL.Enable(EnableCap.Texture2D);
+			if (state.HasFlag(RenderState.ScissorTest))
+				GL.Enable(EnableCap.ScissorTest);
+			if (state.HasFlag(RenderState.CullBack | RenderState.CullFace))
+			{
+				GL.Enable(EnableCap.CullFace);
+				GL.CullFace(CullFaceMode.FrontAndBack);
+			}
+			else if (state.HasFlag(RenderState.CullFace))
+			{
+				GL.Enable(EnableCap.CullFace);
+				GL.CullFace(CullFaceMode.Front);
+			}
+			else if (state.HasFlag(RenderState.CullBack))
+			{
+				GL.Enable(EnableCap.CullFace);
+				GL.CullFace(CullFaceMode.Back);
+			}
+		}
+		public void DisableState(RenderState state)
+		{
+			if (state.HasFlag(RenderState.Blend))
+				GL.Disable(EnableCap.Blend);
+			if (state.HasFlag(RenderState.DepthTest))
+				GL.Disable(EnableCap.DepthTest);
+			if (state.HasFlag(RenderState.Blend))
+				GL.Disable(EnableCap.Blend);
+			if (state.HasFlag(RenderState.DepthMask))
+				GL.DepthMask(false);
+			if (state.HasFlag(RenderState.Texture2D))
+				GL.Disable(EnableCap.Texture2D);
+			if (state.HasFlag(RenderState.ScissorTest))
+				GL.Disable(EnableCap.ScissorTest);
+			if (state.HasFlag(RenderState.CullFace))
+			{
+				GL.Disable(EnableCap.CullFace);
+			}
+			else if (state.HasFlag(RenderState.CullBack))
+			{
+				GL.Disable(EnableCap.CullFace);
+			}
+		}
+		public void SetDepthFunc(DepthFunc func)
+		{
+			var f = func switch
+			{
+				DepthFunc.Never => DepthFunction.Never,
+				DepthFunc.Lequal => DepthFunction.Lequal,
+				DepthFunc.Equal => DepthFunction.Equal,
+				DepthFunc.NotEqual => DepthFunction.Notequal,
+				DepthFunc.Gequal => DepthFunction.Gequal,
+				DepthFunc.Greater => DepthFunction.Greater,
+				DepthFunc.Always => DepthFunction.Always,
+				_ => DepthFunction.Less
+			};
+			GL.DepthFunc(f);
+		}
+
+		public string GetName()
+		{
+			return "OpenGL";
+		}
+
+		public string GetVersion()
+		{
+			return "1.0";
+		}
+
+		public void ImportPlugins(Dictionary<string, object> plugins)
+		{
+			throw new NotImplementedException();
 		}
 		#endregion IBackendRenderer implementation
 	}

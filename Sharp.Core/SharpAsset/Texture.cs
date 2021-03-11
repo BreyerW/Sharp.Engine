@@ -1,24 +1,11 @@
-﻿using Sharp;
+﻿using PluginAbstraction;
+using Sharp;
 using System;
 using System.IO;
 using System.Numerics;
 
 namespace SharpAsset
 {
-	public enum TextureFormat
-	{
-		R,
-		RGB,
-		RGBA,
-		RUInt,
-		RGUInt,
-		RGBUInt,
-		RGBAUInt,
-		A,
-		RGBAFloat,
-		RG16_SNorm,
-		DepthFloat,
-	}
 	[Serializable]
 	public struct Texture : IAsset //TODO: split for texture - class, bitmap - struct? similar to mesh - class vertexformats - structs
 	{

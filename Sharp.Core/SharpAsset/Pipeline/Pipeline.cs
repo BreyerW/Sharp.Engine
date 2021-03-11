@@ -2,10 +2,9 @@
 using System;
 using Sharp;
 using System.Linq;
-using OpenTK.Graphics;
 using System.IO;
 
-namespace SharpAsset.Pipeline
+namespace SharpAsset.AssetPipeline
 {
 	public abstract class Pipeline<T> : Pipeline where T : IAsset
 	{

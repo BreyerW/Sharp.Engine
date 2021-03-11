@@ -4,8 +4,9 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Numerics;
 using Sharp;
-using SharpAsset.Pipeline;
+using SharpAsset.AssetPipeline;
 using Sharp.Core;
+using PluginAbstraction;
 
 namespace SharpAsset
 {
@@ -36,7 +37,7 @@ namespace SharpAsset
 						height = tex.height,
 						bitmap = tex.bitmap
 					};
-					Pipeline.Pipeline.Get<Texture>().Register(newTex);
+					AssetPipeline.Pipeline.Get<Texture>().Register(newTex);
 					data = new CharData() { metrics = mets, texture = newTex };
 					charDictionary.Add(c, data);
 					return data;

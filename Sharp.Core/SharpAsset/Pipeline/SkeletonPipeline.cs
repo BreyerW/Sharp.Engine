@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace SharpAsset.Pipeline
+namespace SharpAsset.AssetPipeline
 {
 	/*public class SkeletonPipeline : Pipeline
 	{

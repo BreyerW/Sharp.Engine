@@ -6,8 +6,9 @@ using Sharp;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Sharp.Core;
+using PluginAbstraction;
 
-namespace SharpAsset.Pipeline
+namespace SharpAsset.AssetPipeline
 {
 	[SupportedFiles(".fbx", ".dae", ".obj")]
 	public class MeshPipeline : Pipeline<Mesh>

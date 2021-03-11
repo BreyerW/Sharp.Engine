@@ -1,9 +1,9 @@
 ﻿
+using PluginAbstraction;
 using Sharp.Core;
 using SharpAsset;
-using SharpAsset.Pipeline;
+using SharpAsset.AssetPipeline;
 using SharpSL;
-using SharpSL.BackendRenderers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
@@ -59,8 +59,8 @@ namespace Sharp.Engine.Components
 				ref var tex = ref Pipeline.Get<Texture>().GetAsset(t.texId);
 				tex.width = cam.Width;
 				tex.height = cam.Height;
-				MainWindow.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
-				MainWindow.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
+				PluginManager.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
+				PluginManager.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
 			}
 		}
 		protected void CreateNewTemporaryTexture(string name, TextureRole role, int width, int height, TextureFormat pixFormat)
@@ -98,10 +98,10 @@ namespace Sharp.Engine.Components
 				width = tex.width;
 				height = tex.height;
 			}
-			//MainWindow.backendRenderer.Viewport(0, 0, width, height);
-			//MainWindow.backendRenderer.Clip(0, 0, width, height);
-			MainWindow.backendRenderer.BindBuffers(Target.Frame, FBO);
-			//MainWindow.backendRenderer.SetStandardState();
+			//PluginManager.backendRenderer.Viewport(0, 0, width, height);
+			//PluginManager.backendRenderer.Clip(0, 0, width, height);
+			PluginManager.backendRenderer.BindBuffers(Target.Frame, FBO);
+			//PluginManager.backendRenderer.SetStandardState();
 		}
 		protected void PreparePass()
 		{
@@ -117,21 +117,32 @@ namespace Sharp.Engine.Components
 				width = tex.width;
 				height = tex.height;
 			}
-			MainWindow.backendRenderer.Viewport(0, 0, width, height);
-			MainWindow.backendRenderer.Clip(0, 0, width, height);
-			MainWindow.backendRenderer.BindBuffers(Target.Frame, FBO);
+			PluginManager.backendRenderer.Viewport(0, 0, width, height);
+			PluginManager.backendRenderer.Clip(0, 0, width, height);
+			PluginManager.backendRenderer.BindBuffers(Target.Frame, FBO);
 
-			MainWindow.backendRenderer.SetStandardState();
-			MainWindow.backendRenderer.ClearBuffer();
-			MainWindow.backendRenderer.ClearColor(0f, 0f, 0f, 0f);
+			PluginManager.backendRenderer.EnableState(RenderState.DepthMask | RenderState.DepthTest);
+			PluginManager.backendRenderer.ClearBuffer();
+			PluginManager.backendRenderer.ClearColor(0f, 0f, 0f, 0f);
 
 		}
 		public void DrawPass(BitMask mask)
 		{
 			PreparePass();
-			var renderables = Entity.FindAllWithComponentsAndTags(rendererMask, mask).GetEnumerator();
+			var renderers = new List<Renderer>();
+			var renderables = Entity.FindAllWith(rendererMask, mask).GetEnumerator();
 			while (renderables.MoveNext())
-				Draw(renderables.Current);
+			{
+				foreach (var renderable in renderables.Current)
+				{
+					var renderer = renderable.GetComponent<MeshRenderer>();
+					//if (renderer.material.IsBlendRequiredForPass(0))
+					//transparentRenderables.Add(renderer);
+					//else
+					renderers.Add(renderer);
+				}
+			}
+			Draw(renderers);
 		}
 		public void DrawPass(IEnumerable<MeshRenderer> renderables)
 		{
@@ -156,27 +167,36 @@ namespace Sharp.Engine.Components
 		public void DrawPass()
 		{
 			PreparePass();
-			var renderables = Entity.FindAllWithComponentsAndTags(rendererMask, cam.cullingTags, cullTags: true).GetEnumerator();
+			var renderers = new List<Renderer>();
+			var renderables = Entity.FindAllWith(rendererMask, cam.cullingTags, cullTags: true).GetEnumerator();
 			while (renderables.MoveNext())
-				Draw(renderables.Current);
-
+			{
+				foreach (var renderable in renderables.Current)
+				{
+					var renderer = renderable.GetComponent<MeshRenderer>();
+					//if (renderer.material.IsBlendRequiredForPass(0))
+					//transparentRenderables.Add(renderer);
+					//else
+					renderers.Add(renderer);
+				}
+			}
+			Draw(renderers);
 		}
-		internal void Draw(IReadOnlyCollection<Entity> renderables)
+		internal void Draw(IReadOnlyCollection<Renderer> renderables)
 		{
 			var condition = swapMaterial is not null;
 			foreach (var renderable in renderables)
 			{
-				var renderer = renderable.GetComponent<MeshRenderer>();
-				if (renderer is { active: true })
+				if (renderable is { active: true })
 				{
 					if (condition)
 					{
-						var tmp = renderer.SwapMaterial(swapMaterial);
-						renderer.Render();
-						renderer.SwapMaterial(tmp);
+						var tmp = renderable.SwapMaterial(swapMaterial);
+						renderable.Render();
+						renderable.SwapMaterial(tmp);
 					}
 					else
-						renderer.Render();
+						renderable.Render();
 				}
 			}
 		}

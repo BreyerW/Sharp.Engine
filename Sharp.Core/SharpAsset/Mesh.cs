@@ -1,5 +1,6 @@
-﻿using Sharp;
-using SharpAsset.Pipeline;
+﻿using PluginAbstraction;
+using Sharp;
+using SharpAsset.AssetPipeline;
 using SharpSL;
 using System;
 using System.Collections.Generic;
@@ -167,6 +168,7 @@ namespace SharpAsset
 					MemoryMarshal.Write(indicesSlice[(i * indexStride)..], ref index);
 				}
 		}
+		private static int count = 0;
 		public void PlaceIntoScene(Entity context, Vector3 worldPos)//TODO: wyrzucic to do kodu edytora PlaceIntoView(View view,)
 		{
 			var eObject = new Entity();
@@ -175,32 +177,20 @@ namespace SharpAsset
 			var angles = eObject.transform.Rotation * NumericsExtensions.Deg2Rad;
 			eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 			var renderer = eObject.AddComponent<MeshRenderer>();
-			var shader = (Shader)Pipeline.Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TextureOnlyShader.shader");
+			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + (count % 2 is 0 ? @"\Content\TextureOnlyShader.shader" : @"\Content\TextureOnlyShaderTransparent.shader"));
 			renderer.material = new Material();
 			renderer.material.BindShader(0, shader);
-			var texture = (Texture)Pipeline.Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\duckCM.bmp");
+			var texture = (Texture)Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\duckCM.bmp");
 			//zamienic na ref loading pipeliny
 			renderer.material.BindProperty("mesh", this);
 			renderer.material.BindProperty("MyTexture", texture);
 			if (context is not null) //make as child of context?
 			{
 			}
-
+			count++;
 		}
 	}
 
-	public enum UsageHint
-	{
-		StreamDraw = 35040,
-		StreamRead,
-		StreamCopy,
-		StaticDraw = 35044,
-		StaticRead,
-		StaticCopy,
-		DynamicDraw = 35048,
-		DynamicRead,
-		DynamicCopy
-	}
 	/*public readonly struct SubMeshDescriptor
 	{
 		public readonly int lastVertex;

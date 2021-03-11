@@ -1,12 +1,14 @@
 ﻿using System;
 using Squid;
 using Sharp;
-using SharpAsset.Pipeline;
+using SharpAsset.AssetPipeline;
 using Sharp.Editor.Views;
 using System.Numerics;
 using SharpAsset;
 using Sharp.Editor;
 using Font = SharpAsset.Font;
+using Sharp.Core;
+using PluginAbstraction;
 
 namespace SharpSL.BackendRenderers
 {
@@ -37,7 +39,7 @@ namespace SharpSL.BackendRenderers
 		}
 		public void DrawBox(int x, int y, int width, int height, int color)//DrawMesh?
 		{
-			var col = new Sharp.Color((uint)color);
+			var col = new Color((uint)color);
 			var mat = Matrix4x4.CreateScale(width, height, 1) * Matrix4x4.CreateTranslation(x, y, 0) * MainEditorView.currentMainView.camera.OrthoMatrix;
 			squareMaterial.BindProperty("model", mat);
 			squareMaterial.BindProperty("color", col);
@@ -170,16 +172,12 @@ namespace SharpSL.BackendRenderers
 		public void StartBatch()//OnPreRender
 		{
 			//start shader
-			OpenTK.Graphics.OpenGL.GL.Disable(OpenTK.Graphics.OpenGL.EnableCap.DepthTest);
-			OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Texture2D);
-			OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.Blend);
-			OpenTK.Graphics.OpenGL.GL.BlendFunc(OpenTK.Graphics.OpenGL.BlendingFactor.SrcAlpha, OpenTK.Graphics.OpenGL.BlendingFactor.OneMinusSrcAlpha);
+			PluginManager.backendRenderer.DisableState(RenderState.DepthTest);
 		}
 
 		public void EndBatch(bool final)//OnPostRender
 		{
-			OpenTK.Graphics.OpenGL.GL.Enable(OpenTK.Graphics.OpenGL.EnableCap.DepthTest);
-			//MainWindow.backendRenderer.BindBuffers(Target.Texture, 0);
+			PluginManager.backendRenderer.EnableState(RenderState.DepthTest);
 		}
 
 		public int GetFont(string name)
@@ -236,7 +234,7 @@ namespace SharpSL.BackendRenderers
 
 		public void Scissor(int x, int y, int width, int height)
 		{
-			MainWindow.backendRenderer.Clip(x, MainEditorView.currentMainView.camera.height - (y + height), width, height);
+			PluginManager.backendRenderer.Clip(x, MainEditorView.currentMainView.camera.height - (y + height), width, height);
 		}
 
 		#region IDisposable Support

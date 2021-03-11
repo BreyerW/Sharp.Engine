@@ -10,7 +10,6 @@ namespace Sharp
 			new Curve() { keys = new Keyframe[] { new Keyframe() { time = 0.1f, value = -10f }, new Keyframe() { time = 120f, value = 10f } } },
 			new Curve() { keys = new Keyframe[] { new Keyframe() { time = 0.4f, value = 0f }, new Keyframe() { time = 60f, value = 1f } } }
 		};
-		public Material material;
 
 		public MeshRenderer(Entity parent) : base(parent)
 		{
@@ -28,14 +27,6 @@ namespace Sharp
 			//Console.WriteLine ("no-cull ");
 
 			material.Draw();
-		}
-		internal Material SwapMaterial(Material mat)
-		{
-			var prev = material;
-			material = mat;
-			prev.TryGetProperty("mesh", out Mesh Mesh);
-			material.BindProperty("mesh", Mesh);
-			return prev;
 		}
 		public void Start()
 		{

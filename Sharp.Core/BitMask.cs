@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Text.Json.Serialization;
 
@@ -12,9 +11,10 @@ namespace Sharp.Core
 	{
 		private static int BitSize = (sizeof(uint) * 8) - 1;
 		private static int ByteSize = 5;  // log_2(BitSize + 1)
+
 		[JsonInclude]
 		//[JsonProperty(IsReference = false)]
-		private uint[] bits;
+		internal uint[] bits;
 
 		public BitMask(int startValue)
 		{
@@ -22,20 +22,6 @@ namespace Sharp.Core
 			if (startValue is 1)
 				SetAll();
 		}
-		/// <summary>
-		/// Determines whether the given bit is set.
-		/// </summary>
-		/// <param name="index">The index of the bit to check.</param>
-		/// <returns><c>true</c> if the bit is set; otherwise, <c>false</c>.</returns>
-		public bool IsSet(int index)
-		{
-			int b = index >> ByteSize;
-			if (b >= bits.Length)
-				return false;
-
-			return (bits[b] & (1 << (index & BitSize))) != 0;
-		}
-
 		/// <summary>
 		/// Sets the bit at the given index.
 		/// </summary>
@@ -78,7 +64,22 @@ namespace Sharp.Core
 		{
 			Array.Clear(bits, 0, bits.Length);
 		}
-		public bool HasNoFlags(in BitMask flags)
+
+		/// <summary>
+		/// Determines whether the given bit is set.
+		/// </summary>
+		/// <param name="index">The index of the bit to check.</param>
+		/// <returns><c>true</c> if the bit is set; otherwise, <c>false</c>.</returns>
+		public readonly bool IsSet(int index)
+		{
+			int b = index >> ByteSize;
+			if (b >= bits.Length)
+				return false;
+
+			return (bits[b] & (1 << (index & BitSize))) != 0;
+		}
+
+		public readonly bool HasNoFlags(in BitMask flags)
 		{
 			if (flags.bits.Length is 0)//means Everything
 				return false;
@@ -99,7 +100,7 @@ namespace Sharp.Core
 			}
 			return true;
 		}
-		public bool HasFlags(in BitMask flags)
+		public readonly bool HasFlags(in BitMask flags)
 		{
 			if (flags.bits.Length is 0)
 				return true;
@@ -121,7 +122,7 @@ namespace Sharp.Core
 			}
 			return true;
 		}
-		public bool HasAnyFlags(in BitMask flags)
+		public readonly bool HasAnyFlags(in BitMask flags)
 		{
 			if (flags.bits is null)
 				throw new ArgumentNullException(nameof(flags.bits));

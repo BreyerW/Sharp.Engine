@@ -1,0 +1,58 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v5.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v5.0": {
+      "OpenGLPlugin/1.0.0": {
+        "dependencies": {
+          "OpenTK": "3.3.1",
+          "PluginAbstraction": "1.0.0",
+          "RangeForeach": "0.0.1"
+        },
+        "runtime": {
+          "OpenGLPlugin.dll": {}
+        }
+      },
+      "OpenTK/3.3.1": {
+        "runtime": {
+          "lib/net20/OpenTK.dll": {
+            "assemblyVersion": "3.3.1.0",
+            "fileVersion": "3.3.1.0"
+          }
+        }
+      },
+      "RangeForeach/0.0.1": {
+        "runtime": {
+          "lib/net5.0/RangeForeach.dll": {
+            "assemblyVersion": "0.0.1.0",
+            "fileVersion": "0.0.1.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "OpenGLPlugin/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OpenTK/3.3.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-vJ00JIs0EOEhqU3+1w6ocurNUFaewd7YXV8sixI029AQeQaht0QjDGgXm2Fk/y8A5Wtx6UsmrjJDKi4USoVeSg==",
+      "path": "opentk/3.3.1",
+      "hashPath": "opentk.3.3.1.nupkg.sha512"
+    },
+    "RangeForeach/0.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MLZLULTsNxsQtGvpijUgjzNX4FIclpp6waDitkRmTgjADPObDzKpvnYoCyg3lLVCtVxqZhY05IC69QqxaHaDWQ==",
+      "path": "rangeforeach/0.0.1",
+      "hashPath": "rangeforeach.0.0.1.nupkg.sha512"
+    }
+  }
+}

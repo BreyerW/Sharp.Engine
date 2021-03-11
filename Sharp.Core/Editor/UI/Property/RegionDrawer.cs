@@ -1,7 +1,8 @@
-﻿using Sharp.Editor.Attribs;
+﻿using PluginAbstraction;
+using Sharp.Editor.Attribs;
 using Sharp.Editor.Views;
 using SharpAsset;
-using SharpAsset.Pipeline;
+using SharpAsset.AssetPipeline;
 using Squid;
 using System;
 using System.Collections.Generic;

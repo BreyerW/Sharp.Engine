@@ -4,7 +4,7 @@ using SharpAsset;
 
 namespace SharpSL
 {
-	public interface IEditorBackendRenderer
+	/*public interface IEditorBackendRenderer
 	{
 		void update(ref Skeleton skele);
 
@@ -12,5 +12,5 @@ namespace SharpSL
 
 		void display(ref Skeleton skele);
 
-	}
+	}*/
 }

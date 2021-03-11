@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Numerics;
-using OpenTK.Graphics.OpenGL;
 using SharpAsset;
-using SharpAsset.Pipeline;
+using SharpAsset.AssetPipeline;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace SharpSL.BackendRenderers.OpenGL
 {
-	public class EditorOpenGLRenderer : IEditorBackendRenderer
+	/*public class EditorOpenGLRenderer : IEditorBackendRenderer
 	{
 
 		private static GCHandle _logCallbackHandle;
@@ -171,19 +170,19 @@ namespace SharpSL.BackendRenderers.OpenGL
 		private static int[] bone_octahedral_wire_square = new int[] { 1, 2, 3, 4, 1 };
 
 		private static int[][] bone_octahedral_solid_tris = new int[8][] {
-	new []{2, 1, 0}, /* bottom */
+	new []{2, 1, 0}, /* bottom *
 	new []{3, 2, 0},
 	new []{4, 3, 0},
 	new []{1, 4, 0},
 
-	new []{5, 1, 2}, /* top */
+	new []{5, 1, 2}, /* top *
 	new []{5, 2, 3},
 	new []{5, 3, 4},
 	new []{5, 4, 1}
 		};
 
 		private static float M_SQRT1_2 = 0.707106781186547524401f;
-		/* aligned with bone_octahedral_solid_tris */
+		/* aligned with bone_octahedral_solid_tris *
 
 		private static float[][] bone_octahedral_solid_normals = new float[8][] {
 	new []{ M_SQRT1_2,   -M_SQRT1_2,    0.00000000f},
@@ -221,5 +220,5 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 			//GL.CallList(displist);
 		}
-	}
+	}*/
 }

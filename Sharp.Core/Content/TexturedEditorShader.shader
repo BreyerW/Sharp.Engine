@@ -1,5 +1,5 @@
 ﻿#version 130
-
+#pragma enable blend
 #pragma vertex
             in vec3 vertex_position;
 			in vec2 vertex_texcoord;
