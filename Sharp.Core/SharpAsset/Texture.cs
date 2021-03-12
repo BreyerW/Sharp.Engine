@@ -27,10 +27,5 @@ namespace SharpAsset
 		{
 			return Name.ToString();
 		}
-
-		public void PlaceIntoScene(Entity context, Vector3 worldPos)
-		{
-			throw new NotImplementedException();
-		}
 	}
 }

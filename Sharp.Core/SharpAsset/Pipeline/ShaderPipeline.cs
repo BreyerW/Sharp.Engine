@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using PluginAbstraction;
 using Sharp;
 using SharpSL;
@@ -10,12 +11,13 @@ namespace SharpAsset.AssetPipeline
 	[SupportedFiles(".shader", ".glsl")]
 	public class ShaderPipeline : Pipeline<Shader>
 	{
-		public override IAsset Import(string pathToFile) //Change IAsset to INT
+		public override ref Shader Import(string pathToFile) //Change IAsset to INT
 		{
 			//var format = Path.GetExtension (pathToFile);
 			//if (!SupportedFileFormatsAttribute.supportedFileFormats.Contains (format))
 			//throw new NotSupportedException (format+" format is not supported");
-			if (base.Import(pathToFile) is IAsset asset) return asset;
+			ref var asset = ref base.Import(pathToFile);
+			if (Unsafe.IsNullRef(ref asset) is false) return ref asset;
 
 			List<string> shaderStringBuffer = new List<string>();
 			using StreamReader shaderFile = new StreamReader(pathToFile);
@@ -25,7 +27,7 @@ namespace SharpAsset.AssetPipeline
 			}
 			var shader = SplitShaders(shaderStringBuffer, ref pathToFile);
 			shader.Program = -1;
-			return this[Register(shader)];
+			return ref this[Register(shader)];
 		}
 
 		#region SplitShaders
@@ -141,6 +143,11 @@ namespace SharpAsset.AssetPipeline
 		#endregion ProcessIncludes
 
 		public override void Export(string pathToExport, string format)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void ApplyAsset(in Shader asset, object context)
 		{
 			throw new NotImplementedException();
 		}

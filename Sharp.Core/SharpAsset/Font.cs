@@ -66,10 +66,6 @@ namespace SharpAsset
 		{
 			return PluginManager.fontLoader.LoadKerning(Name.ToString(), Size, c, next);
 		}
-		public void PlaceIntoScene(Entity context, Vector3 worldPos)
-		{
-			throw new NotImplementedException();
-		}
 	}
 	public struct CharData
 	{

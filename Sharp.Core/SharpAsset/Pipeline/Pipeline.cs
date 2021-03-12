@@ -3,6 +3,7 @@ using System;
 using Sharp;
 using System.Linq;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace SharpAsset.AssetPipeline
 {
@@ -37,17 +38,26 @@ namespace SharpAsset.AssetPipeline
 			recentlyLoadedAssets.Enqueue(i);
 			return i;
 		}
+		public abstract void ApplyAsset(in T asset, object context);
 
 		public ref T GetAsset(string name)
 		{
 			return ref GetAsset(nameToKey.IndexOf(name));
 		}
-		public override IAsset Import(string pathToFile)
+		public virtual ref T Import(string pathToFile)
 		{
 			var name = Path.GetFileNameWithoutExtension(pathToFile);
 			if (nameToKey.Contains(name))
-				return this[nameToKey.IndexOf(name)];
-			return null;
+				return ref this[nameToKey.IndexOf(name)];
+			return ref Unsafe.NullRef<T>();
+		}
+		public sealed override IAsset ImportIAsset(string pathToFile)
+		{
+			return Import(pathToFile);
+		}
+		public sealed override void ApplyIAsset(IAsset asset, object context)
+		{
+			ApplyAsset(GetAsset(asset.Name.ToString()),context);
 		}
 	}
 
@@ -94,7 +104,8 @@ namespace SharpAsset.AssetPipeline
 		{
 			return extensionToTypeMapping.Keys.ToArray();
 		}
-		public virtual IAsset Import(string pathToFile) => null;
+		public abstract IAsset ImportIAsset(string pathToFile);
+		public abstract void ApplyIAsset(IAsset asset,object context);
 		public abstract void Export(string pathToExport, string format);
 	}
 }

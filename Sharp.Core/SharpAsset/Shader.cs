@@ -42,10 +42,6 @@ namespace SharpAsset
 			PluginManager.backendRenderer.DeleteBuffer(Target.VertexShader, VertexID);
 			PluginManager.backendRenderer.DeleteBuffer(Target.FragmentShader, FragmentID);
 		}
-
-		public void PlaceIntoScene(Entity context, Vector3 worldPos)
-		{
-		}
 	}
 
 	public enum UniformType

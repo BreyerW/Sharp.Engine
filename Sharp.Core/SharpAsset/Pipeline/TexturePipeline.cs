@@ -9,9 +9,11 @@ namespace SharpAsset.AssetPipeline
 	[SupportedFiles(".bmp", ".jpg", ".png", ".dds")]
 	public class TexturePipeline : Pipeline<Texture>
 	{
-		public override IAsset Import(string pathToFile)
+		public override ref Texture Import(string pathToFile)
 		{
-			if (base.Import(pathToFile) is IAsset asset) return asset;
+			ref var asset = ref base.Import(pathToFile);
+			if (Unsafe.IsNullRef(ref asset) is false) return ref asset;
+
 			var texture = new Texture();
 			texture.TBO = -1;
 			texture.FBO = -1;
@@ -26,7 +28,7 @@ namespace SharpAsset.AssetPipeline
 			texture.bitmap = GC.AllocateUninitializedArray<byte>(data.bitmap.Length);
 			Unsafe.CopyBlockUnaligned(ref texture.bitmap[0], ref data.bitmap[0], (uint)data.bitmap.Length);
 
-			return this[Register(texture)];
+			return ref this[Register(texture)];
 		}
 
 		private static bool IsPowerOfTwo(int x)
@@ -35,6 +37,11 @@ namespace SharpAsset.AssetPipeline
 		}
 
 		public override void Export(string pathToExport, string format)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void ApplyAsset(in Texture asset, object context)
 		{
 			throw new NotImplementedException();
 		}

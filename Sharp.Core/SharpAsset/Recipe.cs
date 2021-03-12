@@ -13,9 +13,6 @@ namespace SharpAsset
         public byte[] settings;
 
         //delta field for nested recipes?
-        public void PlaceIntoScene(Entity context, Vector3 worldPos)
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }

@@ -14,8 +14,6 @@ namespace SharpAsset
 		ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath); } }
 
 		//geticon ?
-		void PlaceIntoScene(Entity context /*null if placed over void*/, Vector3 worldPos);
 
-		//void PlaceIntoInspector & placeIntoStructure or one to rule them all PlaceIntoView(View view)
 	}
 }

@@ -10,22 +10,28 @@ namespace SharpAsset.AssetPipeline
 	{
 		public static float size = 18;
 
+		public override void ApplyAsset(in Font asset, object context)
+		{
+			throw new NotImplementedException();
+		}
+
 		public override void Export(string pathToExport, string format)
 		{
 			throw new NotImplementedException();
 		}
 
-		public override IAsset Import(string pathToFileOrSystemFont)
+		public override ref Font Import(string pathToFileOrSystemFont)
 		{
-			if (base.Import(pathToFileOrSystemFont) is IAsset asset) return asset;
-			if (PluginManager.fontLoader.Import(pathToFileOrSystemFont) is false) return null;
+			ref var asset = ref base.Import(pathToFileOrSystemFont);
+			if (Unsafe.IsNullRef(ref asset) is false) return ref asset;
+			if (PluginManager.fontLoader.Import(pathToFileOrSystemFont) is false) return ref Unsafe.NullRef<Font>();
 			var font = new Font(size);
 			font.FullPath = pathToFileOrSystemFont;
 			var data = PluginManager.fontLoader.LoadFontData(font.Name.ToString(), size);
 			font.EmSize = data.emSize;
 			font.Ascender = data.ascender;
 			font.Descender = data.descender;
-			return this[Register(font)];
+			return ref this[Register(font)];
 		}
 	}
 	public class FontData

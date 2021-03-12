@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Sharp.Core;
 using PluginAbstraction;
+using Sharp.Editor.Views;
 
 namespace SharpAsset.AssetPipeline
 {
@@ -39,9 +40,10 @@ namespace SharpAsset.AssetPipeline
 			SetIndexContext<TIndex>();
 			SetVertexContext<TVertex>();
 		}
-		public override IAsset Import(string pathToFile)
+		public override ref Mesh Import(string pathToFile)
 		{
-			if (base.Import(pathToFile) is IAsset asset) return asset;
+			ref var asset = ref base.Import(pathToFile);
+			if (Unsafe.IsNullRef(ref asset) is false) return ref asset;
 			var format = Path.GetExtension(pathToFile);
 			//if (!SupportedFileFormatsAttribute.supportedFileFormats.Contains (format))
 			//throw new NotSupportedException (format+" format is not supported");
@@ -122,7 +124,7 @@ namespace SharpAsset.AssetPipeline
 			internalMesh.verts = finalVertices;
 			internalMesh.subMeshesDescriptor = subMeshesDescription.ToArray();
 			internalMesh.bounds = new BoundingBox(largestBound.Min, largestBound.Max);
-			return this[Register(internalMesh)];
+			return ref this[Register(internalMesh)];
 		}
 
 		private void CopyBytes(RegisterAsAttribute format, int count, byte[] vertices, Span<byte> data, int dataStride)
@@ -137,6 +139,34 @@ namespace SharpAsset.AssetPipeline
 		public override void Export(string pathToExport, string format)
 		{
 			throw new NotImplementedException();
+		}
+		private static int count = 0;
+		public override void ApplyAsset(in Mesh asset, object context)
+		{
+			if (context is SceneView sv)
+			{
+				(int x , int y) locPos = (Squid.UI.MousePosition.x - sv.Location.x, Squid.UI.MousePosition.y - sv.Location.y);
+				var orig = Camera.main.Parent.transform.Position;
+				var worldPos = orig + (Camera.main.ScreenToWorld(locPos.x, locPos.y, sv.Size.x, sv.Size.y) - orig).Normalize() * Camera.main.ZFar * 0.1f;
+
+				var eObject = new Entity();
+
+				eObject.transform.Position = worldPos;
+				var angles = eObject.transform.Rotation * NumericsExtensions.Deg2Rad;
+				eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
+				var renderer = eObject.AddComponent<MeshRenderer>();
+				ref var shader = ref Pipeline.Get<Shader>().Import(Application.projectPath + (count % 2 is 0 ? @"\Content\TextureOnlyShader.shader" : @"\Content\TextureOnlyShaderTransparent.shader"));
+				renderer.material = new Material();
+				renderer.material.BindShader(0, shader);
+				ref var texture = ref Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\duckCM.bmp");
+				//zamienic na ref loading pipeliny
+				renderer.material.BindProperty("mesh", asset);
+				renderer.material.BindProperty("MyTexture", texture);
+				if (context is not null) //make as child of context?
+				{
+				}
+				count++;
+			}
 		}
 	}
 }

@@ -250,7 +250,8 @@ namespace Sharp.Editor.Views
 				foreach (var asset in entities)
 				{
 					(string name, string extension) = asset;
-					Pipeline.Get(extension).Import(name).PlaceIntoScene(null, orig + (Camera.main.ScreenToWorld(locPos.x, locPos.y, Size.x, Size.y) - orig).Normalize() * Camera.main.ZFar * 0.1f);
+					var pipeline = Pipeline.Get(extension);
+					pipeline.ApplyIAsset(pipeline.ImportIAsset(name), this);
 				}
 		}
 		protected override void DrawAfter()
