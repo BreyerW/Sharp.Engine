@@ -244,8 +244,6 @@ namespace Sharp.Editor.Views
 
 		private void Panel_Drop(Control sender, DragDropEventArgs e)
 		{
-			var locPos = new Point(Squid.UI.MousePosition.x - Location.x, Squid.UI.MousePosition.y - Location.y);
-			var orig = Camera.main.Parent.transform.Position;
 			if (e.Source.UserData is ValueTuple<string, string>[] entities)
 				foreach (var asset in entities)
 				{
@@ -401,6 +399,7 @@ namespace Sharp.Editor.Views
 					renderable.Render();
 				}
 			}
+			PluginManager.backendRenderer.DisableState(RenderState.DepthMask);
 			PluginManager.backendRenderer.EnableState(RenderState.Blend);
 			foreach (var renderable in transparentRenderables)
 			{
@@ -409,6 +408,7 @@ namespace Sharp.Editor.Views
 					renderable.Render();
 				}
 			}
+			PluginManager.backendRenderer.EnableState(RenderState.DepthMask);
 			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
 
 			highlight.Draw();
