@@ -14,7 +14,7 @@ namespace Sharp.Core
 
 		[JsonInclude]
 		//[JsonProperty(IsReference = false)]
-		internal uint[] bits;
+		private uint[] bits;
 
 		public BitMask(int startValue)
 		{
