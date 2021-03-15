@@ -23,7 +23,6 @@ namespace Sharp
              get { return Main; }
          }*/
 
-		public Frustum frustum;
 		private Matrix4x4 projectionMatrix;
 		public Matrix4x4 ProjectionMatrix
 		{
@@ -177,7 +176,7 @@ namespace Sharp
 		{
 			Vector4 vec;
 
-			vec.X = 2.0f * x / (float)width - 1;
+			vec.X = 2.0f * x / (float)width - 1;//screentondc
 			vec.Y = -(2.0f * y / (float)height - 1);
 			vec.Z = time;
 			vec.W = 1.0f;
@@ -194,7 +193,20 @@ namespace Sharp
 			}
 			return new Vector3(vec.X, vec.Y, vec.Z);
 		}
+		public Vector3 NDCToWorld(Vector3 vec)
+		{
+			var viewInv = ViewMatrix;
+			var projInv = main.projectionMatrix.Inverted();
+			var newVec = new Vector4(vec, 1f).Transform(projInv * viewInv);
 
+			if (newVec.W > 0.000001f || newVec.W < -0.000001f)
+			{
+				newVec.X /= newVec.W;
+				newVec.Y /= newVec.W;
+				newVec.Z /= newVec.W;
+			}
+			return new Vector3(newVec.X, newVec.Y, newVec.Z);
+		}
 		public Vector3 WorldToScreen(Vector3 pos, int width, int height)
 		{
 			var pos4 = Vector4.Transform(new Vector4(pos, 1), ViewMatrix * projectionMatrix);
@@ -301,7 +313,6 @@ namespace Sharp
 			Parent.transform.Rotation = newRot;
 			//Console.WriteLine("Rotation={0}", MouseRotation);
 			//ClampMouseValues();
-			frustum?.Update(main.ViewMatrix * main.projectionMatrix);
 			//ResetMouse();
 		}
 
@@ -318,7 +329,6 @@ namespace Sharp
 			SetModelviewMatrix();
 			SetProjectionMatrix();
 
-			frustum.Update(Camera.main.ViewMatrix * Camera.main.projectionMatrix);
 			moved = true;
 		}
 

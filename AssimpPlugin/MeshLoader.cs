@@ -5,6 +5,7 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using PluginAbstraction;
 using System.Runtime.CompilerServices;
+using System.Numerics;
 
 namespace AssimpPlugin
 {
@@ -21,11 +22,21 @@ namespace AssimpPlugin
 			foreach (var mesh in scene.Meshes)
 			{
 				var data = new IntermediateMeshData();
-
+				var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+				var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
 				var indices = mesh.GetUnsignedIndices();//TODO: convert to bytes then switching indices type will be piss easy
 				data.indices = MemoryMarshal.AsBytes(indices.AsSpan()).ToArray();
-				data.minExtents = mesh.BoundingBox.Min;
-				data.maxExtents = mesh.BoundingBox.Max;
+				for (int i = 0; i < mesh.VertexCount; i++)
+				{
+					var tmpVec = new Vector3(mesh.Vertices[i].X, mesh.Vertices[i].Y, mesh.Vertices[i].Z);
+
+					min = Vector3.Min(min, tmpVec);
+					max = Vector3.Max(max, tmpVec);
+
+				}
+				data.minExtents = new Vector3D(min.X, min.Y, min.Z); //mesh.BoundingBox.Min;
+				data.maxExtents = new Vector3D(max.X, max.Y, max.Z); //mesh.BoundingBox.Max;
+
 				if (mesh.HasVertices)
 					data.vertices = mesh.Vertices.ToArray();
 

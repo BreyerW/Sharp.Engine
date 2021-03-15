@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Sharp.Core;
 using PluginAbstraction;
 using Sharp.Editor.Views;
+using Sharp.Core.Engine;
 
 namespace SharpAsset.AssetPipeline
 {
@@ -88,7 +89,7 @@ namespace SharpAsset.AssetPipeline
 					Unsafe.CopyBlockUnaligned(ref finalIndices[0], ref data.indices[0], (uint)data.indices.Length);
 
 				largestBound.Min = Vector3.Min(largestBound.Min, data.minExtents);
-				largestBound.Max = Vector3.Min(largestBound.Max, data.maxExtents);
+				largestBound.Max = Vector3.Max(largestBound.Max, data.maxExtents);
 
 				Array.Resize(ref finalVertices, finalVertices.Length + vertStride * data.vertices.Length);
 
@@ -145,7 +146,7 @@ namespace SharpAsset.AssetPipeline
 		{
 			if (context is SceneView sv)
 			{
-				(int x , int y) locPos = (Squid.UI.MousePosition.x - sv.Location.x, Squid.UI.MousePosition.y - sv.Location.y);
+				(int x, int y) locPos = (Squid.UI.MousePosition.x - sv.Location.x, Squid.UI.MousePosition.y - sv.Location.y);
 				var orig = Camera.main.Parent.transform.Position;
 				var worldPos = orig + (Camera.main.ScreenToWorld(locPos.x, locPos.y, sv.Size.x, sv.Size.y) - orig).Normalize() * Camera.main.ZFar * 0.1f;
 
@@ -162,6 +163,7 @@ namespace SharpAsset.AssetPipeline
 				//zamienic na ref loading pipeliny
 				renderer.material.BindProperty("mesh", asset);
 				renderer.material.BindProperty("MyTexture", texture);
+				CollisionDetection.AddBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
 				if (context is not null) //make as child of context?
 				{
 				}

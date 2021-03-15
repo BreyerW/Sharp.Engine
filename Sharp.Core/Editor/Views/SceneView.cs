@@ -6,9 +6,9 @@ using System.Linq;
 using System.Numerics;
 using Sharp.Engine.Components;
 using SharpAsset;
-using SharpSL;
 using Sharp.Core;
 using PluginAbstraction;
+using Sharp.Core.Engine;
 
 namespace Sharp.Editor.Views
 {
@@ -63,10 +63,10 @@ namespace Sharp.Editor.Views
 			eLight.transform.Position = Camera.main.Parent.transform.Position;
 			eLight.AddComponent<Light>();
 
-			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ViewCubeShader.shader");
-			var viewCubeMesh = (Mesh)Pipeline.Get<Mesh>().Import(Application.projectPath + @"\Content\viewcube_submeshed.dae");
-			var cubeTexture = (Texture)Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\viewcube_textured.png");
-			var mask = (Texture)Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\viewcube_mask.png");
+			ref var shader = ref Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ViewCubeShader.shader");
+			ref var viewCubeMesh = ref Pipeline.Get<Mesh>().Import(Application.projectPath + @"\Content\viewcube_submeshed.dae");
+			ref var cubeTexture = ref Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\viewcube_textured.png");
+			ref var mask = ref Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\viewcube_mask.png");
 
 
 
@@ -84,7 +84,7 @@ namespace Sharp.Editor.Views
 			viewCubeMat.BindProperty("zColor", new Color(80, 150, 255, 255));//Manipulators.zColor
 			viewCubeMat.BindProperty("mesh", viewCubeMesh);
 			HighlightPassComponent.viewCubeMat = viewCubeMat;
-			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightShader.shader");
+			shader = ref Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightShader.shader");
 			ref var screenMesh = ref Pipeline.Get<Mesh>().GetAsset("screen_space_square");
 
 
@@ -189,7 +189,6 @@ namespace Sharp.Editor.Views
 			Camera.main.Height = Size.y;
 			Camera.main.SetProjectionMatrix();
 
-			Camera.main.frustum = new Frustum(Camera.main.ViewMatrix * Camera.main.ProjectionMatrix);
 			Material.BindGlobalProperty("viewPort", new Vector2(Size.x, Size.y));
 		}
 
@@ -252,6 +251,7 @@ namespace Sharp.Editor.Views
 					pipeline.ApplyIAsset(pipeline.ImportIAsset(name), this);
 				}
 		}
+
 		protected override void DrawAfter()
 		{
 
@@ -272,6 +272,27 @@ namespace Sharp.Editor.Views
 			var transparentRenderables = new List<Renderer>();
 			var rs = Entity.FindAllWith(rendererMask, Camera.main.cullingTags, cullTags: true);
 			var renderers = rs.GetEnumerator();
+			var camCorner1 = Camera.main.NDCToWorld(new Vector3(-1, -1, -1));
+			var camCorner2 = Camera.main.NDCToWorld(new Vector3(-1, 1, -1));
+			var camCorner3 = Camera.main.NDCToWorld(new Vector3(1, 1, -1));
+			var camCorner4 = Camera.main.NDCToWorld(new Vector3(1, -1, -1));
+			var camCorner5 = Camera.main.NDCToWorld(new Vector3(-1, -1, 1));
+			var camCorner6 = Camera.main.NDCToWorld(new Vector3(-1, 1, 1));
+			var camCorner7 = Camera.main.NDCToWorld(new Vector3(1, 1, 1));
+			var camCorner8 = Camera.main.NDCToWorld(new Vector3(1, -1, 1));
+
+			var nearPlane = Plane.CreateFromVertices(camCorner1, camCorner2, camCorner3);
+			var farPlane = Plane.CreateFromVertices(camCorner5, camCorner6, camCorner7);
+			farPlane = new Plane(-farPlane.Normal, -farPlane.D);
+			var leftPlane = Plane.CreateFromVertices(camCorner1, camCorner2, camCorner5);
+			leftPlane = new Plane(-leftPlane.Normal, -leftPlane.D);
+			var rightPlane = Plane.CreateFromVertices(camCorner3, camCorner4, camCorner7);
+			rightPlane = new Plane(-rightPlane.Normal, -rightPlane.D);
+			var bottomPlane = Plane.CreateFromVertices(camCorner1, camCorner4, camCorner8);
+			var topPlane = Plane.CreateFromVertices(camCorner2, camCorner3, camCorner7);
+			topPlane = new Plane(-topPlane.Normal, -topPlane.D);
+			var tester = new BroadPhaseCallback();
+			CollisionDetection.simulation.BroadPhase.FrustumSweep(nearPlane, farPlane, leftPlane, rightPlane, bottomPlane, topPlane, ref tester);
 			while (renderers.MoveNext())
 			{
 				foreach (var renderable in renderers.Current)
@@ -408,8 +429,8 @@ namespace Sharp.Editor.Views
 					renderable.Render();
 				}
 			}
-			PluginManager.backendRenderer.EnableState(RenderState.DepthMask);
 			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
+			PluginManager.backendRenderer.EnableState(RenderState.DepthMask);
 
 			highlight.Draw();
 
