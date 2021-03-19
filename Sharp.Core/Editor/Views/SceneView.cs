@@ -368,7 +368,7 @@ namespace Sharp.Editor.Views
 						renderable.Render();
 					}
 				}
-				Material.BindGlobalProperty("enablePicking", 1f);
+
 				foreach (var renderable in transparentRenderables)
 				{
 					if (renderable is { active: true })
@@ -376,11 +376,14 @@ namespace Sharp.Editor.Views
 						renderable.Render();
 					}
 				}
-				Material.BindGlobalProperty("enablePicking", 0f);
+				//Material.BindGlobalProperty("enablePicking", 0f);
 				//PluginManager.backendRenderer.Clip(Squid.UI.MousePosition.x - 1, Canvas.Size.y - Squid.UI.MousePosition.y - 1, 1, 1);//TODO: 3x3 or more for rubber band style?
 
 				PluginManager.backendRenderer.EnableState(RenderState.DepthTest);//disable when all objects or when depth peeling to be selected or enabled + less when only top most
+																				 //PluginManager.backendRenderer.DisableState(RenderState.DepthTest);
+																				 //PluginManager.backendRenderer.EnableState(RenderState.DepthMask);
 				PluginManager.backendRenderer.SetDepthFunc(DepthFunc.Equal);
+				Material.BindGlobalProperty("enablePicking", 1f);
 				var queryOffset = (int)Gizmo.UniformScale;
 				foreach (var i in ..renderables.Count)
 				{
@@ -402,7 +405,7 @@ namespace Sharp.Editor.Views
 					}
 				}
 			}
-
+			Material.BindGlobalProperty("enablePicking", 0f);
 			PluginManager.backendRenderer.Viewport(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
 			PluginManager.backendRenderer.Clip(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
 			PluginManager.backendRenderer.SetColorMask(true, true, true, true);

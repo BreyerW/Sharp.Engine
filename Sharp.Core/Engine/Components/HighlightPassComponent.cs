@@ -23,11 +23,11 @@ namespace Sharp.Engine.Components
 			if (selectedMaterial is null)
 			{
 				selectedMaterial = new Material();
-				var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\SelectedMaskPassShader.shader");
+				var shader = Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\SelectedMaskPassShader.shader");
 				selectedMaterial.BindShader(0, shader);
 
 				hoveredMaterial = new Material();
-				shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HoveredMaskPassShader.shader");
+				shader = Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HoveredMaskPassShader.shader");
 				hoveredMaterial.BindShader(0, shader);
 			}
 
@@ -79,7 +79,7 @@ namespace Sharp.Engine.Components
 				//GL.DepthFunc(DepthFunction.Always);
 				Draw(hovered);
 				swapMaterial = null;
-				Material.BindGlobalProperty("colorId", new Color(127,0, 0, 255));
+				Material.BindGlobalProperty("colorId", new Color(127, 0, 0, 255));
 				Draw(hoveredWithTransparency);
 				PluginManager.backendRenderer.EnableState(RenderState.DepthTest);
 			}

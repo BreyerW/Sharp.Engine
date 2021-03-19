@@ -29,7 +29,7 @@ namespace Sharp.Core.Engine
 			var box = new Box(MathF.Abs(max.X - min.X), MathF.Abs(max.Y - min.Y), MathF.Abs(max.Z - min.Z));
 			var minInWorld = pos + min;
 			var maxInWorld = pos + max;
-			var midpoint=Vector3.Lerp(minInWorld,maxInWorld,0.5f);
+			var midpoint = Vector3.Lerp(minInWorld, maxInWorld, 0.5f);
 			var handle = simulation.Statics.Add(new StaticDescription(midpoint, new CollidableDescription(simulation.Shapes.Add(box), 0.1f)));
 		}
 	}
@@ -135,7 +135,7 @@ namespace Sharp.Core.Engine
 	{
 		public unsafe void FrustumTest(CollidableReference collidable, FrustumData* frustumData)
 		{
-			Console.WriteLine("collision");
+			//Console.WriteLine("collision");
 		}
 	}
 	//Note that the engine does not require any particular form of gravity- it, like all the contact callbacks, is managed by a callback.

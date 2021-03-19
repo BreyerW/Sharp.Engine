@@ -62,7 +62,9 @@ namespace BepuPhysics.Trees
 				}
 				else
 				{
+					
 					ref var node = ref Nodes[nodeIndex];
+					
 					var aIntersected = Intersects(node.A.Min, node.A.Max, treeRay, out var tA);
 					var bIntersected = Intersects(node.B.Min, node.B.Max, treeRay, out var tB);
 
@@ -170,6 +172,7 @@ namespace BepuPhysics.Trees
 				else
 				{
 					ref var node = ref Nodes[nodeIndex];
+					var tmp = node.A.LeafCount;
 					var aIntersected = IntersectsOrInside(node.A.Min, node.A.Max, frustumData);
 					var bIntersected = IntersectsOrInside(node.B.Min, node.B.Max, frustumData);
 					if (aIntersected && !bIntersected)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace Sharp.Core
 {
@@ -32,7 +33,7 @@ namespace Sharp.Core
 			if (b >= bits.Length)
 				Array.Resize(ref bits, b + 1);
 
-			bits[b] |= 1u << (index & BitSize);
+			Interlocked.Or(ref bits[b], 1u << (index & BitSize));
 		}
 		/// <summary>
 		/// Clears the bit at the given index.
@@ -44,7 +45,7 @@ namespace Sharp.Core
 			if (b >= bits.Length)
 				return;
 
-			bits[b] &= ~(1u << (index & BitSize));
+			Interlocked.And(ref bits[b], ~(1u << (index & BitSize)));
 		}
 		/// <summary>
 		/// Sets all bits.

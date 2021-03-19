@@ -303,6 +303,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 		{
 			//GL.Enable(EnableCap.Blend);
 			GL.Clear(ClearBufferMask.DepthBufferBit);
+			GL.ClearDepth(1.0);
 		}
 
 		public void BindVertexAttrib(AttributeType type, int shaderLoc, int dim, int stride, int offset)
