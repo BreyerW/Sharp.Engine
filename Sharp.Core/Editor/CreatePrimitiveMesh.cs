@@ -67,7 +67,7 @@ public static class CreatePrimitiveMesh
 		Mesh.LoadIndices(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan());
 		return Mesh;
 	}
-	public static Mesh GenerateEditorCube()
+	public static Mesh GenerateViewCube()
 	{
 		return Unsafe.Unbox<Mesh>(Pipeline.Get<Mesh>().Import(Application.projectPath + @"\Content\viewcube.dae"));
 	}
@@ -238,7 +238,9 @@ public static class CreatePrimitiveMesh
 		var newMesh = new Mesh
 		{
 			FullPath = name,
-			UsageHint = UsageHint.StaticDraw
+			UsageHint = UsageHint.StaticDraw,
+			VBO = -1,
+			EBO = -1
 		};
 		#region UVs
 		Vector2 _00 = new Vector2(0f, 0f);

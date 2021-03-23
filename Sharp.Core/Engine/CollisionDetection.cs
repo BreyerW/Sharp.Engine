@@ -11,11 +11,14 @@ using BepuPhysics.Constraints;
 using BepuPhysics.Trees;
 using BepuUtilities;
 using BepuUtilities.Memory;
+using Sharp.Editor;
+using SharpAsset.AssetPipeline;
 
 namespace Sharp.Core.Engine
 {
 	public static class CollisionDetection
 	{
+		public static HashSet<(TypedIndex id, Vector3 pos)> shapes = new();
 		public static BufferPool bufferPool;
 		public static Simulation simulation;
 		static CollisionDetection()
@@ -27,10 +30,20 @@ namespace Sharp.Core.Engine
 		public static void AddBody(Vector3 pos, Vector3 min, Vector3 max)
 		{
 			var box = new Box(MathF.Abs(max.X - min.X), MathF.Abs(max.Y - min.Y), MathF.Abs(max.Z - min.Z));
+			var id = simulation.Shapes.Add(box);
+			shapes.Add((id, pos + min));
 			var minInWorld = pos + min;
 			var maxInWorld = pos + max;
 			var midpoint = Vector3.Lerp(minInWorld, maxInWorld, 0.5f);
-			var handle = simulation.Statics.Add(new StaticDescription(midpoint, new CollidableDescription(simulation.Shapes.Add(box), 0.1f)));
+			var handle = simulation.Statics.Add(new StaticDescription(midpoint, new CollidableDescription(id, 0.1f)));
+			int i = 0;
+			foreach (var (shape, p) in CollisionDetection.shapes)
+			{
+				var b = CollisionDetection.simulation.Shapes.GetShape<Box>(shape.Index);
+				var cube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(b.Width, b.Height, b.Length), "cube" + i, vertexColor: Manipulators.zColor);
+				Pipeline.Get<SharpAsset.Mesh>().Register(cube);
+				i++;
+			}
 		}
 	}
 	unsafe struct NarrowPhaseCallbacks : INarrowPhaseCallbacks
@@ -135,7 +148,7 @@ namespace Sharp.Core.Engine
 	{
 		public unsafe void FrustumTest(CollidableReference collidable, FrustumData* frustumData)
 		{
-			//Console.WriteLine("collision");
+			Console.WriteLine("collision");
 		}
 	}
 	//Note that the engine does not require any particular form of gravity- it, like all the contact callbacks, is managed by a callback.

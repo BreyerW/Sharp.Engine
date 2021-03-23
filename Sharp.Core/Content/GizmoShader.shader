@@ -7,7 +7,6 @@ out vec4 v_color;
 uniform mat4 camView;
 uniform mat4 camProjection;
 uniform mat4 model;
-uniform vec2 viewPort;
 uniform vec4 highlightColor;
 uniform float enableHighlight;
 //uniform vec3 axis;

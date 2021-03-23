@@ -22,25 +22,7 @@ namespace BepuPhysics.Trees
 			t = Vector4.Max(Vector4.Max(new Vector4(tEntry.X), Vector4.Zero), Vector4.Max(new Vector4(tEntry.Y), new Vector4(tEntry.Z))).X;
 			return t <= earliestExit;
 		}
-		public unsafe static bool IntersectsOrInside(in Vector3 min, in Vector3 max, FrustumData* frustumData)
-		{
-			// Convert AABB to center-extents representation
-			Vector3 c = (max + min) * 0.5f; // Compute AABB center
-			Vector3 e = max - c; // Compute positive extents
 
-			ref var plane = ref frustumData->nearPlane;
-			//far plane test can be eliminated by setting id<6 instead. This results in frustum with "infinite" length
-			for (int id = 1; id < 7; id++)
-			{
-				float r = e.X * Math.Abs(plane.Normal.X) + e.Y * Math.Abs(plane.Normal.Y) + e.Z * Math.Abs(plane.Normal.Z);
-				var m = (c.X * plane.Normal.X) + (c.Y * plane.Normal.Y) + (c.Z * plane.Normal.Z) + plane.D;
-
-				if (m + r < 0) return false; //outside
-											 //if (m - r < 0) result = 1; //intersect
-				plane = ref Unsafe.Add(ref plane, 1);
-			}
-			return true;
-		}
 
 		internal unsafe void RayCast<TLeafTester>(int nodeIndex, TreeRay* treeRay, RayData* rayData, int* stack, ref TLeafTester leafTester) where TLeafTester : IRayLeafTester
 		{
@@ -62,9 +44,9 @@ namespace BepuPhysics.Trees
 				}
 				else
 				{
-					
+
 					ref var node = ref Nodes[nodeIndex];
-					
+
 					var aIntersected = Intersects(node.A.Min, node.A.Max, treeRay, out var tA);
 					var bIntersected = Intersects(node.B.Min, node.B.Max, treeRay, out var tB);
 
@@ -138,7 +120,7 @@ namespace BepuPhysics.Trees
 			if (leafCount == 1)
 			{
 				//If the first node isn't filled, we have to use a special case.
-				if (IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData))
+				if ((IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData) & (1 << 6)) != 0) //
 				{
 					leafTester.TestLeaf(0, frustumData);
 				}
@@ -155,8 +137,9 @@ namespace BepuPhysics.Trees
 		{
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
 			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
-
+			ushort planeBitmask = ushort.MaxValue;
 			int stackEnd = 0;
+			int fullyContainedStack = -1;
 			while (true)
 			{
 				if (nodeIndex < 0)
@@ -168,32 +151,121 @@ namespace BepuPhysics.Trees
 					if (stackEnd == 0)
 						return;
 					nodeIndex = stack[--stackEnd];
+
+					//check if we are no longer fully inside frustum. if yes reset fullyContainedStack
+					if (stackEnd == fullyContainedStack)
+						fullyContainedStack = -1;
+					//reset bitmask every time when we have to go back and we arent fully inside frustum
+					//we must make separate test from previous test because for fullyContainedStack=-1 prev test would never be true
+					if (fullyContainedStack < -1)
+						planeBitmask = ushort.MaxValue;
 				}
 				else
 				{
 					ref var node = ref Nodes[nodeIndex];
-					var tmp = node.A.LeafCount;
-					var aIntersected = IntersectsOrInside(node.A.Min, node.A.Max, frustumData);
-					var bIntersected = IntersectsOrInside(node.B.Min, node.B.Max, frustumData);
-					if (aIntersected && !bIntersected)
-						nodeIndex = node.A.Index;
-					else if (aIntersected && bIntersected)
+					ushort aBitmask = planeBitmask;
+					ushort bBitmask = planeBitmask;
+					//skip tests if frustum fully contains childs,
+					//unset bit means fully inside single plane,
+					//set bit means intersection with that plane,
+					//and 7th least significant bit UNset means that AABB is outside frustum
+					//we have six planes thats why we check 6 zeroes
+					if (planeBitmask == 0b1111_1111_1100_0000)
 					{
 						Debug.Assert(stackEnd < TraversalStackCapacity - 1, "At the moment, we use a fixed size stack. Until we have explicitly tracked depths, watch out for excessive depth traversals.");
 						nodeIndex = node.A.Index;
 						stack[stackEnd++] = node.B.Index;
 					}
-					else if (bIntersected)
-						nodeIndex = node.B.Index;
 					else
 					{
-						//No intersection. Need to pull from the stack to get a new target.
-						if (stackEnd == 0)
-							return;
-						nodeIndex = stack[--stackEnd];
+						aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, planeBitmask);
+						bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, planeBitmask);
+
+						var aIntersected = (aBitmask & (1 << 6)) != 0;
+						var bIntersected = (bBitmask & (1 << 6)) != 0;
+						if (aIntersected && !bIntersected)
+						{
+							nodeIndex = node.A.Index;
+							planeBitmask = aBitmask;
+							//check if a child is fully contained in frustum
+							//remember we can still intersect at this point and we need to be fully inside
+							if (aBitmask == 0b1111_1111_1100_0000)
+								fullyContainedStack = stackEnd;
+						}
+						else if (aIntersected && bIntersected)
+						{
+							Debug.Assert(stackEnd < TraversalStackCapacity - 1, "At the moment, we use a fixed size stack. Until we have explicitly tracked depths, watch out for excessive depth traversals.");
+							nodeIndex = node.A.Index;
+							planeBitmask = aBitmask;
+							//check if both childs are fully contained in frustum
+							//remember we can still intersect at this point and we need to be fully inside
+							if (aBitmask == 0b1111_1111_1100_0000 && bBitmask == 0b1111_1111_1100_0000)
+								fullyContainedStack = stackEnd;
+							stack[stackEnd++] = node.B.Index;
+						}
+						else if (bIntersected)
+						{
+							nodeIndex = node.B.Index;
+							planeBitmask = bBitmask;
+							//check if b child is fully contained in frustum
+							//remember we can still intersect at this point and we need to be fully inside
+							if (bBitmask == 0b1111_1111_1100_0000)
+								fullyContainedStack = stackEnd;
+						}
+						else
+						{
+							//No intersection. Need to pull from the stack to get a new target.
+							if (stackEnd == 0)
+								return;
+							nodeIndex = stack[--stackEnd];
+							//check if we are no longer fully inside frustum. if yes reset fullyContainedStack
+							if (stackEnd < fullyContainedStack)
+								fullyContainedStack = -1;
+							//reset bitmask every time when we have to go back and we arent fully inside frustum
+							//we must make separate test from previous test because for fullyContainedStack=-1 prev test would never be true
+							if (fullyContainedStack == -1)
+								planeBitmask = ushort.MaxValue;
+						}
 					}
+
 				}
 			}
+		}
+
+		public unsafe static ushort IntersectsOrInside(in Vector3 min, in Vector3 max, FrustumData* frustumData, ushort planeBitmask = ushort.MaxValue)
+		{
+			// Convert AABB to center-extents representation
+			Vector3 c = (max + min) * 0.5f; // Compute AABB center
+			Vector3 e = max - c; // Compute positive extents
+
+			ref var plane = ref frustumData->nearPlane;
+			//far plane test can be eliminated by setting id<5 instead. This results in frustum with "infinite" length
+			for (int id = 0; id < 6; id++)
+			{
+				if (((planeBitmask >> id) & 1) == 0)
+				{
+					plane = ref Unsafe.Add(ref plane, 1);
+					continue;
+				}
+				float r = e.X * Math.Abs(plane.Normal.X) + e.Y * Math.Abs(plane.Normal.Y) + e.Z * Math.Abs(plane.Normal.Z);
+				var m = (c.X * plane.Normal.X) + (c.Y * plane.Normal.Y) + (c.Z * plane.Normal.Z) + plane.D;
+
+				if (m + r < 0)//outside
+				{
+					planeBitmask &= unchecked((ushort)(~(1 << 6)));
+					return planeBitmask;
+				}
+				if (m - r < 0)//intersect
+				{
+
+				}
+				else//inside
+				{
+					planeBitmask &= (ushort)(~(1 << id));
+				}
+				plane = ref Unsafe.Add(ref plane, 1);
+			}
+			return planeBitmask;
 		}
 
 		public unsafe void RayCast<TLeafTester>(in Vector3 origin, in Vector3 direction, ref float maximumT, ref TLeafTester leafTester, int id = 0) where TLeafTester : IRayLeafTester

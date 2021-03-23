@@ -17,7 +17,7 @@ namespace Sharp.Editor
 
 		static DrawHelper()
 		{
-			shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GizmoShader.shader");
+			shader = Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GizmoShader.shader");
 
 			ref var circleMesh = ref Pipeline.Get<Mesh>().GetAsset("gizmo");
 			FillMaterial(out gizmoMaterial, shader, circleMesh, Manipulators.xColor);
@@ -29,7 +29,7 @@ namespace Sharp.Editor
 			screenGizmoMaterial.BindProperty("highlightColor", new Color(0.75f, 0.75f, 0.75f, 0.75f));
 			screenGizmoMaterial.BindProperty("enableHighlight", 0);
 
-			var gridShader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GridEditorShader.shader");
+			var gridShader =Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GridEditorShader.shader");
 
 			ref var gridMesh = ref Pipeline.Get<Mesh>().GetAsset("negative_square");
 			FillMaterial(out gridLineMaterial, gridShader, gridMesh, Color.White);

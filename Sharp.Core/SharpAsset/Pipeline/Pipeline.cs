@@ -32,7 +32,8 @@ namespace SharpAsset.AssetPipeline
 		public int Register(in T asset)
 		{
 			var name = asset.Name.ToString();
-			nameToKey.Add(name);
+			if (nameToKey.Contains(name) is false)
+				nameToKey.Add(name);
 			var i = nameToKey.IndexOf(name);
 			this[i] = asset;
 			recentlyLoadedAssets.Enqueue(i);
@@ -57,7 +58,7 @@ namespace SharpAsset.AssetPipeline
 		}
 		public sealed override void ApplyIAsset(IAsset asset, object context)
 		{
-			ApplyAsset(GetAsset(asset.Name.ToString()),context);
+			ApplyAsset(GetAsset(asset.Name.ToString()), context);
 		}
 	}
 
@@ -105,7 +106,7 @@ namespace SharpAsset.AssetPipeline
 			return extensionToTypeMapping.Keys.ToArray();
 		}
 		public abstract IAsset ImportIAsset(string pathToFile);
-		public abstract void ApplyIAsset(IAsset asset,object context);
+		public abstract void ApplyIAsset(IAsset asset, object context);
 		public abstract void Export(string pathToExport, string format);
 	}
 }

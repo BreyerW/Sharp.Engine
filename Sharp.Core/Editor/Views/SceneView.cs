@@ -9,6 +9,7 @@ using SharpAsset;
 using Sharp.Core;
 using PluginAbstraction;
 using Sharp.Core.Engine;
+using BepuPhysics.Collidables;
 
 namespace Sharp.Editor.Views
 {
@@ -19,6 +20,7 @@ namespace Sharp.Editor.Views
 		private int grid_size = 4096;
 		private static Material highlight;
 		private static Material viewCubeMat;
+		private static Material boundingBoxMat;
 		private static int[] ids = Array.Empty<int>();
 		internal static bool leftCtrlPressed = false;
 		//public static Scene physScene;
@@ -63,12 +65,14 @@ namespace Sharp.Editor.Views
 			eLight.transform.Position = Camera.main.Parent.transform.Position;
 			eLight.AddComponent<Light>();
 
+			ref var sh = ref Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GizmoShader.shader");
+			boundingBoxMat = new Material();
+			boundingBoxMat.BindShader(0, sh);
+
 			ref var shader = ref Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ViewCubeShader.shader");
-			ref var viewCubeMesh = ref Pipeline.Get<Mesh>().Import(Application.projectPath + @"\Content\viewcube_submeshed.dae");
+			ref var viewCubeMesh = ref Pipeline.Get<SharpAsset.Mesh>().Import(Application.projectPath + @"\Content\viewcube_submeshed.dae");
 			ref var cubeTexture = ref Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\viewcube_textured.png");
 			ref var mask = ref Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\viewcube_mask.png");
-
-
 
 			viewCubeMat = new Material();
 
@@ -85,7 +89,7 @@ namespace Sharp.Editor.Views
 			viewCubeMat.BindProperty("mesh", viewCubeMesh);
 			HighlightPassComponent.viewCubeMat = viewCubeMat;
 			shader = ref Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\HighlightShader.shader");
-			ref var screenMesh = ref Pipeline.Get<Mesh>().GetAsset("screen_space_square");
+			ref var screenMesh = ref Pipeline.Get<SharpAsset.Mesh>().GetAsset("screen_space_square");
 
 
 			highlight = new Material();
@@ -329,8 +333,9 @@ namespace Sharp.Editor.Views
 			{
 
 				PluginManager.backendRenderer.SetColorMask(false, false, false, false);
-				PluginManager.backendRenderer.EnableState(RenderState.DepthTest);//disable when all objects or when depth peeling to be selected or enabled + less when only top most
 
+				PluginManager.backendRenderer.EnableState(RenderState.DepthTest);//disable when all objects or when depth peeling to be selected or enabled + less when only top most
+																				 //PluginManager.backendRenderer.DisableState(RenderState.DepthMask);
 				if (SceneStructureView.tree.SelectedNode is { UserData: Entity })
 				{
 					DrawHelper.gizmoMaterial.Draw();
@@ -360,7 +365,7 @@ namespace Sharp.Editor.Views
 				}
 				//PluginManager.backendRenderer.Clip(Location.x, Canvas.Size.y - (Location.y + Size.y), Size.x, Size.y);
 				PluginManager.backendRenderer.SetDepthFunc(DepthFunc.Less);
-				PluginManager.backendRenderer.ClearDepth();
+				//PluginManager.backendRenderer.ClearDepth();
 				foreach (var renderable in renderables)
 				{
 					if (renderable is { active: true })
@@ -376,13 +381,10 @@ namespace Sharp.Editor.Views
 						renderable.Render();
 					}
 				}
-				//Material.BindGlobalProperty("enablePicking", 0f);
 				//PluginManager.backendRenderer.Clip(Squid.UI.MousePosition.x - 1, Canvas.Size.y - Squid.UI.MousePosition.y - 1, 1, 1);//TODO: 3x3 or more for rubber band style?
 
-				PluginManager.backendRenderer.EnableState(RenderState.DepthTest);//disable when all objects or when depth peeling to be selected or enabled + less when only top most
-																				 //PluginManager.backendRenderer.DisableState(RenderState.DepthTest);
-																				 //PluginManager.backendRenderer.EnableState(RenderState.DepthMask);
-				PluginManager.backendRenderer.SetDepthFunc(DepthFunc.Equal);
+				//PluginManager.backendRenderer.EnableState(RenderState.DepthTest);
+				PluginManager.backendRenderer.SetDepthFunc(DepthFunc.Equal);//or Gequal when want square selection including hidden objects, can leave as is if only top most objects should pass
 				Material.BindGlobalProperty("enablePicking", 1f);
 				var queryOffset = (int)Gizmo.UniformScale;
 				foreach (var i in ..renderables.Count)
@@ -422,6 +424,16 @@ namespace Sharp.Editor.Views
 				{
 					renderable.Render();
 				}
+			}
+			int id = 0;
+			foreach (var (shape, pos) in CollisionDetection.shapes)
+			{
+				var c = Pipeline.Get<SharpAsset.Mesh>().GetAsset("cube" + id);
+				
+				boundingBoxMat.BindProperty("mesh", c);
+				boundingBoxMat.BindProperty("model", Matrix4x4.CreateTranslation(pos));
+				boundingBoxMat.Draw();
+				id++;
 			}
 			PluginManager.backendRenderer.DisableState(RenderState.DepthMask);
 			PluginManager.backendRenderer.EnableState(RenderState.Blend);
