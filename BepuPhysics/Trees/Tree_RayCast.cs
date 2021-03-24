@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
@@ -133,6 +134,8 @@ namespace BepuPhysics.Trees
 				FrustumSweep(0, frustumData, stack, ref leafTester);
 			}
 		}
+		//representation of 0b1111_1111_1100_0000 on little endian that also works on big endian
+		private const ushort isInside = 65472;
 		internal unsafe void FrustumSweep<TLeafTester>(int nodeIndex, FrustumData* frustumData, int* stack, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
 		{
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
@@ -163,14 +166,12 @@ namespace BepuPhysics.Trees
 				else
 				{
 					ref var node = ref Nodes[nodeIndex];
-					ushort aBitmask = planeBitmask;
-					ushort bBitmask = planeBitmask;
 					//skip tests if frustum fully contains childs,
 					//unset bit means fully inside single plane,
 					//set bit means intersection with that plane,
 					//and 7th least significant bit UNset means that AABB is outside frustum
 					//we have six planes thats why we check 6 zeroes
-					if (planeBitmask == 0b1111_1111_1100_0000)
+					if (planeBitmask == isInside)
 					{
 						Debug.Assert(stackEnd < TraversalStackCapacity - 1, "At the moment, we use a fixed size stack. Until we have explicitly tracked depths, watch out for excessive depth traversals.");
 						nodeIndex = node.A.Index;
@@ -178,8 +179,8 @@ namespace BepuPhysics.Trees
 					}
 					else
 					{
-						aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, planeBitmask);
-						bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, planeBitmask);
+						var aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, planeBitmask);
+						var bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, planeBitmask);
 
 						var aIntersected = (aBitmask & (1 << 6)) != 0;
 						var bIntersected = (bBitmask & (1 << 6)) != 0;
@@ -187,9 +188,9 @@ namespace BepuPhysics.Trees
 						{
 							nodeIndex = node.A.Index;
 							planeBitmask = aBitmask;
-							//check if a child is fully contained in frustum
+							//check if A child is fully contained in frustum
 							//remember we can still intersect at this point and we need to be fully inside
-							if (aBitmask == 0b1111_1111_1100_0000)
+							if (aBitmask == isInside)
 								fullyContainedStack = stackEnd;
 						}
 						else if (aIntersected && bIntersected)
@@ -199,7 +200,7 @@ namespace BepuPhysics.Trees
 							planeBitmask = aBitmask;
 							//check if both childs are fully contained in frustum
 							//remember we can still intersect at this point and we need to be fully inside
-							if (aBitmask == 0b1111_1111_1100_0000 && bBitmask == 0b1111_1111_1100_0000)
+							if (aBitmask == isInside && bBitmask == isInside)
 								fullyContainedStack = stackEnd;
 							stack[stackEnd++] = node.B.Index;
 						}
@@ -207,9 +208,9 @@ namespace BepuPhysics.Trees
 						{
 							nodeIndex = node.B.Index;
 							planeBitmask = bBitmask;
-							//check if b child is fully contained in frustum
+							//check if B child is fully contained in frustum
 							//remember we can still intersect at this point and we need to be fully inside
-							if (bBitmask == 0b1111_1111_1100_0000)
+							if (bBitmask == isInside)
 								fullyContainedStack = stackEnd;
 						}
 						else
@@ -247,22 +248,22 @@ namespace BepuPhysics.Trees
 					plane = ref Unsafe.Add(ref plane, 1);
 					continue;
 				}
-				float r = e.X * Math.Abs(plane.Normal.X) + e.Y * Math.Abs(plane.Normal.Y) + e.Z * Math.Abs(plane.Normal.Z);
-				var m = (c.X * plane.Normal.X) + (c.Y * plane.Normal.Y) + (c.Z * plane.Normal.Z) + plane.D;
+				float r = Vector3.Dot(Vector3.Abs(plane.Normal), e);
+				var m = Plane.DotCoordinate(plane, c);
 
 				if (m + r < 0)//outside
 				{
 					planeBitmask &= unchecked((ushort)(~(1 << 6)));
 					return planeBitmask;
 				}
-				if (m - r < 0)//intersect
-				{
-
-				}
-				else//inside
+				if (m - r >= 0)//inside
 				{
 					planeBitmask &= (ushort)(~(1 << id));
 				}
+				/*else//intersect
+				{
+					
+				}*/
 				plane = ref Unsafe.Add(ref plane, 1);
 			}
 			return planeBitmask;

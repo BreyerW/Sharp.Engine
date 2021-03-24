@@ -39,6 +39,8 @@ namespace Sharp.Editor.Views
 		internal static Vector2 mouseDela;
 		internal static Point? locPos = null;
 		public static bool mouseLocked = false;
+		private bool enableBoundingBoxes;
+
 		static SceneView()
 		{
 			LoadScene();
@@ -217,6 +219,8 @@ namespace Sharp.Editor.Views
 				Camera.main.Move(Vector3.UnitZ, -1f, 0f);
 			if (args.Key == Keys.S)
 				Camera.main.Move(Vector3.UnitZ, 1f, 0f);
+			if (args.Key == Keys.B)
+				enableBoundingBoxes = !enableBoundingBoxes;
 		}
 
 		private void Panel_MouseUp(Control sender, MouseEventArgs args)
@@ -426,15 +430,16 @@ namespace Sharp.Editor.Views
 				}
 			}
 			int id = 0;
-			foreach (var (shape, pos) in CollisionDetection.shapes)
-			{
-				var c = Pipeline.Get<SharpAsset.Mesh>().GetAsset("cube" + id);
-				
-				boundingBoxMat.BindProperty("mesh", c);
-				boundingBoxMat.BindProperty("model", Matrix4x4.CreateTranslation(pos));
-				boundingBoxMat.Draw();
-				id++;
-			}
+			if (enableBoundingBoxes)
+				foreach (var (shape, pos) in CollisionDetection.shapes)
+				{
+					var c = Pipeline.Get<SharpAsset.Mesh>().GetAsset("cube" + id);
+
+					boundingBoxMat.BindProperty("mesh", c);
+					boundingBoxMat.BindProperty("model", Matrix4x4.CreateTranslation(pos));
+					boundingBoxMat.Draw();
+					id++;
+				}
 			PluginManager.backendRenderer.DisableState(RenderState.DepthMask);
 			PluginManager.backendRenderer.EnableState(RenderState.Blend);
 			foreach (var renderable in transparentRenderables)
