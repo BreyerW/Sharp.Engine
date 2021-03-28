@@ -89,7 +89,7 @@ namespace Sharp
 			//MouseLookEnabled = mouseLook;
 
 			AspectRatio = 1f;
-			FieldOfView = 90f;
+			FieldOfView = 110f;
 			ZNear = 0.2f;
 			ZFar = 5000f;
 			Material.BindGlobalProperty("camNearFar", new Vector2(ZNear, ZFar));

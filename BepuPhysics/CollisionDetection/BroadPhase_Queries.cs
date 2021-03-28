@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace BepuPhysics.CollisionDetection
@@ -66,18 +67,97 @@ namespace BepuPhysics.CollisionDetection
 			//The sweep tester probably relies on mutation to function; copy any mutations back to the original reference.
 			rayTester = tester.LeafTester;
 		}
-		public unsafe void FrustumSweep<TFrustumTester>(in Plane nearPlane, in Plane farPlane, in Plane leftPlane, in Plane rightPlane, in Plane bottomPlane, in Plane topPlane, ref TFrustumTester frustumTester, int id = 0) where TFrustumTester : IBroadPhaseFrustumTester
+		/// <summary>
+		/// Finds any intersections between a frustum and leaf bounding boxes.
+		/// </summary>
+		/// <typeparam name="TFrustumTester">Type of the callback to execute on frustum-leaf bounding box intersections.</typeparam>
+		/// <param name="matrix">should be multiply of inversed view matrix (or camera's model matrix) and projection matrix </param>
+		/// <param name="frustumTester">Callback to execute on frustum-leaf bounding box intersections.</param>
+		/// <param name="columnMajor">matrix is column-major or not</param>
+		/// <param name="id">User specified id of the frustum.</param>
+		public unsafe void FrustumSweep<TFrustumTester>(in Matrix4x4 matrix, ref TFrustumTester frustumTester, bool columnMajor = false, int id = 0) where TFrustumTester : IBroadPhaseFrustumTester
 		{
+			//TODO: maybe use preprocessor directive instead of bool?
+			//#if COLUMNMAJOR
 			var frustumData = new FrustumData()
 			{
-				nearPlane = nearPlane,
-				farPlane = farPlane,
-				leftPlane = leftPlane,
-				rightPlane = rightPlane,
-				topPlane = topPlane,
-				bottomPlane = bottomPlane,
 				Id = id
 			};
+			var planeSpan = new Span<Plane>(&frustumData.nearPlane, 12);
+			//invViewMatrix = Matrix4x4.Transpose(invViewMatrix);
+
+			if (columnMajor)
+			{
+				ref var refMat = ref Unsafe.AsRef(matrix);
+				ref var lastColumn = ref Unsafe.As<float, Vector4>(ref refMat.M41);
+				ref var firstColumn = ref Unsafe.As<float, Vector4>(ref refMat.M11);
+				ref var secondColumn = ref Unsafe.As<float, Vector4>(ref refMat.M21);
+				ref var thirdColumn = ref Unsafe.As<float, Vector4>(ref refMat.M31);
+
+				// Near clipping plane
+				planeSpan[0] = Plane.Normalize(new Plane(lastColumn + thirdColumn));
+
+				// Top clipping plane
+				planeSpan[2] = Plane.Normalize(new Plane(lastColumn - secondColumn));
+
+				// Bottom clipping plane
+				planeSpan[4] = Plane.Normalize(new Plane(lastColumn + secondColumn));
+
+				// Left clipping plane
+				planeSpan[6] = Plane.Normalize(new Plane(lastColumn + firstColumn));
+
+				// Right clipping plane
+				planeSpan[8] = Plane.Normalize(new Plane(lastColumn - firstColumn));
+
+				// Far clipping plane
+				planeSpan[10] = Plane.Normalize(new Plane(lastColumn - thirdColumn));
+
+			}
+			else
+			{
+				var lastColumn = new Vector4(matrix.M14, matrix.M24, matrix.M34, matrix.M44);
+				var firstColumn = new Vector4(matrix.M11, matrix.M21, matrix.M31, matrix.M41);
+				var secondColumn = new Vector4(matrix.M12, matrix.M22, matrix.M32, matrix.M42);
+				var thirdColumn = new Vector4(matrix.M13, matrix.M23, matrix.M33, matrix.M43);
+
+				// Near clipping plane
+				planeSpan[0] = Plane.Normalize(new Plane(matrix.M13, matrix.M23, matrix.M33, matrix.M43));
+
+				// Top clipping plane
+				planeSpan[2] = Plane.Normalize(new Plane(lastColumn - secondColumn));
+
+				// Bottom clipping plane
+				planeSpan[4] = Plane.Normalize(new Plane(lastColumn + secondColumn));
+
+				// Left clipping plane
+				planeSpan[6] = Plane.Normalize(new Plane(lastColumn + firstColumn));
+
+				// Right clipping plane
+				planeSpan[8] = Plane.Normalize(new Plane(lastColumn - firstColumn));
+
+				// Far clipping plane
+				planeSpan[10] = Plane.Normalize(new Plane(lastColumn - thirdColumn));
+			}
+
+			planeSpan[1].Normal = Vector3.Abs(planeSpan[0].Normal);
+
+			planeSpan[3].Normal = Vector3.Abs(planeSpan[2].Normal);
+
+			planeSpan[5].Normal = Vector3.Abs(planeSpan[4].Normal);
+
+			planeSpan[7].Normal = Vector3.Abs(planeSpan[6].Normal);
+
+			planeSpan[9].Normal = Vector3.Abs(planeSpan[8].Normal);
+
+			planeSpan[11].Normal = Vector3.Abs(planeSpan[10].Normal);
+
+			planeSpan[0].D *= -2;
+			planeSpan[2].D *= -2;
+			planeSpan[4].D *= -2;
+			planeSpan[6].D *= -2;
+			planeSpan[8].D *= -2;
+			planeSpan[10].D *= -2;
+
 			FrustumLeafTester<TFrustumTester> tester;
 			tester.LeafTester = frustumTester;
 			tester.Leaves = activeLeaves;

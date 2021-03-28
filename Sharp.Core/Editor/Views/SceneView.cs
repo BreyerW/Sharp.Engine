@@ -280,27 +280,9 @@ namespace Sharp.Editor.Views
 			var transparentRenderables = new List<Renderer>();
 			var rs = Entity.FindAllWith(rendererMask, Camera.main.cullingTags, cullTags: true);
 			var renderers = rs.GetEnumerator();
-			var camCorner1 = Camera.main.NDCToWorld(new Vector3(-1, -1, -1));
-			var camCorner2 = Camera.main.NDCToWorld(new Vector3(-1, 1, -1));
-			var camCorner3 = Camera.main.NDCToWorld(new Vector3(1, 1, -1));
-			var camCorner4 = Camera.main.NDCToWorld(new Vector3(1, -1, -1));
-			var camCorner5 = Camera.main.NDCToWorld(new Vector3(-1, -1, 1));
-			var camCorner6 = Camera.main.NDCToWorld(new Vector3(-1, 1, 1));
-			var camCorner7 = Camera.main.NDCToWorld(new Vector3(1, 1, 1));
-			var camCorner8 = Camera.main.NDCToWorld(new Vector3(1, -1, 1));
 
-			var nearPlane = Plane.CreateFromVertices(camCorner1, camCorner2, camCorner3);
-			var farPlane = Plane.CreateFromVertices(camCorner5, camCorner6, camCorner7);
-			farPlane = new Plane(-farPlane.Normal, -farPlane.D);
-			var leftPlane = Plane.CreateFromVertices(camCorner1, camCorner2, camCorner5);
-			leftPlane = new Plane(-leftPlane.Normal, -leftPlane.D);
-			var rightPlane = Plane.CreateFromVertices(camCorner3, camCorner4, camCorner7);
-			rightPlane = new Plane(-rightPlane.Normal, -rightPlane.D);
-			var bottomPlane = Plane.CreateFromVertices(camCorner1, camCorner4, camCorner8);
-			var topPlane = Plane.CreateFromVertices(camCorner2, camCorner3, camCorner7);
-			topPlane = new Plane(-topPlane.Normal, -topPlane.D);
 			var tester = new BroadPhaseCallback();
-			CollisionDetection.simulation.BroadPhase.FrustumSweep(nearPlane, farPlane, leftPlane, rightPlane, bottomPlane, topPlane, ref tester);
+			CollisionDetection.simulation.BroadPhase.FrustumSweep(Camera.main.Parent.transform.ModelMatrix * Camera.main.ProjectionMatrix, ref tester);
 			while (renderers.MoveNext())
 			{
 				foreach (var renderable in renderers.Current)

@@ -1,9 +1,11 @@
-﻿using System;
+﻿using BepuUtilities.Memory;
+using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace BepuPhysics.Trees
@@ -121,7 +123,7 @@ namespace BepuPhysics.Trees
 			if (leafCount == 1)
 			{
 				//If the first node isn't filled, we have to use a special case.
-				if ((IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData) & (1 << 6)) != 0) //
+				if ((IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData, Nodes[0].A.Index) & (1 << 6)) != 0) //
 				{
 					leafTester.TestLeaf(0, frustumData);
 				}
@@ -134,13 +136,15 @@ namespace BepuPhysics.Trees
 				FrustumSweep(0, frustumData, stack, ref leafTester);
 			}
 		}
-		//representation of 0b1111_1111_1100_0000 on little endian that also works on big endian
-		private const ushort isInside = 65472;
+		//representation of 0b1111_1111_1111_1111_1111_1111_1100_0000 on little endian that also works on big endian
+		private const uint isInside = 4294967232;
+		private static Dictionary<int, int> failedPlane = new Dictionary<int, int>();
+
 		internal unsafe void FrustumSweep<TLeafTester>(int nodeIndex, FrustumData* frustumData, int* stack, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
 		{
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
 			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
-			ushort planeBitmask = ushort.MaxValue;
+			uint planeBitmask = uint.MaxValue;
 			int stackEnd = 0;
 			int fullyContainedStack = -1;
 			while (true)
@@ -161,7 +165,7 @@ namespace BepuPhysics.Trees
 					//reset bitmask every time when we have to go back and we arent fully inside frustum
 					//we must make separate test from previous test because for fullyContainedStack=-1 prev test would never be true
 					if (fullyContainedStack < -1)
-						planeBitmask = ushort.MaxValue;
+						planeBitmask = uint.MaxValue;
 				}
 				else
 				{
@@ -179,8 +183,8 @@ namespace BepuPhysics.Trees
 					}
 					else
 					{
-						var aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, planeBitmask);
-						var bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, planeBitmask);
+						var aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index, planeBitmask);
+						var bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index, planeBitmask);
 
 						var aIntersected = (aBitmask & (1 << 6)) != 0;
 						var bIntersected = (bBitmask & (1 << 6)) != 0;
@@ -225,50 +229,96 @@ namespace BepuPhysics.Trees
 							//reset bitmask every time when we have to go back and we arent fully inside frustum
 							//we must make separate test from previous test because for fullyContainedStack=-1 prev test would never be true
 							if (fullyContainedStack == -1)
-								planeBitmask = ushort.MaxValue;
+								planeBitmask = uint.MaxValue;
 						}
 					}
 
 				}
 			}
 		}
-
-		public unsafe static ushort IntersectsOrInside(in Vector3 min, in Vector3 max, FrustumData* frustumData, ushort planeBitmask = ushort.MaxValue)
+		[StructLayout(LayoutKind.Sequential)]
+		struct ExtentsRepresentation
 		{
-			// Convert AABB to center-extents representation
-			Vector3 c = (max + min) * 0.5f; // Compute AABB center
-			Vector3 e = max - c; // Compute positive extents
+			public Vector3 center;
+			private float padding1;
+			public Vector3 extents;
+			private float padding2;
+		}
+		public unsafe static uint IntersectsOrInside(in Vector3 min, in Vector3 max, FrustumData* frustumData, int nodeIndex, uint planeBitmask = uint.MaxValue)
+		{
+			var shouldRenumberPlanes = failedPlane.TryGetValue(nodeIndex, out var planeId);
 
-			ref var plane = ref frustumData->nearPlane;
-			//far plane test can be eliminated by setting id<5 instead. This results in frustum with "infinite" length
-			for (int id = 0; id < 6; id++)
+			var start = 0;
+			var end = 6;
+			// Convert AABB to center-extents representation
+			var eRep = new ExtentsRepresentation()
 			{
-				if (((planeBitmask >> id) & 1) == 0)
+				center = max + min, // Compute AABB center
+				extents = max - min // Compute positive extents
+			};
+			ref var planeAddr = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
+			ref var plane = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
+
+			//far plane test can be eliminated by setting id<5 instead. This results in frustum with "infinite" length
+			if (shouldRenumberPlanes)
+			{
+				start = planeId;
+				end = start;
+			}
+
+			do
+			{
+				if (((planeBitmask >> start) & 1) == 0)
 				{
-					plane = ref Unsafe.Add(ref plane, 1);
+					start = shouldRenumberPlanes && start == 5 ? 0 : start + 1;
 					continue;
 				}
-				float r = Vector3.Dot(Vector3.Abs(plane.Normal), e);
-				var m = Plane.DotCoordinate(plane, c);
-
-				if (m + r < 0)//outside
+				plane = ref Unsafe.Add(ref planeAddr, start * 2);
+				var d = plane.D;
+				float m, r;
+				//Vector<float>.Count == 4 is not worth it since built-in VectorX and Plane are already vectorized
+				//and for Vector<float>.Count == 16 we should fuse A & B into one test
+				//and that will require sperate method with different signature and NET 5+ since Vector512 is required
+				if (Vector.IsHardwareAccelerated && Vector<float>.Count == 8)
 				{
-					planeBitmask &= unchecked((ushort)(~(1 << 6)));
+					ref Vector<float> planeData = ref Unsafe.As<Plane, Vector<float>>(ref plane);
+					ref Vector<float> bbData = ref Unsafe.As<ExtentsRepresentation, Vector<float>>(ref eRep);
+					var multi = bbData * planeData;
+					m = multi[0] + multi[1] + multi[2];
+					r = multi[4] + multi[5] + multi[6];
+				}
+				else
+				{
+					m = Vector3.Dot(plane.Normal, eRep.center);
+					plane = ref Unsafe.Add(ref plane, 1);//absolute normal
+					r = Vector3.Dot(plane.Normal, eRep.extents);
+				}
+				if (m + r < d)//outside
+				{
+					planeBitmask &= unchecked((uint)(~(1 << 6)));
+					//no need to renumber planes when id is 0
+					if (!shouldRenumberPlanes && start != 0)
+						failedPlane.Add(nodeIndex, start);
+					else if (start != 0)
+						failedPlane[nodeIndex] = start;
 					return planeBitmask;
 				}
-				if (m - r >= 0)//inside
+				if (m - r >= d)//inside
 				{
-					planeBitmask &= (ushort)(~(1 << id));
+					planeBitmask &= ~(uint)(1 << start);
 				}
 				/*else//intersect
 				{
-					
+
 				}*/
-				plane = ref Unsafe.Add(ref plane, 1);
-			}
+				start = shouldRenumberPlanes && start == 5 ? 0 : start + 1;
+			} while (start != end);
+
+			if (shouldRenumberPlanes)
+				failedPlane.Remove(nodeIndex);
+
 			return planeBitmask;
 		}
-
 		public unsafe void RayCast<TLeafTester>(in Vector3 origin, in Vector3 direction, ref float maximumT, ref TLeafTester leafTester, int id = 0) where TLeafTester : IRayLeafTester
 		{
 			TreeRay.CreateFrom(origin, direction, maximumT, id, out var rayData, out var treeRay);

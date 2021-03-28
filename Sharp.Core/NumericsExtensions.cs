@@ -122,7 +122,7 @@ namespace Sharp
 		}
 		public static Vector3 Forward(in this Matrix4x4 m)
 		{
-			return new(m.M31, m.M32, m.M33);
+			return -new Vector3(m.M31, m.M32, m.M33);
 		}
 		public static Vector3 Up(in this Matrix4x4 m)
 		{

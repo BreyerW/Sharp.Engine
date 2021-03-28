@@ -20,11 +20,23 @@ namespace BepuPhysics.Trees
 	public struct FrustumData
 	{
 		public Plane nearPlane;
+		public Plane nearPlaneAbsNormal;
+
 		public Plane topPlane;
+		public Plane topPlaneAbsNormal;
+
 		public Plane bottomPlane;
+		public Plane bottomPlaneAbsNormal;
+
 		public Plane leftPlane;
+		public Plane leftPlaneAbsNormal;
+
 		public Plane rightPlane;
+		public Plane rightPlaneAbsNormal;
+
 		public Plane farPlane;
+		public Plane farPlaneAbsNormal;
+
 		public int Id;
 	}
 	/// <summary>
