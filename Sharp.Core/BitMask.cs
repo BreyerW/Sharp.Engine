@@ -101,7 +101,7 @@ namespace Sharp.Core
 			}
 			return true;
 		}
-		public readonly bool HasFlags(in BitMask flags)
+		public readonly bool HasAllFlags(in BitMask flags)
 		{
 			if (flags.bits.Length is 0)
 				return true;

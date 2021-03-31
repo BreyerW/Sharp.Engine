@@ -249,8 +249,15 @@ namespace BepuPhysics.Trees
 			var shouldRenumberPlanes = failedPlane.TryGetValue(nodeIndex, out var planeId);
 
 			var start = 0;
+			//far plane test can be eliminated by setting end=5
+			//and changing all occurences of start==5 to start==4 instead.
+			//This results in frustum with "infinite" length
+
 			var end = 6;
+
 			// Convert AABB to center-extents representation
+			//On NET 5+ can skip conversion and instead use Vector.ConditionalSelect & Vector.GreaterThan with Vector128
+			//and use p, n-vertex optimization
 			var eRep = new ExtentsRepresentation()
 			{
 				center = max + min, // Compute AABB center
@@ -259,7 +266,6 @@ namespace BepuPhysics.Trees
 			ref var planeAddr = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
 			ref var plane = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
 
-			//far plane test can be eliminated by setting id<5 instead. This results in frustum with "infinite" length
 			if (shouldRenumberPlanes)
 			{
 				start = planeId;
@@ -281,6 +287,7 @@ namespace BepuPhysics.Trees
 				//and that will require sperate method with different signature and NET 5+ since Vector512 is required
 				if (Vector.IsHardwareAccelerated && Vector<float>.Count == 8)
 				{
+					//Vector.ConditionalSelect<float>();
 					ref Vector<float> planeData = ref Unsafe.As<Plane, Vector<float>>(ref plane);
 					ref Vector<float> bbData = ref Unsafe.As<ExtentsRepresentation, Vector<float>>(ref eRep);
 					var multi = bbData * planeData;
@@ -297,9 +304,9 @@ namespace BepuPhysics.Trees
 				{
 					planeBitmask &= unchecked((uint)(~(1 << 6)));
 					//no need to renumber planes when id is 0
-					if (!shouldRenumberPlanes && start != 0)
+					if (!shouldRenumberPlanes && start != 0 && start != planeId)
 						failedPlane.Add(nodeIndex, start);
-					else if (start != 0)
+					else if (start != 0 && start != planeId)
 						failedPlane[nodeIndex] = start;
 					return planeBitmask;
 				}

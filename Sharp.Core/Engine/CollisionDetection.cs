@@ -18,9 +18,10 @@ namespace Sharp.Core.Engine
 {
 	public static class CollisionDetection
 	{
-		public static HashSet<(TypedIndex id, Vector3 pos)> shapes = new();
+		public static HashSet<Vector3> shapes = new();
 		public static BufferPool bufferPool;
 		public static Simulation simulation;
+		private static int index = 0;
 		static CollisionDetection()
 		{
 			bufferPool = new BufferPool();
@@ -29,19 +30,24 @@ namespace Sharp.Core.Engine
 		}
 		public static void AddBody(Vector3 pos, Vector3 min, Vector3 max)
 		{
-			var box = new Box(MathF.Abs(max.X - min.X), MathF.Abs(max.Y - min.Y), MathF.Abs(max.Z - min.Z));
-			var id = simulation.Shapes.Add(box);
-			shapes.Add((id, pos + min));
 			var minInWorld = pos + min;
 			var maxInWorld = pos + max;
+			var box = new BepuUtilities.BoundingBox(minInWorld, maxInWorld);
+
+			shapes.Add(pos + min);
+
 			var midpoint = Vector3.Lerp(minInWorld, maxInWorld, 0.5f);
-			var handle = simulation.Statics.Add(new StaticDescription(midpoint, new CollidableDescription(id, 0.1f)));
+			var handle = simulation.BroadPhase.AddFrozen(new CollidableReference(new StaticHandle(index)), ref box);
+			index++;
 			int i = 0;
-			foreach (var (shape, p) in CollisionDetection.shapes)
+			foreach (var p in ..simulation.BroadPhase.FrozenTree.LeafCount)
 			{
-				var b = CollisionDetection.simulation.Shapes.GetShape<Box>(shape.Index);
-				var cube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(b.Width, b.Height, b.Length), "cube" + i, vertexColor: Manipulators.zColor);
-				Pipeline.Get<SharpAsset.Mesh>().Register(cube);
+				unsafe
+				{
+					simulation.BroadPhase.GetFrozenBoundsPointers(p, out var minp, out var maxp);
+					var cube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(MathF.Abs(maxp->X - minp->X), MathF.Abs(maxp->Y - minp->Y), MathF.Abs(maxp->Z - minp->Z)), "cube" + i, vertexColor: Manipulators.zColor);
+					Pipeline.Get<SharpAsset.Mesh>().Register(cube);
+				}
 				i++;
 			}
 		}

@@ -48,7 +48,7 @@ namespace Sharp.Engine.Components
 		public Material swapMaterial;
 		protected CommandBufferComponent(Entity parent) : base(parent)
 		{
-			rendererMask.SetFlag(0);
+			rendererMask = Extension.GetBitMaskFor<Renderer>();
 			cam = Parent.GetComponent<Camera>();
 		}
 
@@ -168,7 +168,7 @@ namespace Sharp.Engine.Components
 		{
 			PreparePass();
 			var renderers = new List<Renderer>();
-			var renderables = Entity.FindAllWith(rendererMask, cam.cullingTags, cullTags: true).GetEnumerator();
+			var renderables = Entity.FindAllWith(rendererMask, cam.cullingTags, TestMode.Any, TestMode.Cull).GetEnumerator();
 			while (renderables.MoveNext())
 			{
 				foreach (var renderable in renderables.Current)

@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using Sharp.Core;
 using System.Runtime.InteropServices.ComTypes;
 using System.Numerics;
+using System.Linq;
 
 namespace Sharp
 {
@@ -19,11 +20,42 @@ namespace Sharp
 		};
 		private static Dictionary<Type, int> compFlagToBitPositionMapping = new()
 		{
-			[typeof(Renderer)] = 0,
-			[typeof(Behaviour)] = 1,
-			[typeof(CommandBufferComponent)] = 2,
-		};//TODO: replace with generated enum?
-
+		};
+		private static Dictionary<Type, BitMask> abstractCompToBitMaskMapping = new()
+		{
+			[typeof(Renderer)] = new BitMask(0),
+			[typeof(Behaviour)] = new BitMask(0),
+			[typeof(CommandBufferComponent)] = new BitMask(0)
+		};
+		[ModuleInitializer]
+		internal static void LoadAbstractComponents()
+		{
+			var baseType = typeof(Component);
+			var types = baseType.Assembly.GetTypes().Where(t => t != baseType && !t.IsAbstract &&
+											baseType.IsAssignableFrom(t));
+			var index = 0;
+			foreach (var t in types)
+			{
+				compFlagToBitPositionMapping.Add(t, index = compFlagToBitPositionMapping.Count);
+				//TODO: use source generators to populate dictionary instead
+				if (typeof(Renderer).IsAssignableFrom(t))
+				{
+					abstractCompToBitMaskMapping[typeof(Renderer)].SetFlag(index);
+				}
+				else if (typeof(CommandBufferComponent).IsAssignableFrom(t))
+				{
+					abstractCompToBitMaskMapping[typeof(CommandBufferComponent)].SetFlag(index);
+				}
+				else if (typeof(Behaviour).IsAssignableFrom(t))
+				{
+					abstractCompToBitMaskMapping[typeof(Behaviour)].SetFlag(index);
+				}
+			}
+		}
+		public static BitMask GetBitMaskFor<T>() where T : Component
+		{
+			return abstractCompToBitMaskMapping[typeof(T)];
+		}
 		public static ref readonly BitMask SetTag(this in BitMask mask, string tag)
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
@@ -61,37 +93,17 @@ namespace Sharp
 		public static ref readonly BitMask SetTag(this in BitMask mask, Component tag)
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
-			if (tag is Renderer)
+
+			/*if (compFlagToBitPositionMapping.TryGetValue(tag.GetType(), out var index) is false)
 			{
-				bitmask.SetFlag(compFlagToBitPositionMapping[typeof(Renderer)]);
-			}
-			else if (tag is CommandBufferComponent)
-			{
-				bitmask.SetFlag(compFlagToBitPositionMapping[typeof(CommandBufferComponent)]);
-			}
-			else if (tag is Behaviour)
-			{
-				bitmask.SetFlag(compFlagToBitPositionMapping[typeof(Behaviour)]);
-			}
-			if (compFlagToBitPositionMapping.TryGetValue(tag.GetType(), out var index) is false) compFlagToBitPositionMapping.Add(tag.GetType(), index = compFlagToBitPositionMapping.Count);
-			bitmask.SetFlag(index);
+				compFlagToBitPositionMapping.Add(tag.GetType(), index = compFlagToBitPositionMapping.Count);
+			}*/
+			bitmask.SetFlag(compFlagToBitPositionMapping[tag.GetType()]);
 			return ref bitmask;
 		}
 		public static ref readonly BitMask ClearTag(this in BitMask mask, Component tag)
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
-			if (tag is Renderer)
-			{
-				bitmask.ClearFlag(compFlagToBitPositionMapping[typeof(Renderer)]);
-			}
-			else if (tag is CommandBufferComponent)
-			{
-				bitmask.ClearFlag(compFlagToBitPositionMapping[typeof(CommandBufferComponent)]);
-			}
-			else if (tag is Behaviour)
-			{
-				bitmask.ClearFlag(compFlagToBitPositionMapping[typeof(Behaviour)]);
-			}
 			if (compFlagToBitPositionMapping.TryGetValue(tag.GetType(), out var index))
 				bitmask.ClearFlag(index);
 			else throw new ArgumentException($"{tag} does not exist.");

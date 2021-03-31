@@ -3,7 +3,7 @@ using Sharp.Editor.Views;
 
 namespace Sharp
 {
-	public class Behaviour : Component
+	public abstract class Behaviour : Component
 	{
 		public Behaviour(Entity parent) : base(parent)
 		{

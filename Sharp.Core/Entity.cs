@@ -10,7 +10,12 @@ using Sharp.Engine.Components;
 namespace Sharp
 {
 	delegate bool MaskCheck(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags);
-
+	public enum TestMode
+	{
+		Any,
+		All,
+		Cull
+	}
 	public sealed class Entity : IEngineObject
 	{
 
@@ -75,7 +80,7 @@ namespace Sharp
 			}
 			else
 				foreach (var (key, value) in tagsMapping)
-					if (key.tags.HasFlags(mask))
+					if (key.tags.HasAllFlags(mask))
 						yield return value;
 
 		}
@@ -89,27 +94,39 @@ namespace Sharp
 			}
 			else
 				foreach (var (key, value) in tagsMapping)
-					if (key.components.HasFlags(mask))
+					if (key.components.HasAllFlags(mask))
 						yield return value;
 
 		}
-		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWith(BitMask componentsMask, BitMask tagsMask, bool cullComponents = false, bool cullTags = false)
+		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWith(BitMask componentsMask, BitMask tagsMask, TestMode componentsTestMode = TestMode.All, TestMode tagsTestMode = TestMode.All)
 		{
-			MaskCheck condition = (cullComponents, cullTags) switch
+			MaskCheck condition = (componentsTestMode, tagsTestMode) switch
 			{
-				(false, false) => compsAndTags,
-				(true, true) => nCompsAndnTags,
-				(false, true) => compsAndnTags,
-				(true, false) => nCompsAndTags,
+				(TestMode.All, TestMode.All) => compsAndTags,
+				(TestMode.Cull, TestMode.Cull) => nCompsAndnTags,
+				(TestMode.All, TestMode.Cull) => compsAndnTags,
+				(TestMode.Cull, TestMode.All) => nCompsAndTags,
+
+				(TestMode.Any, TestMode.Any) => anyCompsAndAnyTags,
+				(TestMode.Any, TestMode.All) => anyCompsAndTags,
+				(TestMode.Any, TestMode.Cull) => anyCompsAndnTags,
+				(TestMode.Cull, TestMode.Any) => nCompsAndAnyTags,
+				(TestMode.All, TestMode.Any) => compsAndAnyTags,
 			};
 			foreach (var (key, value) in tagsMapping)
 				if (condition(key.components, key.tags, componentsMask, tagsMask))
 					yield return value;
 		}
-		private static bool compsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasFlags(components) && tagsMask.HasFlags(tags);
+		private static bool compsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAllFlags(components) && tagsMask.HasAllFlags(tags);
 		private static bool nCompsAndnTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasNoFlags(tags);
-		private static bool nCompsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasFlags(tags);
-		private static bool compsAndnTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasFlags(components) && tagsMask.HasNoFlags(tags);
+		private static bool nCompsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasAllFlags(tags);
+		private static bool compsAndnTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAllFlags(components) && tagsMask.HasNoFlags(tags);
+
+		private static bool anyCompsAndAnyTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAnyFlags(components) && tagsMask.HasAnyFlags(tags);
+		private static bool anyCompsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAnyFlags(components) && tagsMask.HasAllFlags(tags);
+		private static bool anyCompsAndnTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAnyFlags(components) && tagsMask.HasNoFlags(tags);
+		private static bool nCompsAndAnyTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasAnyFlags(tags);
+		private static bool compsAndAnyTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAllFlags(components) && tagsMask.HasAnyFlags(tags);
 
 		public static Vector3 rotationMatrixToEulerAngles(Matrix4x4 mat)
 		{

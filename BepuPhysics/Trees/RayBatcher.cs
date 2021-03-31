@@ -37,6 +37,13 @@ namespace BepuPhysics.Trees
 		public Plane farPlane;
 		public Plane farPlaneAbsNormal;
 
+		/*public Vector4 nearPlaneMask;
+		public Vector4 topPlaneMask;
+		public Vector4 bottomPlaneMask;
+		public Vector4 leftPlaneMask;
+		public Vector4 rightPlaneMask;
+		public Vector4 farPlaneMask;*/
+
 		public int Id;
 	}
 	/// <summary>

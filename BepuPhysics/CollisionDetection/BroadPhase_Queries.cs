@@ -83,8 +83,7 @@ namespace BepuPhysics.CollisionDetection
 			{
 				Id = id
 			};
-			var planeSpan = new Span<Plane>(&frustumData.nearPlane, 12);
-			//invViewMatrix = Matrix4x4.Transpose(invViewMatrix);
+			var planeSpan = new Span<Plane>(&frustumData.nearPlane, 18);
 
 			if (columnMajor)
 			{
@@ -158,12 +157,39 @@ namespace BepuPhysics.CollisionDetection
 			planeSpan[8].D *= -2;
 			planeSpan[10].D *= -2;
 
+			/*ref Vector<float> n = ref Unsafe.As<Plane, Vector<float>>(ref planeSpan[0]);
+			var mask = Vector.GreaterThan<float>(Vector<float>.Zero, n);
+			planeSpan[12].Normal = new Vector3(mask[0], mask[1], mask[2]); //new Vector3(n.X > 0f ? 1f : 0f, n.Y > 0f ? 1f : 0f, n.Z > 0f ? 1f : 0f);
+
+			n = ref Unsafe.As<Plane, Vector<float>>(ref planeSpan[2]);
+			mask = Vector.GreaterThan<float>(Vector<float>.Zero, n);
+			planeSpan[13].Normal = new Vector3(mask[0], mask[1], mask[2]);
+
+			n = ref Unsafe.As<Plane, Vector<float>>(ref planeSpan[4]);
+			mask = Vector.GreaterThan<float>(Vector<float>.Zero, n);
+			planeSpan[14].Normal = new Vector3(mask[0], mask[1], mask[2]);
+
+			n = ref Unsafe.As<Plane, Vector<float>>(ref planeSpan[6]);
+			mask = Vector.GreaterThan<float>(Vector<float>.Zero, n);
+			planeSpan[15].Normal = new Vector3(mask[0], mask[1], mask[2]);
+
+			n = ref Unsafe.As<Plane, Vector<float>>(ref planeSpan[8]);
+			mask = Vector.GreaterThan<float>(Vector<float>.Zero, n);
+			planeSpan[16].Normal = new Vector3(mask[0], mask[1], mask[2]);
+
+			n = ref Unsafe.As<Plane, Vector<float>>(ref planeSpan[10]);
+			mask = Vector.GreaterThanOrEqual<float>(Vector<float>.Zero, n);
+			planeSpan[17].Normal = new Vector3(mask[0], mask[1], mask[2]);
+			*/
+
 			FrustumLeafTester<TFrustumTester> tester;
 			tester.LeafTester = frustumTester;
 			tester.Leaves = activeLeaves;
 			ActiveTree.FrustumSweep(&frustumData, ref tester);
 			tester.Leaves = staticLeaves;
 			StaticTree.FrustumSweep(&frustumData, ref tester);
+			tester.Leaves = frozenLeaves;
+			FrozenTree.FrustumSweep(&frustumData, ref tester);
 			//The sweep tester probably relies on mutation to function; copy any mutations back to the original reference.
 			frustumTester = tester.LeafTester;
 		}

@@ -44,7 +44,7 @@ namespace Sharp.Editor.Views
 		static SceneView()
 		{
 			LoadScene();
-			rendererMask.SetFlag(0);
+			rendererMask = Extension.GetBitMaskFor<Renderer>();
 		}
 		private static void LoadScene()
 		{
@@ -278,7 +278,7 @@ namespace Sharp.Editor.Views
 
 			var renderables = new List<Renderer>();
 			var transparentRenderables = new List<Renderer>();
-			var rs = Entity.FindAllWith(rendererMask, Camera.main.cullingTags, cullTags: true);
+			var rs = Entity.FindAllWith(rendererMask, Camera.main.cullingTags, TestMode.Any, TestMode.Cull);
 			var renderers = rs.GetEnumerator();
 
 			var tester = new BroadPhaseCallback();
@@ -413,7 +413,7 @@ namespace Sharp.Editor.Views
 			}
 			int id = 0;
 			if (enableBoundingBoxes)
-				foreach (var (shape, pos) in CollisionDetection.shapes)
+				foreach (var pos in CollisionDetection.shapes)
 				{
 					var c = Pipeline.Get<SharpAsset.Mesh>().GetAsset("cube" + id);
 
