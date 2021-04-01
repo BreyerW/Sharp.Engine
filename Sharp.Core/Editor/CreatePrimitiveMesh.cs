@@ -233,7 +233,7 @@ public static class CreatePrimitiveMesh
 			radiusBottom = 0;
 		return GenerateCylinder(transform, name, vertexColor);
 	}
-	public static Mesh GenerateCube(in Matrix4x4 transform, string name = "cube", Color? vertexColor = null)
+	public static Mesh GenerateCube(in Matrix4x4 transform, string name = "cube", Color? vertexColor = null, bool addBarycentric = false)
 	{
 		var newMesh = new Mesh
 		{
@@ -292,19 +292,65 @@ public static class CreatePrimitiveMesh
 					new (){position=p5, texcoords=_00 },
 					new (){position=p4, texcoords=_10 }
 		};
-		List<byte> bytes = new();
+		newMesh.VertType = (vertexColor.HasValue, addBarycentric) switch
+		{
+			(true, false) => typeof(VertexColorFormat),
+			(false, false) => typeof(UIVertexFormat),
+			(false, true) => typeof(BarycentricVertexFormat)
+		};
+		byte[] bytes = new byte[Marshal.SizeOf(newMesh.VertType) * vertices.Length];
 		if (vertexColor.HasValue)
-			foreach (var i in ..vertices.Length)
-			{
-				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref vertices[i], 1)).ToArray());
-				var color = vertexColor.GetValueOrDefault();
-				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref color, 1)).ToArray());
+		{
+			//bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref vertices[i], 1)).ToArray());
+			CopyBytes(vertices.Length, bytes, MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref vertices[0], vertices.Length)), Marshal.SizeOf<VertexColorFormat>(), Marshal.SizeOf<UIVertexFormat>(), 0);
 
-			}
+			var color = vertexColor.GetValueOrDefault();
+			//bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref color, 1)).ToArray());
+			CopyBytes(vertices.Length, bytes, MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref color, 1)), Marshal.SizeOf<VertexColorFormat>(), Marshal.SizeOf<Vector3>() + Marshal.SizeOf<Vector2>());
+		}
 		else
-			bytes.AddRange(MemoryMarshal.AsBytes(vertices.AsSpan()).ToArray());
-		newMesh.VertType = vertexColor.HasValue ? typeof(VertexColorFormat) : typeof(UIVertexFormat);
-		newMesh.LoadVertices(bytes.ToArray());
+			CopyBytes(vertices.Length, bytes, MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref vertices[0], vertices.Length)), addBarycentric ? Marshal.SizeOf<BarycentricVertexFormat>() : Marshal.SizeOf<UIVertexFormat>(), Marshal.SizeOf<UIVertexFormat>(), 0);
+
+		if (addBarycentric)
+		{
+			var firstVert = Vector3.UnitX;
+			var secondVert = Vector3.UnitY;
+			var thirdVert = Vector3.UnitZ;
+			var barycentrics = new Vector3[]
+		{
+					firstVert,
+					secondVert,
+			firstVert,
+					thirdVert,
+
+firstVert,
+					secondVert,
+			firstVert,
+					thirdVert,
+
+					firstVert,
+					secondVert,
+			firstVert,
+					thirdVert,
+
+					firstVert,
+					secondVert,
+			firstVert,
+					thirdVert,
+
+					firstVert,
+					secondVert,
+			firstVert,
+					thirdVert,
+
+					firstVert,
+					secondVert,
+			firstVert,
+					thirdVert,
+		};
+			CopyBytes(vertices.Length, bytes, MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref barycentrics[0], barycentrics.Length)), Marshal.SizeOf<BarycentricVertexFormat>(), Marshal.SizeOf<Vector3>(), Marshal.SizeOf<Vector3>() + Marshal.SizeOf<Vector2>());
+		}
+		newMesh.LoadVertices(bytes);
 		#endregion
 
 		/*			#region Normales
@@ -595,5 +641,23 @@ public static class CreatePrimitiveMesh
 
 		newMesh.LoadIndices<ushort>(indices.ToArray());
 		return newMesh;
+	}
+	private static void CopyBytes(int count, Span<byte> vertices, Span<byte> data, int vertStride, int dataStride, int offset)
+	{
+		ref var pointer = ref vertices[vertices.Length - count * vertStride];
+		foreach (var i in ..count)
+		{
+			ref var addr = ref Unsafe.Add(ref pointer, i * vertStride + offset);
+			Unsafe.CopyBlockUnaligned(ref addr, ref data[i * dataStride], (uint)dataStride);
+		}
+	}
+	private static void CopyBytes(int count, Span<byte> vertices, Span<byte> data, int vertStride, int offset)
+	{
+		ref var pointer = ref vertices[vertices.Length - count * vertStride];
+		foreach (var i in ..count)
+		{
+			ref var addr = ref Unsafe.Add(ref pointer, i * vertStride + offset);
+			Unsafe.CopyBlockUnaligned(ref addr, ref data[0], (uint)data.Length);
+		}
 	}
 }

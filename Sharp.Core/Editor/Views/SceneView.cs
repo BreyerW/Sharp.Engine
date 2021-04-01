@@ -67,9 +67,10 @@ namespace Sharp.Editor.Views
 			eLight.transform.Position = Camera.main.Parent.transform.Position;
 			eLight.AddComponent<Light>();
 
-			ref var sh = ref Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\GizmoShader.shader");
+			ref var sh = ref Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\WireframeShader.shader");
 			boundingBoxMat = new Material();
 			boundingBoxMat.BindShader(0, sh);
+			boundingBoxMat.BindProperty("removeDiagonalEdges", 1f);
 
 			ref var shader = ref Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ViewCubeShader.shader");
 			ref var viewCubeMesh = ref Pipeline.Get<SharpAsset.Mesh>().Import(Application.projectPath + @"\Content\viewcube_submeshed.dae");
@@ -411,6 +412,9 @@ namespace Sharp.Editor.Views
 					renderable.Render();
 				}
 			}
+
+			PluginManager.backendRenderer.DisableState(RenderState.DepthMask);
+			PluginManager.backendRenderer.EnableState(RenderState.Blend);
 			int id = 0;
 			if (enableBoundingBoxes)
 				foreach (var pos in CollisionDetection.shapes)
@@ -422,8 +426,6 @@ namespace Sharp.Editor.Views
 					boundingBoxMat.Draw();
 					id++;
 				}
-			PluginManager.backendRenderer.DisableState(RenderState.DepthMask);
-			PluginManager.backendRenderer.EnableState(RenderState.Blend);
 			foreach (var renderable in transparentRenderables)
 			{
 				if (renderable is { active: true })
@@ -431,6 +433,7 @@ namespace Sharp.Editor.Views
 					renderable.Render();
 				}
 			}
+
 			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
 			PluginManager.backendRenderer.EnableState(RenderState.DepthMask);
 

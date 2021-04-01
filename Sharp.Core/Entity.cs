@@ -70,33 +70,43 @@ namespace Sharp
 
 			return Quaternion.CreateFromRotationMatrix(Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationZ(angles.Z));
 		}
-		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithTags(BitMask mask, bool cull = false)
+		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithTags(BitMask mask, TestMode testMode = TestMode.All)
 		{
-			if (cull)
+			if (testMode is TestMode.Cull)
 			{
 				foreach (var (key, value) in tagsMapping)
 					if (key.tags.HasNoFlags(mask))
 						yield return value;
 			}
-			else
+			else if (testMode is TestMode.All)
+			{
 				foreach (var (key, value) in tagsMapping)
 					if (key.tags.HasAllFlags(mask))
 						yield return value;
-
+			}
+			else
+				foreach (var (key, value) in tagsMapping)
+					if (key.tags.HasAnyFlags(mask))
+						yield return value;
 		}
-		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithComponents(BitMask mask, bool cull = false)
+		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWithComponents(BitMask mask, TestMode testMode = TestMode.All)
 		{
-			if (cull)
+			if (testMode is TestMode.Cull)
 			{
 				foreach (var (key, value) in tagsMapping)
 					if (key.components.HasNoFlags(mask))
 						yield return value;
 			}
-			else
+			else if (testMode is TestMode.All)
+			{
 				foreach (var (key, value) in tagsMapping)
 					if (key.components.HasAllFlags(mask))
 						yield return value;
-
+			}
+			else
+				foreach (var (key, value) in tagsMapping)
+					if (key.components.HasAnyFlags(mask))
+						yield return value;
 		}
 		public static IEnumerable<IReadOnlyCollection<Entity>> FindAllWith(BitMask componentsMask, BitMask tagsMask, TestMode componentsTestMode = TestMode.All, TestMode tagsTestMode = TestMode.All)
 		{

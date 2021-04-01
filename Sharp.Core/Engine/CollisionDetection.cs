@@ -45,7 +45,7 @@ namespace Sharp.Core.Engine
 				unsafe
 				{
 					simulation.BroadPhase.GetFrozenBoundsPointers(p, out var minp, out var maxp);
-					var cube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(MathF.Abs(maxp->X - minp->X), MathF.Abs(maxp->Y - minp->Y), MathF.Abs(maxp->Z - minp->Z)), "cube" + i, vertexColor: Manipulators.zColor);
+					var cube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(MathF.Abs(maxp->X - minp->X), MathF.Abs(maxp->Y - minp->Y), MathF.Abs(maxp->Z - minp->Z)), "cube" + i, addBarycentric: true);
 					Pipeline.Get<SharpAsset.Mesh>().Register(cube);
 				}
 				i++;

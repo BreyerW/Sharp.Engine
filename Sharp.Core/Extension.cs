@@ -93,21 +93,13 @@ namespace Sharp
 		public static ref readonly BitMask SetTag(this in BitMask mask, Component tag)
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
-
-			/*if (compFlagToBitPositionMapping.TryGetValue(tag.GetType(), out var index) is false)
-			{
-				compFlagToBitPositionMapping.Add(tag.GetType(), index = compFlagToBitPositionMapping.Count);
-			}*/
 			bitmask.SetFlag(compFlagToBitPositionMapping[tag.GetType()]);
 			return ref bitmask;
 		}
 		public static ref readonly BitMask ClearTag(this in BitMask mask, Component tag)
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
-			if (compFlagToBitPositionMapping.TryGetValue(tag.GetType(), out var index))
-				bitmask.ClearFlag(index);
-			else throw new ArgumentException($"{tag} does not exist.");
-
+			bitmask.ClearFlag(compFlagToBitPositionMapping[tag.GetType()]);
 			return ref bitmask;
 		}
 		internal static Root entities = new Root();
