@@ -45,6 +45,7 @@ namespace BepuPhysics.Trees
 		public Vector4 farPlaneMask;*/
 
 		public int Id;
+		//public int treeId;
 	}
 	/// <summary>
 	/// Ray representation designed for quicker intersection against axis aligned bounding boxes.

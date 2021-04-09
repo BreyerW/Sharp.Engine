@@ -164,14 +164,14 @@ namespace SharpAsset.AssetPipeline
 				mat.BindProperty("mesh", asset);
 				mat.BindProperty("MyTexture", texture);
 				renderer.material = mat;
-
-				eObject = new Entity();
+				renderer.SaveMeshChanges();
+				/*eObject = new Entity();
 				eObject.transform.Position = new Vector3(221.26651f, -58.04846f, -443.1822f);
 				angles = eObject.transform.Rotation * NumericsExtensions.Deg2Rad;
 				eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 				renderer = eObject.AddComponent<MeshRenderer>();
 				renderer.material = mat;
-				CollisionDetection.AddBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
+				CollisionDetection.AddFrozenBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
 
 				eObject = new Entity();
 				eObject.transform.Position = new Vector3(-137.2758f, -135.5234f, -458.2339f);
@@ -179,7 +179,7 @@ namespace SharpAsset.AssetPipeline
 				eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 				renderer = eObject.AddComponent<MeshRenderer>();
 				renderer.material = mat;
-				CollisionDetection.AddBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
+				CollisionDetection.AddFrozenBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
 
 				eObject = new Entity();
 				eObject.transform.Position = new Vector3(-482.2147f, 61.250374f, -121.8293f);
@@ -187,7 +187,7 @@ namespace SharpAsset.AssetPipeline
 				eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 				renderer = eObject.AddComponent<MeshRenderer>();
 				renderer.material = mat;
-				CollisionDetection.AddBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
+				CollisionDetection.AddFrozenBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
 
 				eObject = new Entity();
 				eObject.transform.Position = new Vector3(-378.1524f, 332.61945f, 54.01298f);
@@ -196,7 +196,7 @@ namespace SharpAsset.AssetPipeline
 				renderer = eObject.AddComponent<MeshRenderer>();
 				renderer.material = mat;
 
-				CollisionDetection.AddBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
+				CollisionDetection.AddFrozenBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
 
 				eObject = new Entity();
 				eObject.transform.Position = new Vector3(-488.9907f, 21.601768f, 103.6992f);
@@ -204,7 +204,7 @@ namespace SharpAsset.AssetPipeline
 				eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 				renderer = eObject.AddComponent<MeshRenderer>();
 				renderer.material = mat;
-				CollisionDetection.AddBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
+				CollisionDetection.AddFrozenBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
 
 				eObject = new Entity();
 				eObject.transform.Position = new Vector3(114.37148f, 182.65836f, -455.0914f);
@@ -212,7 +212,7 @@ namespace SharpAsset.AssetPipeline
 				eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 				renderer = eObject.AddComponent<MeshRenderer>();
 				renderer.material = mat;
-				CollisionDetection.AddBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
+				CollisionDetection.AddFrozenBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
 
 				eObject = new Entity();
 				eObject.transform.Position = new Vector3(-108.4416f, 27.681202f, -487.7784f);
@@ -221,16 +221,15 @@ namespace SharpAsset.AssetPipeline
 				renderer = eObject.AddComponent<MeshRenderer>();
 				renderer.material = mat;
 
-				CollisionDetection.AddBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
+				CollisionDetection.AddFrozenBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
 
 				eObject = new Entity();
 				eObject.transform.Position = new Vector3(23.709593f, -83.65271f, -490.5782f);
 				angles = eObject.transform.Rotation * NumericsExtensions.Deg2Rad;
 				eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 				renderer = eObject.AddComponent<MeshRenderer>();
-				renderer.material = mat;
+				renderer.material = mat;*/
 
-				CollisionDetection.AddBody(eObject.transform.Position, asset.bounds.Min, asset.bounds.Max);
 				if (context is not null) //make as child of context?
 				{
 				}

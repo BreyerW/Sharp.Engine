@@ -53,7 +53,7 @@ namespace Sharp.Engine.Components
 			}
 
 			foreach (var asset in Selection.Assets)
-				if (asset is Entity ent && ent.name is not "Main Camera")
+				if (asset is Entity ent && ent.name is not "Main Camera" && ent.ComponentsMask.HasAnyFlags(rendererMask))
 				{
 					var renderer = ent.GetComponent<Renderer>();
 					if (renderer.material.IsBlendRequiredForPass(0))

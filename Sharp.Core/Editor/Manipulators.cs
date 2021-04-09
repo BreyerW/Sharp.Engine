@@ -1,6 +1,7 @@
 ﻿//https://github.com/CedricGuillemet/ImGuizmo/blob/master/ImGuizmo.cpp
 
 using PluginAbstraction;
+using Sharp.Core.Engine;
 using Sharp.Editor.Views;
 using SharpAsset;
 using SharpAsset.AssetPipeline;
@@ -281,6 +282,7 @@ namespace Sharp.Editor
 				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans + delta);
 				Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
 				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin; //Matrix4x4.CreateScale(entity.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(entity.transform.Position);
+				entity.transform.onTransformChanged?.Invoke();
 			}
 			else
 			{
@@ -400,8 +402,8 @@ namespace Sharp.Editor
 				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
 				//entity.transform.Rotation = (rot * deltaRot).ToEulerAngles() * NumericsExtensions.Rad2Deg;
 
-				entity.transform.Rotation += deltaRot.ToEulerAngles() * (float)NumericsExtensions.Rad2Deg;
-
+				entity.transform.Rotation += deltaRot.ToEulerAngles() * NumericsExtensions.Rad2Deg;
+				entity.transform.onTransformChanged?.Invoke();
 			}
 			else
 			{
@@ -546,6 +548,7 @@ namespace Sharp.Editor
 
 				entity.transform.Scale = vScale;//new Vector3(float.IsNaN(newScale.X) || float.IsInfinity(newScale.X) ? 1 : newScale.X, float.IsNaN(newScale.Y) || float.IsInfinity(newScale.Y) ? 1 : newScale.Y, float.IsNaN(newScale.Z) || float.IsInfinity(newScale.Z) ? 1 : newScale.Z);
 				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
+				entity.transform.onTransformChanged?.Invoke();
 			}
 			else
 			{

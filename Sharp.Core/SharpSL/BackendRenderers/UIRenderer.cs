@@ -20,21 +20,21 @@ namespace SharpSL.BackendRenderers
 		private static Color fontColor = Color.White;
 		static UIRenderer()
 		{
-			var shader = (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\SDFShader.shader");
+			var shader = Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\SDFShader.shader");
 			sdfMaterial = new Material();
 			sdfMaterial.BindShader(0, shader);
 			sdfMaterial.BindProperty("color", fontColor);
 			sdfMaterial.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("square"));
 
 			squareMaterial = new Material();
-			squareMaterial.BindShader(0, (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ColoredEditorShader.shader"));
+			squareMaterial.BindShader(0, Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ColoredEditorShader.shader"));
 			squareMaterial.BindProperty("mesh", Pipeline.Get<Mesh>().GetAsset("square"));
 			squareMaterial.BindProperty("len", Vector2.One);
 
 			var square = Pipeline.Get<Mesh>().GetAsset("dynamic_square");
 
 			texturedSquareMaterial = new Material();
-			texturedSquareMaterial.BindShader(0, (Shader)Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TexturedEditorShader.shader"));
+			texturedSquareMaterial.BindShader(0, Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\TexturedEditorShader.shader"));
 			texturedSquareMaterial.BindProperty("mesh", square);
 		}
 		public void DrawBox(int x, int y, int width, int height, int color)//DrawMesh?

@@ -137,6 +137,7 @@ namespace Sharp
 			SDL.SDL_Event sdlEvent;
 			while (!quit)
 			{
+
 				Coroutine.AdvanceInstructions<WaitForStartOfFrame>(Coroutine.startOfFrameInstructions);
 				Coroutine.AdvanceInstructions<IEnumerator>(Coroutine.customInstructions);
 				while (SDL.SDL_PollEvent(out sdlEvent) != 0)
@@ -144,6 +145,8 @@ namespace Sharp
 					if (windows.ContainsKey(sdlEvent.window.windowID))
 						windows[sdlEvent.window.windowID].OnEvent(sdlEvent);
 				}
+				GenerateNewBuffers();
+				PluginManager.backendRenderer.EnableState(RenderState.ScissorTest);
 
 				//Selection.IsSelectionDirty(System.Threading.CancellationToken.None);
 				/*  if (InputHandler.mustHandleKeyboard)
@@ -175,8 +178,6 @@ namespace Sharp
 
 				Time.SetTime();
 				Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
-
-				GenerateNewBuffers();
 				//IdReferenceResolver._objectsToId.Clear();
 				//IdReferenceResolver._idToObjects.Clear();
 				Root.removedEntities.Clear();
@@ -348,6 +349,7 @@ namespace Sharp
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE: if (evt.windowID == MainWindowId) quit = true; else windows[evt.windowID].Close(); break;
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
 				case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
+					GenerateNewBuffers();
 					MainEditorView.mainViews.TryGetValue(evt.windowID, out var mainView);
 					mainView.OnResize(evt.data1, evt.data2);
 					foreach (var (_, mainV) in MainEditorView.mainViews)
@@ -356,8 +358,6 @@ namespace Sharp
 
 					Time.SetTime();
 					Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
-
-					GenerateNewBuffers();
 
 					Root.removedEntities.Clear();
 					Root.addedEntities.Clear();

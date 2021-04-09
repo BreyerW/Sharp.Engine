@@ -279,16 +279,15 @@ namespace Sharp.Editor.Views
 
 			var renderables = new List<Renderer>();
 			var transparentRenderables = new List<Renderer>();
-			var rs = Entity.FindAllWith(rendererMask, Camera.main.cullingTags, TestMode.Any, TestMode.Cull);
-			var renderers = rs.GetEnumerator();
-
 			var tester = new BroadPhaseCallback();
 			CollisionDetection.simulation.BroadPhase.FrustumSweep(Camera.main.Parent.transform.ModelMatrix * Camera.main.ProjectionMatrix, ref tester);
-			while (renderers.MoveNext())
+
+			foreach (var i in ..CollisionDetection.inFrustumLength)
 			{
-				foreach (var renderable in renderers.Current)
+				var entity = CollisionDetection.inFrustum[i].GetInstanceObject<Entity>();
+				if (entity.ComponentsMask.HasAnyFlags(rendererMask) && entity.TagsMask.HasNoFlags(Camera.main.cullingTags))
 				{
-					var renderer = renderable.GetComponent<MeshRenderer>();
+					var renderer = entity.GetComponent<MeshRenderer>();
 					if (renderer.material.IsBlendRequiredForPass(0))
 						transparentRenderables.Add(renderer);
 					else
@@ -422,7 +421,7 @@ namespace Sharp.Editor.Views
 					var c = Pipeline.Get<SharpAsset.Mesh>().GetAsset("cube" + id);
 
 					boundingBoxMat.BindProperty("mesh", c);
-					boundingBoxMat.BindProperty("model", Matrix4x4.CreateTranslation(pos));
+					boundingBoxMat.BindProperty("model", Matrix4x4.Identity);
 					boundingBoxMat.Draw();
 					id++;
 				}
@@ -551,7 +550,9 @@ namespace Sharp.Editor.Views
 				Selection.HoveredObject = null;
 			}
 			PluginManager.backendRenderer.Viewport(0, 0, Canvas.Size.x, Canvas.Size.y);
+			CollisionDetection.inFrustumLength = 0;
 		}
+
 	}
 
 	internal class OrderByDistanceToCamera : IComparer<Renderer>

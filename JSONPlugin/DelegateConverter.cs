@@ -20,7 +20,8 @@ namespace JSONPlugin
 				while (reader.Value as string is not "methodName") reader.Read();
 				reader.Read();
 				var method = reader.Value as string;
-				var tmpDel = Delegate.CreateDelegate(objectType, serializer.ReferenceResolver.ResolveReference(serializer, id), method);
+				var target = serializer.ReferenceResolver.ResolveReference(serializer, id);
+				var tmpDel = Delegate.CreateDelegate(objectType, target, method);
 				del = del is null ? tmpDel : Delegate.Combine(del, tmpDel);
 
 			}

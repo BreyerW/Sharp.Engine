@@ -8,18 +8,13 @@ namespace Sharp.Engine.Components
 	public class Transform : Component
 	{
 		private readonly static int mat4x4Stride = Marshal.SizeOf<Matrix4x4>();
-		//[NonSerializable]
 		[JsonInclude]
-		//[JsonProperty]
 		private Matrix4x4 modelMatrix = Matrix4x4.Identity;
 		[JsonInclude]
-		//[JsonProperty]
 		private Vector3 position = Vector3.Zero;
 		[JsonInclude]
-		//[JsonProperty]
 		private Vector3 eulerAngles = Vector3.Zero;
 		[JsonInclude]
-		//[JsonProperty]
 		private Vector3 scale = Vector3.One;
 		//[JsonProperty]
 		//private Quaternion rotation;
@@ -33,7 +28,6 @@ namespace Sharp.Engine.Components
 			}
 		}
 		[JsonInclude]
-		//[JsonProperty]
 		public Action onTransformChanged { get; set; }
 
 		public Vector3 Position
@@ -88,8 +82,6 @@ namespace Sharp.Engine.Components
 		//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
 		public Transform(Entity p) : base(p)
 		{
-			onTransformChanged += () => Console.WriteLine("transform changed");
 		}
-		private void test() => Console.WriteLine("transform changed");
 	}
 }

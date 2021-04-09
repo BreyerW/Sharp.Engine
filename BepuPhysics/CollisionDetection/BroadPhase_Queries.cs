@@ -184,15 +184,18 @@ namespace BepuPhysics.CollisionDetection
 
 			FrustumLeafTester<TFrustumTester> tester;
 			tester.LeafTester = frustumTester;
-			tester.Leaves = activeLeaves;
+			/*tester.Leaves = activeLeaves;
 			ActiveTree.FrustumSweep(&frustumData, ref tester);
 			tester.Leaves = staticLeaves;
+			frustumData.treeId++;
 			StaticTree.FrustumSweep(&frustumData, ref tester);
+			frustumData.treeId++;*/
 			tester.Leaves = frozenLeaves;
 			FrozenTree.FrustumSweep(&frustumData, ref tester);
 			//The sweep tester probably relies on mutation to function; copy any mutations back to the original reference.
 			frustumTester = tester.LeafTester;
 		}
+
 		struct SweepLeafTester<TSweepTester> : ISweepLeafTester where TSweepTester : IBroadPhaseSweepTester
 		{
 			public TSweepTester LeafTester;

@@ -1,6 +1,7 @@
 ﻿
 using PluginAbstraction;
 using Sharp.Core;
+using Sharp.Core.Engine;
 using SharpAsset;
 using SharpAsset.AssetPipeline;
 using SharpSL;
@@ -25,7 +26,7 @@ namespace Sharp.Engine.Components
 				prevPass = value;
 			}
 		}
-		private static BitMask rendererMask = new BitMask(0);
+		internal static BitMask rendererMask = new BitMask(0);
 		private bool screenSpace;
 		public bool ScreenSpace
 		{
@@ -130,16 +131,17 @@ namespace Sharp.Engine.Components
 		{
 			PreparePass();
 			var renderers = new List<Renderer>();
-			var renderables = Entity.FindAllWith(rendererMask, mask).GetEnumerator();
-			while (renderables.MoveNext())
+			foreach (var i in ..CollisionDetection.inFrustumLength)
 			{
-				foreach (var renderable in renderables.Current)
+				var entity = CollisionDetection.inFrustum[i].GetInstanceObject<Entity>();
+				if (entity.ComponentsMask.HasAnyFlags(rendererMask) && entity.TagsMask.HasNoFlags(Camera.main.cullingTags))
 				{
-					var renderer = renderable.GetComponent<MeshRenderer>();
-					//if (renderer.material.IsBlendRequiredForPass(0))
-					//transparentRenderables.Add(renderer);
-					//else
+					var renderer = entity.GetComponent<MeshRenderer>();
 					renderers.Add(renderer);
+					/*if (renderer.material.IsBlendRequiredForPass(0))
+						transparentRenderables.Add(renderer);
+					else
+						renderables.Add(renderer);*/
 				}
 			}
 			Draw(renderers);
@@ -168,16 +170,17 @@ namespace Sharp.Engine.Components
 		{
 			PreparePass();
 			var renderers = new List<Renderer>();
-			var renderables = Entity.FindAllWith(rendererMask, cam.cullingTags, TestMode.Any, TestMode.Cull).GetEnumerator();
-			while (renderables.MoveNext())
+			foreach (var i in ..CollisionDetection.inFrustumLength)
 			{
-				foreach (var renderable in renderables.Current)
+				var entity = CollisionDetection.inFrustum[i].GetInstanceObject<Entity>();
+				if (entity.ComponentsMask.HasAnyFlags(rendererMask) && entity.TagsMask.HasNoFlags(Camera.main.cullingTags))
 				{
-					var renderer = renderable.GetComponent<MeshRenderer>();
-					//if (renderer.material.IsBlendRequiredForPass(0))
-					//transparentRenderables.Add(renderer);
-					//else
+					var renderer = entity.GetComponent<MeshRenderer>();
 					renderers.Add(renderer);
+					/*if (renderer.material.IsBlendRequiredForPass(0))
+						transparentRenderables.Add(renderer);
+					else
+						renderables.Add(renderer);*/
 				}
 			}
 			Draw(renderers);

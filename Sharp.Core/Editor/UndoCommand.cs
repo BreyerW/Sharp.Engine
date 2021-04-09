@@ -7,6 +7,7 @@ using Microsoft.Collections.Extensions;
 using System.Numerics;
 using System.Linq;
 using Sharp.Core;
+using Sharp.Engine.Components;
 
 namespace Sharp.Editor
 {
@@ -85,6 +86,8 @@ namespace Sharp.Editor
 					ref var patched = ref prevStates.GetOrAddValueRef(obj);
 					patched = Delta.Apply(patched, undo);
 					PluginManager.serializer.Deserialize(patched, obj.GetType());
+					if (obj is IStartableComponent startable)//TODO: change to OnDeserialized callaback when System.Text.Json will support it
+						startable.Start();
 					/*getter(target) = val;
 				if (val is Material m)
 				{

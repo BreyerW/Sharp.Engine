@@ -229,6 +229,15 @@ namespace SharpAsset
 			data = default;
 			return false;
 		}
+		public ref Mesh GetPropertyByRef(string prop)
+		{
+			if (localParams.TryGetValue(prop, out var addr))
+			{
+				var index = Unsafe.As<byte, int>(ref addr[1]);
+				return ref Pipeline.Get<Mesh>().GetAsset(index);
+			}
+			return ref Unsafe.NullRef<Mesh>();
+		}
 		public bool TryGetProperty(string prop, out Texture data)
 		{
 			if (localParams.TryGetValue(prop, out var addr))

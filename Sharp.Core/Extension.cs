@@ -167,6 +167,17 @@ namespace Sharp
 					return pair.Key;
 			return default;
 		}
+		public static bool TryGetKey<TKey, TValue>(this Dictionary<TKey, TValue> dict, TValue val, out TKey key)
+		{
+			foreach (var pair in dict)
+				if (pair.Value.Equals(val))
+				{
+					key = pair.Key;
+					return true;
+				}
+			key = default;
+			return false;
+		}
 		public static ref T ReadAs<T>(this in IntPtr ptr) where T : unmanaged
 		{
 			unsafe
