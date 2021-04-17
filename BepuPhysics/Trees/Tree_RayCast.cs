@@ -1,12 +1,16 @@
-﻿using BepuUtilities.Memory;
+﻿using BepuUtilities;
+using BepuUtilities.Collections;
+using BepuUtilities.Memory;
 using System;
 using System.Buffers.Binary;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace BepuPhysics.Trees
 {
@@ -115,15 +119,16 @@ namespace BepuPhysics.Trees
 				RayCast(0, treeRay, rayData, stack, ref leafTester);
 			}
 		}
+		private unsafe static FrustumData* frustumData;
 		public unsafe void FrustumSweep<TLeafTester>(FrustumData* frustumData, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
 		{
 			if (leafCount == 0)
 				return;
-
+			Tree.frustumData = frustumData;
 			if (leafCount == 1)
 			{
 				//If the first node isn't filled, we have to use a special case.
-				if ((IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData, Nodes[0].A.Index) & (1 << 6)) != 0) //
+				if ((IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData, Nodes[0].A.Index) & (1 << 6)) != 0)
 				{
 					leafTester.TestLeaf(0, frustumData);
 				}
@@ -132,15 +137,42 @@ namespace BepuPhysics.Trees
 			{
 				//TODO: Explicitly tracking depth in the tree during construction/refinement is practically required to guarantee correctness.
 				//While it's exceptionally rare that any tree would have more than 256 levels, the worst case of stomping stack memory is not acceptable in the long run.
+
 				var stack = stackalloc int[TraversalStackCapacity];
-				FrustumSweep(0, frustumData, stack, ref leafTester);
+				FrustumSweep(0, stack, ref leafTester);
+			}
+		}
+		public unsafe void FrustumSweepMultithreaded<TLeafTester>(FrustumData* frustumData, BufferPool pool, ref TLeafTester leafTester, IThreadDispatcher dispatcher) where TLeafTester : IFrustumLeafTester
+		{
+			if (leafCount == 0)
+				return;
+			Tree.frustumData = frustumData;
+			if (leafCount == 1)
+			{
+				//If the first node isn't filled, we have to use a special case.
+				if ((IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData, Nodes[0].A.Index) & (1 << 6)) != 0)
+				{
+					leafTester.TestLeaf(0, frustumData);
+				}
+			}
+			else if (leafCount < dispatcher.ThreadCount * 4)
+			{
+				//TODO: Explicitly tracking depth in the tree during construction/refinement is practically required to guarantee correctness.
+				//While it's exceptionally rare that any tree would have more than 256 levels, the worst case of stomping stack memory is not acceptable in the long run.
+
+				var stack = stackalloc int[TraversalStackCapacity];
+				FrustumSweep(0, stack, ref leafTester);
+			}
+			else
+			{
+				FrustumSweepMultithreaded(0, pool, ref leafTester, dispatcher);
 			}
 		}
 		//representation of 0b1111_1111_1111_1111_1111_1111_1100_0000 on little endian that also works on big endian
 		private const uint isInside = 4294967232;
-		private static Dictionary<int, int> failedPlane = new Dictionary<int, int>();
+		private static ConcurrentDictionary<int, int> failedPlane = new();
 
-		internal unsafe void FrustumSweep<TLeafTester>(int nodeIndex, FrustumData* frustumData, int* stack, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
+		internal unsafe void FrustumSweep<TLeafTester>(int nodeIndex, int* stack, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
 		{
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
 			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
@@ -236,6 +268,140 @@ namespace BepuPhysics.Trees
 				}
 			}
 		}
+		private static ConcurrentStack<(int nodeIndex, int depth)> concurrentStack = new();
+		private static Buffer<QuickList<int>> leavesToTest = new();
+		private static int maxDepth;
+		private static int remainingLeavesToVisit;
+		internal unsafe void FrustumSweepMultithreaded<TLeafTester>(int nodeIndex, BufferPool pool, ref TLeafTester leafTester, IThreadDispatcher dispatcher) where TLeafTester : IFrustumLeafTester
+		{
+			concurrentStack.Clear();
+			concurrentStack.Push((0, 1));
+			maxDepth = ComputeMaximumDepth();
+			remainingLeavesToVisit = leafCount;
+			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
+			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
+
+			pool.Take(dispatcher.ThreadCount, out leavesToTest);
+			//Note that we haven't rigorously guaranteed a refinement count maximum, so it's possible that the workers will need to resize the per-thread refinement candidate lists.
+			for (int i = 0; i < dispatcher.ThreadCount; ++i)
+			{
+				leavesToTest[i] = new QuickList<int>(leafCount + 1, dispatcher.GetThreadMemoryPool(i));
+			}
+
+			dispatcher.DispatchWorkers(TestAABBs);
+			for (var i = 0; i < dispatcher.ThreadCount; ++i)
+			{
+				foreach (var leafIndex in leavesToTest[i])
+					leafTester.TestLeaf(leafIndex, frustumData);
+			}
+			pool.Return(ref leavesToTest);
+		}
+		//TODO: currently fully inside bitmask for B branch when returning back is not remembered.
+		//Can be solved by storing bitmask or bool isFullyInside with concurrent stack
+		private unsafe void TestAABBs(int workerIndex)
+		{
+			uint planeBitmask = uint.MaxValue;
+			(int, int) result;
+			while (concurrentStack.TryPop(out result) is false && remainingLeavesToVisit > 0) ;
+			var (nodeIndex, currentDepth) = result;
+			while (remainingLeavesToVisit > 0)
+			{
+				if (nodeIndex < 0)
+				{
+					//This is actually a leaf node.
+					Interlocked.Decrement(ref remainingLeavesToVisit);
+					var leafIndex = Encode(nodeIndex);
+					leavesToTest[workerIndex].AddUnsafely(leafIndex);
+
+					//Leaves have no children; have to pull from the stack to get a new target.
+					while (concurrentStack.TryPop(out result) is false && remainingLeavesToVisit > 0) ;
+					(nodeIndex, currentDepth) = result;
+					planeBitmask = uint.MaxValue;
+				}
+				else
+				{
+					ref var node = ref Nodes[nodeIndex];
+					//skip tests if frustum fully contains childs,
+					//unset bit means fully inside single plane,
+					//set bit means intersection with that plane,
+					//and 7th least significant bit UNset means that AABB is outside frustum
+					//we have six planes thats why we check 6 zeroes
+					if (planeBitmask == isInside)
+					{
+						nodeIndex = node.A.Index;
+						currentDepth++;
+						concurrentStack.Push((node.B.Index, currentDepth));
+					}
+					else
+					{
+						var aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index, planeBitmask);
+						var bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index, planeBitmask);
+						var aIntersected = (aBitmask & (1 << 6)) != 0;
+						var bIntersected = (bBitmask & (1 << 6)) != 0;
+						if (aIntersected && !bIntersected)
+						{
+							nodeIndex = node.A.Index;
+							planeBitmask = aBitmask;
+							currentDepth++;
+							//One of branches got discarded. Discard all leaves in this branch
+							var numOfDiscardedLeaves = GetNumberOfLeavesUnderNode(node.B.Index);
+							Interlocked.Add(ref remainingLeavesToVisit, -numOfDiscardedLeaves);
+
+						}
+						else if (aIntersected && bIntersected)
+						{
+							nodeIndex = node.A.Index;
+							planeBitmask = aBitmask;
+							currentDepth++;
+							concurrentStack.Push((node.B.Index, currentDepth));
+						}
+						else if (bIntersected)
+						{
+							nodeIndex = node.B.Index;
+							planeBitmask = bBitmask;
+
+							currentDepth++;
+							//One of branches got discarded. Discard all leaves in this branch
+							var numOfDiscardedLeaves = GetNumberOfLeavesUnderNode(node.A.Index);
+							Interlocked.Add(ref remainingLeavesToVisit, -numOfDiscardedLeaves);
+						}
+						else
+						{
+							//Both branches got discarded. Discard all leaves in these branches
+
+							var numOfDiscardedLeaves = GetNumberOfLeavesUnderNode(nodeIndex);
+							Interlocked.Add(ref remainingLeavesToVisit, -numOfDiscardedLeaves);
+
+							//No intersection. Need to pull from the stack to get a new target.
+							while (concurrentStack.TryPop(out result) is false && remainingLeavesToVisit > 0) ;
+							(nodeIndex, currentDepth) = result;
+							planeBitmask = uint.MaxValue;
+						}
+					}
+				}
+			}
+		}
+		unsafe int GetNumberOfLeavesUnderNode(int nodeIndex)
+		{
+			if (nodeIndex < 0) return 1;
+			ref var node = ref Nodes[nodeIndex];
+			ref var children = ref node.A;
+			int result = 0;
+			for (int i = 0; i < 2; ++i)
+			{
+				ref var child = ref Unsafe.Add(ref children, i);
+				if (child.Index >= 0)
+				{
+					result += GetNumberOfLeavesUnderNode(child.Index);
+				}
+				else
+				{
+					//It's a leaf, immediately add it to subtrees.
+					result++;
+				}
+			}
+			return result;
+		}
 		[StructLayout(LayoutKind.Sequential)]
 		struct ExtentsRepresentation
 		{
@@ -255,7 +421,7 @@ namespace BepuPhysics.Trees
 
 			var end = 6;
 
-			// Convert AABB to center-extents representation
+			//Convert AABB to center-extents representation
 			//On NET 5+ can skip conversion and instead use Vector.ConditionalSelect & Vector.GreaterThan with Vector128
 			//and use p, n-vertex optimization
 			var eRep = new ExtentsRepresentation()
@@ -263,6 +429,7 @@ namespace BepuPhysics.Trees
 				center = max + min, // Compute AABB center
 				extents = max - min // Compute positive extents
 			};
+
 			ref var planeAddr = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
 			ref var plane = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
 
@@ -280,6 +447,11 @@ namespace BepuPhysics.Trees
 					continue;
 				}
 				plane = ref Unsafe.Add(ref planeAddr, start * 2);
+				/*var eRep = new ExtentsRepresentation()
+				{
+					center = new Vector3(), // Compute AABB center
+					extents = new Vector3() // Compute positive extents
+				};*/
 				var d = plane.D;
 				float m, r;
 				//Vector<float>.Count == 4 is not worth it since built-in VectorX and Plane are already vectorized
@@ -305,9 +477,9 @@ namespace BepuPhysics.Trees
 					planeBitmask &= unchecked((uint)(~(1 << 6)));
 					//no need to renumber planes when id is 0
 					if (!shouldRenumberPlanes && start != 0 && start != planeId)
-						failedPlane.Add(nodeIndex, start);
+						failedPlane.TryAdd(nodeIndex, start);
 					else if (start != 0 && start != planeId)
-						failedPlane[nodeIndex] = start;
+						failedPlane.TryUpdate(nodeIndex, start, start);
 					return planeBitmask;
 				}
 				if (m - r >= d)//inside
@@ -322,7 +494,7 @@ namespace BepuPhysics.Trees
 			} while (start != end);
 
 			if (shouldRenumberPlanes)
-				failedPlane.Remove(nodeIndex);
+				failedPlane.TryRemove(nodeIndex, out _);
 
 			return planeBitmask;
 		}

@@ -11,10 +11,9 @@ using BepuPhysics.Constraints;
 using BepuPhysics.Trees;
 using BepuUtilities;
 using BepuUtilities.Memory;
-using Sharp.Editor;
 using SharpAsset.AssetPipeline;
 
-namespace Sharp.Core.Engine
+namespace Sharp.Physic
 {
 	public static class CollisionDetection
 	{

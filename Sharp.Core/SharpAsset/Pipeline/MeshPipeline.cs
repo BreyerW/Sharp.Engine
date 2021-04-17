@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using Sharp.Core;
 using PluginAbstraction;
 using Sharp.Editor.Views;
-using Sharp.Core.Engine;
+using Sharp.Physic;
 
 namespace SharpAsset.AssetPipeline
 {

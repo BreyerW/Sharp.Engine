@@ -1,7 +1,7 @@
 ﻿using SharpAsset;
 using System;
 using Sharp.Engine.Components;
-using Sharp.Core.Engine;
+using Sharp.Physic;
 using System.Runtime.CompilerServices;
 using SharpAsset.AssetPipeline;
 using System.Text.Json.Serialization;

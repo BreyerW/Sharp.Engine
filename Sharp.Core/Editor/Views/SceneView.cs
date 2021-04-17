@@ -8,13 +8,14 @@ using Sharp.Engine.Components;
 using SharpAsset;
 using Sharp.Core;
 using PluginAbstraction;
-using Sharp.Core.Engine;
+using Sharp.Physic;
 using BepuPhysics.Collidables;
 
 namespace Sharp.Editor.Views
 {
 	public class SceneView : View
 	{
+		private static SimpleThreadDispatcher dispatcher = new(4);
 		private static BitMask rendererMask = new(0);
 		private int cell_size = 32;
 		private int grid_size = 4096;
@@ -280,7 +281,7 @@ namespace Sharp.Editor.Views
 			var renderables = new List<Renderer>();
 			var transparentRenderables = new List<Renderer>();
 			var tester = new BroadPhaseCallback();
-			CollisionDetection.simulation.BroadPhase.FrustumSweep(Camera.main.Parent.transform.ModelMatrix * Camera.main.ProjectionMatrix, ref tester);
+			CollisionDetection.simulation.BroadPhase.FrustumSweep(Camera.main.Parent.transform.ModelMatrix * Camera.main.ProjectionMatrix, ref tester, dispatcher: dispatcher);
 
 			foreach (var i in ..CollisionDetection.inFrustumLength)
 			{

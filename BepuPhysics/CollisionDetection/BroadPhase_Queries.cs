@@ -75,7 +75,7 @@ namespace BepuPhysics.CollisionDetection
 		/// <param name="frustumTester">Callback to execute on frustum-leaf bounding box intersections.</param>
 		/// <param name="columnMajor">matrix is column-major or not</param>
 		/// <param name="id">User specified id of the frustum.</param>
-		public unsafe void FrustumSweep<TFrustumTester>(in Matrix4x4 matrix, ref TFrustumTester frustumTester, bool columnMajor = false, int id = 0) where TFrustumTester : IBroadPhaseFrustumTester
+		public unsafe void FrustumSweep<TFrustumTester>(in Matrix4x4 matrix, ref TFrustumTester frustumTester, bool columnMajor = false, int id = 0, IThreadDispatcher dispatcher = null) where TFrustumTester : IBroadPhaseFrustumTester
 		{
 			//TODO: maybe use preprocessor directive instead of bool?
 			//#if COLUMNMAJOR
@@ -191,7 +191,10 @@ namespace BepuPhysics.CollisionDetection
 			StaticTree.FrustumSweep(&frustumData, ref tester);
 			frustumData.treeId++;*/
 			tester.Leaves = frozenLeaves;
-			FrozenTree.FrustumSweep(&frustumData, ref tester);
+			if (dispatcher is null)
+				FrozenTree.FrustumSweep(&frustumData, ref tester);
+			else
+				FrozenTree.FrustumSweepMultithreaded(&frustumData, Pool, ref tester, dispatcher);
 			//The sweep tester probably relies on mutation to function; copy any mutations back to the original reference.
 			frustumTester = tester.LeafTester;
 		}
