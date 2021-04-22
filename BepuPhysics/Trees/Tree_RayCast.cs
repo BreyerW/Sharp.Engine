@@ -155,7 +155,7 @@ namespace BepuPhysics.Trees
 					leafTester.TestLeaf(0, frustumData);
 				}
 			}
-			else if (leafCount < dispatcher.ThreadCount * 4)
+			else if (leafCount < dispatcher.ThreadCount * 8)
 			{
 				//TODO: Explicitly tracking depth in the tree during construction/refinement is practically required to guarantee correctness.
 				//While it's exceptionally rare that any tree would have more than 256 levels, the worst case of stomping stack memory is not acceptable in the long run.
@@ -268,42 +268,41 @@ namespace BepuPhysics.Trees
 				}
 			}
 		}
-		private static ConcurrentStack<(int nodeIndex, int depth)> concurrentStack = new();
+		private static ConcurrentStack<(int nodeIndex, uint bitmask)> concurrentStack = new();
 		private static Buffer<QuickList<int>> leavesToTest = new();
-		private static int maxDepth;
 		private static int remainingLeavesToVisit;
+		private static CountdownEvent countdown = new(2);
 		internal unsafe void FrustumSweepMultithreaded<TLeafTester>(int nodeIndex, BufferPool pool, ref TLeafTester leafTester, IThreadDispatcher dispatcher) where TLeafTester : IFrustumLeafTester
 		{
 			concurrentStack.Clear();
-			concurrentStack.Push((0, 1));
-			maxDepth = ComputeMaximumDepth();
 			remainingLeavesToVisit = leafCount;
+			countdown.Reset(dispatcher.ThreadCount);
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
 			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
 
 			pool.Take(dispatcher.ThreadCount, out leavesToTest);
-			//Note that we haven't rigorously guaranteed a refinement count maximum, so it's possible that the workers will need to resize the per-thread refinement candidate lists.
+			int multithreadingLeafCountThreshold = leafCount / dispatcher.ThreadCount;
 			for (int i = 0; i < dispatcher.ThreadCount; ++i)
 			{
-				leavesToTest[i] = new QuickList<int>(leafCount + 1, dispatcher.GetThreadMemoryPool(i));
+				leavesToTest[i] = new QuickList<int>(leafCount, dispatcher.GetThreadMemoryPool(i));
 			}
 
+			GetRequestedNumberOfNodes(0, multithreadingLeafCountThreshold);
 			dispatcher.DispatchWorkers(TestAABBs);
-			for (var i = 0; i < dispatcher.ThreadCount; ++i)
+			for (var i = 0; i < dispatcher.ThreadCount; i++)
 			{
 				foreach (var leafIndex in leavesToTest[i])
 					leafTester.TestLeaf(leafIndex, frustumData);
 			}
 			pool.Return(ref leavesToTest);
 		}
-		//TODO: currently fully inside bitmask for B branch when returning back is not remembered.
-		//Can be solved by storing bitmask or bool isFullyInside with concurrent stack
 		private unsafe void TestAABBs(int workerIndex)
 		{
-			uint planeBitmask = uint.MaxValue;
-			(int, int) result;
-			while (concurrentStack.TryPop(out result) is false && remainingLeavesToVisit > 0) ;
-			var (nodeIndex, currentDepth) = result;
+			//nodeIndex is guaranteed to exist at start so we dont test its existence here
+			concurrentStack.TryPop(out var result);
+			countdown.Signal();
+			countdown.Wait();
+			var (nodeIndex, planeBitmask) = result;
 			while (remainingLeavesToVisit > 0)
 			{
 				if (nodeIndex < 0)
@@ -315,8 +314,8 @@ namespace BepuPhysics.Trees
 
 					//Leaves have no children; have to pull from the stack to get a new target.
 					while (concurrentStack.TryPop(out result) is false && remainingLeavesToVisit > 0) ;
-					(nodeIndex, currentDepth) = result;
-					planeBitmask = uint.MaxValue;
+					(nodeIndex, planeBitmask) = result;
+
 				}
 				else
 				{
@@ -329,8 +328,7 @@ namespace BepuPhysics.Trees
 					if (planeBitmask == isInside)
 					{
 						nodeIndex = node.A.Index;
-						currentDepth++;
-						concurrentStack.Push((node.B.Index, currentDepth));
+						concurrentStack.Push((node.B.Index, planeBitmask));
 					}
 					else
 					{
@@ -342,65 +340,61 @@ namespace BepuPhysics.Trees
 						{
 							nodeIndex = node.A.Index;
 							planeBitmask = aBitmask;
-							currentDepth++;
 							//One of branches got discarded. Discard all leaves in this branch
-							var numOfDiscardedLeaves = GetNumberOfLeavesUnderNode(node.B.Index);
-							Interlocked.Add(ref remainingLeavesToVisit, -numOfDiscardedLeaves);
+							Interlocked.Add(ref remainingLeavesToVisit, -node.B.LeafCount);
 
 						}
 						else if (aIntersected && bIntersected)
 						{
 							nodeIndex = node.A.Index;
 							planeBitmask = aBitmask;
-							currentDepth++;
-							concurrentStack.Push((node.B.Index, currentDepth));
+							concurrentStack.Push((node.B.Index, bBitmask));
 						}
 						else if (bIntersected)
 						{
 							nodeIndex = node.B.Index;
 							planeBitmask = bBitmask;
 
-							currentDepth++;
 							//One of branches got discarded. Discard all leaves in this branch
-							var numOfDiscardedLeaves = GetNumberOfLeavesUnderNode(node.A.Index);
-							Interlocked.Add(ref remainingLeavesToVisit, -numOfDiscardedLeaves);
+							Interlocked.Add(ref remainingLeavesToVisit, -node.A.LeafCount);
 						}
 						else
 						{
 							//Both branches got discarded. Discard all leaves in these branches
-
-							var numOfDiscardedLeaves = GetNumberOfLeavesUnderNode(nodeIndex);
-							Interlocked.Add(ref remainingLeavesToVisit, -numOfDiscardedLeaves);
+							Interlocked.Add(ref remainingLeavesToVisit, -(node.A.LeafCount + node.B.LeafCount));
 
 							//No intersection. Need to pull from the stack to get a new target.
 							while (concurrentStack.TryPop(out result) is false && remainingLeavesToVisit > 0) ;
-							(nodeIndex, currentDepth) = result;
-							planeBitmask = uint.MaxValue;
+							(nodeIndex, planeBitmask) = result;
 						}
 					}
 				}
 			}
 		}
-		unsafe int GetNumberOfLeavesUnderNode(int nodeIndex)
+		unsafe void GetRequestedNumberOfNodes(int nodeIndex, int leafCountThreshold)
 		{
-			if (nodeIndex < 0) return 1;
 			ref var node = ref Nodes[nodeIndex];
-			ref var children = ref node.A;
-			int result = 0;
-			for (int i = 0; i < 2; ++i)
+			if (node.A.Index < 0 || node.B.Index < 0)
 			{
-				ref var child = ref Unsafe.Add(ref children, i);
-				if (child.Index >= 0)
-				{
-					result += GetNumberOfLeavesUnderNode(child.Index);
-				}
-				else
-				{
-					//It's a leaf, immediately add it to subtrees.
-					result++;
-				}
+				concurrentStack.Push((nodeIndex, uint.MaxValue));
+				return;
 			}
-			return result;
+			if (node.A.LeafCount > leafCountThreshold)
+			{
+				GetRequestedNumberOfNodes(node.A.Index, leafCountThreshold);
+			}
+			else
+			{
+				concurrentStack.Push((node.A.Index, uint.MaxValue));
+			}
+			if (node.B.LeafCount > leafCountThreshold)
+			{
+				GetRequestedNumberOfNodes(node.B.Index, leafCountThreshold);
+			}
+			else
+			{
+				concurrentStack.Push((node.B.Index, uint.MaxValue));
+			}
 		}
 		[StructLayout(LayoutKind.Sequential)]
 		struct ExtentsRepresentation

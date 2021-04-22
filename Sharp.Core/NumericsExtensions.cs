@@ -28,7 +28,14 @@ namespace Sharp
 		// Radians-to-degrees conversion constant (RO).
 		public const float Rad2Deg = 1f / Deg2Rad;
 
-
+		private static int NearestPowerOf2(uint x)
+		{
+			return 1 << (sizeof(uint) * 8 - BitOperations.LeadingZeroCount(x - 1));
+		}
+		private static int NearestPowerOf2(float x)
+		{
+			return 1 << (sizeof(uint) * 8 - BitOperations.LeadingZeroCount(Unsafe.As<float, uint>(ref x) - 1));
+		}
 		/// <summary>
 		/// Clamps a number between a minimum and a maximum.
 		/// </summary>
@@ -87,28 +94,6 @@ namespace Sharp
 			angles.Z = MathF.Atan2(siny_cosp, cosy_cosp);
 
 			return angles;
-		}
-		public static float NextPowerOfTwo(float n)
-		{
-			if (n < 0)
-			{
-				throw new ArgumentOutOfRangeException(nameof(n), "Must be positive.");
-			}
-			return (float)Math.Pow(2, Math.Ceiling(Math.Log((double)n, 2)));
-		}
-
-		/// <summary>
-		/// Returns the next power of two that is greater than or equal to the specified number.
-		/// </summary>
-		/// <param name="n">The specified number.</param>
-		/// <returns>The next power of two.</returns>
-		public static double NextPowerOfTwo(double n)
-		{
-			if (n < 0)
-			{
-				throw new ArgumentOutOfRangeException(nameof(n), "Must be positive.");
-			}
-			return Math.Pow(2, Math.Ceiling(Math.Log((double)n, 2)));
 		}
 
 		public static Matrix4x4 Inverted(in this Matrix4x4 m)

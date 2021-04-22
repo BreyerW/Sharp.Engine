@@ -72,7 +72,9 @@ namespace Sharp.Editor.Views
 			boundingBoxMat = new Material();
 			boundingBoxMat.BindShader(0, sh);
 			boundingBoxMat.BindProperty("removeDiagonalEdges", 1f);
-
+			var c = Pipeline.Get<SharpAsset.Mesh>().GetAsset("cubeBB");
+			boundingBoxMat.BindProperty("mesh", c);
+			
 			ref var shader = ref Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ViewCubeShader.shader");
 			ref var viewCubeMesh = ref Pipeline.Get<SharpAsset.Mesh>().Import(Application.projectPath + @"\Content\viewcube_submeshed.dae");
 			ref var cubeTexture = ref Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\viewcube_textured.png");
@@ -415,16 +417,11 @@ namespace Sharp.Editor.Views
 
 			PluginManager.backendRenderer.DisableState(RenderState.DepthMask);
 			PluginManager.backendRenderer.EnableState(RenderState.Blend);
-			int id = 0;
 			if (enableBoundingBoxes)
-				foreach (var pos in CollisionDetection.shapes)
+				foreach (var pos in CollisionDetection.frozenMapping)
 				{
-					var c = Pipeline.Get<SharpAsset.Mesh>().GetAsset("cube" + id);
-
-					boundingBoxMat.BindProperty("mesh", c);
-					boundingBoxMat.BindProperty("model", Matrix4x4.Identity);
+					boundingBoxMat.BindProperty("model", pos.Value.mat);
 					boundingBoxMat.Draw();
-					id++;
 				}
 			foreach (var renderable in transparentRenderables)
 			{

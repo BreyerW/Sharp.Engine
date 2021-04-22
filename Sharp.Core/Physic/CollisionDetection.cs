@@ -17,12 +17,11 @@ namespace Sharp.Physic
 {
 	public static class CollisionDetection
 	{
-		public static HashSet<Vector3> shapes = new();
 		public static BufferPool bufferPool;
 		public static Simulation simulation;
 		internal static Dictionary<Guid, (int index, int handle)> activeMapping = new();
 		internal static Dictionary<Guid, (int index, int handle)> staticMapping = new();
-		internal static Dictionary<Guid, (int index, int handle)> frozenMapping = new();
+		internal static Dictionary<Guid, (int index, int handle, Matrix4x4 mat)> frozenMapping = new();
 		internal static Dictionary<int, Guid> frozenIndexMapping = new();
 		public static Guid[] inFrustum = new Guid[128];
 		public static int inFrustumLength = 0;
@@ -39,36 +38,24 @@ namespace Sharp.Physic
 			var maxInWorld = Vector3.Transform(max, e.transform.ModelMatrix);  //pos + max;
 			var box = new BepuUtilities.BoundingBox(minInWorld, maxInWorld);
 
-			shapes.Add(pos + min);
+
 			if (existingId is -1)
 			{
-				var handle = simulation.BroadPhase.AddFrozen(new CollidableReference(new StaticHandle(index)), ref box);
-				frozenMapping.Add(id, (index, handle));
-				frozenIndexMapping.Add(index, id);
+				existingId = index;
 				index++;
 			}
-			else
+			var handle = simulation.BroadPhase.AddFrozen(new CollidableReference(new StaticHandle(existingId)), ref box);
+			unsafe
 			{
-				var handle = simulation.BroadPhase.AddFrozen(new CollidableReference(new StaticHandle(existingId)), ref box);
-				frozenMapping.Add(id, (existingId, handle));
+				simulation.BroadPhase.GetFrozenBoundsPointers(existingId, out var minp, out var maxp);
+				frozenMapping.Add(id, (existingId, handle, Matrix4x4.CreateScale(MathF.Abs(maxp->X - minp->X), MathF.Abs(maxp->Y - minp->Y), MathF.Abs(maxp->Z - minp->Z)) * Matrix4x4.CreateTranslation(min) * e.transform.ModelMatrix));
 				frozenIndexMapping.Add(existingId, id);
-			}
-			int i = 0;
-			foreach (var p in ..simulation.BroadPhase.FrozenTree.LeafCount)
-			{
-				unsafe
-				{
-					simulation.BroadPhase.GetFrozenBoundsPointers(p, out var minp, out var maxp);
-					var cube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(MathF.Abs(maxp->X - minp->X), MathF.Abs(maxp->Y - minp->Y), MathF.Abs(maxp->Z - minp->Z)) * Matrix4x4.CreateTranslation(min) * e.transform.ModelMatrix, "cube" + i, addBarycentric: true);
-					Pipeline.Get<SharpAsset.Mesh>().Register(cube);
-				}
-				i++;
 			}
 			if (frozenMapping.Count > inFrustum.Length)
 				Array.Resize(ref inFrustum, inFrustum.Length * 2);
-			return existingId is -1 ? index - 1 : existingId;
+			return existingId;
 		}
-		public static void UpdateBody(in Guid id)
+		/*public static void UpdateBody(in Guid id)
 		{
 			var e = id.GetInstanceObject<Entity>();
 			var meshRenderer = e.GetComponent<MeshRenderer>();
@@ -89,24 +76,19 @@ namespace Sharp.Physic
 					simulation.BroadPhase.UpdateFrozenBounds(physicId.handle, midpoint + min, midpoint + max);
 					simulation.BroadPhase.GetFrozenBoundsPointers(physicId.handle, out var minp, out var maxp);
 
-					var cube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(MathF.Abs(maxp->X - minp->X), MathF.Abs(maxp->Y - minp->Y), MathF.Abs(maxp->Z - minp->Z)) * Matrix4x4.CreateTranslation(midpoint + min), "cube" + physicId.handle, addBarycentric: true);
-					Pipeline.Get<SharpAsset.Mesh>().Register(cube);
+					physicId.mat = Matrix4x4.CreateScale(MathF.Abs(maxp->X - minp->X), MathF.Abs(maxp->Y - minp->Y), MathF.Abs(maxp->Z - minp->Z)) * Matrix4x4.CreateTranslation(midpoint + min);
+				
 				}
-				else if (staticMapping.TryGetValue(id, out physicId))
+				else if (staticMapping.TryGetValue(id, out var altPhysicId))
 				{
-					simulation.BroadPhase.UpdateStaticBounds(physicId.handle, midpoint + min, midpoint + max);
-					var cube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(MathF.Abs(max.X - min.X), MathF.Abs(max.Y - min.Y), MathF.Abs(max.Z - min.Z)) * Matrix4x4.CreateTranslation(midpoint + min), "cube" + physicId.handle, addBarycentric: true);
-					Pipeline.Get<SharpAsset.Mesh>().Register(cube);
+					simulation.BroadPhase.UpdateStaticBounds(altPhysicId.handle, midpoint + min, midpoint + max);
 				}
-				else if (activeMapping.TryGetValue(id, out physicId))
+				else if (activeMapping.TryGetValue(id, out altPhysicId))
 				{
-					simulation.BroadPhase.UpdateActiveBounds(physicId.handle, midpoint + min, midpoint + max);
-
-					var cube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(MathF.Abs(max.X - min.X), MathF.Abs(max.Y - min.Y), MathF.Abs(max.Z - min.Z)) * Matrix4x4.CreateTranslation(midpoint + min), "cube" + physicId.handle, addBarycentric: true);
-					Pipeline.Get<SharpAsset.Mesh>().Register(cube);
+					simulation.BroadPhase.UpdateActiveBounds(altPhysicId.handle, midpoint + min, midpoint + max);
 				}
 			}
-		}
+		}*/
 		public static void UpdateFrozenBody(in Guid id)
 		{
 			var e = id.GetInstanceObject<Entity>();
@@ -123,8 +105,9 @@ namespace Sharp.Physic
 			midpoint = Vector3.Transform(midpoint, e.transform.ModelMatrix);
 			var physicId = frozenMapping[id];
 			simulation.BroadPhase.UpdateFrozenBounds(physicId.handle, midpoint + min, midpoint + max);
-			var cube = CreatePrimitiveMesh.GenerateCube(Matrix4x4.CreateScale(MathF.Abs(max.X - min.X), MathF.Abs(max.Y - min.Y), MathF.Abs(max.Z - min.Z)) * Matrix4x4.CreateTranslation(midpoint + min), "cube" + physicId.handle, addBarycentric: true);
-			Pipeline.Get<SharpAsset.Mesh>().Register(cube);
+			physicId.mat = Matrix4x4.CreateScale(MathF.Abs(max.X - min.X), MathF.Abs(max.Y - min.Y), MathF.Abs(max.Z - min.Z)) * Matrix4x4.CreateTranslation(midpoint + min);
+			//TODO: change to CollectionsMarshal.GetValueRef on .NET 6
+			frozenMapping[id] = physicId;
 		}
 		public static void RemoveFrozenBody(in Guid id)
 		{

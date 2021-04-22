@@ -33,6 +33,7 @@ namespace Sharp
 			Pipeline.Get<Mesh>().Register(gizmo);
 			Pipeline.Get<Mesh>().Register(screenRotate);
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCube(Matrix4x4.Identity));
+			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCube(Matrix4x4.Identity, "cubeBB", addBarycentric: true));
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCylinder(Matrix4x4.Identity));
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateCone(Matrix4x4.Identity));
 			Pipeline.Get<Mesh>().Register(CreatePrimitiveMesh.GenerateTorus(Matrix4x4.Identity));
