@@ -74,7 +74,7 @@ namespace Sharp.Editor.Views
 			boundingBoxMat.BindProperty("removeDiagonalEdges", 1f);
 			var c = Pipeline.Get<SharpAsset.Mesh>().GetAsset("cubeBB");
 			boundingBoxMat.BindProperty("mesh", c);
-			
+
 			ref var shader = ref Pipeline.Get<Shader>().Import(Application.projectPath + @"\Content\ViewCubeShader.shader");
 			ref var viewCubeMesh = ref Pipeline.Get<SharpAsset.Mesh>().Import(Application.projectPath + @"\Content\viewcube_submeshed.dae");
 			ref var cubeTexture = ref Pipeline.Get<Texture>().Import(Application.projectPath + @"\Content\viewcube_textured.png");
@@ -557,11 +557,12 @@ namespace Sharp.Editor.Views
 	{
 		public int Compare(Renderer x, Renderer y)
 		{
-			var xDistance = (x.Parent.transform.Position - Camera.main.Parent.transform.Position).Length();
-			var yDistance = (y.Parent.transform.Position - Camera.main.Parent.transform.Position).Length();
+			var camPos = Camera.main.Parent.transform.Position;
+			var xDistance = (x.Parent.transform.Position - camPos).Length();
+			var yDistance = (y.Parent.transform.Position - camPos).Length();
 			if (xDistance > yDistance) return 1;
+			else if (xDistance == yDistance) return 0;
 			return -1;
-			//return 0;
 		}
 	}
 }

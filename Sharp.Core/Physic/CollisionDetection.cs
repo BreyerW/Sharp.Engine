@@ -224,7 +224,7 @@ namespace Sharp.Physic
 		{
 			CollisionDetection.inFrustum[CollisionDetection.inFrustumLength] = CollisionDetection.frozenIndexMapping[collidable.RawHandleValue];
 			CollisionDetection.inFrustumLength++;
-			Console.WriteLine("collision");
+			//Console.WriteLine("collision");
 		}
 	}
 	//Note that the engine does not require any particular form of gravity- it, like all the contact callbacks, is managed by a callback.

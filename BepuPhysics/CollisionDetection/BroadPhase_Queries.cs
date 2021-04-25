@@ -192,7 +192,7 @@ namespace BepuPhysics.CollisionDetection
 			frustumData.treeId++;*/
 			tester.Leaves = frozenLeaves;
 			if (dispatcher is null)
-				FrozenTree.FrustumSweep(&frustumData, ref tester);
+				FrozenTree.FrustumSweep(&frustumData,Pool, ref tester);
 			else
 				FrozenTree.FrustumSweepMultithreaded(&frustumData, Pool, ref tester, dispatcher);
 			//The sweep tester probably relies on mutation to function; copy any mutations back to the original reference.

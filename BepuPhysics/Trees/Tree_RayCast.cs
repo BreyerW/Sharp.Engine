@@ -120,7 +120,7 @@ namespace BepuPhysics.Trees
 			}
 		}
 		private unsafe static FrustumData* frustumData;
-		public unsafe void FrustumSweep<TLeafTester>(FrustumData* frustumData, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
+		public unsafe void FrustumSweep<TLeafTester>(FrustumData* frustumData, BufferPool pool, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
 		{
 			if (leafCount == 0)
 				return;
@@ -155,7 +155,7 @@ namespace BepuPhysics.Trees
 					leafTester.TestLeaf(0, frustumData);
 				}
 			}
-			else if (leafCount < dispatcher.ThreadCount * 8)
+			else if (leafCount < dispatcher.ThreadCount * 4)
 			{
 				//TODO: Explicitly tracking depth in the tree during construction/refinement is practically required to guarantee correctness.
 				//While it's exceptionally rare that any tree would have more than 256 levels, the worst case of stomping stack memory is not acceptable in the long run.
@@ -171,229 +171,315 @@ namespace BepuPhysics.Trees
 		//representation of 0b1111_1111_1111_1111_1111_1111_1100_0000 on little endian that also works on big endian
 		private const uint isInside = 4294967232;
 		private static ConcurrentDictionary<int, int> failedPlane = new();
-
+		//private static int remainingLeavesToVisit;
 		internal unsafe void FrustumSweep<TLeafTester>(int nodeIndex, int* stack, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
 		{
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
 			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
-			uint planeBitmask = uint.MaxValue;
-			int stackEnd = 0;
-			int fullyContainedStack = -1;
+			var remainingLeavesToVisit = leafCount;
+			ref uint planeBitmask = ref Unsafe.AsRef(uint.MaxValue);
+			ref int leafIndex = ref Unsafe.AsRef(-1);
+			ref int stackEnd = ref Unsafe.AsRef(0);
+			ref int fullyContainedStack = ref Unsafe.AsRef(-1);
 			while (true)
 			{
-				if (nodeIndex < 0)
+				TestAABBs(ref remainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
+				if (leafIndex > -1)
 				{
-					//This is actually a leaf node.
-					var leafIndex = Encode(nodeIndex);
 					leafTester.TestLeaf(leafIndex, frustumData);
-					//Leaves have no children; have to pull from the stack to get a new target.
-					if (stackEnd == 0)
-						return;
-					nodeIndex = stack[--stackEnd];
+					leafIndex = -1;
+				}
+				if (remainingLeavesToVisit is 0)
+					return;
+			}
+		}
+		private unsafe void TestAABBs(ref int counter, ref int nodeIndex, ref int leafIndex, ref int fullyContainedStack, ref uint planeBitmask, ref int stackEnd, int* stack)
+		{
+			if (nodeIndex < 0)
+			{
+				//This is actually a leaf node.
+				leafIndex = Encode(nodeIndex);
+				counter--;
+				//Leaves have no children; have to pull from the stack to get a new target.
+				if (stackEnd == 0)
+					return;
+				nodeIndex = stack[--stackEnd];
 
-					//check if we are no longer fully inside frustum. if yes reset fullyContainedStack
-					if (stackEnd == fullyContainedStack)
-						fullyContainedStack = -1;
-					//reset bitmask every time when we have to go back and we arent fully inside frustum
-					//we must make separate test from previous test because for fullyContainedStack=-1 prev test would never be true
-					if (fullyContainedStack < -1)
-						planeBitmask = uint.MaxValue;
+				//check if we are no longer fully inside frustum. if yes reset fullyContainedStack
+				if (stackEnd < fullyContainedStack)
+					fullyContainedStack = -1;
+				//reset bitmask every time when we have to go back and we arent fully inside frustum
+				//we must make separate test from previous test because for fullyContainedStack=-1 prev test would never be true
+				if (fullyContainedStack < -1)
+					planeBitmask = uint.MaxValue;
+			}
+			else
+			{
+				ref var node = ref Nodes[nodeIndex];
+				//skip tests if frustum fully contains childs,
+				//unset bit means fully inside single plane,
+				//set bit means intersection with that plane,
+				//and 7th least significant bit UNset means that AABB is outside frustum
+				//we have six planes thats why we check 6 zeroes
+				if (planeBitmask == isInside)
+				{
+					Debug.Assert(stackEnd < TraversalStackCapacity - 1, "At the moment, we use a fixed size stack. Until we have explicitly tracked depths, watch out for excessive depth traversals.");
+					nodeIndex = node.A.Index;
+					//make sure leaf never lands on stack
+					//this is necessary for multithreaded algorithm
+					if (node.B.Index < 0)
+					{
+						//This is actually a leaf node.
+						leafIndex = Encode(node.B.Index);
+						counter--;
+					}
+					else
+						stack[stackEnd++] = node.B.Index;
 				}
 				else
 				{
-					ref var node = ref Nodes[nodeIndex];
-					//skip tests if frustum fully contains childs,
-					//unset bit means fully inside single plane,
-					//set bit means intersection with that plane,
-					//and 7th least significant bit UNset means that AABB is outside frustum
-					//we have six planes thats why we check 6 zeroes
-					if (planeBitmask == isInside)
+					var aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index, planeBitmask);
+					var bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index, planeBitmask);
+
+					var aIntersected = (aBitmask & (1 << 6)) != 0;
+					var bIntersected = (bBitmask & (1 << 6)) != 0;
+					if (aIntersected && !bIntersected)
+					{
+						nodeIndex = node.A.Index;
+						planeBitmask = aBitmask;
+
+						//One of branches was discarded. Discard all leaves in this branch
+						counter -= node.B.LeafCount;
+						//check if A child is fully contained in frustum
+						//remember we can still intersect at this point and we need to be fully inside
+						if (aBitmask == isInside)
+							fullyContainedStack = stackEnd;
+					}
+					else if (aIntersected && bIntersected)
 					{
 						Debug.Assert(stackEnd < TraversalStackCapacity - 1, "At the moment, we use a fixed size stack. Until we have explicitly tracked depths, watch out for excessive depth traversals.");
 						nodeIndex = node.A.Index;
-						stack[stackEnd++] = node.B.Index;
+						planeBitmask = aBitmask;
+						//check if both childs are fully contained in frustum
+						//remember we can still intersect at this point and we need to be fully inside
+						if (aBitmask == isInside && bBitmask == isInside)
+							fullyContainedStack = stackEnd;
+
+						//make sure leaf never lands on stack
+						//this is necessary for multithreaded algorithm
+						if (node.B.Index < 0)
+						{
+							//This is actually a leaf node.
+							leafIndex = Encode(node.B.Index);
+							counter--;
+						}
+						else
+							stack[stackEnd++] = node.B.Index;
+					}
+					else if (bIntersected)
+					{
+						nodeIndex = node.B.Index;
+						planeBitmask = bBitmask;
+
+						//One of branches was discarded. Discard all leaves in this branch
+						counter -= node.A.LeafCount;
+						//check if B child is fully contained in frustum
+						//remember we can still intersect at this point and we need to be fully inside
+						if (bBitmask == isInside)
+							fullyContainedStack = stackEnd;
 					}
 					else
 					{
-						var aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index, planeBitmask);
-						var bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index, planeBitmask);
-
-						var aIntersected = (aBitmask & (1 << 6)) != 0;
-						var bIntersected = (bBitmask & (1 << 6)) != 0;
-						if (aIntersected && !bIntersected)
-						{
-							nodeIndex = node.A.Index;
-							planeBitmask = aBitmask;
-							//check if A child is fully contained in frustum
-							//remember we can still intersect at this point and we need to be fully inside
-							if (aBitmask == isInside)
-								fullyContainedStack = stackEnd;
-						}
-						else if (aIntersected && bIntersected)
-						{
-							Debug.Assert(stackEnd < TraversalStackCapacity - 1, "At the moment, we use a fixed size stack. Until we have explicitly tracked depths, watch out for excessive depth traversals.");
-							nodeIndex = node.A.Index;
-							planeBitmask = aBitmask;
-							//check if both childs are fully contained in frustum
-							//remember we can still intersect at this point and we need to be fully inside
-							if (aBitmask == isInside && bBitmask == isInside)
-								fullyContainedStack = stackEnd;
-							stack[stackEnd++] = node.B.Index;
-						}
-						else if (bIntersected)
-						{
-							nodeIndex = node.B.Index;
-							planeBitmask = bBitmask;
-							//check if B child is fully contained in frustum
-							//remember we can still intersect at this point and we need to be fully inside
-							if (bBitmask == isInside)
-								fullyContainedStack = stackEnd;
-						}
-						else
-						{
-							//No intersection. Need to pull from the stack to get a new target.
-							if (stackEnd == 0)
-								return;
-							nodeIndex = stack[--stackEnd];
-							//check if we are no longer fully inside frustum. if yes reset fullyContainedStack
-							if (stackEnd < fullyContainedStack)
-								fullyContainedStack = -1;
-							//reset bitmask every time when we have to go back and we arent fully inside frustum
-							//we must make separate test from previous test because for fullyContainedStack=-1 prev test would never be true
-							if (fullyContainedStack == -1)
-								planeBitmask = uint.MaxValue;
-						}
+						//Both branches were discarded. Discard all leaves in these branches
+						counter -= node.A.LeafCount + node.B.LeafCount;
+						//No intersection. Need to pull from the stack to get a new target.
+						if (stackEnd == 0)
+							return;
+						nodeIndex = stack[--stackEnd];
+						//check if we are no longer fully inside frustum. if yes reset fullyContainedStack
+						if (stackEnd < fullyContainedStack)
+							fullyContainedStack = -1;
+						//reset bitmask every time when we have to go back and we arent fully inside frustum
+						//we must make separate test from previous test because for fullyContainedStack=-1 prev test would never be true
+						if (fullyContainedStack == -1)
+							planeBitmask = uint.MaxValue;
 					}
-
 				}
+
 			}
 		}
-		private static ConcurrentStack<(int nodeIndex, uint bitmask)> concurrentStack = new();
+		//27 ms max
 		private static Buffer<QuickList<int>> leavesToTest = new();
-		private static int remainingLeavesToVisit;
-		private static CountdownEvent countdown = new(2);
+		private static int[] startingIndexes = new int[4];
+		private static int extraStartingIndexesIndex = 2;
+		private static int interThreadExchange;
+		private static ConcurrentStack<int> remaingIndexes = new();
+		private static IThreadDispatcher threadDispatcher;
+		private static int globalRemainingLeavesToVisit;
 		internal unsafe void FrustumSweepMultithreaded<TLeafTester>(int nodeIndex, BufferPool pool, ref TLeafTester leafTester, IThreadDispatcher dispatcher) where TLeafTester : IFrustumLeafTester
 		{
-			concurrentStack.Clear();
-			remainingLeavesToVisit = leafCount;
-			countdown.Reset(dispatcher.ThreadCount);
+			threadDispatcher = dispatcher;
+			globalRemainingLeavesToVisit = leafCount;
+			extraStartingIndexesIndex = threadDispatcher.ThreadCount;
+			interThreadExchange = 0;
+			//on .NET 5/6 move to GC.UninitializedArray since array elements are always overwritten
+			if (startingIndexes.Length < threadDispatcher.ThreadCount)
+				startingIndexes = new int[threadDispatcher.ThreadCount];
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
 			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
 
-			pool.Take(dispatcher.ThreadCount, out leavesToTest);
-			int multithreadingLeafCountThreshold = leafCount / dispatcher.ThreadCount;
-			for (int i = 0; i < dispatcher.ThreadCount; ++i)
-			{
-				leavesToTest[i] = new QuickList<int>(leafCount, dispatcher.GetThreadMemoryPool(i));
-			}
-
-			GetRequestedNumberOfNodes(0, multithreadingLeafCountThreshold);
-			dispatcher.DispatchWorkers(TestAABBs);
-			for (var i = 0; i < dispatcher.ThreadCount; i++)
+			pool.Take(threadDispatcher.ThreadCount, out leavesToTest);
+			int multithreadingLeafCountThreshold = leafCount / threadDispatcher.ThreadCount;
+			int workers = 0;
+			GetRequestedNumberOfNodes(0, multithreadingLeafCountThreshold, ref workers);
+			threadDispatcher.DispatchWorkers(FrustumSweepThreaded);
+			for (var i = 0; i < threadDispatcher.ThreadCount; i++)
 			{
 				foreach (var leafIndex in leavesToTest[i])
 					leafTester.TestLeaf(leafIndex, frustumData);
 			}
 			pool.Return(ref leavesToTest);
 		}
-		private unsafe void TestAABBs(int workerIndex)
+		private unsafe void FrustumSweepThreaded(int workerIndex)
 		{
+			var stack = stackalloc int[TraversalStackCapacity];
+			leavesToTest[workerIndex] = new QuickList<int>(leafCount, threadDispatcher.GetThreadMemoryPool(workerIndex));
 			//nodeIndex is guaranteed to exist at start so we dont test its existence here
-			concurrentStack.TryPop(out var result);
-			countdown.Signal();
-			countdown.Wait();
-			var (nodeIndex, planeBitmask) = result;
-			while (remainingLeavesToVisit > 0)
+			var ind = startingIndexes[workerIndex];
+			ref var node = ref Nodes[ind];
+			var remainingLeavesToVisit = node.A.LeafCount + node.B.LeafCount;
+			var takenLeavesCount = remainingLeavesToVisit;
+			ref int nodeIndex = ref Unsafe.AsRef(ind);
+			ref uint planeBitmask = ref Unsafe.AsRef(uint.MaxValue);
+			ref int leafIndex = ref Unsafe.AsRef(-1);
+			ref int stackEnd = ref Unsafe.AsRef(0);
+			ref int fullyContainedStack = ref Unsafe.AsRef(-1);
+			var givenUpCount = 0;
+			while (true)
 			{
-				if (nodeIndex < 0)
+				if (leafIndex > -1)
 				{
-					//This is actually a leaf node.
-					Interlocked.Decrement(ref remainingLeavesToVisit);
-					var leafIndex = Encode(nodeIndex);
+					Debug.Assert(leavesToTest[workerIndex].Contains(leafIndex) is false, "Duplicates are unacceptable");
 					leavesToTest[workerIndex].AddUnsafely(leafIndex);
-
-					//Leaves have no children; have to pull from the stack to get a new target.
-					while (concurrentStack.TryPop(out result) is false && remainingLeavesToVisit > 0) ;
-					(nodeIndex, planeBitmask) = result;
-
+					leafIndex = -1;
 				}
-				else
+
+				if (remainingLeavesToVisit is 0)
 				{
-					ref var node = ref Nodes[nodeIndex];
-					//skip tests if frustum fully contains childs,
-					//unset bit means fully inside single plane,
-					//set bit means intersection with that plane,
-					//and 7th least significant bit UNset means that AABB is outside frustum
-					//we have six planes thats why we check 6 zeroes
-					if (planeBitmask == isInside)
+					Interlocked.Add(ref globalRemainingLeavesToVisit, -takenLeavesCount);
+					remaingIndexes.TryPop(out nodeIndex);
+					//we no longer have work on this thread. We try to steal some from other threads
+					/*if (extraStartingIndexesIndex < startingIndexes.Length)
 					{
-						nodeIndex = node.A.Index;
-						concurrentStack.Push((node.B.Index, planeBitmask));
+						var nextExtraStartingIndex = Interlocked.Increment(ref extraStartingIndexesIndex);
+						//we dont clear to 0 because we visit each element only once per work
+						if (nextExtraStartingIndex - 1 < startingIndexes.Length)
+							nodeIndex = startingIndexes[nextExtraStartingIndex - 1];
+					}*/
+					while (nodeIndex is 0 && globalRemainingLeavesToVisit > 0)
+						nodeIndex = Interlocked.Exchange(ref interThreadExchange, 0);
+					/*for (var i = threadDispatcher.ThreadCount; i < threadDispatcher.ThreadCount * 2; i++)
+					{
+						if(i!= threadDispatcher.ThreadCount+workerIndex)
+						nodeIndex = Interlocked.Exchange(ref startingIndexes[i], 0);
+						if (nodeIndex != 0)
+							break;
+					}*/
+					if (nodeIndex != 0)
+					{
+						if (nodeIndex < 0)
+						{
+							nodeIndex = -nodeIndex;
+							planeBitmask = isInside;
+						}
+						else
+							planeBitmask = uint.MaxValue;
+						node = ref Nodes[nodeIndex];
+						remainingLeavesToVisit = node.A.LeafCount + node.B.LeafCount;
+						takenLeavesCount = remainingLeavesToVisit;
 					}
-					else
+					else return;
+					leafIndex = -1;
+					fullyContainedStack = -1;
+					givenUpCount = 0;
+				}
+				else if (globalRemainingLeavesToVisit > 0 && stackEnd > 0)
+				{
+					//We actively give up one branch when other thread stole it,	
+					//to simplify interthread communication
+					//provided we have anything to give up
+					//We give up branch at the bottom not at the top
+					//because bottom branch usually has the most amount of leaves left to check
+
+					var index = stack[0];
+					var oldVal = Interlocked.CompareExchange(ref interThreadExchange, fullyContainedStack is 0 ? -index : index, 0);
+
+					if (oldVal is 0)
 					{
-						var aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index, planeBitmask);
-						var bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index, planeBitmask);
-						var aIntersected = (aBitmask & (1 << 6)) != 0;
-						var bIntersected = (bBitmask & (1 << 6)) != 0;
-						if (aIntersected && !bIntersected)
+						--stackEnd;
+						node = ref Nodes[index];
+						remainingLeavesToVisit -= (node.A.LeafCount + node.B.LeafCount);
+						takenLeavesCount -= (node.A.LeafCount + node.B.LeafCount);
+						if (fullyContainedStack > 0)
+							--fullyContainedStack;
+						if (stackEnd == 0)
 						{
-							nodeIndex = node.A.Index;
-							planeBitmask = aBitmask;
-							//One of branches got discarded. Discard all leaves in this branch
-							Interlocked.Add(ref remainingLeavesToVisit, -node.B.LeafCount);
-
-						}
-						else if (aIntersected && bIntersected)
-						{
-							nodeIndex = node.A.Index;
-							planeBitmask = aBitmask;
-							concurrentStack.Push((node.B.Index, bBitmask));
-						}
-						else if (bIntersected)
-						{
-							nodeIndex = node.B.Index;
-							planeBitmask = bBitmask;
-
-							//One of branches got discarded. Discard all leaves in this branch
-							Interlocked.Add(ref remainingLeavesToVisit, -node.A.LeafCount);
+							stack = (int*)Unsafe.Subtract<int>(stack, givenUpCount);
+							givenUpCount = 0;
 						}
 						else
 						{
-							//Both branches got discarded. Discard all leaves in these branches
-							Interlocked.Add(ref remainingLeavesToVisit, -(node.A.LeafCount + node.B.LeafCount));
-
-							//No intersection. Need to pull from the stack to get a new target.
-							while (concurrentStack.TryPop(out result) is false && remainingLeavesToVisit > 0) ;
-							(nodeIndex, planeBitmask) = result;
+							stack = (int*)Unsafe.Add<int>(stack, 1);
+							givenUpCount++;
 						}
 					}
 				}
+				TestAABBs(ref remainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
 			}
 		}
-		unsafe void GetRequestedNumberOfNodes(int nodeIndex, int leafCountThreshold)
+		unsafe void GetRequestedNumberOfNodes(int nodeIndex, int leafCountThreshold, ref int workerIndex)
 		{
 			ref var node = ref Nodes[nodeIndex];
 			if (node.A.Index < 0 || node.B.Index < 0)
 			{
-				concurrentStack.Push((nodeIndex, uint.MaxValue));
+				Debug.Assert(nodeIndex != 0, "0 index should never appear for multithreaded frustum culling");
+				//Debug.Assert(workerIndex < startingIndexes.Length, $"got more than {nameof(threadDispatcher.ThreadCount)}*2 starting indexes which is not supported for current algorithm");
+				if (workerIndex < startingIndexes.Length)
+				{
+					startingIndexes[workerIndex] = nodeIndex;
+					workerIndex++;
+				}
+				else
+					remaingIndexes.Push(nodeIndex);
 				return;
 			}
 			if (node.A.LeafCount > leafCountThreshold)
 			{
-				GetRequestedNumberOfNodes(node.A.Index, leafCountThreshold);
+				GetRequestedNumberOfNodes(node.A.Index, leafCountThreshold, ref workerIndex);
 			}
 			else
 			{
-				concurrentStack.Push((node.A.Index, uint.MaxValue));
+				if (workerIndex < startingIndexes.Length)
+				{
+					startingIndexes[workerIndex] = node.A.Index;
+					workerIndex++;
+				}
+				else
+					remaingIndexes.Push(node.A.Index);
 			}
 			if (node.B.LeafCount > leafCountThreshold)
 			{
-				GetRequestedNumberOfNodes(node.B.Index, leafCountThreshold);
+				GetRequestedNumberOfNodes(node.B.Index, leafCountThreshold, ref workerIndex);
 			}
 			else
 			{
-				concurrentStack.Push((node.B.Index, uint.MaxValue));
+				if (workerIndex < startingIndexes.Length)
+				{
+					startingIndexes[workerIndex] = node.B.Index;
+					workerIndex++;
+				}
+				else
+					remaingIndexes.Push(node.B.Index);
 			}
 		}
 		[StructLayout(LayoutKind.Sequential)]
