@@ -317,7 +317,7 @@ namespace BepuPhysics.Trees
 				leavesToTest[i] = new QuickList<int>(leafCount, threadDispatcher.GetThreadMemoryPool(i));
 
 			int multithreadingLeafCountThreshold = leafCount / (threadDispatcher.ThreadCount);
-			GetRequestedNumberOfNodes(0, multithreadingLeafCountThreshold);
+			CollectNodesForMultithreadedCulling(0, multithreadingLeafCountThreshold);
 			threadDispatcher.DispatchWorkers(FrustumSweepThreaded);
 			for (var i = 0; i < threadDispatcher.ThreadCount; i++)
 			{
@@ -437,14 +437,14 @@ namespace BepuPhysics.Trees
 				TestAABBs(ref remainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
 			}
 		}
-		unsafe void GetRequestedNumberOfNodes(int nodeIndex, int leafCountThreshold)
+		unsafe void CollectNodesForMultithreadedCulling(int nodeIndex, int leafCountThreshold)
 		{
 			ref var node = ref Nodes[nodeIndex];
 
 			if (node.A.Index > 0)
 				if (node.A.LeafCount > leafCountThreshold)
 				{
-					GetRequestedNumberOfNodes(node.A.Index, leafCountThreshold);
+					CollectNodesForMultithreadedCulling(node.A.Index, leafCountThreshold);
 				}
 				else
 				{
@@ -463,7 +463,7 @@ namespace BepuPhysics.Trees
 			if (node.B.Index > 0)
 				if (node.B.LeafCount > leafCountThreshold)
 				{
-					GetRequestedNumberOfNodes(node.B.Index, leafCountThreshold);
+					CollectNodesForMultithreadedCulling(node.B.Index, leafCountThreshold);
 				}
 				else
 				{
