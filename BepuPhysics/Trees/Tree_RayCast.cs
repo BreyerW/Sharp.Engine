@@ -2,14 +2,11 @@
 using BepuUtilities.Collections;
 using BepuUtilities.Memory;
 using System;
-using System.Buffers.Binary;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 
 namespace BepuPhysics.Trees
@@ -119,7 +116,28 @@ namespace BepuPhysics.Trees
 				RayCast(0, treeRay, rayData, stack, ref leafTester);
 			}
 		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct ExtentsRepresentation
+		{
+			public Vector3 center;
+			private float padding1;
+			public Vector3 extents;
+			private float padding2;
+		}
+
+		//representation of 0b1111_1111_1111_1111_1111_1111_1100_0000 on little endian that also works on big endian
+		private const uint isInside = 4294967232;
+		private static ConcurrentDictionary<int, int> failedPlane = new();
+		private static Buffer<QuickList<int>> leavesToTest = new();
+		private static int[] startingIndexes = new int[4];
+		private static int startingIndexesLength;
+		private static int currentIndex;
+		private static int interThreadExchange;
+		private static IThreadDispatcher threadDispatcher;
+		private static int globalRemainingLeavesToVisit;
 		private unsafe static FrustumData* frustumData;
+
 		public unsafe void FrustumSweep<TLeafTester>(FrustumData* frustumData, BufferPool pool, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
 		{
 			if (leafCount == 0)
@@ -166,31 +184,6 @@ namespace BepuPhysics.Trees
 			else
 			{
 				FrustumSweepMultithreaded(0, pool, ref leafTester, dispatcher);
-			}
-		}
-		//representation of 0b1111_1111_1111_1111_1111_1111_1100_0000 on little endian that also works on big endian
-		private const uint isInside = 4294967232;
-		private static ConcurrentDictionary<int, int> failedPlane = new();
-		//private static int remainingLeavesToVisit;
-		internal unsafe void FrustumSweep<TLeafTester>(int nodeIndex, int* stack, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
-		{
-			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
-			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
-			var remainingLeavesToVisit = leafCount;
-			ref uint planeBitmask = ref Unsafe.AsRef(uint.MaxValue);
-			ref int leafIndex = ref Unsafe.AsRef(-1);
-			ref int stackEnd = ref Unsafe.AsRef(0);
-			ref int fullyContainedStack = ref Unsafe.AsRef(-1);
-			while (true)
-			{
-				TestAABBs(ref remainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
-				if (leafIndex > -1)
-				{
-					leafTester.TestLeaf(leafIndex, frustumData);
-					leafIndex = -1;
-				}
-				if (remainingLeavesToVisit is 0)
-					return;
 			}
 		}
 		private unsafe void TestAABBs(ref int counter, ref int nodeIndex, ref int leafIndex, ref int fullyContainedStack, ref uint planeBitmask, ref int stackEnd, int* stack)
@@ -308,30 +301,23 @@ namespace BepuPhysics.Trees
 
 			}
 		}
-		//27 ms max
-		private static Buffer<QuickList<int>> leavesToTest = new();
-		private static int[] startingIndexes = new int[4];
-		private static int extraStartingIndexesIndex = 2;
-		private static int interThreadExchange;
-		private static ConcurrentStack<int> remaingIndexes = new();
-		private static IThreadDispatcher threadDispatcher;
-		private static int globalRemainingLeavesToVisit;
 		internal unsafe void FrustumSweepMultithreaded<TLeafTester>(int nodeIndex, BufferPool pool, ref TLeafTester leafTester, IThreadDispatcher dispatcher) where TLeafTester : IFrustumLeafTester
 		{
 			threadDispatcher = dispatcher;
 			globalRemainingLeavesToVisit = leafCount;
-			extraStartingIndexesIndex = threadDispatcher.ThreadCount;
+			currentIndex = -1;
+			startingIndexesLength = 0;
 			interThreadExchange = 0;
-			//on .NET 5/6 move to GC.UninitializedArray since array elements are always overwritten
-			if (startingIndexes.Length < threadDispatcher.ThreadCount)
-				startingIndexes = new int[threadDispatcher.ThreadCount];
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
 			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
 
 			pool.Take(threadDispatcher.ThreadCount, out leavesToTest);
-			int multithreadingLeafCountThreshold = leafCount / threadDispatcher.ThreadCount;
-			int workers = 0;
-			GetRequestedNumberOfNodes(0, multithreadingLeafCountThreshold, ref workers);
+
+			for (int i = 0; i < threadDispatcher.ThreadCount; i++)
+				leavesToTest[i] = new QuickList<int>(leafCount, threadDispatcher.GetThreadMemoryPool(i));
+
+			int multithreadingLeafCountThreshold = leafCount / (threadDispatcher.ThreadCount);
+			GetRequestedNumberOfNodes(0, multithreadingLeafCountThreshold);
 			threadDispatcher.DispatchWorkers(FrustumSweepThreaded);
 			for (var i = 0; i < threadDispatcher.ThreadCount; i++)
 			{
@@ -340,16 +326,34 @@ namespace BepuPhysics.Trees
 			}
 			pool.Return(ref leavesToTest);
 		}
+		internal unsafe void FrustumSweep<TLeafTester>(int nodeIndex, int* stack, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
+		{
+			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
+			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
+			globalRemainingLeavesToVisit = leafCount;
+			ref uint planeBitmask = ref Unsafe.AsRef(uint.MaxValue);
+			ref int leafIndex = ref Unsafe.AsRef(-1);
+			ref int stackEnd = ref Unsafe.AsRef(0);
+			ref int fullyContainedStack = ref Unsafe.AsRef(-1);
+			while (true)
+			{
+				TestAABBs(ref globalRemainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
+				if (leafIndex > -1)
+				{
+					leafTester.TestLeaf(leafIndex, frustumData);
+					leafIndex = -1;
+				}
+				if (globalRemainingLeavesToVisit is 0)
+					return;
+			}
+		}
 		private unsafe void FrustumSweepThreaded(int workerIndex)
 		{
 			var stack = stackalloc int[TraversalStackCapacity];
-			leavesToTest[workerIndex] = new QuickList<int>(leafCount, threadDispatcher.GetThreadMemoryPool(workerIndex));
-			//nodeIndex is guaranteed to exist at start so we dont test its existence here
-			var ind = startingIndexes[workerIndex];
-			ref var node = ref Nodes[ind];
-			var remainingLeavesToVisit = node.A.LeafCount + node.B.LeafCount;
-			var takenLeavesCount = remainingLeavesToVisit;
-			ref int nodeIndex = ref Unsafe.AsRef(ind);
+			ref var node = ref Nodes[0];
+			var remainingLeavesToVisit = 0;
+			var takenLeavesCount = 0;
+			ref int nodeIndex = ref Unsafe.AsRef(0);
 			ref uint planeBitmask = ref Unsafe.AsRef(uint.MaxValue);
 			ref int leafIndex = ref Unsafe.AsRef(-1);
 			ref int stackEnd = ref Unsafe.AsRef(0);
@@ -367,24 +371,20 @@ namespace BepuPhysics.Trees
 				if (remainingLeavesToVisit is 0)
 				{
 					Interlocked.Add(ref globalRemainingLeavesToVisit, -takenLeavesCount);
-					remaingIndexes.TryPop(out nodeIndex);
+					nodeIndex = 0;
 					//we no longer have work on this thread. We try to steal some from other threads
-					/*if (extraStartingIndexesIndex < startingIndexes.Length)
+					if (currentIndex < startingIndexesLength)
 					{
-						var nextExtraStartingIndex = Interlocked.Increment(ref extraStartingIndexesIndex);
-						//we dont clear to 0 because we visit each element only once per work
-						if (nextExtraStartingIndex - 1 < startingIndexes.Length)
-							nodeIndex = startingIndexes[nextExtraStartingIndex - 1];
-					}*/
+						var nextExtraStartingIndex = Interlocked.Increment(ref currentIndex);
+						//due to multithreading it might happen that 2 threads attempt to increment
+						//while currentIndex is smaller by 1 than startingIndexesLength
+						//resulting in error if we dont check again
+						if (nextExtraStartingIndex < startingIndexesLength)
+							nodeIndex = startingIndexes[nextExtraStartingIndex];
+					}
+
 					while (nodeIndex is 0 && globalRemainingLeavesToVisit > 0)
 						nodeIndex = Interlocked.Exchange(ref interThreadExchange, 0);
-					/*for (var i = threadDispatcher.ThreadCount; i < threadDispatcher.ThreadCount * 2; i++)
-					{
-						if(i!= threadDispatcher.ThreadCount+workerIndex)
-						nodeIndex = Interlocked.Exchange(ref startingIndexes[i], 0);
-						if (nodeIndex != 0)
-							break;
-					}*/
 					if (nodeIndex != 0)
 					{
 						if (nodeIndex < 0)
@@ -416,12 +416,12 @@ namespace BepuPhysics.Trees
 
 					if (oldVal is 0)
 					{
-						--stackEnd;
+						stackEnd--;
 						node = ref Nodes[index];
 						remainingLeavesToVisit -= (node.A.LeafCount + node.B.LeafCount);
 						takenLeavesCount -= (node.A.LeafCount + node.B.LeafCount);
 						if (fullyContainedStack > 0)
-							--fullyContainedStack;
+							fullyContainedStack--;
 						if (stackEnd == 0)
 						{
 							stack = (int*)Unsafe.Subtract<int>(stack, givenUpCount);
@@ -437,58 +437,48 @@ namespace BepuPhysics.Trees
 				TestAABBs(ref remainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
 			}
 		}
-		unsafe void GetRequestedNumberOfNodes(int nodeIndex, int leafCountThreshold, ref int workerIndex)
+		unsafe void GetRequestedNumberOfNodes(int nodeIndex, int leafCountThreshold)
 		{
 			ref var node = ref Nodes[nodeIndex];
-			if (node.A.Index < 0 || node.B.Index < 0)
-			{
-				Debug.Assert(nodeIndex != 0, "0 index should never appear for multithreaded frustum culling");
-				//Debug.Assert(workerIndex < startingIndexes.Length, $"got more than {nameof(threadDispatcher.ThreadCount)}*2 starting indexes which is not supported for current algorithm");
-				if (workerIndex < startingIndexes.Length)
+
+			if (node.A.Index > 0)
+				if (node.A.LeafCount > leafCountThreshold)
 				{
-					startingIndexes[workerIndex] = nodeIndex;
-					workerIndex++;
+					GetRequestedNumberOfNodes(node.A.Index, leafCountThreshold);
 				}
 				else
-					remaingIndexes.Push(nodeIndex);
-				return;
-			}
-			if (node.A.LeafCount > leafCountThreshold)
-			{
-				GetRequestedNumberOfNodes(node.A.Index, leafCountThreshold, ref workerIndex);
-			}
+				{
+					startingIndexes[startingIndexesLength] = node.A.Index;
+					startingIndexesLength++;
+					if (startingIndexesLength == startingIndexes.Length)
+						Array.Resize(ref startingIndexes, startingIndexes.Length * 2);
+				}
 			else
 			{
-				if (workerIndex < startingIndexes.Length)
+				//we met leaf very early. we might as well test it since this is very rare
+				if ((IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index) & (1 << 6)) != 0)
+					leavesToTest[0].AddUnsafely(Encode(node.A.Index));
+				globalRemainingLeavesToVisit--;
+			}
+			if (node.B.Index > 0)
+				if (node.B.LeafCount > leafCountThreshold)
 				{
-					startingIndexes[workerIndex] = node.A.Index;
-					workerIndex++;
+					GetRequestedNumberOfNodes(node.B.Index, leafCountThreshold);
 				}
 				else
-					remaingIndexes.Push(node.A.Index);
-			}
-			if (node.B.LeafCount > leafCountThreshold)
-			{
-				GetRequestedNumberOfNodes(node.B.Index, leafCountThreshold, ref workerIndex);
-			}
+				{
+					startingIndexes[startingIndexesLength] = node.B.Index;
+					startingIndexesLength++;
+					if (startingIndexesLength == startingIndexes.Length)
+						Array.Resize(ref startingIndexes, startingIndexes.Length * 2);
+				}
 			else
 			{
-				if (workerIndex < startingIndexes.Length)
-				{
-					startingIndexes[workerIndex] = node.B.Index;
-					workerIndex++;
-				}
-				else
-					remaingIndexes.Push(node.B.Index);
+				//we met leaf very early. we might as well test it since this is very rare
+				if ((IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index) & (1 << 6)) != 0)
+					leavesToTest[0].AddUnsafely(Encode(node.B.Index));
+				globalRemainingLeavesToVisit--;
 			}
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		struct ExtentsRepresentation
-		{
-			public Vector3 center;
-			private float padding1;
-			public Vector3 extents;
-			private float padding2;
 		}
 		public unsafe static uint IntersectsOrInside(in Vector3 min, in Vector3 max, FrustumData* frustumData, int nodeIndex, uint planeBitmask = uint.MaxValue)
 		{

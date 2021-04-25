@@ -149,7 +149,7 @@ namespace SharpAsset.AssetPipeline
 
 		public override void ApplyAsset(in Shader asset, object context)
 		{
-			throw new NotImplementedException();
+			//throw new NotImplementedException();
 		}
 	}
 }
