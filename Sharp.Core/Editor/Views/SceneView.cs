@@ -417,12 +417,7 @@ namespace Sharp.Editor.Views
 
 			PluginManager.backendRenderer.DisableState(RenderState.DepthMask);
 			PluginManager.backendRenderer.EnableState(RenderState.Blend);
-			if (enableBoundingBoxes)
-				foreach (var pos in CollisionDetection.frozenMapping)
-				{
-					boundingBoxMat.BindProperty("model", pos.Value.mat);
-					boundingBoxMat.Draw();
-				}
+
 			foreach (var renderable in transparentRenderables)
 			{
 				if (renderable is { active: true })
@@ -430,7 +425,12 @@ namespace Sharp.Editor.Views
 					renderable.Render();
 				}
 			}
-
+			if (enableBoundingBoxes)
+				foreach (var pos in CollisionDetection.frozenMapping)
+				{
+					boundingBoxMat.BindProperty("model", pos.Value.mat);
+					boundingBoxMat.Draw();
+				}
 			DrawHelper.DrawGrid(Camera.main.Parent.transform.Position);
 			PluginManager.backendRenderer.EnableState(RenderState.DepthMask);
 

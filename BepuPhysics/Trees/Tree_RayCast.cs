@@ -313,8 +313,7 @@ namespace BepuPhysics.Trees
 
 			pool.Take(threadDispatcher.ThreadCount, out leavesToTest);
 
-			for (int i = 0; i < threadDispatcher.ThreadCount; i++)
-				leavesToTest[i] = new QuickList<int>(leafCount, threadDispatcher.GetThreadMemoryPool(i));
+			leavesToTest[0] = new QuickList<int>(leafCount, threadDispatcher.GetThreadMemoryPool(0));
 
 			int multithreadingLeafCountThreshold = leafCount / (threadDispatcher.ThreadCount);
 			CollectNodesForMultithreadedCulling(0, multithreadingLeafCountThreshold);
@@ -330,6 +329,7 @@ namespace BepuPhysics.Trees
 		{
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
 			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
+
 			globalRemainingLeavesToVisit = leafCount;
 			ref uint planeBitmask = ref Unsafe.AsRef(uint.MaxValue);
 			ref int leafIndex = ref Unsafe.AsRef(-1);
@@ -349,6 +349,8 @@ namespace BepuPhysics.Trees
 		}
 		private unsafe void FrustumSweepThreaded(int workerIndex)
 		{
+			if (workerIndex != 0)
+				leavesToTest[workerIndex] = new QuickList<int>(leafCount, threadDispatcher.GetThreadMemoryPool(workerIndex));
 			var stack = stackalloc int[TraversalStackCapacity];
 			ref var node = ref Nodes[0];
 			var remainingLeavesToVisit = 0;
@@ -448,8 +450,7 @@ namespace BepuPhysics.Trees
 				}
 				else
 				{
-					startingIndexes[startingIndexesLength] = node.A.Index;
-					startingIndexesLength++;
+					startingIndexes[startingIndexesLength++] = node.A.Index;
 					if (startingIndexesLength == startingIndexes.Length)
 						Array.Resize(ref startingIndexes, startingIndexes.Length * 2);
 				}
@@ -467,8 +468,7 @@ namespace BepuPhysics.Trees
 				}
 				else
 				{
-					startingIndexes[startingIndexesLength] = node.B.Index;
-					startingIndexesLength++;
+					startingIndexes[startingIndexesLength++] = node.B.Index;
 					if (startingIndexesLength == startingIndexes.Length)
 						Array.Resize(ref startingIndexes, startingIndexes.Length * 2);
 				}
