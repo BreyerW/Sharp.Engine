@@ -140,6 +140,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BepuPhysics\BepuPhysics.csproj" />
     <ProjectReference Include="..\BepuUtilities\BepuUtilities.csproj" />
+    <ProjectReference Include="..\Newtonsoft.Json-master\Src\Newtonsoft.Json\Newtonsoft.Json.csproj" />
     <ProjectReference Include="..\PluginAbstraction\PluginAbstraction.csproj" />
     <ProjectReference Include="..\Sharp.FossilDelta\Sharp.FossilDelta.csproj" />
     <ProjectReference Include="..\Sharp.SQUID\Sharp.SQUID.csproj" />

@@ -1,6 +1,7 @@
 ﻿using Fossil;
 using Sharp.Core;
 using Sharp.Engine.Components;
+using Sharp.Serializer;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -59,15 +60,15 @@ namespace Sharp.Editor
 					Selection.Asset = obj;
 				}
 			}
-			foreach (var (id, list) in componentsToBeAdded)
+			foreach (var (id, _) in componentsToBeAdded)
 			{
-				var emptyComp = RuntimeHelpers.GetUninitializedObject(Type.GetType(Encoding.Unicode.GetString(list.undo))) as Component;
+				var emptyComp = RuntimeHelpers.GetUninitializedObject(IdReferenceResolver.guidToTypeMapping[id]) as Component;
 				Extension.AddRestoredObject(emptyComp, id);
 				Extension.entities.AddRestoredEngineObject(emptyComp, id);
 			}
-			foreach (var (_, list) in componentsToBeAdded)
+			foreach (var (id, list) in componentsToBeAdded)
 			{
-				var component = PluginManager.serializer.Deserialize(list.redo, Type.GetType(Encoding.Unicode.GetString(list.undo))) as Component;
+				var component = PluginManager.serializer.Deserialize(list.redo, IdReferenceResolver.guidToTypeMapping[id]) as Component;
 				component.Parent.components.Add(component);
 				UndoCommand.prevStates.GetOrAddValueRef(component) = list.redo;
 			}

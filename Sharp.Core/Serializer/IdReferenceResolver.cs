@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace JSONPlugin
+namespace Sharp.Serializer
 {
 	//TODO: use IEngineObject for engine references and use listreferenceconverter and DelegateConverter for list and delegates but other references wont be supported ?
 	//TODO: removing component that doesnt exist after selection changed, smoothing out scenestructure rebuild after redo/undo, fix bug with ispropertydirty, add transform component
@@ -23,13 +23,18 @@ namespace JSONPlugin
 			var id = new Guid(reference);//.ToByteArray();
 			var map = JSONSerializer.mapping;
 			var o = map.FirstOrDefault((obj) => obj.Value == id).Key;
-			if (o is null)
+			/*if (o is null)
 			{
-				o = RuntimeHelpers.GetUninitializedObject(guidToTypeMapping[id]);
-				if (JSONSerializer.isEngineObject(o))
-					Extension.AddRestoredObject(emptyComp, id);
-				Extension.entities.AddRestoredEngineObject(emptyComp, id);
-			}
+				if (guidToTypeMapping[id].IsClass)
+				{
+					var n = RuntimeHelpers.GetUninitializedObject(guidToTypeMapping[id]);
+					if (n is Component comp)
+					{
+						Extension.AddRestoredObject(comp, id);
+						Extension.entities.AddRestoredEngineObject(comp, id);
+					}
+				}
+			}*/
 			//_idToObjects.TryGetValue(new Guid(reference), out var o);
 			return o;
 		}
@@ -37,15 +42,14 @@ namespace JSONPlugin
 		public string GetReference(object context, object value)
 		{
 			if (value.GetType().IsValueType) return null;
-			//if (!Extension.objectToIdMapping.TryGetValue(value, out var id))
 			if (!_objectsToId.TryGetValue(value, out var id))
 			{
-				id = value.GetInstanceID();//.ToByteArray(); //Guid.NewGuid().ToByteArray(); 
+				id = value.GetInstanceID();
 				AddReference(context, id.ToString(), value);
 			}
-			if (guidToTypeMapping.ContainsKey(id) is false)
+			if (guidToTypeMapping.ContainsKey(id) is false && value is Entity or Component)
 				guidToTypeMapping.Add(id, value.GetType());
-			return id.ToString();//value.GetInstanceID().ToString();//
+			return id.ToString();
 		}
 		//Resolves if $id or $ref should be used during serialization
 		public bool IsReferenced(object context, object value)

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using PluginAbstraction;
 using System.Runtime.CompilerServices;
+using Sharp.Serializer;
 
 namespace Sharp.Core
 {
@@ -22,7 +23,7 @@ namespace Sharp.Core
 		internal static void LoadPlugins()
 		{
 			var loaders = new List<PluginLoader>();
-
+			serializer = new JSONSerializer();
 			// create plugin loaders
 			var pluginsDir = Path.Combine(Application.projectPath, "Plugins");
 			foreach (var dir in Directory.GetDirectories(pluginsDir))
@@ -52,7 +53,6 @@ namespace Sharp.Core
 					plugins.TryAdd(name, plugin);
 					switch (plugin)
 					{
-						case ISerializerPlugin ser: serializer = ser; break;
 						case IMeshLoaderPlugin mLoader: meshLoader = mLoader; break;
 						case ITextureLoaderPlugin texLoader: textureLoader = texLoader; break;
 						case IFontLoaderPlugin fLoader: fontLoader = fLoader; break;

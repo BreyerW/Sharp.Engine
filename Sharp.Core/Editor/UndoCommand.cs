@@ -88,15 +88,7 @@ namespace Sharp.Editor
 					PluginManager.serializer.Deserialize(patched, obj.GetType());
 					if (obj is IStartableComponent startable)//TODO: change to OnDeserialized callaback when System.Text.Json will support it
 						startable.Start();
-					/*getter(target) = val;
-				if (val is Material m)
-				{
-					target.Parent.transform.SetModelMatrix();
-					Matrix4x4.Decompose(target.Parent.transform.ModelMatrix, out _, out var trot, out var tpos);
-					Console.WriteLine("transform mat: " + tpos + " " + trot);
-					Matrix4x4.Decompose(Unsafe.As<byte, Matrix4x4>(ref m.localParams["model"][0]), out _, out var rot, out var pos);
-					Console.WriteLine("material mat: " + pos + " " + rot);
-				}*/
+
 				}
 				if (label is "selected")
 				{
@@ -136,7 +128,7 @@ namespace Sharp.Editor
 
 							prevStates.GetOrAddValueRef(comp) = PluginManager.serializer.Serialize(comp, comp.GetType());
 
-							saveState[comp.GetInstanceID()] = ("addedComponent", Encoding.Unicode.GetBytes(comp.GetType().AssemblyQualifiedName), prevStates.GetOrAddValueRef(comp));
+							saveState[comp.GetInstanceID()] = ("addedComponent", null, prevStates.GetOrAddValueRef(comp));
 						}
 					};
 				if (Root.removedEntities.Count > 0)
