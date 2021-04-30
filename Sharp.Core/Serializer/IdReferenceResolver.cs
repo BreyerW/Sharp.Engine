@@ -23,18 +23,17 @@ namespace Sharp.Serializer
 			var id = new Guid(reference);//.ToByteArray();
 			var map = JSONSerializer.mapping;
 			var o = map.FirstOrDefault((obj) => obj.Value == id).Key;
-			/*if (o is null)
+			if (o is null)
 			{
-				if (guidToTypeMapping[id].IsClass)
-				{
-					var n = RuntimeHelpers.GetUninitializedObject(guidToTypeMapping[id]);
-					if (n is Component comp)
+				if (guidToTypeMapping.TryGetValue(id, out var t)) {
+					o = RuntimeHelpers.GetUninitializedObject(t);
+					if (o is Component or Entity)
 					{
-						Extension.AddRestoredObject(comp, id);
-						Extension.entities.AddRestoredEngineObject(comp, id);
+						Extension.AddRestoredObject(o, id);
+						Extension.entities.AddRestoredEngineObject(o as IEngineObject, id);
 					}
 				}
-			}*/
+			}
 			//_idToObjects.TryGetValue(new Guid(reference), out var o);
 			return o;
 		}

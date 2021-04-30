@@ -201,7 +201,7 @@ namespace Sharp
 			//if (comp is Transform t)
 			//transform = t;
 			ComponentsMask = ComponentsMask.SetTag(comp);
-			components.Add(comp);
+			//components.Add(comp);
 			return comp;
 		}
 

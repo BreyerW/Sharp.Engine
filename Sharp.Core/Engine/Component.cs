@@ -49,6 +49,8 @@ namespace Sharp
 			{
 				if (this is Transform t)
 					value.transform = t;
+				if (parent == value) return;
+				value.components.Add(this);
 				//value.ComponentsMask = value.ComponentsMask.SetTag(this);
 				parent = value;
 			}
