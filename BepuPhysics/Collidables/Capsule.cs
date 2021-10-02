@@ -1,13 +1,12 @@
-﻿using System;
+﻿using BepuPhysics.CollisionDetection;
+using BepuUtilities;
+using BepuUtilities.Memory;
+using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using BepuUtilities.Memory;
-using BepuUtilities;
-using BepuPhysics.CollisionDetection;
 
 namespace BepuPhysics.Collidables
 {
-
     /// <summary>
     /// Collision shape representing a sphere-expanded line segment.
     /// </summary>

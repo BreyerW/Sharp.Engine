@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Typography.FontManagement;
 using Typography.OpenFont;
 using Typography.TextLayout;
 using Typography.TextServices;
-using Typography.FontManagement;
 
 namespace TypographyTest
 {

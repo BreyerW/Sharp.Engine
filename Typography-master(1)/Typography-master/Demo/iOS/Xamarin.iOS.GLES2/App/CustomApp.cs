@@ -1,9 +1,9 @@
 ﻿//MIT, 2017, Zou Wei(github/zwcloud)
 //MIT, 2017, WinterDev (modified from Xamarin's Android code template)
 
-using System.IO;
 using DrawingGL;
 using DrawingGL.Text;
+using System.IO;
 
 namespace Xamarin.iOS.GLES2
 {
@@ -24,7 +24,7 @@ namespace Xamarin.iOS.GLES2
                  {
 
                      if (File.Exists("DroidSans.ttf"))
-                     {  
+                     {
                          using (Stream s = new FileStream("DroidSans.ttf", FileMode.Open, FileAccess.Read))
                          using (var ms = new MemoryStream())// This is a simple hack because on Xamarin.Android, a `Stream` created by `AssetManager.Open` is not seekable.
                          {

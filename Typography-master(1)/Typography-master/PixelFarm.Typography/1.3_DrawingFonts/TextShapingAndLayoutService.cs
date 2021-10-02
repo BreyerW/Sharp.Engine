@@ -1,6 +1,6 @@
 ﻿//MIT, 2016-present, WinterDev
-using System.Collections.Generic;
 using PixelFarm.Drawing.Fonts;
+using System.Collections.Generic;
 using Typography.TextLayout;
 
 namespace PixelFarm.Drawing.Text

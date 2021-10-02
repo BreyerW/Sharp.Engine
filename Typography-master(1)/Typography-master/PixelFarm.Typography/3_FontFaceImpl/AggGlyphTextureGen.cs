@@ -1,13 +1,12 @@
 ﻿//MIT, 2016-present, WinterDev
 //-----------------------------------  
-using System;
-using PixelFarm.CpuBlit.VertexProcessing;
-
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit;
+using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
 using PixelFarm.Drawing.Fonts;
-
+using System;
 using Typography.Rendering;
+
 namespace Typography.Contours
 {
     /// <summary>

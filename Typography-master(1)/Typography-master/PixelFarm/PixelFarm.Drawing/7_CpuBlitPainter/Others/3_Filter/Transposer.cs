@@ -19,6 +19,7 @@
 //----------------------------------------------------------------------------
 
 using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit.Imaging
 {
     //=======================================================pixfmt_transposer

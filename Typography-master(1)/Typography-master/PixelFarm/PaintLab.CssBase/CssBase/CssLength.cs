@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+
 namespace LayoutFarm.Css
 {
     public interface IHasEmHeight

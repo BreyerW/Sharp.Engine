@@ -492,7 +492,7 @@ namespace Newtonsoft.Json.Tests.JsonTextReaderTests
         {
             JsonTextReader reader = new JsonTextReader(new StringReader(@"{}"));
 
-            ExceptionAssert.Throws<JsonReaderException>(() => { reader.ReadAsBytes(); }, "Error reading bytes. Unexpected token: StartObject. Path '', line 1, position 2." );
+            ExceptionAssert.Throws<JsonReaderException>(() => { reader.ReadAsBytes(); }, "Error reading bytes. Unexpected token: StartObject. Path '', line 1, position 2.");
         }
 
         [Test]

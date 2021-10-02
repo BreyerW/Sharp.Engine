@@ -6,9 +6,9 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using static BepuUtilities.GatherScatter;
+
 namespace BepuPhysics.Constraints
 {
-
     /// <summary>
     /// Constrains points on two bodies to be separated by a distance within a range.
     /// </summary>
@@ -52,7 +52,7 @@ namespace BepuPhysics.Constraints
             MaximumDistance = maximumDistance;
             SpringSettings = springSettings;
         }
-        
+
         public int ConstraintTypeId
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -140,7 +140,7 @@ namespace BepuPhysics.Constraints
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WarmStart(ref BodyVelocities velocityA, ref BodyVelocities velocityB, ref DistanceLimitProjection projection, ref Vector<float> accumulatedImpulse)
         {
-            DistanceServoFunctions.ApplyImpulse(ref velocityA, ref velocityB, 
+            DistanceServoFunctions.ApplyImpulse(ref velocityA, ref velocityB,
                 projection.LinearImpulseToVelocityA, projection.AngularImpulseToVelocityA, projection.LinearImpulseToVelocityB, projection.AngularImpulseToVelocityB, ref accumulatedImpulse);
         }
 

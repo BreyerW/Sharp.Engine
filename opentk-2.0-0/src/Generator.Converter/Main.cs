@@ -21,6 +21,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+using Mono.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,7 +29,6 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
-using Mono.Options;
 
 namespace OpenTK.Convert
 {
@@ -59,7 +59,7 @@ namespace OpenTK.Convert
             }
         }
     }
-    
+
     class EntryPoint
     {
         static void Main(string[] args)
@@ -133,7 +133,7 @@ namespace OpenTK.Convert
                         output.Add(
                             new XElement("add",
                                 new XAttribute("name", api.Attribute("name").Value),
-                                api.Attribute("version") != null ? new XAttribute("version",  api.Attribute("version").Value) : null,
+                                api.Attribute("version") != null ? new XAttribute("version", api.Attribute("version").Value) : null,
                                 api.Elements()
                                     .OrderBy(s => s.Name.LocalName)
                                     .ThenBy(s => (string)s.Attribute("value") ?? String.Empty)

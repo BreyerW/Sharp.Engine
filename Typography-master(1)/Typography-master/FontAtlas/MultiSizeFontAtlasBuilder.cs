@@ -1,11 +1,11 @@
 ﻿//MIT, 2019-present, WinterDev
 //----------------------------------- 
 
+using PixelFarm.CpuBlit;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using Typography.Rendering;
-using PixelFarm.CpuBlit;
 
 namespace PixelFarm.Drawing.Fonts
 {

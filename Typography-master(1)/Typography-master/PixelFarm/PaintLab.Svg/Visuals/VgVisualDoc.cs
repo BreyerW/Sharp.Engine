@@ -7,7 +7,7 @@ namespace PaintLab.Svg
 {
     public class VgVisualDoc
     {
-      
+
         VgVisualDocHost _vgVisualDocHost;
 
         internal List<SvgElement> _defsList = new List<SvgElement>();

@@ -27,10 +27,10 @@
 //
 #endregion
 
+using OpenTK.Graphics;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using OpenTK.Graphics;
 
 namespace OpenTK.Platform.Linux
 {
@@ -242,7 +242,7 @@ namespace OpenTK.Platform.Linux
             bo.SetUserData((IntPtr)buffer, DestroyFB);
             return buffer;
 
-            fail:
+        fail:
             Debug.Print("[Error] Failed to create framebuffer.");
             return -1;
         }

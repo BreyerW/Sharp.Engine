@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using static BepuUtilities.GatherScatter;
+
 namespace BepuPhysics.Constraints
 {
     /// <summary>
@@ -165,7 +166,7 @@ namespace BepuPhysics.Constraints
             //Note the negation: we want to oppose the separation. TODO: arguably, should bake the negation into positionErrorToVelocity, given its name.
             Vector2Wide.Scale(errorAngles, -positionErrorToVelocity, out projection.HingeBiasVelocity);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void ApplyImpulse(ref BodyVelocities velocityA, ref BodyVelocities velocityB, ref HingeProjection projection, ref HingeAccumulatedImpulses csi)
         {

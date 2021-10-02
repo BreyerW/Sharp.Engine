@@ -25,17 +25,17 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
-using OpenTK.Input;
 
 namespace OpenTK.Platform.SDL2
 {
     class Sdl2Keyboard : IKeyboardDriver2
     {
-        #pragma warning disable 649 // Field never assigned to, compiler bug in Mono 3.4.0
+#pragma warning disable 649 // Field never assigned to, compiler bug in Mono 3.4.0
         KeyboardState state;
-        #pragma warning restore 649
+#pragma warning restore 649
 
         public Sdl2Keyboard()
         {

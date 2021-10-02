@@ -1,7 +1,9 @@
 ﻿using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
         internal const int BROTLI_MIN_WINDOW_BITS = 10;
         internal const int BROTLI_MAX_WINDOW_BITS = 24;
         private const int BROTLI_MIN_INPUT_BLOCK_BITS = 16;

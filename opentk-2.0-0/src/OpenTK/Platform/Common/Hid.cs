@@ -27,11 +27,11 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using OpenTK.Input;
 
 namespace OpenTK.Platform.Common
 {
@@ -52,7 +52,7 @@ namespace OpenTK.Platform.Common
             if (value_min >= value_max || result_min >= result_max)
                 throw new ArgumentOutOfRangeException();
             MathHelper.Clamp(value, value_min, value_max);
-            
+
             int range = result_max - result_min;
             long temp = (value - value_min) * range; // need long to avoid overflow
             return (int)(temp / (value_max - value_min) + result_min);

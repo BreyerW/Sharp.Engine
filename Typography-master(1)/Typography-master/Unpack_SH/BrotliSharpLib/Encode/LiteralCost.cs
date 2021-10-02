@@ -71,7 +71,8 @@ namespace BrotliSharpLib
             {  /* Bootstrap histograms. */
                 size_t last_c = 0;
                 size_t utf8_pos = 0;
-                for (i = 0; i<in_window; ++i) {
+                for (i = 0; i < in_window; ++i)
+                {
                     size_t c = data[(pos + i) & mask];
                     ++histogram[utf8_pos, c];
                     ++in_window_utf8[utf8_pos];
@@ -81,8 +82,10 @@ namespace BrotliSharpLib
             }
 
             /* Compute bit costs with sliding window. */
-            for (i = 0; i<len; ++i) {
-                if (i >= window_half) {
+            for (i = 0; i < len; ++i)
+            {
+                if (i >= window_half)
+                {
                     /* Remove a byte in the past. */
                     size_t c =
                         i < window_half + 1 ? 0 : data[(pos + i - window_half - 1) & mask];
@@ -92,7 +95,8 @@ namespace BrotliSharpLib
                     --histogram[utf8_pos2, data[(pos + i - window_half) & mask]];
                     --in_window_utf8[utf8_pos2];
                 }
-                if (i + window_half<len) {
+                if (i + window_half < len)
+                {
                     /* Add a byte in the future. */
                     size_t c = data[(pos + i + window_half - 1) & mask];
                     size_t last_c = data[(pos + i + window_half - 2) & mask];
@@ -107,12 +111,14 @@ namespace BrotliSharpLib
                     size_t masked_pos = (pos + i) & mask;
                     size_t histo = histogram[utf8_pos, data[masked_pos]];
                     double lit_cost;
-                    if (histo == 0) {
+                    if (histo == 0)
+                    {
                         histo = 1;
                     }
                     lit_cost = FastLog2(in_window_utf8[utf8_pos]) - FastLog2(histo);
                     lit_cost += 0.02905;
-                    if (lit_cost< 1.0) {
+                    if (lit_cost < 1.0)
+                    {
                         lit_cost *= 0.5;
                         lit_cost += 0.5;
                     }
@@ -120,7 +126,8 @@ namespace BrotliSharpLib
                        Perhaps because the entropy source is changing its properties
                        rapidly in the beginning of the file, perhaps because the beginning
                        of the data is a statistical "anomaly". */
-                    if (i< 2000) {
+                    if (i < 2000)
+                    {
                         lit_cost += 0.7 - ((double)(2000 - i) / 2000.0 * 0.35);
                     }
                     cost[i] = (float)lit_cost;

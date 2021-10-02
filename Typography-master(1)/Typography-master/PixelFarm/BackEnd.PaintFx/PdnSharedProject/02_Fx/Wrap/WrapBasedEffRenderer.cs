@@ -33,6 +33,7 @@
 //MIT, 2017-present, WinterDev
 
 using PixelFarm.Drawing;
+
 namespace PaintFx.Effects
 {
     public abstract class WrapBasedRenderer : EffectRendererBase

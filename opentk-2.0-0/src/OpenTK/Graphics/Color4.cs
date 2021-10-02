@@ -47,17 +47,17 @@ namespace OpenTK.Graphics
         /// The red component of this Color4 structure.
         /// </summary>
         public float R;
-        
+
         /// <summary>
         /// The green component of this Color4 structure.
         /// </summary>
         public float G;
-        
+
         /// <summary>
         /// The blue component of this Color4 structure.
         /// </summary>
         public float B;
-        
+
         /// <summary>
         /// The alpha component of this Color4 structure.
         /// </summary>

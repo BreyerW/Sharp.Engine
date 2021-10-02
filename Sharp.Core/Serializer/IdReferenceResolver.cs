@@ -6,84 +6,85 @@ using System.Runtime.CompilerServices;
 
 namespace Sharp.Serializer
 {
-	//TODO: use IEngineObject for engine references and use listreferenceconverter and DelegateConverter for list and delegates but other references wont be supported ?
-	//TODO: removing component that doesnt exist after selection changed, smoothing out scenestructure rebuild after redo/undo, fix bug with ispropertydirty, add transform component
-	public class IdReferenceResolver : IReferenceResolver//TODO: if nothing else works try custom converter with CanConvert=>value.IsReferenceType;
-	{
-		internal readonly IDictionary<Guid, object> _idToObjects = new Dictionary<Guid, object>();
-		internal readonly IDictionary<object, Guid> _objectsToId = new Dictionary<object, Guid>();
-		private object rootObj = null;
-		private bool rootAlreadyChecked = false;
+    //TODO: use IEngineObject for engine references and use listreferenceconverter and DelegateConverter for list and delegates but other references wont be supported ?
+    //TODO: removing component that doesnt exist after selection changed, smoothing out scenestructure rebuild after redo/undo, fix bug with ispropertydirty, add transform component
+    public class IdReferenceResolver : IReferenceResolver//TODO: if nothing else works try custom converter with CanConvert=>value.IsReferenceType;
+    {
+        internal readonly IDictionary<Guid, object> _idToObjects = new Dictionary<Guid, object>();
+        internal readonly IDictionary<object, Guid> _objectsToId = new Dictionary<object, Guid>();
+        private object rootObj = null;
+        private bool rootAlreadyChecked = false;
 
-		public readonly static Dictionary<Guid, Type> guidToTypeMapping = new();
+        public readonly static Dictionary<Guid, Type> guidToTypeMapping = new();
 
-		//Resolves $ref during deserialization
-		public object ResolveReference(object context, string reference)
-		{
-			var id = new Guid(reference);//.ToByteArray();
-			var map = JSONSerializer.mapping;
-			var o = map.FirstOrDefault((obj) => obj.Value == id).Key;
-			if (o is null)
-			{
-				if (guidToTypeMapping.TryGetValue(id, out var t)) {
-					o = RuntimeHelpers.GetUninitializedObject(t);
-					if (o is Component or Entity)
-					{
-						Extension.AddRestoredObject(o, id);
-						Extension.entities.AddRestoredEngineObject(o as IEngineObject, id);
-					}
-				}
-			}
-			//_idToObjects.TryGetValue(new Guid(reference), out var o);
-			return o;
-		}
-		//Resolves $id or $ref value during serialization
-		public string GetReference(object context, object value)
-		{
-			if (value.GetType().IsValueType) return null;
-			if (!_objectsToId.TryGetValue(value, out var id))
-			{
-				id = value.GetInstanceID();
-				AddReference(context, id.ToString(), value);
-			}
-			if (guidToTypeMapping.ContainsKey(id) is false && value is Entity or Component)
-				guidToTypeMapping.Add(id, value.GetType());
-			return id.ToString();
-		}
-		//Resolves if $id or $ref should be used during serialization
-		public bool IsReferenced(object context, object value)
-		{
-			if (rootAlreadyChecked is false && JSONSerializer.isEngineObject(value))
-			{
-				rootAlreadyChecked = true;
-				rootObj = value;
-				return false;
-			}
-			rootAlreadyChecked = true;
-			return rootObj is not null && JSONSerializer.isEngineObject(value) ? true : _objectsToId.ContainsKey(value);
-		}
-		//Resolves $id during deserialization
-		public void AddReference(object context, string reference, object value)
-		{
-			if (value.GetType().IsValueType) return;
-			Guid anotherId = new Guid(reference);
-			JSONSerializer.mapping.TryAdd(value, anotherId);
-			_idToObjects[anotherId] = value;
-			_objectsToId.TryAdd(value, anotherId);
-		}
-	}
-	static class Extensions
-	{
-		public static Guid GetInstanceID<T>(this T obj) where T : class
-		{
-			if (!JSONSerializer.mapping.TryGetValue(obj, out var id))
-			{
-				JSONSerializer.mapping.Add(obj, id = Guid.NewGuid());
-				//throw new InvalidOperationException("attempted to add new entity this shouldnt be happening");
-			}
-			return id;
-		}
-	}
+        //Resolves $ref during deserialization
+        public object ResolveReference(object context, string reference)
+        {
+            var id = new Guid(reference);//.ToByteArray();
+            var map = JSONSerializer.mapping;
+            var o = map.FirstOrDefault((obj) => obj.Value == id).Key;
+            if (o is null)
+            {
+                if (guidToTypeMapping.TryGetValue(id, out var t))
+                {
+                    o = RuntimeHelpers.GetUninitializedObject(t);
+                    if (o is Component or Entity)
+                    {
+                        Extension.AddRestoredObject(o, id);
+                        Extension.entities.AddRestoredEngineObject(o as IEngineObject, id);
+                    }
+                }
+            }
+            //_idToObjects.TryGetValue(new Guid(reference), out var o);
+            return o;
+        }
+        //Resolves $id or $ref value during serialization
+        public string GetReference(object context, object value)
+        {
+            if (value.GetType().IsValueType) return null;
+            if (!_objectsToId.TryGetValue(value, out var id))
+            {
+                id = value.GetInstanceID();
+                AddReference(context, id.ToString(), value);
+            }
+            if (guidToTypeMapping.ContainsKey(id) is false && value is Entity or Component)
+                guidToTypeMapping.Add(id, value.GetType());
+            return id.ToString();
+        }
+        //Resolves if $id or $ref should be used during serialization
+        public bool IsReferenced(object context, object value)
+        {
+            if (rootAlreadyChecked is false && JSONSerializer.isEngineObject(value))
+            {
+                rootAlreadyChecked = true;
+                rootObj = value;
+                return false;
+            }
+            rootAlreadyChecked = true;
+            return rootObj is not null && JSONSerializer.isEngineObject(value) ? true : _objectsToId.ContainsKey(value);
+        }
+        //Resolves $id during deserialization
+        public void AddReference(object context, string reference, object value)
+        {
+            if (value.GetType().IsValueType) return;
+            Guid anotherId = new Guid(reference);
+            JSONSerializer.mapping.TryAdd(value, anotherId);
+            _idToObjects[anotherId] = value;
+            _objectsToId.TryAdd(value, anotherId);
+        }
+    }
+    static class Extensions
+    {
+        public static Guid GetInstanceID<T>(this T obj) where T : class
+        {
+            if (!JSONSerializer.mapping.TryGetValue(obj, out var id))
+            {
+                JSONSerializer.mapping.Add(obj, id = Guid.NewGuid());
+                //throw new InvalidOperationException("attempted to add new entity this shouldnt be happening");
+            }
+            return id;
+        }
+    }
 }
 /*
  public class EntityConverter : JsonConverter<Entity>

@@ -27,13 +27,13 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using OpenTK.Input;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Diagnostics;
+using System.Text;
 
 namespace OpenTK.Platform.Windows
 {
@@ -87,7 +87,7 @@ namespace OpenTK.Platform.Windows
         {
             XInputButtons dir = 0;
 
-            dir =XInputButtons.DPadUp | XInputButtons.DPadLeft;
+            dir = XInputButtons.DPadUp | XInputButtons.DPadLeft;
             if ((buttons & dir) == dir)
                 return HatPosition.UpLeft;
             dir = XInputButtons.DPadUp | XInputButtons.DPadRight;

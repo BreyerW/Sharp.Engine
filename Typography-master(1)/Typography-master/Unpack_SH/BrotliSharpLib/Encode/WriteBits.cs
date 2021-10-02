@@ -1,7 +1,9 @@
 ﻿using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
         /* This function writes bits into bytes in increasing addresses, and within
            a byte least-significant-bit first.
 
@@ -20,26 +22,30 @@ namespace BrotliSharpLib {
         private static unsafe void BrotliWriteBits(size_t n_bits,
             ulong bits,
             size_t* pos,
-            byte* array) {
-            if (BROTLI_LITTLE_ENDIAN) {
+            byte* array)
+        {
+            if (BROTLI_LITTLE_ENDIAN)
+            {
                 byte* p = &array[*pos >> 3];
                 ulong v = *p;
-                v |= bits << (int) (*pos & 7);
-                *(ulong*) p = v; /* Set some bits. */
+                v |= bits << (int)(*pos & 7);
+                *(ulong*)p = v; /* Set some bits. */
                 *pos += n_bits;
             }
-            else {
+            else
+            {
                 /* implicit & 0xff is assumed for uint8_t arithmetics */
                 byte* array_pos = &array[*pos >> 3];
                 size_t bits_reserved_in_first_byte = (*pos & 7);
                 size_t bits_left_to_write;
-                bits <<= (int) bits_reserved_in_first_byte;
-                *array_pos++ |= (byte) bits;
+                bits <<= (int)bits_reserved_in_first_byte;
+                *array_pos++ |= (byte)bits;
                 for (bits_left_to_write = n_bits + bits_reserved_in_first_byte;
                     bits_left_to_write >= 9;
-                    bits_left_to_write -= 8) {
+                    bits_left_to_write -= 8)
+                {
                     bits >>= 8;
-                    *array_pos++ = (byte) bits;
+                    *array_pos++ = (byte)bits;
                 }
                 *array_pos = 0;
                 *pos += n_bits;

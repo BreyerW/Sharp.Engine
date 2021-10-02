@@ -1,5 +1,5 @@
-﻿using System;
-using Squid;
+﻿using Squid;
+using System;
 
 namespace Sharp.Editor.UI
 {

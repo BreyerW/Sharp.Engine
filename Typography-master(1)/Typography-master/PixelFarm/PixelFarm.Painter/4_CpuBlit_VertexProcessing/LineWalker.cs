@@ -15,12 +15,12 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
-
     public delegate void LineSegmentDelegate(VertexStore vxs, VertexCmd cmd, double x, double y);
 
     public class LineWalkerMark
@@ -81,7 +81,7 @@ namespace PixelFarm.CpuBlit.VertexProcessing
     }
     public class LineWalker
     {
-        WalkStateManager _walkStateMan = new WalkStateManager(); 
+        WalkStateManager _walkStateMan = new WalkStateManager();
         public LineWalker()
         {
         }

@@ -49,6 +49,7 @@
 
 
 using System;
+
 namespace Poly2Tri
 {
     public static class DTSweep

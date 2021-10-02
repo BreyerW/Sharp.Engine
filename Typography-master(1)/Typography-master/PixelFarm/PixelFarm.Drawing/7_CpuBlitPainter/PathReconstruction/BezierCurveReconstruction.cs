@@ -1,11 +1,11 @@
 ﻿//MIT, 2018-present, WinterDev
 //from http://www.antigrain.com/research/bezier_interpolation/index.html#PAGE_BEZIER_INTERPOLATION
 
-using System;
-using System.Collections.Generic;
 using PixelFarm.CpuBlit;
 using PixelFarm.Drawing;
 using PixelFarm.VectorMath;
+using System;
+using System.Collections.Generic;
 
 namespace PixelFarm.PathReconstruction
 {
@@ -100,7 +100,7 @@ namespace PixelFarm.PathReconstruction
             controllerPair.Offset(-diff.x, -diff.y);
 
             return controllerPair;
-        } 
+        }
     }
 
     public class ReconstructedFigure

@@ -35,22 +35,22 @@ namespace OpenTK
     public struct Matrix3 : IEquatable<Matrix3>
     {
         #region Fields
-        
+
         /// <summary>
         /// First row of the matrix.
         /// </summary>
         public Vector3 Row0;
-        
+
         /// <summary>
         /// Second row of the matrix.
         /// </summary>
         public Vector3 Row1;
-        
+
         /// <summary>
         /// Third row of the matrix.
         /// </summary>
         public Vector3 Row2;
-        
+
         /// <summary>
         /// The identity matrix.
         /// </summary>
@@ -60,11 +60,11 @@ namespace OpenTK
         /// The zero matrix.
         /// </summary>
         public static readonly Matrix3 Zero = new Matrix3(Vector3.Zero, Vector3.Zero, Vector3.Zero);
-        
+
         #endregion
-        
+
         #region Constructors
-        
+
         /// <summary>
         /// Constructs a new instance.
         /// </summary>
@@ -77,7 +77,7 @@ namespace OpenTK
             Row1 = row1;
             Row2 = row2;
         }
-        
+
         /// <summary>
         /// Constructs a new instance.
         /// </summary>
@@ -110,13 +110,13 @@ namespace OpenTK
             Row1 = matrix.Row1.Xyz;
             Row2 = matrix.Row2.Xyz;
         }
-        
+
         #endregion
-        
+
         #region Public Members
-        
+
         #region Properties
-        
+
         /// <summary>
         /// Gets the determinant of this matrix.
         /// </summary>
@@ -127,12 +127,12 @@ namespace OpenTK
                 float m11 = Row0.X, m12 = Row0.Y, m13 = Row0.Z,
                 m21 = Row1.X, m22 = Row1.Y, m23 = Row1.Z,
                 m31 = Row2.X, m32 = Row2.Y, m33 = Row2.Z;
-                
+
                 return m11 * m22 * m33 + m12 * m23 * m31 + m13 * m21 * m32
                      - m13 * m22 * m31 - m11 * m23 * m32 - m12 * m21 * m33;
             }
         }
-        
+
         /// <summary>
         /// Gets the first column of this matrix.
         /// </summary>
@@ -140,7 +140,7 @@ namespace OpenTK
         {
             get { return new Vector3(Row0.X, Row1.X, Row2.X); }
         }
-        
+
         /// <summary>
         /// Gets the second column of this matrix.
         /// </summary>
@@ -148,7 +148,7 @@ namespace OpenTK
         {
             get { return new Vector3(Row0.Y, Row1.Y, Row2.Y); }
         }
-        
+
         /// <summary>
         /// Gets the third column of this matrix.
         /// </summary>
@@ -156,47 +156,47 @@ namespace OpenTK
         {
             get { return new Vector3(Row0.Z, Row1.Z, Row2.Z); }
         }
-        
+
         /// <summary>
         /// Gets or sets the value at row 1, column 1 of this instance.
         /// </summary>
         public float M11 { get { return Row0.X; } set { Row0.X = value; } }
-        
+
         /// <summary>
         /// Gets or sets the value at row 1, column 2 of this instance.
         /// </summary>
         public float M12 { get { return Row0.Y; } set { Row0.Y = value; } }
-        
+
         /// <summary>
         /// Gets or sets the value at row 1, column 3 of this instance.
         /// </summary>
         public float M13 { get { return Row0.Z; } set { Row0.Z = value; } }
-        
+
         /// <summary>
         /// Gets or sets the value at row 2, column 1 of this instance.
         /// </summary>
         public float M21 { get { return Row1.X; } set { Row1.X = value; } }
-        
+
         /// <summary>
         /// Gets or sets the value at row 2, column 2 of this instance.
         /// </summary>
         public float M22 { get { return Row1.Y; } set { Row1.Y = value; } }
-        
+
         /// <summary>
         /// Gets or sets the value at row 2, column 3 of this instance.
         /// </summary>
         public float M23 { get { return Row1.Z; } set { Row1.Z = value; } }
-        
+
         /// <summary>
         /// Gets or sets the value at row 3, column 1 of this instance.
         /// </summary>
         public float M31 { get { return Row2.X; } set { Row2.X = value; } }
-        
+
         /// <summary>
         /// Gets or sets the value at row 3, column 2 of this instance.
         /// </summary>
         public float M32 { get { return Row2.Y; } set { Row2.Y = value; } }
-        
+
         /// <summary>
         /// Gets or sets the value at row 3, column 3 of this instance.
         /// </summary>
@@ -223,7 +223,7 @@ namespace OpenTK
         /// Gets the trace of the matrix, the sum of the values along the diagonal.
         /// </summary>
         public float Trace { get { return Row0.X + Row1.Y + Row2.Z; } }
-        
+
         #endregion
 
         #region Indexers
@@ -262,9 +262,9 @@ namespace OpenTK
         {
             this = Matrix3.Invert(this);
         }
-        
+
         #endregion
-        
+
         #region public void Transpose()
 
         /// <summary>
@@ -274,7 +274,7 @@ namespace OpenTK
         {
             this = Matrix3.Transpose(this);
         }
-        
+
         #endregion
 
         /// <summary>
@@ -405,9 +405,9 @@ namespace OpenTK
         }
 
         #endregion
-        
+
         #region Static
-        
+
         #region CreateFromAxisAngle
 
         /// <summary>
@@ -421,12 +421,12 @@ namespace OpenTK
             //normalize and create a local copy of the vector.
             axis.Normalize();
             float axisX = axis.X, axisY = axis.Y, axisZ = axis.Z;
-            
+
             //calculate angles
             float cos = (float)System.Math.Cos(-angle);
             float sin = (float)System.Math.Sin(-angle);
             float t = 1.0f - cos;
-            
+
             //do the conversion math once
             float tXX = t * axisX * axisX,
             tXY = t * axisX * axisY,
@@ -434,11 +434,11 @@ namespace OpenTK
             tYY = t * axisY * axisY,
             tYZ = t * axisY * axisZ,
             tZZ = t * axisZ * axisZ;
-            
+
             float sinX = sin * axisX,
             sinY = sin * axisY,
             sinZ = sin * axisZ;
-            
+
             result.Row0.X = tXX + cos;
             result.Row0.Y = tXY - sinZ;
             result.Row0.Z = tXZ + sinY;
@@ -462,9 +462,9 @@ namespace OpenTK
             CreateFromAxisAngle(axis, angle, out result);
             return result;
         }
-        
+
         #endregion
-        
+
         #region CreateFromQuaternion
 
         /// <summary>
@@ -491,9 +491,9 @@ namespace OpenTK
             CreateFromQuaternion(ref q, out result);
             return result;
         }
-        
+
         #endregion
-        
+
         #region CreateRotation[XYZ]
 
         /// <summary>
@@ -505,7 +505,7 @@ namespace OpenTK
         {
             float cos = (float)System.Math.Cos(angle);
             float sin = (float)System.Math.Sin(angle);
-            
+
             result = Identity;
             result.Row1.Y = cos;
             result.Row1.Z = sin;
@@ -534,7 +534,7 @@ namespace OpenTK
         {
             float cos = (float)System.Math.Cos(angle);
             float sin = (float)System.Math.Sin(angle);
-            
+
             result = Identity;
             result.Row0.X = cos;
             result.Row0.Z = -sin;
@@ -563,7 +563,7 @@ namespace OpenTK
         {
             float cos = (float)System.Math.Cos(angle);
             float sin = (float)System.Math.Sin(angle);
-            
+
             result = Identity;
             result.Row0.X = cos;
             result.Row0.Y = sin;
@@ -582,11 +582,11 @@ namespace OpenTK
             CreateRotationZ(angle, out result);
             return result;
         }
-        
+
         #endregion
-        
+
         #region CreateScale
-        
+
         /// <summary>
         /// Creates a scale matrix.
         /// </summary>
@@ -598,7 +598,7 @@ namespace OpenTK
             CreateScale(scale, out result);
             return result;
         }
-        
+
         /// <summary>
         /// Creates a scale matrix.
         /// </summary>
@@ -610,7 +610,7 @@ namespace OpenTK
             CreateScale(ref scale, out result);
             return result;
         }
-        
+
         /// <summary>
         /// Creates a scale matrix.
         /// </summary>
@@ -624,7 +624,7 @@ namespace OpenTK
             CreateScale(x, y, z, out result);
             return result;
         }
-        
+
         /// <summary>
         /// Creates a scale matrix.
         /// </summary>
@@ -637,7 +637,7 @@ namespace OpenTK
             result.Row1.Y = scale;
             result.Row2.Z = scale;
         }
-        
+
         /// <summary>
         /// Creates a scale matrix.
         /// </summary>
@@ -650,7 +650,7 @@ namespace OpenTK
             result.Row1.Y = scale.Y;
             result.Row2.Z = scale.Z;
         }
-        
+
         /// <summary>
         /// Creates a scale matrix.
         /// </summary>
@@ -665,7 +665,7 @@ namespace OpenTK
             result.Row1.Y = y;
             result.Row2.Z = z;
         }
-        
+
         #endregion
 
         #region Add Functions
@@ -721,13 +721,13 @@ namespace OpenTK
         /// <param name="result">A new instance that is the result of the multiplication</param>
         public static void Mult(ref Matrix3 left, ref Matrix3 right, out Matrix3 result)
         {
-            float   lM11 = left.Row0.X, lM12 = left.Row0.Y, lM13 = left.Row0.Z,
+            float lM11 = left.Row0.X, lM12 = left.Row0.Y, lM13 = left.Row0.Z,
             lM21 = left.Row1.X, lM22 = left.Row1.Y, lM23 = left.Row1.Z,
             lM31 = left.Row2.X, lM32 = left.Row2.Y, lM33 = left.Row2.Z,
             rM11 = right.Row0.X, rM12 = right.Row0.Y, rM13 = right.Row0.Z,
             rM21 = right.Row1.X, rM22 = right.Row1.Y, rM23 = right.Row1.Z,
             rM31 = right.Row2.X, rM32 = right.Row2.Y, rM33 = right.Row2.Z;
-            
+
             result.Row0.X = ((lM11 * rM11) + (lM12 * rM21)) + (lM13 * rM31);
             result.Row0.Y = ((lM11 * rM12) + (lM12 * rM22)) + (lM13 * rM32);
             result.Row0.Z = ((lM11 * rM13) + (lM12 * rM23)) + (lM13 * rM33);
@@ -738,11 +738,11 @@ namespace OpenTK
             result.Row2.Y = ((lM31 * rM12) + (lM32 * rM22)) + (lM33 * rM32);
             result.Row2.Z = ((lM31 * rM13) + (lM32 * rM23)) + (lM33 * rM33);
         }
-        
+
         #endregion
-        
+
         #region Invert Functions
-        
+
         /// <summary>
         /// Calculate the inverse of the given matrix
         /// </summary>
@@ -754,11 +754,11 @@ namespace OpenTK
             int[] colIdx = { 0, 0, 0 };
             int[] rowIdx = { 0, 0, 0 };
             int[] pivotIdx = { -1, -1, -1 };
-            
+
             float[,] inverse = {{mat.Row0.X, mat.Row0.Y, mat.Row0.Z},
                 {mat.Row1.X, mat.Row1.Y, mat.Row1.Z},
                 {mat.Row2.X, mat.Row2.Y, mat.Row2.Z}};
-            
+
             int icol = 0;
             int irow = 0;
             for (int i = 0; i < 3; i++)
@@ -788,9 +788,9 @@ namespace OpenTK
                         }
                     }
                 }
-                
+
                 ++(pivotIdx[icol]);
-                
+
                 if (irow != icol)
                 {
                     for (int k = 0; k < 3; ++k)
@@ -800,22 +800,22 @@ namespace OpenTK
                         inverse[icol, k] = f;
                     }
                 }
-                
+
                 rowIdx[i] = irow;
                 colIdx[i] = icol;
-                
+
                 float pivot = inverse[icol, icol];
-                
+
                 if (pivot == 0.0f)
                 {
                     throw new InvalidOperationException("Matrix is singular and cannot be inverted.");
                 }
-                
+
                 float oneOverPivot = 1.0f / pivot;
                 inverse[icol, icol] = 1.0f;
                 for (int k = 0; k < 3; ++k)
                     inverse[icol, k] *= oneOverPivot;
-                
+
                 for (int j = 0; j < 3; ++j)
                 {
                     if (icol != j)
@@ -827,7 +827,7 @@ namespace OpenTK
                     }
                 }
             }
-            
+
             for (int j = 2; j >= 0; --j)
             {
                 int ir = rowIdx[j];
@@ -839,7 +839,7 @@ namespace OpenTK
                     inverse[k, ic] = f;
                 }
             }
-            
+
             result.Row0.X = inverse[0, 0];
             result.Row0.Y = inverse[0, 1];
             result.Row0.Z = inverse[0, 2];
@@ -850,7 +850,7 @@ namespace OpenTK
             result.Row2.Y = inverse[2, 1];
             result.Row2.Z = inverse[2, 2];
         }
-        
+
         /// <summary>
         /// Calculate the inverse of the given matrix
         /// </summary>
@@ -863,9 +863,9 @@ namespace OpenTK
             Invert(ref mat, out result);
             return result;
         }
-        
+
         #endregion
-        
+
         #region Transpose
 
         /// <summary>
@@ -895,11 +895,11 @@ namespace OpenTK
             result.Row2.Y = mat.Row1.Z;
             result.Row2.Z = mat.Row2.Z;
         }
-        
+
         #endregion
-        
+
         #endregion
-        
+
         #region Operators
 
         /// <summary>
@@ -934,13 +934,13 @@ namespace OpenTK
         {
             return !left.Equals(right);
         }
-        
+
         #endregion
-        
+
         #region Overrides
-        
+
         #region public override string ToString()
-        
+
         /// <summary>
         /// Returns a System.String that represents the current Matrix3d.
         /// </summary>
@@ -949,11 +949,11 @@ namespace OpenTK
         {
             return String.Format("{0}\n{1}\n{2}", Row0, Row1, Row2);
         }
-        
+
         #endregion
-        
+
         #region public override int GetHashCode()
-        
+
         /// <summary>
         /// Returns the hashcode for this instance.
         /// </summary>
@@ -968,11 +968,11 @@ namespace OpenTK
                 return hashCode;
             }
         }
-        
+
         #endregion
-        
+
         #region public override bool Equals(object obj)
-        
+
         /// <summary>
         /// Indicates whether this instance and a specified object are equal.
         /// </summary>
@@ -982,16 +982,16 @@ namespace OpenTK
         {
             if (!(obj is Matrix3))
                 return false;
-            
+
             return this.Equals((Matrix3)obj);
         }
-        
+
         #endregion
-        
+
         #endregion
-        
+
         #endregion
-        
+
         #region IEquatable<Matrix3> Members
 
         /// <summary>Indicates whether the current matrix is equal to another matrix.</summary>
@@ -1004,7 +1004,7 @@ namespace OpenTK
                     Row1 == other.Row1 &&
                     Row2 == other.Row2;
         }
-        
+
         #endregion
     }
 }

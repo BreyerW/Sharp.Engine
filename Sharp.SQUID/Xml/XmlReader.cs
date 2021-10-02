@@ -1,6 +1,6 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System;
 using System.Text.RegularExpressions;
 
 namespace Squid.Xml
@@ -50,7 +50,7 @@ namespace Squid.Xml
             Attributes.Clear();
             HasAttributes = false;
         }
-    
+
         public string Name = "";
         public string Value = "";
 
@@ -108,7 +108,7 @@ namespace Squid.Xml
             int newindex = idx;
 
             if (idx > -1)
-               newindex = xmlString.IndexOf("<", idx);
+                newindex = xmlString.IndexOf("<", idx);
 
             Name = string.Empty;
             Value = string.Empty;
@@ -141,7 +141,7 @@ namespace Squid.Xml
 
             if (idx == -1)
                 return false;
-            
+
             ++idx;
 
             // skip attributes, don't include them in the name!
@@ -168,7 +168,7 @@ namespace Squid.Xml
                 _nodeType = XmlNodeType.EndElement;
                 Name = Name.Remove(0, 1); // remove the slash
             }
-            else if(Name.EndsWith("/"))
+            else if (Name.EndsWith("/"))
             {
                 _isEmptyElement = true;
                 _nodeType = XmlNodeType.Element;

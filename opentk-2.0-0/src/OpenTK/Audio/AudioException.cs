@@ -39,6 +39,6 @@ namespace OpenTK.Audio
         public AudioException() : base() { }
         /// <summary>Constructs a new AudioException with the specified error message.</summary>
         /// <param name="message">The error message of the AudioException.</param>
-        public AudioException(string message) : base(message) { } 
+        public AudioException(string message) : base(message) { }
     }
 }

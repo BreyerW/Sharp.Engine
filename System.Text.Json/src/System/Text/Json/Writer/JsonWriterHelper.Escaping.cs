@@ -8,6 +8,7 @@ using System.Text.Encodings.Web;
 
 #if !BUILDING_INBOX_LIBRARY
 using System.Runtime.CompilerServices;
+
 #endif
 
 namespace System.Text.Json

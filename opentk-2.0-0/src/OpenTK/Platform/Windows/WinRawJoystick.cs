@@ -27,13 +27,13 @@
 //
 #endregion
 
+using OpenTK.Input;
+using OpenTK.Platform.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using OpenTK.Input;
-using OpenTK.Platform.Common;
 
 namespace OpenTK.Platform.Windows
 {
@@ -54,7 +54,7 @@ namespace OpenTK.Platform.Windows
             internal readonly int XInputIndex;
 
             readonly Dictionary<int, JoystickAxis> axes =
-                new Dictionary<int,JoystickAxis>();
+                new Dictionary<int, JoystickAxis>();
             readonly Dictionary<int, JoystickButton> buttons =
                 new Dictionary<int, JoystickButton>();
             readonly Dictionary<int, JoystickHat> hats =

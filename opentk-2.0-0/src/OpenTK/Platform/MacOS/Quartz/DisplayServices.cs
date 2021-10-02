@@ -25,15 +25,14 @@
 //
 #endregion
 
-using System;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
 using OpenTK.Platform.MacOS.Carbon;
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using CGDirectDisplayID = System.IntPtr;
 
 namespace OpenTK.Platform.MacOS
 {
-    using CGDirectDisplayID = System.IntPtr;
-
     // Quartz Display services used here are available in MacOS X 10.3 and later.
 
     enum CGDisplayErr
@@ -64,10 +63,10 @@ namespace OpenTK.Platform.MacOS
         // CGSize -> HISize
         // CGRect -> HIRect
 
-        [DllImport(lib,EntryPoint="CGGetActiveDisplayList")]
+        [DllImport(lib, EntryPoint = "CGGetActiveDisplayList")]
         internal unsafe static extern CGDisplayErr GetActiveDisplayList(int maxDisplays, IntPtr* activeDspys, out int dspyCnt);
 
-        [DllImport(lib,EntryPoint="CGMainDisplayID")]
+        [DllImport(lib, EntryPoint = "CGMainDisplayID")]
         internal static extern IntPtr MainDisplayID();
 
         // Note: sizeof(HIRect) == 16, which is larger than 8 bytes.
@@ -85,28 +84,28 @@ namespace OpenTK.Platform.MacOS
         [DllImport(lib, EntryPoint = "CGDisplayBounds")]
         unsafe static extern void DisplayBounds(out HIRect rect, IntPtr display);
 
-        [DllImport(lib,EntryPoint="CGDisplayPixelsWide")]
+        [DllImport(lib, EntryPoint = "CGDisplayPixelsWide")]
         internal static extern int DisplayPixelsWide(IntPtr display);
 
-        [DllImport(lib,EntryPoint="CGDisplayPixelsHigh")]
+        [DllImport(lib, EntryPoint = "CGDisplayPixelsHigh")]
         internal static extern int DisplayPixelsHigh(IntPtr display);
 
-        [DllImport(lib,EntryPoint="CGDisplayCurrentMode")]
+        [DllImport(lib, EntryPoint = "CGDisplayCurrentMode")]
         internal static extern IntPtr DisplayCurrentMode(IntPtr display);
 
-        [DllImport(lib,EntryPoint="CGDisplayCapture")]
+        [DllImport(lib, EntryPoint = "CGDisplayCapture")]
         internal static extern CGDisplayErr DisplayCapture(IntPtr display);
 
-        [DllImport(lib,EntryPoint="CGCaptureAllDisplays")]
+        [DllImport(lib, EntryPoint = "CGCaptureAllDisplays")]
         internal static extern CGDisplayErr CaptureAllDisplays();
 
-        [DllImport(lib,EntryPoint="CGShieldingWindowLevel")]
+        [DllImport(lib, EntryPoint = "CGShieldingWindowLevel")]
         internal static extern uint ShieldingWindowLevel();
 
-        [DllImport(lib,EntryPoint="CGDisplayRelease")]
+        [DllImport(lib, EntryPoint = "CGDisplayRelease")]
         internal static extern CGDisplayErr DisplayRelease(IntPtr display);
 
-        [DllImport(lib,EntryPoint="CGReleaseAllDisplays")]
+        [DllImport(lib, EntryPoint = "CGReleaseAllDisplays")]
         internal static extern CGDisplayErr DisplayReleaseAll();
 
         [DllImport(lib, EntryPoint = "CGDisplayAvailableModes")]
@@ -127,10 +126,10 @@ namespace OpenTK.Platform.MacOS
         [DllImport(lib, EntryPoint = "CGDisplayHideCursor")]
         internal static extern CGError DisplayHideCursor(CGDirectDisplayID display);
 
-         [DllImport(lib, EntryPoint = "CGAssociateMouseAndMouseCursorPosition")]
+        [DllImport(lib, EntryPoint = "CGAssociateMouseAndMouseCursorPosition")]
         internal static extern CGError AssociateMouseAndMouseCursorPosition(bool connected);
 
-        [DllImport(lib, EntryPoint="CGSetLocalEventsSuppressionInterval")]
+        [DllImport(lib, EntryPoint = "CGSetLocalEventsSuppressionInterval")]
         internal static extern CGError SetLocalEventsSuppressionInterval(double seconds);
     }
 }

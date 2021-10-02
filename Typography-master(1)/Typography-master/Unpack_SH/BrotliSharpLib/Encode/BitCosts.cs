@@ -5,8 +5,10 @@ namespace BrotliSharpLib
 {
     public static partial class Brotli
     {
-        private unsafe class BitCostLiteral {
-            public static double BrotliPopulationCost(HistogramLiteral* histogram) {
+        private unsafe class BitCostLiteral
+        {
+            public static double BrotliPopulationCost(HistogramLiteral* histogram)
+            {
                 const double kOneSymbolHistogramCost = 12;
                 const double kTwoSymbolHistogramCost = 20;
                 const double kThreeSymbolHistogramCost = 28;
@@ -63,7 +65,8 @@ namespace BrotliSharpLib
                         size_t j;
                         for (j = i + 1; j < 4; ++j)
                         {
-                            if (histo[j] > histo[i]) {
+                            if (histo[j] > histo[i])
+                            {
                                 uint tmp = histo[j];
                                 histo[j] = histo[i];
                                 histo[i] = tmp;

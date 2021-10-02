@@ -9,6 +9,7 @@
 //MIT, 2017-present, WinterDev
 
 using PixelFarm.Drawing;
+
 namespace PaintFx.Effects
 {
     public class SepiaRenderer : EffectRendererBase

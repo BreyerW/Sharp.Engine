@@ -7,11 +7,10 @@
  * http://www.OpenTK.net */
 #endregion
 
+using OpenTK;
 using System;
 using System.Runtime.InteropServices;
 using System.Security;
-
-using OpenTK;
 
 /* Type Mapping
 // 8-bit boolean 
@@ -402,7 +401,7 @@ namespace OpenTK.Audio.OpenAL
             {
                 fixed (uint* sources_ptr = &sources)
                 {
-                     GenSourcesPrivate(n, sources_ptr);
+                    GenSourcesPrivate(n, sources_ptr);
                 }
             }
         }
@@ -416,7 +415,7 @@ namespace OpenTK.Audio.OpenAL
             {
                 fixed (int* sources_ptr = &sources)
                 {
-                     GenSourcesPrivate(n, (uint*)sources_ptr);
+                    GenSourcesPrivate(n, (uint*)sources_ptr);
                 }
             }
         }
@@ -1409,7 +1408,7 @@ namespace OpenTK.Audio.OpenAL
 
         /// <summary>This function deletes one buffer only, freeing the resources used by the buffer. Buffers which are attached to a source can not be deleted. See AL.Source (ALSourcei) and AL.SourceUnqueueBuffers for information on how to detach a buffer from a source.</summary>
         /// <param name="buffer">Pointer to a buffer name identifying the buffer to be deleted.</param>
-                public static void DeleteBuffer(int buffer)
+        public static void DeleteBuffer(int buffer)
         {
             DeleteBuffers(1, ref buffer);
         }

@@ -23,11 +23,11 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-using System;
-using System.Diagnostics;
 using BenchmarkDotNet.Running;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Tests.Benchmarks;
+using System;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Newtonsoft.Json.TestConsole
@@ -39,7 +39,7 @@ namespace Newtonsoft.Json.TestConsole
             var attribute = (AssemblyFileVersionAttribute)typeof(JsonConvert).GetTypeInfo().Assembly.GetCustomAttribute(typeof(AssemblyFileVersionAttribute));
             Console.WriteLine("Json.NET Version: " + attribute.Version);
 
-            new BenchmarkSwitcher(new [] { typeof(LowLevelBenchmarks) }).Run(new[] { "*" });
+            new BenchmarkSwitcher(new[] { typeof(LowLevelBenchmarks) }).Run(new[] { "*" });
         }
     }
 }

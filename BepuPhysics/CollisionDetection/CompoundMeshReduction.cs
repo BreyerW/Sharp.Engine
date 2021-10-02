@@ -42,7 +42,7 @@ namespace BepuPhysics.CollisionDetection
         {
             Inner.OnChildCompletedEmpty(ref report, ref batcher);
         }
-        
+
         public unsafe bool TryFlush<TCallbacks>(int pairId, ref CollisionBatcher<TCallbacks> batcher) where TCallbacks : struct, ICollisionCallbacks
         {
             Debug.Assert(Inner.ChildCount > 0);

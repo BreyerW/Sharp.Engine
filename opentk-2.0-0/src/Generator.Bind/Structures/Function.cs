@@ -260,9 +260,9 @@ namespace Bind.Structures
                         unsignedFunctions.IsMatch(existing.Name) && !unsignedFunctions.IsMatch(f.Name);
                     replace |=
                         (from p_old in existing.Parameters
-                                        join p_new in f.Parameters on p_old.Name equals p_new.Name
-                                        where p_new.ElementCount == 0 && p_old.ElementCount != 0
-                                        select true)
+                         join p_new in f.Parameters on p_old.Name equals p_new.Name
+                         where p_new.ElementCount == 0 && p_old.ElementCount != 0
+                         select true)
                             .Count() != 0;
                     if (replace)
                     {

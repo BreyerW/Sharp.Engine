@@ -4,12 +4,12 @@
 //YLS CS 
 //license : CPOL
 
-using System;
-using PixelFarm.VectorMath;
 using PixelFarm.CpuBlit.PixelProcessing;
+using PixelFarm.VectorMath;
+using System;
+
 namespace PixelFarm.CpuBlit.Imaging
 {
-
     public class FreeTransform
     {
         public enum InterpolationMode

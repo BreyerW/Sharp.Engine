@@ -1,6 +1,6 @@
 ﻿//MIT, 2017-present, WinterDev
-using System;
 using PixelFarm.VectorMath;
+using System;
 
 namespace PixelFarm.Contours
 {

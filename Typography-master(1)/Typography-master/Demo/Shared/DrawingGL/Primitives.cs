@@ -1,4 +1,5 @@
 ﻿//MIT, 2017, Zou Wei(github/zwcloud), WinterDev
+
 namespace DrawingGL
 {
     struct Size

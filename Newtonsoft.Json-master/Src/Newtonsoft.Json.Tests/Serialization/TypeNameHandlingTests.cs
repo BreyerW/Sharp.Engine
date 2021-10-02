@@ -1615,7 +1615,7 @@ namespace Newtonsoft.Json.Tests.Serialization
       ""MyProperty"": 1
     },
     {
-      ""$type"": """+ listTypeName + @""",
+      ""$type"": """ + listTypeName + @""",
       ""$values"": [
         [
           []

@@ -1,12 +1,12 @@
-﻿using BepuUtilities.Collections;
-using BepuUtilities.Memory;
-using System.Runtime.CompilerServices;
+﻿using BepuPhysics.Collidables;
 using BepuPhysics.Constraints;
+using BepuPhysics.Constraints.Contact;
+using BepuUtilities.Collections;
+using BepuUtilities.Memory;
+using System;
 using System.Diagnostics;
 using System.Numerics;
-using BepuPhysics.Collidables;
-using System;
-using BepuPhysics.Constraints.Contact;
+using System.Runtime.CompilerServices;
 
 namespace BepuPhysics.CollisionDetection
 {
@@ -309,7 +309,7 @@ namespace BepuPhysics.CollisionDetection
             contactConstraintAccessors[manifoldTypeAsConstraintType].UpdateConstraintForManifold(this, manifoldTypeAsConstraintType, workerIndex, ref pair, ref manifold, ref collisionCache, ref material, bodyHandles);
         }
 
-        public unsafe void UpdateConstraintsForPair<TContactManifold, TCollisionCache>(int workerIndex, ref CollidablePair pair, ref TContactManifold manifold, ref TCollisionCache collisionCache) 
+        public unsafe void UpdateConstraintsForPair<TContactManifold, TCollisionCache>(int workerIndex, ref CollidablePair pair, ref TContactManifold manifold, ref TCollisionCache collisionCache)
             where TCollisionCache : unmanaged, IPairCacheEntry
             where TContactManifold : unmanaged, IContactManifold<TContactManifold>
         {

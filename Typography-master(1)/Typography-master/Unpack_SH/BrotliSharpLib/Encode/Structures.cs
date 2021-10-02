@@ -1,9 +1,12 @@
 ﻿using System.Runtime.InteropServices;
 using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
-        internal enum BrotliEncoderStreamState {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
+        internal enum BrotliEncoderStreamState
+        {
             /* Default state. */
             BROTLI_STREAM_PROCESSING = 0,
 
@@ -21,7 +24,8 @@ namespace BrotliSharpLib {
             BROTLI_STREAM_METADATA_BODY = 4
         }
 
-        internal enum BrotliEncoderOperation {
+        internal enum BrotliEncoderOperation
+        {
             /**
              * Process input.
              *
@@ -86,7 +90,8 @@ namespace BrotliSharpLib {
             BROTLI_OPERATION_EMIT_METADATA = 3
         }
 
-        internal enum BrotliEncoderMode {
+        internal enum BrotliEncoderMode
+        {
             /**
              * Default compression mode.
              *
@@ -102,7 +107,8 @@ namespace BrotliSharpLib {
             BROTLI_MODE_FONT = 2
         }
 
-        internal enum BrotliEncoderParameter {
+        internal enum BrotliEncoderParameter
+        {
             /**
              * Tune encoder for specific input.
              *
@@ -160,24 +166,29 @@ namespace BrotliSharpLib {
             BROTLI_PARAM_SIZE_HINT = 5
         }
 
-        internal unsafe struct HasherHandle {
+        internal unsafe struct HasherHandle
+        {
             private byte* handle;
 
-            public HasherHandle(void* h) {
-                handle = (byte*) h;
+            public HasherHandle(void* h)
+            {
+                handle = (byte*)h;
             }
 
-            public static implicit operator void*(HasherHandle h) {
+            public static implicit operator void*(HasherHandle h)
+            {
                 return h.handle;
             }
 
-            public static implicit operator HasherHandle(void* h) {
+            public static implicit operator HasherHandle(void* h)
+            {
                 return new HasherHandle(h);
             }
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal unsafe struct BrotliEncoderStateStruct {
+        internal unsafe struct BrotliEncoderStateStruct
+        {
             public BrotliEncoderParams params_;
 
             public MemoryManager memory_manager_;
@@ -249,7 +260,8 @@ namespace BrotliSharpLib {
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct BrotliHasherParams {
+        internal struct BrotliHasherParams
+        {
             public int type;
             public int bucket_bits;
             public int block_bits;
@@ -258,7 +270,8 @@ namespace BrotliSharpLib {
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct BrotliEncoderParams {
+        internal struct BrotliEncoderParams
+        {
             public BrotliEncoderMode mode;
             public int quality;
             public int lgwin;

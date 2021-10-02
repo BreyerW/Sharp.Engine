@@ -28,6 +28,7 @@
 //from Ionic.Crc
 
 using System;
+
 namespace Typography.TextServices
 {
     /// <summary>

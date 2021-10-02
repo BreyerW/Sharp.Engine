@@ -1,7 +1,7 @@
 ﻿//MIT, 2016-present, WinterDev 
+
 namespace Typography.TextLayout
 {
-
     public struct UserCodePointToGlyphIndex
     {
         //from user codepoint index to offset in _glyphIndics     

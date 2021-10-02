@@ -7,7 +7,6 @@ using Typography.TextBreak;
 
 namespace Typography.TextLayout
 {
-
     /// <summary>
     /// collect and managed editable text line
     /// </summary>
@@ -23,7 +22,7 @@ namespace Typography.TextLayout
         {
             _textBlockLexer = new TextBlockLexer();
             _glyphLayout = new GlyphLayout();
-            FontSizeInPts = 10; 
+            FontSizeInPts = 10;
         }
         public Typeface DefaultTypeface { get; set; }
         /// <summary>

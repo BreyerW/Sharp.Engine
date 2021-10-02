@@ -15,7 +15,7 @@ namespace BepuPhysics.CollisionDetection.SweepTasks
             //We rely on the length being zero to begin with for lazy initialization.
             childOverlaps.Clear(0, childCount);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref ChildOverlapsCollection GetOverlapsForChild(int pairIndex)
         {

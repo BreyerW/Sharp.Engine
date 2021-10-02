@@ -1,9 +1,9 @@
 ﻿//MIT, 2019-present, WinterDev
 using System;
 using System.Collections.Generic;
+
 namespace Test_WinForm_TessGlyph
 {
-
     static class Poly2TriExampleHelper
     {
 
@@ -93,7 +93,7 @@ namespace Test_WinForm_TessGlyph
                 if (p0.X == lastPoint.X && p0.Y == lastPoint.Y)
                 {
                     list.RemoveAt(list.Count - 1);
-                } 
+                }
                 //--
                 contours.Add(contour);
             }

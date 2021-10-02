@@ -15,6 +15,7 @@
 //----------------------------------------------------------------------------
 
 using System;
+
 namespace PixelFarm.CpuBlit.Rasterization.Lines
 {
     public static class LineAA

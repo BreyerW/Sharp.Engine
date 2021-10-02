@@ -30,6 +30,7 @@
 using System;
 #if !MINIMAL
 using System.Drawing;
+
 #endif
 
 namespace OpenTK.Input

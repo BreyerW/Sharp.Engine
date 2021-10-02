@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <StartupObject>Sharp.MainClass</StartupObject>
     <ApplicationIcon />
     <Configurations>Debug;Release;test</Configurations>
@@ -114,6 +114,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
     <PackageReference Include="ColorSharp" Version="0.11.0.32448" />
     <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
     <PackageReference Include="EditableStream" Version="0.3.0" />
@@ -121,7 +122,7 @@
     <PackageReference Include="FastMember" Version="1.5.0" />
     <PackageReference Include="JsonDiffPatch.Net" Version="2.1.0" />
     <PackageReference Include="Lidgren.Network.Portable" Version="1.0.1" />
-    <PackageReference Include="McMaster.NETCore.Plugins" Version="1.4.0-beta.41" />
+    <PackageReference Include="McMaster.NETCore.Plugins" Version="1.4.0" />
     <PackageReference Include="Microsoft.Experimental.Collections" Version="1.0.6-e190117-3" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0-rc.1.20451.14" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.2.2" />
@@ -138,9 +139,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AssimpPlugin\AssimpPlugin.csproj" />
     <ProjectReference Include="..\BepuPhysics\BepuPhysics.csproj" />
     <ProjectReference Include="..\BepuUtilities\BepuUtilities.csproj" />
+    <ProjectReference Include="..\ImageSharpPlugin\ImageSharpPlugin.csproj" />
     <ProjectReference Include="..\Newtonsoft.Json-master\Src\Newtonsoft.Json\Newtonsoft.Json.csproj" />
+    <ProjectReference Include="..\OpenGLPlugin\OpenGLPlugin.csproj" />
     <ProjectReference Include="..\PluginAbstraction\PluginAbstraction.csproj" />
     <ProjectReference Include="..\Sharp.FossilDelta\Sharp.FossilDelta.csproj" />
     <ProjectReference Include="..\Sharp.SQUID\Sharp.SQUID.csproj" />

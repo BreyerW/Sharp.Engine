@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace BepuUtilities.Collections
 {
-
     public static class MSBRadixSort
     {
         //TODO: If the jit ever managed to handle ISpan indexers optimally, we could use a much more natural ISpan-based implementation.

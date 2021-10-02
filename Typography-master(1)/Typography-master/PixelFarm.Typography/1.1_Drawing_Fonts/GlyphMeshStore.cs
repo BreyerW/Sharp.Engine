@@ -1,11 +1,10 @@
 ﻿//MIT, 2016-present, WinterDev
 
-using System;
-using System.Collections.Generic;
-
+using PixelFarm.Contours;
 using PixelFarm.Drawing;
 using PixelFarm.Drawing.Fonts;
-using PixelFarm.Contours;
+using System;
+using System.Collections.Generic;
 using Typography.OpenFont;
 
 namespace Typography.Contours
@@ -177,8 +176,8 @@ namespace Typography.Contours
                 float pxscale = _currentTypeface.CalculateScaleToPixelFromPointSize(_currentFontSizeInPoints);
                 DynamicOutline dynamicOutline = glyphMeshData.dynamicOutline;
                 if (dynamicOutline != null)
-                { 
-                    dynamicOutline.GenerateOutput(new ContourToGlyphTranslator(_tovxs), pxscale); 
+                {
+                    dynamicOutline.GenerateOutput(new ContourToGlyphTranslator(_tovxs), pxscale);
                     //version 3
 
                     if (FlipGlyphUpward)

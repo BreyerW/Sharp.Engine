@@ -3,9 +3,9 @@ using System;
 
 namespace Sharp
 {
-	public interface IEngineObject : IDisposable, IEquatable<IEngineObject>
-	{
-		/*[JsonProperty]
+    public interface IEngineObject : IDisposable, IEquatable<IEngineObject>
+    {
+        /*[JsonProperty]
 		public Guid Id
 		{
 			//internal set => Extension.objectToIdMapping.Add(this, value);
@@ -22,10 +22,10 @@ namespace Sharp
 				}
 			}
 		}*/
-		void IDisposable.Dispose() => PluginManager.serializer.objToIdMapping.Remove(this);
-		bool IEquatable<IEngineObject>.Equals(IEngineObject other)
-		{
-			return this == other;
-		}
-	}
+        void IDisposable.Dispose() => PluginManager.serializer.objToIdMapping.Remove(this);
+        bool IEquatable<IEngineObject>.Equals(IEngineObject other)
+        {
+            return this == other;
+        }
+    }
 }

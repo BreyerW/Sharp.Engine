@@ -5,7 +5,6 @@ using System.IO;
 
 namespace Typography.OpenFont.Tables.BitmapFonts
 {
-
     //from 
     //https://docs.microsoft.com/en-us/typography/opentype/spec/eblc
     //https://docs.microsoft.com/en-us/typography/opentype/spec/ebdt

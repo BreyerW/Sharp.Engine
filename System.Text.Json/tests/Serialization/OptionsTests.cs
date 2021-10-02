@@ -436,7 +436,7 @@ namespace System.Text.Json.Serialization.Tests
             Utf8JsonReader reader = new Utf8JsonReader(data);
             reader.Read();
 
-            T valueRead = converter.Read(ref reader, typeof(T), nullOptionOkay ? null: options);
+            T valueRead = converter.Read(ref reader, typeof(T), nullOptionOkay ? null : options);
             Assert.Equal(objectValue, valueRead);
 
             if (reader.TokenType != JsonTokenType.EndObject)

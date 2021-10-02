@@ -25,10 +25,10 @@
 //
 #endregion
 
-using System;
-using System.Diagnostics;
 using OpenTK;
 using OpenTK.Graphics;
+using System;
+using System.Diagnostics;
 
 namespace OpenTK.Platform.SDL2
 {

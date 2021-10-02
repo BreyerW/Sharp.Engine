@@ -25,23 +25,21 @@
 //
 #endregion
 
+using Gtk;
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Platform;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading;
-using System.ComponentModel;
-
-using OpenTK.Graphics;
-using OpenTK.Platform;
-using OpenTK;
-
-using Gtk;
 
 namespace OpenTK
 {
     [ToolboxItem(true)]
-    public class GLWidget: DrawingArea, IDisposable
+    public class GLWidget : DrawingArea, IDisposable
     {
 
         #region Static attrs.
@@ -93,12 +91,12 @@ namespace OpenTK
         public GraphicsContextFlags GraphicsContextFlags
         {
             get
-            { 
-                return _GraphicsContextFlags; 
+            {
+                return _GraphicsContextFlags;
             }
             set
-            { 
-                _GraphicsContextFlags = value; 
+            {
+                _GraphicsContextFlags = value;
             }
         }
 
@@ -109,13 +107,13 @@ namespace OpenTK
         /// <summary>Constructs a new GLWidget.</summary>
         public GLWidget()
             : this(GraphicsMode.Default)
-        { 
+        {
         }
 
         /// <summary>Constructs a new GLWidget using a given GraphicsMode</summary>
         public GLWidget(GraphicsMode graphicsMode)
             : this(graphicsMode, 1, 0, GraphicsContextFlags.Default)
-        { 
+        {
         }
 
         /// <summary>Constructs a new GLWidget</summary>
@@ -137,8 +135,8 @@ namespace OpenTK
         }
 
         ~GLWidget()
-        { 
-            Dispose(false); 
+        {
+            Dispose(false);
         }
 
 #if GTK3
@@ -181,43 +179,43 @@ namespace OpenTK
         static void OnGraphicsContextInitialized()
         {
             if (GraphicsContextInitialized != null)
-                GraphicsContextInitialized(null, EventArgs.Empty); 
+                GraphicsContextInitialized(null, EventArgs.Empty);
         }
 
         // Called when the first GraphicsContext is being destroyed in the case of GraphicsContext.ShareContexts == True;
         public static event EventHandler GraphicsContextShuttingDown;
 
         static void OnGraphicsContextShuttingDown()
-        { 
+        {
             if (GraphicsContextShuttingDown != null)
-                GraphicsContextShuttingDown(null, EventArgs.Empty); 
+                GraphicsContextShuttingDown(null, EventArgs.Empty);
         }
 
         // Called when this GLWidget has a valid GraphicsContext
         public event EventHandler Initialized;
 
         protected virtual void OnInitialized()
-        { 
+        {
             if (Initialized != null)
-                Initialized(this, EventArgs.Empty); 
+                Initialized(this, EventArgs.Empty);
         }
 
         // Called when this GLWidget needs to render a frame
         public event EventHandler RenderFrame;
 
         protected virtual void OnRenderFrame()
-        { 
+        {
             if (RenderFrame != null)
-                RenderFrame(this, EventArgs.Empty); 
+                RenderFrame(this, EventArgs.Empty);
         }
 
         // Called when this GLWidget is being Disposed
         public event EventHandler ShuttingDown;
 
         protected virtual void OnShuttingDown()
-        { 
+        {
             if (ShuttingDown != null)
-                ShuttingDown(this, EventArgs.Empty); 
+                ShuttingDown(this, EventArgs.Empty);
         }
 
         #endregion
@@ -292,7 +290,7 @@ namespace OpenTK
                 Console.WriteLine("OpenTK running on windows");
             else if (Configuration.RunningOnMacOS)
                 Console.WriteLine("OpenTK running on OSX");
-            else 
+            else
                 Console.WriteLine("OpenTK running on X11");
 
             // IWindowInfo

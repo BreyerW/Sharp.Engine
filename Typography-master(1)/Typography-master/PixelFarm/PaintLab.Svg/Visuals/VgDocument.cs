@@ -1,9 +1,9 @@
 ﻿//MIT, 2014-present, WinterDev
 
-using LayoutFarm.WebDom; 
+using LayoutFarm.WebDom;
+
 namespace PaintLab.Svg
 {
-
     public class VgDocument
     {
         SvgElement _rootElement = new SvgElement(WellknownSvgElementName.Svg, null as string);

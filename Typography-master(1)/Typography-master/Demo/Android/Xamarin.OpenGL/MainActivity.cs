@@ -1,12 +1,13 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
+using Android.Content.PM;
+using Android.Content.Res;
+using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Android.OS;
-using Android.Content.PM;
-using Android.Content.Res;
+using System;
+
 namespace Test_Android_Glyph
 {
     [Activity(Label = "Test_Android_Glyph",

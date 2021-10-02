@@ -45,7 +45,7 @@ namespace BepuPhysics.Constraints
         public Vector<float> MaximumForce;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeClampedBiasVelocity(in Vector<float> error, in Vector<float> positionErrorToVelocity, in ServoSettingsWide servoSettings, float dt, float inverseDt, 
+        public static void ComputeClampedBiasVelocity(in Vector<float> error, in Vector<float> positionErrorToVelocity, in ServoSettingsWide servoSettings, float dt, float inverseDt,
             out Vector<float> clampedBiasVelocity, out Vector<float> maximumImpulse)
         {
             //Can't request speed that would cause an overshoot.
@@ -56,7 +56,7 @@ namespace BepuPhysics.Constraints
                 Vector.Min(servoSettings.MaximumSpeed, Vector.Max(baseSpeed, biasVelocity)));
             maximumImpulse = servoSettings.MaximumForce * dt;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ComputeClampedBiasVelocity(in Vector2Wide errorAxis, in Vector<float> errorLength, in Vector<float> positionErrorToBiasVelocity, in ServoSettingsWide servoSettings,
             float dt, float inverseDt, out Vector2Wide clampedBiasVelocity, out Vector<float> maximumImpulse)
@@ -143,8 +143,8 @@ namespace BepuPhysics.Constraints
             Vector3Wide.Add(accumulatedImpulse, csi, out accumulatedImpulse);
             Vector3Wide.Length(accumulatedImpulse, out var impulseMagnitude);
             var impulseScale = Vector.ConditionalSelect(
-                Vector.LessThan(Vector.Abs(impulseMagnitude), new Vector<float>(1e-10f)), 
-                Vector<float>.One, 
+                Vector.LessThan(Vector.Abs(impulseMagnitude), new Vector<float>(1e-10f)),
+                Vector<float>.One,
                 Vector.Min(maximumImpulse / impulseMagnitude, Vector<float>.One));
             Vector3Wide.Scale(accumulatedImpulse, impulseScale, out accumulatedImpulse);
             Vector3Wide.Subtract(accumulatedImpulse, previousAccumulatedImpulse, out csi);

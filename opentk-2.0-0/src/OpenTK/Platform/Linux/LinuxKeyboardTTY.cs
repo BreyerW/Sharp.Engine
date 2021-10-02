@@ -27,11 +27,11 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using OpenTK.Input;
 
 namespace OpenTK.Platform.Linux
 {
@@ -39,7 +39,7 @@ namespace OpenTK.Platform.Linux
     // (the keyboard remains tied up.) We need to find a
     // proper way to clean up after ourselves, even in case
     // of a crash.
-    #if EXPERIMENTAL
+#if EXPERIMENTAL
     class LinuxKeyboardTTY : IKeyboardDriver2, IDisposable
     {
         const int stdin = 0; // STDIN_FILENO
@@ -68,7 +68,7 @@ namespace OpenTK.Platform.Linux
             input_thread.Start();
         }
 
-        #region Private Members
+    #region Private Members
 
         bool SetupTTY(int stdin)
         {
@@ -201,9 +201,9 @@ namespace OpenTK.Platform.Linux
 
         static readonly Key[] KeyMap = Evdev.KeyMap;
 
-        #endregion
+    #endregion
 
-        #region IKeyboardDriver2 implementation
+    #region IKeyboardDriver2 implementation
 
         public KeyboardState GetState()
         {
@@ -232,9 +232,9 @@ namespace OpenTK.Platform.Linux
                 return String.Empty;
         }
 
-        #endregion
+    #endregion
 
-        #region IDisposable Implementation
+    #region IDisposable Implementation
 
         public void Dispose()
         {
@@ -261,8 +261,8 @@ namespace OpenTK.Platform.Linux
             Dispose(false);
         }
 
-        #endregion
+    #endregion
     }
-    #endif
+#endif
 }
 

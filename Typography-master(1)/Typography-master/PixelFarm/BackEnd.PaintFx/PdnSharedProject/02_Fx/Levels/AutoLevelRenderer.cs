@@ -10,6 +10,7 @@
 
 
 using PixelFarm.Drawing;
+
 namespace PaintFx.Effects
 {
     public class AutoLevelRenderer : EffectRendererBase

@@ -1,9 +1,12 @@
-﻿using size_t = BrotliSharpLib.Brotli.SizeT;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
-        private abstract unsafe class Hasher {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
+        private abstract unsafe class Hasher
+        {
             public abstract size_t StoreLookahead();
             public abstract size_t HashTypeLength();
 

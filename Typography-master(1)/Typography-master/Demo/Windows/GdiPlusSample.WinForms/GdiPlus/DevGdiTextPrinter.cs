@@ -1,18 +1,16 @@
 ﻿//MIT, 2016-present, WinterDev
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Collections.Generic;
+using Typography.Contours;
 //
 using Typography.OpenFont;
 using Typography.TextLayout;
-using Typography.Contours;
 
 
 namespace SampleWinForms
 {
-
-
     /// <summary>
     /// developer's version, Gdi+ text printer
     /// </summary>

@@ -25,16 +25,16 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using OpenTK.Input;
 
 namespace OpenTK.Platform.SDL2
 {
     class Sdl2JoystickDriver : IJoystickDriver2, IGamePadDriver, IDisposable
     {
-        const float RangeMultiplier =  1.0f / 32768.0f;
+        const float RangeMultiplier = 1.0f / 32768.0f;
         readonly MappedGamePadDriver gamepad_driver = new MappedGamePadDriver();
         bool disposed;
 
@@ -316,7 +316,7 @@ namespace OpenTK.Platform.SDL2
                     {
                         IntPtr handle = SDL.JoystickOpen(id);
                         if (handle != IntPtr.Zero)
-                        {                                                        
+                        {
                             JoystickDevice<Sdl2JoystickDetails> joystick = OpenJoystick(id);
 
                             int instance_id = joystick.Details.InstanceId;

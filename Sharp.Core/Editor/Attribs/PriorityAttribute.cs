@@ -2,12 +2,12 @@
 
 namespace Sharp.Core.Editor.Attribs
 {
-	class PriorityAttribute : Attribute
-	{
-		public readonly short priority;
-		public PriorityAttribute(short pri)
-		{
+    class PriorityAttribute : Attribute
+    {
+        public readonly short priority;
+        public PriorityAttribute(short pri)
+        {
 
-		}
-	}
+        }
+    }
 }

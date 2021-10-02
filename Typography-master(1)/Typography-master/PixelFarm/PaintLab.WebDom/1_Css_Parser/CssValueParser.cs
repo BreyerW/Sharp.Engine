@@ -13,8 +13,8 @@
 // - Sun Tsu,
 // "The Art of War"
 
-using System;
 using LayoutFarm.Css;
+using System;
 
 namespace LayoutFarm.WebDom.Parser
 {

@@ -24,9 +24,9 @@
 
 
 using PixelFarm.CpuBlit.PrimitiveProcessing;
+
 namespace PixelFarm.CpuBlit.Rasterization
 {
-
     partial class ScanlineRasterizer
     {
         class VectorClipper

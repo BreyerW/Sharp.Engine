@@ -2107,7 +2107,7 @@ Parameter name: arrayIndex",
             PropertyDescriptorCollection properties = o.GetProperties();
             Assert.AreEqual(1, properties.Count);
 
-            PropertyDescriptor pd = properties[0];      
+            PropertyDescriptor pd = properties[0];
             Assert.AreEqual("prop1", pd.Name);
 
             object owner = o.GetPropertyOwner(pd);

@@ -40,7 +40,6 @@ using Typography.OpenFont.CFF;
 
 namespace Typography.OpenFont.Tables
 {
-
     //from https://docs.microsoft.com/en-us/typography/opentype/spec/cff
     //This table contains a Compact Font Format font representation (also known as a PostScript Type 1, or CIDFont)
     //...

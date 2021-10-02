@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Reflection;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
+using System.Text;
 
 namespace Squid
 {
@@ -25,7 +25,7 @@ namespace Squid
         /// The cache
         /// </summary>
         private static Dictionary<Type, Dictionary<Type, object>> Cache = new Dictionary<Type, Dictionary<Type, object>>();
-        
+
         /// <summary>
         /// The properties
         /// </summary>

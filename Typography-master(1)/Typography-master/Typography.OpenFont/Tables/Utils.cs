@@ -2,8 +2,8 @@
 //Apache2, 2014-2016, Samuel Carlsson, WinterDev 
 
 using System;
-using System.Text;
 using System.IO;
+using System.Text;
 
 namespace Typography.OpenFont
 {
@@ -19,7 +19,7 @@ namespace Typography.OpenFont
             return ((float)reader.ReadInt16()) / (1 << 14); /* Format 2.14 */
         }
 
-        public static Bounds ReadBounds(BinaryReader input) 
+        public static Bounds ReadBounds(BinaryReader input)
         {
             return new Bounds(
                 input.ReadInt16(),//xmin
@@ -50,7 +50,7 @@ namespace Typography.OpenFont
             //16.16 format
             return (float)reader.ReadUInt32() / (1 << 16);
         }
-        
+
         public static ushort[] ReadUInt16Array(this BinaryReader reader, int nRecords)
         {
             ushort[] arr = new ushort[nRecords];

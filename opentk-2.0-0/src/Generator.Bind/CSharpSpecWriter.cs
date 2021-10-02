@@ -25,20 +25,19 @@
 //
 #endregion
 
+using Bind.Structures;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Bind.Structures;
+using Delegate = Bind.Structures.Delegate;
+using Enum = Bind.Structures.Enum;
+using Type = Bind.Structures.Type;
 
 namespace Bind
 {
-    using Delegate = Bind.Structures.Delegate;
-    using Enum = Bind.Structures.Enum;
-    using Type = Bind.Structures.Type;
-
     sealed class CSharpSpecWriter
     {
         IBind Generator { get; set; }
@@ -163,7 +162,7 @@ namespace Bind
             sw.WriteLine("partial class {0}", Settings.OutputClass);
             sw.WriteLine("{");
             sw.Indent();
-            
+
             // Write constructor
             sw.WriteLine("static {0}()", Settings.OutputClass);
             sw.WriteLine("{");
@@ -395,7 +394,7 @@ namespace Bind
             catch (Exception e)
             {
                 Console.WriteLine("[Warning] Error documenting function {0}: {1}", f.WrappedDelegate.Name, e.ToString());
-            }   
+            }
         }
 
         #endregion
@@ -417,7 +416,7 @@ namespace Bind
 
         void WriteConstants(BindStreamWriter sw, IEnumerable<Constant> constants)
         {
-             // Make sure everything is sorted. This will avoid random changes between
+            // Make sure everything is sorted. This will avoid random changes between
             // consecutive runs of the program.
             constants = constants.OrderBy(c => c);
 
@@ -606,7 +605,7 @@ namespace Bind
         {
             StringBuilder sb = new StringBuilder();
             List<Constant> constants = new List<Constant>(e.ConstantCollection.Values);
-            constants.Sort(delegate(Constant c1, Constant c2)
+            constants.Sort(delegate (Constant c1, Constant c2)
             {
                 int ret = String.Compare(c1.Value, c2.Value);
                 if (ret == 0)

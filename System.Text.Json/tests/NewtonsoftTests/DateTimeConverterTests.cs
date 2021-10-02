@@ -144,7 +144,7 @@ namespace System.Text.Json.Tests
                 LastModified = new DateTime(2009, 4, 12, 20, 44, 55),
             };
 
-            string jsonText = JsonSerializer.Serialize(p, new JsonSerializerOptions { IgnoreNullValues = true});
+            string jsonText = JsonSerializer.Serialize(p, new JsonSerializerOptions { IgnoreNullValues = true });
 
             Assert.Equal(@"{""Name"":""Keith"",""BirthDate"":""1980-03-08T00:00:00"",""LastModified"":""2009-04-12T20:44:55""}", jsonText);
         }

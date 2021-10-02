@@ -15,7 +15,7 @@ namespace SerializerTrimmingTest
     {
         static int Main(string[] args)
         {
-            int[] arr = new [] { 1 };
+            int[] arr = new[] { 1 };
             string expected = "[1]";
             string actual = Encoding.UTF8.GetString(JsonSerializer.SerializeToUtf8Bytes(arr, typeof(int[])));
             if (actual != expected)

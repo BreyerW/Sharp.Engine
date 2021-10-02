@@ -43,7 +43,6 @@ using NUnit.Framework;
 
 namespace Newtonsoft.Json.Tests.Documentation.Samples.Json
 {
-
     #region Types
     public class XmlJsonReader : JsonReader
     {

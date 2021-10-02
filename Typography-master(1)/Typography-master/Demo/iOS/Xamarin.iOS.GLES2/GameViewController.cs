@@ -1,10 +1,9 @@
-﻿using System;
-using System.Diagnostics;
-
-using Foundation;
+﻿using Foundation;
 using GLKit;
 using OpenGLES;
 using OpenTK.Graphics.ES20;
+using System;
+using System.Diagnostics;
 
 namespace Xamarin.iOS.GLES2
 {

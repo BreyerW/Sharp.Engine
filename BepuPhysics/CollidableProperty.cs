@@ -101,7 +101,7 @@ namespace BepuPhysics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if(collidable.Mobility == CollidableMobility.Static)
+                if (collidable.Mobility == CollidableMobility.Static)
                     return ref this[collidable.StaticHandle];
                 return ref this[collidable.BodyHandle];
             }

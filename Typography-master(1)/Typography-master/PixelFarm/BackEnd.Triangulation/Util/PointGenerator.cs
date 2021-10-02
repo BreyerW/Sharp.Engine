@@ -32,6 +32,7 @@
 
 using System;
 using System.Collections.Generic;
+
 namespace Poly2Tri
 {
     public class PointGenerator

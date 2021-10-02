@@ -1,17 +1,14 @@
 ﻿//MIT, 2019-present, WinterDev
 
-using System;
-using System.Collections.Generic;
-
-using PixelFarm.Drawing;
 using LayoutFarm.WebDom;
 using LayoutFarm.WebDom.Parser;
-
+using PixelFarm.Drawing;
+using System;
+using System.Collections.Generic;
 using static PaintLab.Svg.CommonValueParsingUtils;
 
 namespace PaintLab.Svg
 {
-
     /// <summary>
     /// vg element creator
     /// </summary>

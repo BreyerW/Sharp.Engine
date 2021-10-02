@@ -1,16 +1,16 @@
 //MIT, 2017, Zou Wei(github/zwcloud)
 //MIT, 2017, WinterDev (modified from Xamarin's Android code template)
-using System;
-using System.Collections.Generic;
-using System.IO;
+using Android.Content;
+using Android.Util;
+using Android.Views;
+using DrawingGL;
+using DrawingGL.Text;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Platform.Android;
-using Android.Views;
-using Android.Content;
-using Android.Util;
-using DrawingGL;
-using DrawingGL.Text;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Test_Android_Glyph
 {
@@ -20,7 +20,7 @@ namespace Test_Android_Glyph
         public GLView1(Context context) : base(context)
         {
 
-        } 
+        }
         // This gets called when the drawing surface is ready
         protected override void OnLoad(EventArgs e)
         {

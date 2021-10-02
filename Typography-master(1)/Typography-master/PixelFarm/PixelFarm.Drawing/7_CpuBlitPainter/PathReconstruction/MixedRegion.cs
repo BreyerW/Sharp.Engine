@@ -1,13 +1,12 @@
 ﻿//MIT, 2019-present, WinterDev
 
+using PixelFarm.CpuBlit;
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.Drawing;
-using PixelFarm.CpuBlit;
 
 namespace PixelFarm.PathReconstruction
 {
-
     public class MixedRegion : CpuBlitRegion
     {
         internal MixedRegion()

@@ -6,26 +6,26 @@ using System.Numerics;
 
 namespace SharpAsset
 {
-	[Serializable]
-	public struct Texture : IAsset //TODO: split for texture - class, bitmap - struct? similar to mesh - class vertexformats - structs
-	{
-		//internal bool allocated;
-		internal int TBO;
-		internal int FBO;
-		public int width;
-		public int height;
-		public byte bits;
-		public bool normalized;
-		public TextureFormat format;
-		internal byte[] bitmap;
+    [Serializable]
+    public struct Texture : IAsset //TODO: split for texture - class, bitmap - struct? similar to mesh - class vertexformats - structs
+    {
+        //internal bool allocated;
+        internal int TBO;
+        internal int FBO;
+        public int width;
+        public int height;
+        public byte bits;
+        public bool normalized;
+        public TextureFormat format;
+        internal byte[] bitmap;
 
-		public ReadOnlySpan<char> Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
-		public ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath); } set { } }
-		public string FullPath { get; set; }
+        public ReadOnlySpan<char> Name { get { return Path.GetFileNameWithoutExtension(FullPath); } set { } }
+        public ReadOnlySpan<char> Extension { get { return Path.GetExtension(FullPath); } set { } }
+        public string FullPath { get; set; }
 
-		public override string ToString()
-		{
-			return Name.ToString();
-		}
-	}
+        public override string ToString()
+        {
+            return Name.ToString();
+        }
+    }
 }

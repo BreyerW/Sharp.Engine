@@ -1,7 +1,7 @@
 ﻿using BepuUtilities.Collections;
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System;
 
 namespace BepuUtilities.Memory
 {

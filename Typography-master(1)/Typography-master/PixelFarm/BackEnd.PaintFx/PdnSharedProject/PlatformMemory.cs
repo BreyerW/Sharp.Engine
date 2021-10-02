@@ -1,5 +1,6 @@
 ﻿//MIT, 2017-present, WinterDev 
 
+
 namespace System
 {
     public abstract class PlatformMemory

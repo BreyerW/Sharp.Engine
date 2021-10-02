@@ -8,7 +8,7 @@ namespace BepuPhysics.CollisionDetection.CollisionTasks
     {
         public Buffer<int> Overlaps;
         public int Count;
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe ref int Allocate(BufferPool pool)
         {

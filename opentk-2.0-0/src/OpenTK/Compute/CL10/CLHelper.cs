@@ -39,14 +39,14 @@ namespace OpenTK.Compute.CL10
     /// </summary>
     public sealed partial class CL : BindingsBase
     {
-        #region Fields
+#region Fields
 
         const string Library = "opencl.dll";
         static readonly object sync_root = new object();
 
-        #endregion
+#endregion
 
-        #region Constructors
+#region Constructors
 
         static CL()
         {
@@ -63,9 +63,9 @@ namespace OpenTK.Compute.CL10
             }
         }
 
-        #endregion
+#endregion
 
-        #region Protected Members
+#region Protected Members
 
         /// <summary>
         /// Returns a synchronization token unique for the GL class.
@@ -93,9 +93,9 @@ namespace OpenTK.Compute.CL10
             //CL.GetExtensionFunctionAddress
         }
 
-        #endregion
+#endregion
         
-        #region Helper Overrides
+#region Helper Overrides
         
         public static unsafe IntPtr CreateContext(ContextProperties* properties, uint num_devices, IntPtr* devices, IntPtr pfn_notify, IntPtr user_data, OpenTK.Compute.CL10.ErrorCode* errcode_ret)
         {
@@ -179,7 +179,7 @@ namespace OpenTK.Compute.CL10
             return CreateContextFromType(ref properties_correct, device_type, pfn_notify, ref user_data, out errcode_ret);
         }
 
-        #endregion
+#endregion
     }
 }
 

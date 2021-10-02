@@ -27,9 +27,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OpenTK.Platform.Windows
 {
@@ -84,7 +84,7 @@ namespace OpenTK.Platform.Windows
             {
                 if (dc == IntPtr.Zero)
                     dc = Functions.GetDC(this.Handle);
-                    //dc = Functions.GetWindowDC(this.Handle);
+                //dc = Functions.GetWindowDC(this.Handle);
                 return dc;
             }
         }
@@ -111,7 +111,7 @@ namespace OpenTK.Platform.Windows
         {
             if (obj == null) return false;
             if (this.GetType() != obj.GetType()) return false;
-            WinWindowInfo info = (WinWindowInfo)obj; 
+            WinWindowInfo info = (WinWindowInfo)obj;
 
             if (info == null) return false;
             // TODO: Assumes windows will always have unique handles.

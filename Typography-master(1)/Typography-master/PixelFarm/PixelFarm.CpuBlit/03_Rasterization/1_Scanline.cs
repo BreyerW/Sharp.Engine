@@ -31,6 +31,7 @@
 //----------------------------------------------------------------------------
 
 
+
 namespace PixelFarm.CpuBlit.Rasterization
 {
     public abstract class Scanline

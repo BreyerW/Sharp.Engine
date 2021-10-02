@@ -15,7 +15,7 @@ namespace Squid
 
         public string Name { get; set; }
         public string Family { get; set; }
-        
+
         public bool Bold { get; set; }
         public bool Italic { get; set; }
         public bool Underlined { get; set; }

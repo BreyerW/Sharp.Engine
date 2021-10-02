@@ -4,8 +4,6 @@ using System.Numerics;
 
 namespace Typography.OpenFont
 {
-
-
     public class TrueTypeInterpreter
     {
         Typeface _currentTypeFace;
@@ -244,11 +242,11 @@ namespace Typography.OpenFont
                 Execute(new InstructionStream(instructions), false, false);
             }
             catch (InvalidFontException)
-            { 
+            {
 #if DEBUG
                 System.Diagnostics.Debug.WriteLine("invalid_font_ex:");
 #endif
- 
+
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿//MIT, 2016-present, WinterDev
-using System;
 using PixelFarm.CpuBlit;
+using System;
+
 namespace PixelFarm.Drawing.BitmapAtlas
 {
     public class AtlasItemImage

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 namespace ExtMsdfGen
 {
-
     /// <summary>
     /// Assigns colors to edges of the shape in accordance to the multi-channel distance field technique.
     /// May split some edges if necessary. 

@@ -1,6 +1,7 @@
 ﻿//BSD, 2014-present, WinterDev
 
 using PixelFarm.VectorMath;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
     /// <summary>

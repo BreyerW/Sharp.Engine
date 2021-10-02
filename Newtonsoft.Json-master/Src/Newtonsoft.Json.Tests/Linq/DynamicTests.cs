@@ -77,7 +77,7 @@ namespace Newtonsoft.Json.Tests.Linq
                 Assert.Pass();
             }
         }
-        
+
         private void UpdateValueCount(IDictionary<string, int> counts, dynamic d)
         {
             string s = d.ToString();

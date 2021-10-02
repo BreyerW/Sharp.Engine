@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Squid.Xml;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-using Squid.Xml;
 
 namespace Squid
 {

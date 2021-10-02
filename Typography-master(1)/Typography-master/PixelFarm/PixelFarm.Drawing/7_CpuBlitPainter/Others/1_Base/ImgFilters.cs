@@ -1,12 +1,10 @@
 ﻿//MIT, 2014-present, WinterDev
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit.Imaging;
+using PixelFarm.Drawing;
 using System;
 
 namespace PaintFx.Effects
 {
-
-
     public interface ICpuBlitImgFilter
     {
         void SetTarget(PixelFarm.CpuBlit.PixelProcessing.BitmapBlenderBase targt);
@@ -351,10 +349,10 @@ namespace PaintFx.Effects
             {
                 using (TempMemPtr bufferPtr = _target.GetBufferPtr())
                 {
-                     
+
                     byte* srcBuffer = (byte*)bufferPtr.Ptr;
                     int* srcBuffer1 = (int*)srcBuffer;
-                    
+
                     int stride = _target.Stride;
                     int w = _target.Width;
                     int h = _target.Height;
@@ -384,7 +382,7 @@ namespace PaintFx.Effects
                             srcBuffer1++;
                         }
                     }
-                   
+
                 }
             }
         }

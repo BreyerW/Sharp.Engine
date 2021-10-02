@@ -1,7 +1,7 @@
-﻿using BepuUtilities;
-using BepuUtilities.Memory;
-using BepuPhysics.Collidables;
+﻿using BepuPhysics.Collidables;
 using BepuPhysics.CollisionDetection;
+using BepuUtilities;
+using BepuUtilities.Memory;
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -253,7 +253,7 @@ namespace BepuPhysics
                 //Using localAngularVelocity0 as the first guess for localAngularVelocity1.
                 Matrix3x3.TransformTranspose(angularVelocity, orientationMatrix, out var localAngularVelocity);
                 Symmetric3x3.Invert(localInertia.InverseInertiaTensor, out var localInertiaTensor);
-                
+
                 Symmetric3x3.TransformWithoutOverlap(localAngularVelocity, localInertiaTensor, out var localAngularMomentum);
                 var residual = dt * Vector3.Cross(localAngularMomentum, localAngularVelocity);
 

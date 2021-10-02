@@ -25,9 +25,9 @@
 //
 #endregion
 
+using OpenTK.Graphics;
 using System;
 using System.Diagnostics;
-using OpenTK.Graphics;
 
 namespace OpenTK.Platform.Egl
 {
@@ -130,7 +130,7 @@ namespace OpenTK.Platform.Egl
             if (window != null)
             {
                 if (window is EglWindowInfo)
-                    WindowInfo = (EglWindowInfo) window;
+                    WindowInfo = (EglWindowInfo)window;
                 if (!Egl.MakeCurrent(WindowInfo.Display, WindowInfo.Surface, WindowInfo.Surface, HandleAsEGLContext))
                 {
                     throw new GraphicsContextException(string.Format("Failed to make context {0} current. Error: {1}", Handle, Egl.GetError()));

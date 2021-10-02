@@ -25,23 +25,22 @@
 //
 #endregion
 
-using System;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System.Text;
 using OpenTK.Graphics;
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text;
+using EGLClientBuffer = IntPtr;
+using EGLConfig = IntPtr;
+using EGLContext = IntPtr;
+using EGLDisplay = IntPtr;
+using EGLNativeDisplayType = IntPtr;
+using EGLNativePixmapType = IntPtr;
+using EGLNativeWindowType = IntPtr;
+using EGLSurface = IntPtr;
 
 namespace OpenTK.Platform.Egl
 {
-    using EGLNativeDisplayType = IntPtr;
-    using EGLNativeWindowType = IntPtr;
-    using EGLNativePixmapType = IntPtr;
-    using EGLConfig = IntPtr;
-    using EGLContext = IntPtr;
-    using EGLDisplay = IntPtr;
-    using EGLSurface = IntPtr;
-    using EGLClientBuffer = IntPtr;
-
     enum RenderApi
     {
         ES = Egl.OPENGL_ES_API,
@@ -255,7 +254,7 @@ namespace OpenTK.Platform.Egl
         public static extern bool GetConfigAttrib(EGLDisplay dpy, EGLConfig config, int attribute, out int value);
 
         [DllImportAttribute("libEGL.dll", EntryPoint = "eglCreateWindowSurface")]
-        public static extern  EGLSurface CreateWindowSurface(EGLDisplay dpy, EGLConfig config, IntPtr win, IntPtr attrib_list);
+        public static extern EGLSurface CreateWindowSurface(EGLDisplay dpy, EGLConfig config, IntPtr win, IntPtr attrib_list);
 
         [DllImportAttribute("libEGL.dll", EntryPoint = "eglCreatePbufferSurface")]
         public static extern EGLSurface CreatePbufferSurface(EGLDisplay dpy, EGLConfig config, int[] attrib_list);
@@ -362,20 +361,20 @@ namespace OpenTK.Platform.Egl
         // EGL_EXT_platform_base
         [DllImport("libEGL.dll", EntryPoint = "eglGetPlatformDisplayEXT")]
         public static extern EGLDisplay GetPlatformDisplayEXT(int platform, EGLNativeDisplayType native_display, int[] attrib_list);
-        
+
         [DllImport("libEGL.dll", EntryPoint = "eglCreatePlatformWindowSurfaceEXT")]
         public static extern EGLSurface CreatePlatformWindowSurfaceEXT(EGLDisplay dpy, EGLConfig config, EGLNativeWindowType native_window, int[] attrib_list);
-        
+
         [DllImport("libEGL.dll", EntryPoint = "eglCreatePlatformPixmapSurfaceEXT")]
         public static extern EGLSurface CreatePlatformPixmapSurfaceEXT(EGLDisplay dpy, EGLConfig config, EGLNativePixmapType native_pixmap, int[] attrib_list);
-        
+
         // Returns true if Egl drivers exist on the system.
         public static bool IsSupported
         {
             get
             {
                 try { GetCurrentContext(); }
-                catch (Exception) { return false;  }
+                catch (Exception) { return false; }
                 return true;
             }
         }

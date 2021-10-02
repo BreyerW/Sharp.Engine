@@ -1349,7 +1349,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             Assert.AreEqual(ratio.Denominator, ratio2.Denominator);
             Assert.AreEqual(ratio.Numerator, ratio2.Numerator);
         }
-    
+
         [Test]
         public void PreserveReferencesCallbackTest()
         {
@@ -4551,7 +4551,7 @@ Path '', line 1, position 1.");
             Assert.AreEqual(2, cc.Second);
             Assert.AreEqual(null, cc.Ignored);
         }
-        
+
         [Test]
         public void DeserializeIgnoredPropertyInConstructorWithoutThrowingMissingMemberError()
         {
@@ -5766,7 +5766,7 @@ Path '', line 1, position 1.");
         [Test]
         public void SerializeNullableGuidCustomWriterOverridesNullableGuid()
         {
-            NullableGuid ng = new NullableGuid {Id = Guid.Empty};
+            NullableGuid ng = new NullableGuid { Id = Guid.Empty };
             NullableGuidCountingJsonTextWriter writer = new NullableGuidCountingJsonTextWriter(new StreamWriter(Stream.Null));
             JsonSerializer serializer = JsonSerializer.Create();
             serializer.Serialize(writer, ng);
@@ -6553,7 +6553,7 @@ Path '', line 1, position 1.");
         {
             string json = "{one:1} // This is just a comment";
 
-            JsonSerializerSettings settings = new JsonSerializerSettings {CheckAdditionalContent = true};
+            JsonSerializerSettings settings = new JsonSerializerSettings { CheckAdditionalContent = true };
             JsonSerializer s = JsonSerializer.Create(settings);
             IDictionary<string, int> o = s.Deserialize<Dictionary<string, int>>(new JsonTextReader(new StringReader(json)));
 
@@ -6571,7 +6571,7 @@ lines.*/
 
 // This is just another comment.";
 
-            JsonSerializerSettings settings = new JsonSerializerSettings {CheckAdditionalContent = true};
+            JsonSerializerSettings settings = new JsonSerializerSettings { CheckAdditionalContent = true };
             JsonSerializer s = JsonSerializer.Create(settings);
             IDictionary<string, int> o = s.Deserialize<Dictionary<string, int>>(new JsonTextReader(new StringReader(json)));
 

@@ -30,20 +30,19 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Atom = IntPtr;
+using KeyCode = Byte;
+using XkbClientMapPtr = IntPtr;
+using XkbCompatMapPtr = IntPtr;
+using XkbControlsPtr = IntPtr;
+using XkbGeometryPtr = IntPtr;
+using XkbIndicatorPtr = IntPtr;
+using XkbServerMapPtr = IntPtr;
 
 #pragma warning disable 0169
 
 namespace OpenTK.Platform.X11
 {
-    using Atom = IntPtr;
-    using KeyCode = Byte;
-    using XkbControlsPtr = IntPtr;
-    using XkbServerMapPtr = IntPtr;
-    using XkbClientMapPtr = IntPtr;
-    using XkbIndicatorPtr = IntPtr;
-    using XkbCompatMapPtr = IntPtr;
-    using XkbGeometryPtr = IntPtr;
-
     class Xkb
     {
         const string lib = "libX11";
@@ -65,10 +64,10 @@ namespace OpenTK.Platform.X11
         internal extern static IntPtr GetKeyboard(IntPtr display, XkbKeyboardMask which, int device_id);
 
         [DllImport(lib, EntryPoint = "XkbGetMap")]
-        internal extern static IntPtr GetMap(IntPtr display, XkbKeyboardMask which, int device_spec); 
+        internal extern static IntPtr GetMap(IntPtr display, XkbKeyboardMask which, int device_spec);
 
         [DllImport(lib, EntryPoint = "XkbGetNames")]
-        unsafe internal extern static IntPtr GetNames(IntPtr display, XkbNamesMask which, XkbDesc* xkb); 
+        unsafe internal extern static IntPtr GetNames(IntPtr display, XkbNamesMask which, XkbDesc* xkb);
 
         [DllImport(lib, EntryPoint = "XkbKeycodeToKeysym")]
         internal extern static XKey KeycodeToKeysym(IntPtr display, int keycode, int group, int level);
@@ -239,7 +238,8 @@ namespace OpenTK.Platform.X11
                         fixed (Atom* ptr = &indicators0)
                         {
                             return *(ptr + i);
-                        }                    }
+                        }
+                    }
                 }
             }
         }
@@ -293,7 +293,7 @@ namespace OpenTK.Platform.X11
         internal Groups groups;
         internal XkbKeyName* keys;
         internal XkbKeyAlias* key_aliases;
-        internal Atom *radio_groups;
+        internal Atom* radio_groups;
         internal Atom phys_symbols;
 
         internal byte num_keys;

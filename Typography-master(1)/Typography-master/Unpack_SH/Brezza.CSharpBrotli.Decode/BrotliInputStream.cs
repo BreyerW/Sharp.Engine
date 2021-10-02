@@ -93,7 +93,7 @@ namespace CSharpBrotli.Decode
                     Decode.SetCustomDictionary(state, customDictionary);
                 }
             }
-            catch(IOException ex)
+            catch (IOException ex)
             {
                 throw ex;
             }
@@ -126,11 +126,11 @@ namespace CSharpBrotli.Decode
                 }
                 return buffer[bufferOffset++] & 0xFF;
             }
-            catch(IOException ex)
+            catch (IOException ex)
             {
                 throw ex;
             }
-            catch(BrotliRuntimeException ex)
+            catch (BrotliRuntimeException ex)
             {
                 throw new IOException(ex.Message, ex.InnerException);
             }

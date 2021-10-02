@@ -29,12 +29,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using Graphics;
+using Input;
 
 namespace OpenTK.Platform
 {
-    using Graphics;
-    using Input;
-
     sealed class Factory : IPlatformFactory
     {
         #region Fields
@@ -57,19 +56,19 @@ namespace OpenTK.Platform
             Toolkit.Init();
 
             // Create regular platform backend
-            #if SDL2
+#if SDL2
             if (Configuration.RunningOnSdl2) Default = new SDL2.Sdl2Factory();
-            #endif
-            #if WIN32
+#endif
+#if WIN32
             else if (Configuration.RunningOnWindows) Default = new Windows.WinFactory();
-            #endif
-            #if CARBON
+#endif
+#if CARBON
             else if (Configuration.RunningOnMacOS) Default = new MacOS.MacOSFactory();
-            #endif
-            #if X11
+#endif
+#if X11
             else if (Configuration.RunningOnX11) Default = new X11.X11Factory();
             else if (Configuration.RunningOnLinux) Default = new Linux.LinuxFactory();
-            #endif
+#endif
             if (Default == null)
                 Default = new UnsupportedPlatform();
 
@@ -83,27 +82,27 @@ namespace OpenTK.Platform
                 // using the same API.
                 Embedded = Default;
             }
-            #if IPHONE
+#if IPHONE
             else if (Configuration.RunningOnIOS) Embedded = new iPhoneOS.iPhoneFactory();
-            #else
+#else
             else if (Egl.Egl.IsSupported)
             {
                 if (Configuration.RunningOnLinux) Embedded = Default;
-                #if X11
+#if X11
                 else if (Configuration.RunningOnX11) Embedded = new Egl.EglX11PlatformFactory();
-                #endif
-                #if WIN32
+#endif
+#if WIN32
                 else if (Configuration.RunningOnWindows) Embedded = new Egl.EglWinPlatformFactory();
-                #endif
-                #if CARBON
+#endif
+#if CARBON
                 else if (Configuration.RunningOnMacOS) Embedded = new Egl.EglMacPlatformFactory();
-                #endif
-                #if ANDROID
+#endif
+#if ANDROID
                 else if (Configuration.RunningOnAndroid) Embedded = new Android.AndroidFactory();
-                #endif
+#endif
                 else Embedded = new UnsupportedPlatform();
             }
-            #endif
+#endif
             else
             {
                 Embedded = new UnsupportedPlatform();
@@ -182,9 +181,9 @@ namespace OpenTK.Platform
         [Obsolete]
         public IJoystickDriver CreateLegacyJoystickDriver()
         {
-            #pragma warning disable 612,618
+#pragma warning disable 612, 618
             return default_implementation.CreateLegacyJoystickDriver();
-            #pragma warning restore 612,618
+#pragma warning restore 612, 618
         }
 
         public void RegisterResource(IDisposable resource)
@@ -197,9 +196,9 @@ namespace OpenTK.Platform
             #region Fields
 
             static readonly string error_string = "Please, refer to http://www.opentk.com for more information.";
-            
+
             #endregion
-            
+
             #region IPlatformFactory Members
 
             public override INativeWindow CreateNativeWindow(int x, int y, int width, int height, string title, GraphicsMode mode, GameWindowFlags options, DisplayDevice device)

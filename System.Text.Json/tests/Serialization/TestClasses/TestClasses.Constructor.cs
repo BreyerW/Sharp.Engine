@@ -1308,7 +1308,8 @@ namespace System.Text.Json.Serialization.Tests
             Int56 = int56; Int57 = int57; Int58 = int58; Int59 = int59; Int60 = int60; Int61 = int61; Int62 = int62; Int63 = int63;
         }
 
-        public static string Json {
+        public static string Json
+        {
             get
             {
                 StringBuilder sb = new StringBuilder();
@@ -1855,7 +1856,8 @@ namespace System.Text.Json.Serialization.Tests
                 ClassWithConstructor_SimpleAndComplexParameters,
                 ClassWithConstructor_SimpleAndComplexParameters,
                 ClassWithConstructor_SimpleAndComplexParameters,
-                ClassWithConstructor_SimpleAndComplexParameters> MyTuple { get; }
+                ClassWithConstructor_SimpleAndComplexParameters> MyTuple
+        { get; }
 
         public Parameterized_Class_With_ComplexTuple(
             Tuple<
@@ -2221,7 +2223,7 @@ namespace System.Text.Json.Serialization.Tests
     {
         public int X { get; }
         public int Y { get; }
-        public int Z { get; set;  }
+        public int Z { get; set; }
 
         [JsonConstructor]
         public Point_With_Property(int x, int y)

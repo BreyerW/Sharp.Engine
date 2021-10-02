@@ -18,6 +18,7 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
     public static class VertexHitTester

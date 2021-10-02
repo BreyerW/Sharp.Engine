@@ -1,5 +1,5 @@
-using System;
 using OpenTK.Graphics;
+using System;
 
 namespace OpenTK.Platform.Android
 {

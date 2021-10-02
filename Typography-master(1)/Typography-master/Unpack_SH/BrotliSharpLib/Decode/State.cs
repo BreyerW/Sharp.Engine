@@ -1,22 +1,28 @@
 ﻿using System;
-using size_t = BrotliSharpLib.Brotli.SizeT;
 using BrotliDecoderState = BrotliSharpLib.Brotli.BrotliDecoderStateStruct;
+using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
-        internal static unsafe void BrotliDecoderStateInit(ref BrotliDecoderState s) {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
+        internal static unsafe void BrotliDecoderStateInit(ref BrotliDecoderState s)
+        {
             BrotliDecoderStateInitWithCustomAllocators(ref s, null, null, null);
         }
 
         private static unsafe void BrotliDecoderStateInitWithCustomAllocators(
             ref BrotliDecoderState s, brotli_alloc_func alloc_func, brotli_free_func free_func,
-            void* opaque) {
-            if (alloc_func == null) {
+            void* opaque)
+        {
+            if (alloc_func == null)
+            {
                 s.alloc_func = DefaultAllocFunc;
                 s.free_func = DefaultFreeFunc;
                 s.memory_manager_opaque = null;
             }
-            else {
+            else
+            {
                 s.alloc_func = alloc_func;
                 s.free_func = free_func;
                 s.memory_manager_opaque = opaque;
@@ -69,7 +75,8 @@ namespace BrotliSharpLib {
             s.should_wrap_ringbuffer = false;
             s.window_bits = 0;
             s.max_distance = 0;
-            fixed (int* rb = s.dist_rb) {
+            fixed (int* rb = s.dist_rb)
+            {
                 rb[0] = 16;
                 rb[1] = 15;
                 rb[2] = 11;
@@ -82,7 +89,8 @@ namespace BrotliSharpLib {
             s.mtf_upper_bound = 63;
         }
 
-        internal static unsafe void BrotliDecoderStateCleanup(ref BrotliDecoderState s) {
+        internal static unsafe void BrotliDecoderStateCleanup(ref BrotliDecoderState s)
+        {
             BrotliDecoderStateCleanupAfterMetablock(ref s);
 
             s.free_func(s.memory_manager_opaque, s.ringbuffer);
@@ -91,19 +99,23 @@ namespace BrotliSharpLib {
             s.block_type_trees = null;
         }
 
-        private static unsafe void BrotliDecoderStateMetablockBegin(ref BrotliDecoderState s) {
+        private static unsafe void BrotliDecoderStateMetablockBegin(ref BrotliDecoderState s)
+        {
             s.meta_block_remaining_len = 0;
-            fixed (uint* bl = s.block_length) {
+            fixed (uint* bl = s.block_length)
+            {
                 bl[0] = 1U << 28;
                 bl[1] = 1U << 28;
                 bl[2] = 1U << 28;
             }
-            fixed (uint* nbt = s.num_block_types) {
+            fixed (uint* nbt = s.num_block_types)
+            {
                 nbt[0] = 1;
                 nbt[1] = 1;
                 nbt[2] = 1;
             }
-            fixed (uint* btr = s.block_type_rb) {
+            fixed (uint* btr = s.block_type_rb)
+            {
                 btr[0] = 1;
                 btr[1] = 0;
                 btr[2] = 1;
@@ -128,7 +140,8 @@ namespace BrotliSharpLib {
             s.distance_hgroup.htrees = null;
         }
 
-        private static unsafe void BrotliDecoderStateCleanupAfterMetablock(ref BrotliDecoderState s) {
+        private static unsafe void BrotliDecoderStateCleanupAfterMetablock(ref BrotliDecoderState s)
+        {
             s.free_func(s.memory_manager_opaque, s.context_modes);
             s.context_modes = null;
             s.free_func(s.memory_manager_opaque, s.context_map);
@@ -138,7 +151,8 @@ namespace BrotliSharpLib {
 
             fixed (HuffmanTreeGroup* lh = &s.literal_hgroup)
             fixed (HuffmanTreeGroup* ich = &s.insert_copy_hgroup)
-            fixed (HuffmanTreeGroup* dh = &s.distance_hgroup) {
+            fixed (HuffmanTreeGroup* dh = &s.distance_hgroup)
+            {
                 BrotliDecoderHuffmanTreeGroupRelease(ref s, lh);
                 BrotliDecoderHuffmanTreeGroupRelease(ref s, ich);
                 BrotliDecoderHuffmanTreeGroupRelease(ref s, dh);
@@ -146,17 +160,18 @@ namespace BrotliSharpLib {
         }
 
         private static unsafe bool BrotliDecoderHuffmanTreeGroupInit(ref BrotliDecoderState s,
-            HuffmanTreeGroup* group, uint alphabet_size, uint ntrees) {
+            HuffmanTreeGroup* group, uint alphabet_size, uint ntrees)
+        {
             /* Pack two allocations into one */
-            size_t max_table_size = (int) kMaxHuffmanTableSize[(alphabet_size + 31) >> 5];
+            size_t max_table_size = (int)kMaxHuffmanTableSize[(alphabet_size + 31) >> 5];
             size_t code_size = sizeof(HuffmanCode) * ntrees * max_table_size;
             size_t htree_size = IntPtr.Size * ntrees;
             /* Pointer alignment is, hopefully, wider than sizeof(HuffmanCode). */
-            var p = (HuffmanCode**) s.alloc_func(s.memory_manager_opaque, code_size + htree_size);
-            group->alphabet_size = (ushort) alphabet_size;
-            group->num_htrees = (ushort) ntrees;
-            group->htrees = (HuffmanCode**) p;
-            group->codes = (HuffmanCode*) (&p[ntrees]);
+            var p = (HuffmanCode**)s.alloc_func(s.memory_manager_opaque, code_size + htree_size);
+            group->alphabet_size = (ushort)alphabet_size;
+            group->num_htrees = (ushort)ntrees;
+            group->htrees = (HuffmanCode**)p;
+            group->codes = (HuffmanCode*)(&p[ntrees]);
             return p != null;
         }
     }

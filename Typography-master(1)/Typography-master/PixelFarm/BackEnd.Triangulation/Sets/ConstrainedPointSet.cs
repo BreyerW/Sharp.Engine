@@ -30,6 +30,7 @@
  */
 
 using System.Collections.Generic;
+
 namespace Poly2Tri
 {
     /*

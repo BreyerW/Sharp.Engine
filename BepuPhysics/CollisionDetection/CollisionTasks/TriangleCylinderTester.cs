@@ -5,11 +5,10 @@ using System;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using DepthRefiner = BepuPhysics.CollisionDetection.DepthRefiner<BepuPhysics.Collidables.Cylinder, BepuPhysics.Collidables.CylinderWide, BepuPhysics.Collidables.CylinderSupportFinder, BepuPhysics.Collidables.Triangle, BepuPhysics.Collidables.TriangleWide, BepuPhysics.CollisionDetection.CollisionTasks.PretransformedTriangleSupportFinder>;
 
 namespace BepuPhysics.CollisionDetection.CollisionTasks
 {
-    using DepthRefiner = DepthRefiner<Cylinder, CylinderWide, CylinderSupportFinder, Triangle, TriangleWide, PretransformedTriangleSupportFinder>;
-
     public struct PretransformedTriangleSupportFinder : ISupportFinder<Triangle, TriangleWide>
     {
 
@@ -121,7 +120,7 @@ namespace BepuPhysics.CollisionDetection.CollisionTasks
             var cylinderInsideTriangleEdgePlanes = Vector.BitwiseAnd(
                 Vector.LessThanOrEqual(abPlaneTest, Vector<float>.Zero),
                 Vector.BitwiseAnd(
-                    Vector.LessThanOrEqual(bcPlaneTest, Vector<float>.Zero), 
+                    Vector.LessThanOrEqual(bcPlaneTest, Vector<float>.Zero),
                     Vector.LessThanOrEqual(caPlaneTest, Vector<float>.Zero)));
             var cylinderInsideAndBelowTriangle = Vector.BitwiseAnd(cylinderInsideTriangleEdgePlanes, cylinderBelowPlane);
 

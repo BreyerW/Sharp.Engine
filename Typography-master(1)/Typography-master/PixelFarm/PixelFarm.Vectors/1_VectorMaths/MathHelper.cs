@@ -36,6 +36,7 @@ either expressed or implied, of the FreeBSD Project.
 
 
 using System;
+
 namespace PixelFarm.VectorMath
 {
     /// <summary>
@@ -202,7 +203,7 @@ namespace PixelFarm.VectorMath
         /// <returns>The angle expressed in radians</returns>
         public static double DegreesToRadians(double degrees)
         {
-           
+
             return degrees * degToRad;
         }
 
@@ -213,7 +214,7 @@ namespace PixelFarm.VectorMath
         /// <returns>The angle expressed in degrees</returns>
         public static double RadiansToDegrees(double radians)
         {
-           
+
             return radians * radToDeg;
         }
 

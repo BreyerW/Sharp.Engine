@@ -7,6 +7,7 @@
 // .                                                                           //
 /////////////////////////////////////////////////////////////////////////////////
 
+
 //MIT, 2017-present, WinterDev
 
 namespace PaintFx
@@ -18,7 +19,7 @@ namespace PaintFx
     /// 
     /// See UserBlendOps.cs for guidelines on implementation.
     /// </summary>
-    
+
     public abstract class UserBlendOp
         : BinaryPixelOp
     {

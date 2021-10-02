@@ -1,6 +1,6 @@
 ﻿//MIT, 2014-2017, WinterDev  
-using System;
 using OpenTK.Graphics.ES20;
+using System;
 
 namespace DrawingGL
 {

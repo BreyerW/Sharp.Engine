@@ -6,9 +6,9 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using static BepuUtilities.GatherScatter;
+
 namespace BepuPhysics.Constraints
 {
-
     /// <summary>
     /// Constrains the center of two bodies to be separated by a goal distance.
     /// </summary>

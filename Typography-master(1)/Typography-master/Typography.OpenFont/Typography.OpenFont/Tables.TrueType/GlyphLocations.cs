@@ -3,6 +3,7 @@
 //https://www.microsoft.com/typography/otspec/loca.htm
 
 using System.IO;
+
 namespace Typography.OpenFont.Tables
 {
     class GlyphLocations : TableEntry

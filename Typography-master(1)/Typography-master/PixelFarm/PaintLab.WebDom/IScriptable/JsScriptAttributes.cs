@@ -1,6 +1,7 @@
 ﻿//Apache2, 2014-present, WinterDev
 
 using System;
+
 namespace LayoutFarm.Scripting
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]

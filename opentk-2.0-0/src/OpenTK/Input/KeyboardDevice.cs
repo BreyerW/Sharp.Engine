@@ -6,9 +6,8 @@
 
 #region --- Using directives ---
 
-using System;
-
 using OpenTK.Input;
+using System;
 using System.Diagnostics;
 
 #endregion

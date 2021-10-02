@@ -25,18 +25,16 @@
 //
 #endregion
 
+using OpenTK.Graphics;
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-using OpenTK.Graphics;
-using OpenTK.Input;
-
 namespace OpenTK.Platform.Windows
 {
-
     class WinFactory : PlatformFactoryBase
     {
         readonly object SyncRoot = new object();

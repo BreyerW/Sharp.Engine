@@ -1,13 +1,13 @@
 ﻿//MIT, 2014-present, WinterDev
 
+using PixelFarm.CpuBlit.Imaging;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using PixelFarm.CpuBlit.Imaging;
+
 namespace PixelFarm.CpuBlit
 {
-
     public static class BitmapHelper
     {
         public static void CopyToGdiPlusGraphics(this AggPainter painter, Graphics g, int xpos = 0, int ypos = 0)

@@ -30,6 +30,7 @@
  */
 
 using System.Collections.Generic;
+
 namespace Poly2Tri
 {
     public sealed class TriangulationPoint
@@ -37,9 +38,9 @@ namespace Poly2Tri
         // List of edges this point constitutes an upper ending point (CDT) 
         public readonly double X;
         public readonly double Y;
-        internal byte tempName; 
+        internal byte tempName;
         public object userData;
-        
+
 
         //TODO: review myEdges...
         List<DTSweepConstraint> _myEdges = new List<DTSweepConstraint>(3);

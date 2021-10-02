@@ -51,6 +51,7 @@
 
 
 using System;
+
 namespace Tesselate
 {
     public class ActiveRegion
@@ -192,7 +193,7 @@ namespace Tesselate
             eDst._otherHalfOfThisEdge._winding += eSrc._otherHalfOfThisEdge._winding;
         }
 
-        public static bool EdgeLeq(ContourVertex currentSweepVertex, ActiveRegion reg1, ActiveRegion reg2)        
+        public static bool EdgeLeq(ContourVertex currentSweepVertex, ActiveRegion reg1, ActiveRegion reg2)
         {
             /*
          * Both edges must be directed from right to left (this is the canonical
@@ -205,7 +206,7 @@ namespace Tesselate
          * Special case: if both edge destinations are at the sweep event,
          * we sort the edges by slope (they would otherwise compare equally).
          */
-          
+
             HalfEdge e1, e2;
             double t1, t2;
             e1 = reg1._upperHalfEdge;
@@ -825,10 +826,10 @@ namespace Tesselate
             ContourVertex o2, ContourVertex d2,
             ref ContourVertex v)
         {
-          /* Given edges (o1,d1) and (o2,d2), compute their point of intersection.
-          * The computed point is guaranteed to lie in the intersection of the
-          * bounding rectangles defined by each edge.
-          */
+            /* Given edges (o1,d1) and (o2,d2), compute their point of intersection.
+            * The computed point is guaranteed to lie in the intersection of the
+            * bounding rectangles defined by each edge.
+            */
 
             double z1, z2;
             /* This is certainly not the most efficient way to find the intersection

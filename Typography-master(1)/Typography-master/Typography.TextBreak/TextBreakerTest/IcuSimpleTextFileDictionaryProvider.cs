@@ -3,8 +3,8 @@
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html#License
 
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Typography.TextBreak
 {

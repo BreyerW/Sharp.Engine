@@ -1,12 +1,12 @@
 ﻿//MIT, 2016-present, WinterDev
-using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
+using Typography.Contours;
 //
 using Typography.OpenFont;
 using Typography.TextLayout;
-using Typography.Contours;
 using Typography.TextServices;
 
 

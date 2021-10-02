@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SDL2;
 using Squid;
-using SDL2;
+using System;
 
 namespace Sharp.Editor
 {

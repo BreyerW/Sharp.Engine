@@ -23,8 +23,8 @@ SOFTWARE.
 #endregion
 
 using System;
-using System.Runtime.InteropServices;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Xml.Serialization;
 
 namespace OpenTK
@@ -97,7 +97,7 @@ namespace OpenTK
         /// </summary>
         /// <param name="eulerAngles">The euler angles as a Vector3</param>
         public Quaternion(Vector3 eulerAngles)
-            :this(eulerAngles.X, eulerAngles.Y, eulerAngles.Z)
+            : this(eulerAngles.X, eulerAngles.Y, eulerAngles.Z)
         { }
 
         #endregion
@@ -106,7 +106,7 @@ namespace OpenTK
 
         #region Properties
 
-        #pragma warning disable 3005 // Identifier differing only in case is not CLS-compliant, compiler bug in Mono 3.4.0
+#pragma warning disable 3005 // Identifier differing only in case is not CLS-compliant, compiler bug in Mono 3.4.0
 
         /// <summary>
         /// Gets or sets an OpenTK.Vector3 with the X, Y and Z components of this instance.
@@ -123,7 +123,7 @@ namespace OpenTK
         [CLSCompliant(false)]
         public Vector3 Xyz { get { return xyz; } set { xyz = value; } }
 
-        #pragma warning restore 3005
+#pragma warning restore 3005
 
         /// <summary>
         /// Gets or sets the X component of this instance.
@@ -334,7 +334,7 @@ namespace OpenTK
         /// <returns>The result of the operation.</returns>
         public static Quaternion Sub(Quaternion left, Quaternion right)
         {
-            return  new Quaternion(
+            return new Quaternion(
                 left.Xyz - right.Xyz,
                 left.W - right.W);
         }
@@ -844,7 +844,7 @@ namespace OpenTK
         public override bool Equals(object other)
         {
             if (other is Quaternion == false) return false;
-               return this == (Quaternion)other;
+            return this == (Quaternion)other;
         }
 
         #endregion

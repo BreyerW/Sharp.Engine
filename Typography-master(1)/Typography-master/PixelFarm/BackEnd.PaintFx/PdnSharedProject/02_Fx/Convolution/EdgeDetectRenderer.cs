@@ -7,9 +7,9 @@
 // .                                                                           //
 /////////////////////////////////////////////////////////////////////////////////
 //MIT, 2017-present, WinterDev
+using PixelFarm.Drawing;
 using System;
 
-using PixelFarm.Drawing;
 namespace PaintFx.Effects
 {
     public class EdgeDetectRenderer : ColorDiffEffectRenderer

@@ -58,7 +58,7 @@ namespace Typography.OpenFont.Tables
         {
             regionAxes = new RegionAxisCoordinate[axisCount];
             for (int i = 0; i < axisCount; ++i)
-            {   
+            {
                 regionAxes[i] = new RegionAxisCoordinate(
                     reader.ReadF2Dot14(), //start
                     reader.ReadF2Dot14(), //peak

@@ -1,7 +1,8 @@
-﻿namespace  SharpAsset
+﻿
+namespace SharpAsset
 {
-	public interface IVertex
-	{
-	}
+    public interface IVertex
+    {
+    }
 }
 

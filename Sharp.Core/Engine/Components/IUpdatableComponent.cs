@@ -1,7 +1,8 @@
-﻿namespace Sharp.Engine.Components
+﻿
+namespace Sharp.Engine.Components
 {
-	public interface IUpdatableComponent
-	{
-		void Update();
-	}
+    public interface IUpdatableComponent
+    {
+        void Update();
+    }
 }

@@ -1,33 +1,41 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
         [StructLayout(LayoutKind.Sequential)]
-        private struct ZopfliNode {
-            public struct u_ {
+        private struct ZopfliNode
+        {
+            public struct u_
+            {
                 private uint v;
 
                 /* Smallest cost to get to this byte from the beginning, as found so far. */
-                public unsafe float cost {
-                    get {
+                public unsafe float cost
+                {
+                    get
+                    {
                         uint vv = v;
                         return *(float*)(&vv);
                     }
-                    set { v = *(uint*) &value; }
+                    set { v = *(uint*)&value; }
                 }
 
                 /* Offset to the next node on the path. Equals to command_length() of the
                    next node on the path. For last node equals to BROTLI_UINT32_MAX */
-                public uint next {
+                public uint next
+                {
                     get { return v; }
                     set { v = value; }
                 }
 
                 /* Node position that provides next distance for distance cache. */
-                public uint shortcut {
+                public uint shortcut
+                {
                     get { return v; }
                     set { v = value; }
                 }
@@ -54,7 +62,8 @@ namespace BrotliSharpLib {
 
         /* Histogram based cost model for zopflification. */
         [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct ZopfliCostModel {
+        private unsafe struct ZopfliCostModel
+        {
             /* The insert and copy length symbols. */
             public fixed float cost_cmd_[BROTLI_NUM_COMMAND_SYMBOLS];
 
@@ -68,7 +77,8 @@ namespace BrotliSharpLib {
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct PosData {
+        private unsafe struct PosData
+        {
             public size_t pos;
             public fixed int distance_cache[4];
             public float costdiff;
@@ -77,23 +87,28 @@ namespace BrotliSharpLib {
 
         /* Maintains the smallest 8 cost difference together with their positions */
         [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct StartPosQueue {
+        private unsafe struct StartPosQueue
+        {
             private PosData q0, q1, q2, q3, q4, q5, q6, q7;
             public size_t idx_;
 
-            public PosData* q_ {
-                get {
+            public PosData* q_
+            {
+                get
+                {
                     fixed (PosData* q = &q0)
                         return q;
                 }
             }
         }
 
-        private static unsafe void InitStartPosQueue(StartPosQueue* self) {
+        private static unsafe void InitStartPosQueue(StartPosQueue* self)
+        {
             self->idx_ = 0;
         }
 
-        private static unsafe void BrotliInitZopfliNodes(ZopfliNode* array, size_t length) {
+        private static unsafe void BrotliInitZopfliNodes(ZopfliNode* array, size_t length)
+        {
             ZopfliNode stub = new ZopfliNode();
             size_t i;
             stub.length = 1;
@@ -103,44 +118,52 @@ namespace BrotliSharpLib {
             for (i = 0; i < length; ++i) array[i] = stub;
         }
 
-        private static unsafe void CleanupZopfliCostModel(ref MemoryManager m, ZopfliCostModel* self) {
+        private static unsafe void CleanupZopfliCostModel(ref MemoryManager m, ZopfliCostModel* self)
+        {
             BrotliFree(ref m, self->literal_costs_);
         }
 
-        private static unsafe uint ZopfliNodeCopyLength(ZopfliNode* self) {
+        private static unsafe uint ZopfliNodeCopyLength(ZopfliNode* self)
+        {
             return self->length & 0xffffff;
         }
 
-        private static unsafe uint ZopfliNodeLengthCode(ZopfliNode* self) {
+        private static unsafe uint ZopfliNodeLengthCode(ZopfliNode* self)
+        {
             uint modifier = self->length >> 24;
             return ZopfliNodeCopyLength(self) + 9u - modifier;
         }
 
-        private static unsafe uint ZopfliNodeCopyDistance(ZopfliNode* self) {
+        private static unsafe uint ZopfliNodeCopyDistance(ZopfliNode* self)
+        {
             return self->distance & 0x1ffffff;
         }
 
-        private static unsafe uint ZopfliNodeDistanceCode(ZopfliNode* self) {
+        private static unsafe uint ZopfliNodeDistanceCode(ZopfliNode* self)
+        {
             uint short_code = self->distance >> 25;
             return short_code == 0
                 ? ZopfliNodeCopyDistance(self) + BROTLI_NUM_DISTANCE_SHORT_CODES - 1
                 : short_code - 1;
         }
 
-        private static unsafe uint ZopfliNodeCommandLength(ZopfliNode* self) {
+        private static unsafe uint ZopfliNodeCommandLength(ZopfliNode* self)
+        {
             return ZopfliNodeCopyLength(self) + self->insert_length;
         }
 
         private static unsafe void InitZopfliCostModel(
-            ref MemoryManager m, ZopfliCostModel* self, size_t num_bytes) {
+            ref MemoryManager m, ZopfliCostModel* self, size_t num_bytes)
+        {
             self->num_bytes_ = num_bytes;
-            self->literal_costs_ = (float*) BrotliAllocate(ref m, (num_bytes + 2) * sizeof(float));
+            self->literal_costs_ = (float*)BrotliAllocate(ref m, (num_bytes + 2) * sizeof(float));
         }
 
         private static unsafe void ZopfliCostModelSetFromLiteralCosts(ZopfliCostModel* self,
             size_t position,
             byte* ringbuffer,
-            size_t ringbuffer_mask) {
+            size_t ringbuffer_mask)
+        {
             float* literal_costs = self->literal_costs_;
             float* cost_dist = self->cost_dist_;
             float* cost_cmd = self->cost_cmd_;
@@ -149,35 +172,42 @@ namespace BrotliSharpLib {
             BrotliEstimateBitCostsForLiterals(position, num_bytes, ringbuffer_mask,
                 ringbuffer, &literal_costs[1]);
             literal_costs[0] = 0.0f;
-            for (i = 0; i < num_bytes; ++i) {
+            for (i = 0; i < num_bytes; ++i)
+            {
                 literal_costs[i + 1] += literal_costs[i];
             }
-            for (i = 0; i < BROTLI_NUM_COMMAND_SYMBOLS; ++i) {
-                cost_cmd[i] = (float) FastLog2(11 + (uint) i);
+            for (i = 0; i < BROTLI_NUM_COMMAND_SYMBOLS; ++i)
+            {
+                cost_cmd[i] = (float)FastLog2(11 + (uint)i);
             }
-            for (i = 0; i < BROTLI_NUM_DISTANCE_SYMBOLS; ++i) {
-                cost_dist[i] = (float) FastLog2(20 + (uint) i);
+            for (i = 0; i < BROTLI_NUM_DISTANCE_SYMBOLS; ++i)
+            {
+                cost_dist[i] = (float)FastLog2(20 + (uint)i);
             }
-            self->min_cost_cmd_ = (float) FastLog2(11);
+            self->min_cost_cmd_ = (float)FastLog2(11);
         }
 
         private static unsafe float ZopfliCostModelGetCommandCost(
-            ZopfliCostModel* self, ushort cmdcode) {
+            ZopfliCostModel* self, ushort cmdcode)
+        {
             return self->cost_cmd_[cmdcode];
         }
 
         private static unsafe float ZopfliCostModelGetDistanceCost(
-            ZopfliCostModel* self, size_t distcode) {
+            ZopfliCostModel* self, size_t distcode)
+        {
             return self->cost_dist_[distcode];
         }
 
         private static unsafe float ZopfliCostModelGetLiteralCosts(
-            ZopfliCostModel* self, size_t from, size_t to) {
+            ZopfliCostModel* self, size_t from, size_t to)
+        {
             return self->literal_costs_[to] - self->literal_costs_[from];
         }
 
         private static unsafe float ZopfliCostModelGetMinCostCmd(
-            ZopfliCostModel* self) {
+            ZopfliCostModel* self)
+        {
             return self->min_cost_cmd_;
         }
 
@@ -191,18 +221,21 @@ namespace BrotliSharpLib {
         private static unsafe void ComputeDistanceCache(size_t pos,
             int* starting_dist_cache,
             ZopfliNode* nodes,
-            int* dist_cache) {
+            int* dist_cache)
+        {
             int idx = 0;
             size_t p = nodes[pos].u.shortcut;
-            while (idx < 4 && p > 0) {
+            while (idx < 4 && p > 0)
+            {
                 size_t ilen = nodes[p].insert_length;
                 size_t clen = ZopfliNodeCopyLength(&nodes[p]);
                 size_t dist = ZopfliNodeCopyDistance(&nodes[p]);
-                dist_cache[idx++] = (int) dist;
+                dist_cache[idx++] = (int)dist;
                 /* Because of prerequisite, p >= clen + ilen >= 2. */
                 p = nodes[p - clen - ilen].u.shortcut;
             }
-            for (; idx < 4; ++idx) {
+            for (; idx < 4; ++idx)
+            {
                 dist_cache[idx] = *starting_dist_cache++;
             }
         }
@@ -212,7 +245,8 @@ namespace BrotliSharpLib {
         private static unsafe uint ComputeDistanceShortcut(size_t block_start,
             size_t pos,
             size_t max_backward,
-            ZopfliNode* nodes) {
+            ZopfliNode* nodes)
+        {
             size_t clen = ZopfliNodeCopyLength(&nodes[pos]);
             size_t ilen = nodes[pos].insert_length;
             size_t dist = ZopfliNodeCopyDistance(&nodes[pos]);
@@ -221,24 +255,29 @@ namespace BrotliSharpLib {
                this or greater than |max_backward| are private static unsafe dictionary references, and
                do not update the last distances. Also distance code 0 (last distance)
                does not update the last distances. */
-            if (pos == 0) {
+            if (pos == 0)
+            {
                 return 0;
             }
             else if (dist + clen <= block_start + pos &&
                      dist <= max_backward &&
-                     ZopfliNodeDistanceCode(&nodes[pos]) > 0) {
-                return (uint) pos;
+                     ZopfliNodeDistanceCode(&nodes[pos]) > 0)
+            {
+                return (uint)pos;
             }
-            else {
+            else
+            {
                 return nodes[pos - clen - ilen].u.shortcut;
             }
         }
 
-        private static unsafe size_t StartPosQueueSize(StartPosQueue* self) {
+        private static unsafe size_t StartPosQueueSize(StartPosQueue* self)
+        {
             return Math.Min(self->idx_, 8);
         }
 
-        private static unsafe void StartPosQueuePush(StartPosQueue* self, PosData* posdata) {
+        private static unsafe void StartPosQueuePush(StartPosQueue* self, PosData* posdata)
+        {
             size_t offset = ~(self->idx_++) & 7;
             size_t len = StartPosQueueSize(self);
             size_t i;
@@ -246,8 +285,10 @@ namespace BrotliSharpLib {
             q[offset] = *posdata;
             /* Restore the sorted order. In the list of |len| items at most |len - 1|
                adjacent element comparisons / swaps are required. */
-            for (i = 1; i < len; ++i) {
-                if (q[offset & 7].costdiff > q[(offset + 1) & 7].costdiff) {
+            for (i = 1; i < len; ++i)
+            {
+                if (q[offset & 7].costdiff > q[(offset + 1) & 7].costdiff)
+                {
                     PosData tmp = q[offset & 7];
                     q[offset & 7] = q[(offset + 1) & 7];
                     q[(offset + 1) & 7] = tmp;
@@ -261,12 +302,14 @@ namespace BrotliSharpLib {
         private static unsafe void EvaluateNode(
             size_t block_start, size_t pos, size_t max_backward_limit,
             int* starting_dist_cache, ZopfliCostModel* model,
-            StartPosQueue* queue, ZopfliNode* nodes) {
+            StartPosQueue* queue, ZopfliNode* nodes)
+        {
             /* Save cost, because ComputeDistanceCache invalidates it. */
             float node_cost = nodes[pos].u.cost;
             nodes[pos].u.shortcut = ComputeDistanceShortcut(
                 block_start, pos, max_backward_limit, nodes);
-            if (node_cost <= ZopfliCostModelGetLiteralCosts(model, 0, pos)) {
+            if (node_cost <= ZopfliCostModelGetLiteralCosts(model, 0, pos))
+            {
                 PosData posdata;
                 posdata.pos = pos;
                 posdata.cost = node_cost;
@@ -278,7 +321,8 @@ namespace BrotliSharpLib {
             }
         }
 
-        private static unsafe PosData* StartPosQueueAt(StartPosQueue* self, size_t k) {
+        private static unsafe PosData* StartPosQueueAt(StartPosQueue* self, size_t k)
+        {
             return &self->q_[(k - self->idx_) & 7];
         }
 
@@ -287,18 +331,21 @@ namespace BrotliSharpLib {
         private static unsafe size_t ComputeMinimumCopyLength(float start_cost,
             ZopfliNode* nodes,
             size_t num_bytes,
-            size_t pos) {
+            size_t pos)
+        {
             /* Compute the minimum possible cost of reaching any future position. */
             float min_cost = start_cost;
             size_t len = 2;
             size_t next_len_bucket = 4;
             size_t next_len_offset = 10;
-            while (pos + len <= num_bytes && nodes[pos + len].u.cost <= min_cost) {
+            while (pos + len <= num_bytes && nodes[pos + len].u.cost <= min_cost)
+            {
                 /* We already reached (pos + len) with no more cost than the minimum
                    possible cost of reaching anything from this pos, so there is no point in
                    looking for lengths <= len. */
                 ++len;
-                if (len == next_len_offset) {
+                if (len == next_len_offset)
+                {
                     /* We reached the next copy length code bucket, so we add one more
                        extra bit to the minimum cost. */
                     min_cost += 1.0f;
@@ -314,11 +361,12 @@ namespace BrotliSharpLib {
         /* Maintains the "ZopfliNode array invariant". */
         private static unsafe void UpdateZopfliNode(ZopfliNode* nodes, size_t pos,
             size_t start_pos, size_t len, size_t len_code, size_t dist,
-            size_t short_code, float cost) {
+            size_t short_code, float cost)
+        {
             ZopfliNode* next = &nodes[pos + len];
-            next->length = (uint) (len | ((len + 9u - len_code) << 24));
-            next->distance = (uint) (dist | (short_code << 25));
-            next->insert_length = (uint) (pos - start_pos);
+            next->length = (uint)(len | ((len + 9u - len_code) << 24));
+            next->distance = (uint)(dist | (short_code << 25));
+            next->insert_length = (uint)(pos - start_pos);
             next->u.cost = cost;
         }
 
@@ -329,7 +377,8 @@ namespace BrotliSharpLib {
             BrotliEncoderParams* params_, size_t max_backward_limit,
             int* starting_dist_cache, size_t num_matches,
             BackwardMatch* matches, ZopfliCostModel* model,
-            StartPosQueue* queue, ZopfliNode* nodes) {
+            StartPosQueue* queue, ZopfliNode* nodes)
+        {
             size_t cur_ix = block_start + pos;
             size_t cur_ix_masked = cur_ix & ringbuffer_mask;
             size_t max_distance = Math.Min(cur_ix, max_backward_limit);
@@ -352,27 +401,31 @@ namespace BrotliSharpLib {
 
             /* Go over the command starting positions in order of increasing cost
                difference. */
-            for (k = 0; k < max_iters && k < StartPosQueueSize(queue); ++k) {
+            for (k = 0; k < max_iters && k < StartPosQueueSize(queue); ++k)
+            {
                 PosData* posdata = StartPosQueueAt(queue, k);
                 size_t start = posdata->pos;
                 ushort inscode = GetInsertLengthCode(pos - start);
                 float start_costdiff = posdata->costdiff;
-                float base_cost = start_costdiff + (float) GetInsertExtra(inscode) +
+                float base_cost = start_costdiff + (float)GetInsertExtra(inscode) +
                                   ZopfliCostModelGetLiteralCosts(model, 0, pos);
 
                 /* Look for last distance matches using the distance cache from this
                    starting position. */
                 size_t best_len = min_len - 1;
                 size_t j = 0;
-                for (; j < BROTLI_NUM_DISTANCE_SHORT_CODES && best_len < max_len; ++j) {
+                for (; j < BROTLI_NUM_DISTANCE_SHORT_CODES && best_len < max_len; ++j)
+                {
                     size_t idx = kDistanceCacheIndex[j];
                     size_t backward =
-                        (size_t) (posdata->distance_cache[idx] + kDistanceCacheOffset[j]);
+                        (size_t)(posdata->distance_cache[idx] + kDistanceCacheOffset[j]);
                     size_t prev_ix = cur_ix - backward;
-                    if (prev_ix >= cur_ix) {
+                    if (prev_ix >= cur_ix)
+                    {
                         continue;
                     }
-                    if ((backward > max_distance)) {
+                    if ((backward > max_distance))
+                    {
                         continue;
                     }
                     prev_ix &= ringbuffer_mask;
@@ -380,7 +433,8 @@ namespace BrotliSharpLib {
                     if (cur_ix_masked + best_len > ringbuffer_mask ||
                         prev_ix + best_len > ringbuffer_mask ||
                         ringbuffer[cur_ix_masked + best_len] !=
-                        ringbuffer[prev_ix + best_len]) {
+                        ringbuffer[prev_ix + best_len])
+                    {
                         continue;
                     }
                     {
@@ -391,14 +445,16 @@ namespace BrotliSharpLib {
                         float dist_cost = base_cost +
                                           ZopfliCostModelGetDistanceCost(model, j);
                         size_t l;
-                        for (l = best_len + 1; l <= len; ++l) {
+                        for (l = best_len + 1; l <= len; ++l)
+                        {
                             ushort copycode = GetCopyLengthCode(l);
                             ushort cmdcode =
                                 CombineLengthCodes(inscode, copycode, j == 0);
                             float cost = (cmdcode < 128 ? base_cost : dist_cost) +
-                                         (float) GetCopyExtra(copycode) +
+                                         (float)GetCopyExtra(copycode) +
                                          ZopfliCostModelGetCommandCost(model, cmdcode);
-                            if (cost < nodes[pos + l].u.cost) {
+                            if (cost < nodes[pos + l].u.cost)
+                            {
                                 UpdateZopfliNode(nodes, pos, start, l, l, backward, j + 1, cost);
                                 result = Math.Max(result, l);
                             }
@@ -415,7 +471,8 @@ namespace BrotliSharpLib {
                 {
                     /* Loop through all possible copy lengths at this position. */
                     size_t len = min_len;
-                    for (j = 0; j < num_matches; ++j) {
+                    for (j = 0; j < num_matches; ++j)
+                    {
                         BackwardMatch match = matches[j];
                         size_t dist = match.distance;
                         bool is_dictionary_match = (dist > max_distance);
@@ -429,7 +486,7 @@ namespace BrotliSharpLib {
                         size_t max_match_len;
                         PrefixEncodeCopyDistance(dist_code, 0, 0, &dist_symbol, &distextra);
                         distnumextra = distextra >> 24;
-                        dist_cost = base_cost + (float) distnumextra +
+                        dist_cost = base_cost + (float)distnumextra +
                                     ZopfliCostModelGetDistanceCost(model, dist_symbol);
 
                         /* Try all copy lengths up until the maximum copy length corresponding
@@ -437,17 +494,20 @@ namespace BrotliSharpLib {
                            the maximum length is long enough, try only one maximum length. */
                         max_match_len = BackwardMatchLength(&match);
                         if (len < max_match_len &&
-                            (is_dictionary_match || max_match_len > max_zopfli_len)) {
+                            (is_dictionary_match || max_match_len > max_zopfli_len))
+                        {
                             len = max_match_len;
                         }
-                        for (; len <= max_match_len; ++len) {
+                        for (; len <= max_match_len; ++len)
+                        {
                             size_t len_code =
                                 is_dictionary_match ? BackwardMatchLengthCode(&match) : len;
                             ushort copycode = GetCopyLengthCode(len_code);
                             ushort cmdcode = CombineLengthCodes(inscode, copycode, false);
-                            float cost = dist_cost + (float) GetCopyExtra(copycode) +
+                            float cost = dist_cost + (float)GetCopyExtra(copycode) +
                                          ZopfliCostModelGetCommandCost(model, cmdcode);
-                            if (cost < nodes[pos + len].u.cost) {
+                            if (cost < nodes[pos + len].u.cost)
+                            {
                                 UpdateZopfliNode(nodes, pos, start, len, len_code, dist, 0, cost);
                                 result = Math.Max(result, len);
                             }
@@ -459,15 +519,17 @@ namespace BrotliSharpLib {
         }
 
         private static unsafe size_t ComputeShortestPathFromNodes(size_t num_bytes,
-            ZopfliNode* nodes) {
+            ZopfliNode* nodes)
+        {
             size_t index = num_bytes;
             size_t num_commands = 0;
             while (nodes[index].insert_length == 0 && nodes[index].length == 1) --index;
             nodes[index].u.next = uint.MaxValue;
-            while (index != 0) {
+            while (index != 0)
+            {
                 size_t len = ZopfliNodeCommandLength(&nodes[index]);
                 index -= len;
-                nodes[index].u.next = (uint) len;
+                nodes[index].u.next = (uint)len;
                 num_commands++;
             }
             return num_commands;
@@ -483,12 +545,13 @@ namespace BrotliSharpLib {
             size_t max_backward_limit,
             int* dist_cache,
             HasherHandle hasher,
-            ZopfliNode* nodes) {
+            ZopfliNode* nodes)
+        {
             size_t max_zopfli_len = MaxZopfliLen(params_);
             ZopfliCostModel model;
             StartPosQueue queue;
             BackwardMatch* matches = stackalloc BackwardMatch[MAX_NUM_MATCHES_H10];
-            HashToBinaryTreeH10 h10 = (HashToBinaryTreeH10) kHashers[10];
+            HashToBinaryTreeH10 h10 = (HashToBinaryTreeH10)kHashers[10];
             size_t store_end = num_bytes >= h10.StoreLookahead()
                 ? position + num_bytes - h10.StoreLookahead() + 1
                 : position;
@@ -499,14 +562,16 @@ namespace BrotliSharpLib {
             ZopfliCostModelSetFromLiteralCosts(
                 &model, position, ringbuffer, ringbuffer_mask);
             InitStartPosQueue(&queue);
-            for (i = 0; i + h10.HashTypeLength() - 1 < num_bytes; i++) {
+            for (i = 0; i + h10.HashTypeLength() - 1 < num_bytes; i++)
+            {
                 size_t pos = position + i;
                 size_t max_distance = Math.Min(pos, max_backward_limit);
                 size_t num_matches = HashToBinaryTreeH10.FindAllMatches(hasher, ringbuffer,
                     ringbuffer_mask, pos, num_bytes - i, max_distance, params_, matches);
                 size_t skip;
                 if (num_matches > 0 &&
-                    BackwardMatchLength(&matches[num_matches - 1]) > max_zopfli_len) {
+                    BackwardMatchLength(&matches[num_matches - 1]) > max_zopfli_len)
+                {
                     matches[0] = matches[num_matches - 1];
                     num_matches = 1;
                 }
@@ -514,15 +579,18 @@ namespace BrotliSharpLib {
                     params_, max_backward_limit, dist_cache, num_matches, matches, &model,
                     &queue, nodes);
                 if (skip < BROTLI_LONG_COPY_QUICK_STEP) skip = 0;
-                if (num_matches == 1 && BackwardMatchLength(&matches[0]) > max_zopfli_len) {
+                if (num_matches == 1 && BackwardMatchLength(&matches[0]) > max_zopfli_len)
+                {
                     skip = Math.Max(BackwardMatchLength(&matches[0]), skip);
                 }
-                if (skip > 1) {
+                if (skip > 1)
+                {
                     /* Add the tail of the copy to the hasher. */
                     h10.StoreRange(hasher, ringbuffer, ringbuffer_mask, pos + 1, Math.Min(
                         pos + skip, store_end));
                     skip--;
-                    while (skip != 0) {
+                    while (skip != 0)
+                    {
                         i++;
                         if (i + h10.HashTypeLength() - 1 >= num_bytes) break;
                         EvaluateNode(
@@ -543,17 +611,20 @@ namespace BrotliSharpLib {
             int* dist_cache,
             size_t* last_insert_len,
             Command* commands,
-            size_t* num_literals) {
+            size_t* num_literals)
+        {
             size_t pos = 0;
             uint offset = nodes[0].u.next;
             size_t i;
-            for (i = 0; offset != uint.MaxValue; i++) {
+            for (i = 0; offset != uint.MaxValue; i++)
+            {
                 ZopfliNode* next = &nodes[pos + offset];
                 size_t copy_length = ZopfliNodeCopyLength(next);
                 size_t insert_length = next->insert_length;
                 pos += insert_length;
                 offset = next->u.next;
-                if (i == 0) {
+                if (i == 0)
+                {
                     insert_length += *last_insert_len;
                     *last_insert_len = 0;
                 }
@@ -568,11 +639,12 @@ namespace BrotliSharpLib {
                     InitCommand(
                         &commands[i], insert_length, copy_length, len_code, dist_code);
 
-                    if (!is_dictionary && dist_code > 0) {
+                    if (!is_dictionary && dist_code > 0)
+                    {
                         dist_cache[3] = dist_cache[2];
                         dist_cache[2] = dist_cache[1];
                         dist_cache[1] = dist_cache[0];
-                        dist_cache[0] = (int) distance;
+                        dist_cache[0] = (int)distance;
                     }
                 }
 
@@ -587,10 +659,11 @@ namespace BrotliSharpLib {
             size_t position, byte* ringbuffer, size_t ringbuffer_mask,
             BrotliEncoderParams* params_, HasherHandle hasher, int* dist_cache,
             size_t* last_insert_len, Command* commands, size_t* num_commands,
-            size_t* num_literals) {
+            size_t* num_literals)
+        {
             size_t max_backward_limit = BROTLI_MAX_BACKWARD_LIMIT(params_->lgwin);
             ZopfliNode* nodes;
-            nodes = (ZopfliNode*) BrotliAllocate(ref m, (num_bytes + 1) * sizeof(ZopfliNode));
+            nodes = (ZopfliNode*)BrotliAllocate(ref m, (num_bytes + 1) * sizeof(ZopfliNode));
             BrotliInitZopfliNodes(nodes, num_bytes + 1);
             *num_commands += BrotliZopfliComputeShortestPath(ref m, num_bytes,
                 position, ringbuffer, ringbuffer_mask, params_, max_backward_limit,
@@ -601,22 +674,26 @@ namespace BrotliSharpLib {
         }
 
         private static unsafe void SetCost(uint* histogram, size_t histogram_size,
-            float* cost) {
+            float* cost)
+        {
             size_t sum = 0;
             float log2sum;
             size_t i;
-            for (i = 0; i < histogram_size; i++) {
+            for (i = 0; i < histogram_size; i++)
+            {
                 sum += histogram[i];
             }
-            log2sum = (float) FastLog2(sum);
-            for (i = 0; i < histogram_size; i++) {
-                if (histogram[i] == 0) {
+            log2sum = (float)FastLog2(sum);
+            for (i = 0; i < histogram_size; i++)
+            {
+                if (histogram[i] == 0)
+                {
                     cost[i] = log2sum + 2;
                     continue;
                 }
 
                 /* Shannon bits for this symbol. */
-                cost[i] = log2sum - (float) FastLog2(histogram[i]);
+                cost[i] = log2sum - (float)FastLog2(histogram[i]);
 
                 /* Cannot be coded with less than 1 bit */
                 if (cost[i] < 1) cost[i] = 1;
@@ -629,7 +706,8 @@ namespace BrotliSharpLib {
             size_t ringbuffer_mask,
             Command* commands,
             size_t num_commands,
-            size_t last_insert_len) {
+            size_t last_insert_len)
+        {
             uint* histogram_literal = stackalloc uint[BROTLI_NUM_LITERAL_SYMBOLS];
             uint* histogram_cmd = stackalloc uint[BROTLI_NUM_COMMAND_SYMBOLS];
             uint* histogram_dist = stackalloc uint[BROTLI_NUM_DISTANCE_SYMBOLS];
@@ -643,7 +721,8 @@ namespace BrotliSharpLib {
             memset(histogram_cmd, 0, BROTLI_NUM_COMMAND_SYMBOLS * sizeof(uint));
             memset(histogram_dist, 0, BROTLI_NUM_DISTANCE_SYMBOLS * sizeof(uint));
 
-            for (i = 0; i < num_commands; i++) {
+            for (i = 0; i < num_commands; i++)
+            {
                 size_t inslength = commands[i].insert_len_;
                 size_t copylength = CommandCopyLen(&commands[i]);
                 size_t distcode = commands[i].dist_prefix_;
@@ -653,7 +732,8 @@ namespace BrotliSharpLib {
                 histogram_cmd[cmdcode]++;
                 if (cmdcode >= 128) histogram_dist[distcode]++;
 
-                for (j = 0; j < inslength; j++) {
+                for (j = 0; j < inslength; j++)
+                {
                     histogram_literal[ringbuffer[(pos + j) & ringbuffer_mask]]++;
                 }
 
@@ -664,7 +744,8 @@ namespace BrotliSharpLib {
             SetCost(histogram_cmd, BROTLI_NUM_COMMAND_SYMBOLS, cost_cmd);
             SetCost(histogram_dist, BROTLI_NUM_DISTANCE_SYMBOLS, self->cost_dist_);
 
-            for (i = 0; i < BROTLI_NUM_COMMAND_SYMBOLS; ++i) {
+            for (i = 0; i < BROTLI_NUM_COMMAND_SYMBOLS; ++i)
+            {
                 min_cost_cmd = Math.Min(min_cost_cmd, cost_cmd[i]);
             }
             self->min_cost_cmd_ = min_cost_cmd;
@@ -673,7 +754,8 @@ namespace BrotliSharpLib {
                 float* literal_costs = self->literal_costs_;
                 size_t num_bytes = self->num_bytes_;
                 literal_costs[0] = 0.0f;
-                for (i = 0; i < num_bytes; ++i) {
+                for (i = 0; i < num_bytes; ++i)
+                {
                     literal_costs[i + 1] = literal_costs[i] +
                                            cost_literal[ringbuffer[(position + i) & ringbuffer_mask]];
                 }
@@ -690,7 +772,8 @@ namespace BrotliSharpLib {
             ZopfliCostModel* model,
             uint* num_matches,
             BackwardMatch* matches,
-            ZopfliNode* nodes) {
+            ZopfliNode* nodes)
+        {
             size_t max_zopfli_len = MaxZopfliLen(params_);
             StartPosQueue queue;
             size_t cur_match_pos = 0;
@@ -698,20 +781,24 @@ namespace BrotliSharpLib {
             nodes[0].length = 0;
             nodes[0].u.cost = 0;
             InitStartPosQueue(&queue);
-            for (i = 0; i + 3 < num_bytes; i++) {
+            for (i = 0; i + 3 < num_bytes; i++)
+            {
                 size_t skip = UpdateNodes(num_bytes, position, i, ringbuffer,
                     ringbuffer_mask, params_, max_backward_limit, dist_cache,
                     num_matches[i], &matches[cur_match_pos], model, &queue, nodes);
                 if (skip < BROTLI_LONG_COPY_QUICK_STEP) skip = 0;
                 cur_match_pos += num_matches[i];
                 if (num_matches[i] == 1 &&
-                    BackwardMatchLength(&matches[cur_match_pos - 1]) > max_zopfli_len) {
+                    BackwardMatchLength(&matches[cur_match_pos - 1]) > max_zopfli_len)
+                {
                     skip = Math.Max(
                         BackwardMatchLength(&matches[cur_match_pos - 1]), skip);
                 }
-                if (skip > 1) {
+                if (skip > 1)
+                {
                     skip--;
-                    while (skip != 0) {
+                    while (skip != 0)
+                    {
                         i++;
                         if (i + 3 >= num_bytes) break;
                         EvaluateNode(
@@ -729,9 +816,10 @@ namespace BrotliSharpLib {
             size_t position, byte* ringbuffer, size_t ringbuffer_mask,
             BrotliEncoderParams* params_, HasherHandle hasher, int* dist_cache,
             size_t* last_insert_len, Command* commands, size_t* num_commands,
-            size_t* num_literals) {
+            size_t* num_literals)
+        {
             size_t max_backward_limit = BROTLI_MAX_BACKWARD_LIMIT(params_->lgwin);
-            uint* num_matches = (uint*) BrotliAllocate(ref m, num_bytes * sizeof(uint));
+            uint* num_matches = (uint*)BrotliAllocate(ref m, num_bytes * sizeof(uint));
             size_t matches_size = 4 * num_bytes;
             Hasher h = kHashers[10];
             size_t store_end = num_bytes >= h.StoreLookahead()
@@ -745,23 +833,26 @@ namespace BrotliSharpLib {
             size_t orig_num_commands;
             ZopfliCostModel model;
             ZopfliNode* nodes;
-            BackwardMatch* matches = (BackwardMatch*) BrotliAllocate(ref m, matches_size * sizeof(BackwardMatch));
-            for (i = 0; i + h.HashTypeLength() - 1 < num_bytes; ++i) {
+            BackwardMatch* matches = (BackwardMatch*)BrotliAllocate(ref m, matches_size * sizeof(BackwardMatch));
+            for (i = 0; i + h.HashTypeLength() - 1 < num_bytes; ++i)
+            {
                 size_t pos = position + i;
                 size_t max_distance = Math.Min(pos, max_backward_limit);
                 size_t max_length = num_bytes - i;
                 size_t num_found_matches;
                 size_t cur_match_end;
                 /* Ensure that we have enough free slots. */
-                BrotliEnsureCapacity(ref m, sizeof(BackwardMatch), (void**) &matches, &matches_size, cur_match_pos + MAX_NUM_MATCHES_H10);
+                BrotliEnsureCapacity(ref m, sizeof(BackwardMatch), (void**)&matches, &matches_size, cur_match_pos + MAX_NUM_MATCHES_H10);
                 num_found_matches = HashToBinaryTreeH10.FindAllMatches(hasher, ringbuffer,
                     ringbuffer_mask, pos, max_length, max_distance, params_,
                     &matches[cur_match_pos]);
                 cur_match_end = cur_match_pos + num_found_matches;
-                num_matches[i] = (uint) num_found_matches;
-                if (num_found_matches > 0) {
+                num_matches[i] = (uint)num_found_matches;
+                if (num_found_matches > 0)
+                {
                     size_t match_len = BackwardMatchLength(&matches[cur_match_end - 1]);
-                    if (match_len > MAX_ZOPFLI_LEN_QUALITY_11) {
+                    if (match_len > MAX_ZOPFLI_LEN_QUALITY_11)
+                    {
                         size_t skip = match_len - 1;
                         matches[cur_match_pos++] = matches[cur_match_end - 1];
                         num_matches[i] = 1;
@@ -771,7 +862,8 @@ namespace BrotliSharpLib {
                         memset(&num_matches[i + 1], 0, skip * sizeof(uint));
                         i += skip;
                     }
-                    else {
+                    else
+                    {
                         cur_match_pos = cur_match_end;
                     }
                 }
@@ -780,15 +872,18 @@ namespace BrotliSharpLib {
             orig_last_insert_len = *last_insert_len;
             memcpy(orig_dist_cache, dist_cache, 4 * sizeof(int));
             orig_num_commands = *num_commands;
-            nodes = (ZopfliNode*) BrotliAllocate(ref m, (num_bytes + 1) * sizeof(ZopfliNode));
+            nodes = (ZopfliNode*)BrotliAllocate(ref m, (num_bytes + 1) * sizeof(ZopfliNode));
             InitZopfliCostModel(ref m, &model, num_bytes);
-            for (i = 0; i < 2; i++) {
+            for (i = 0; i < 2; i++)
+            {
                 BrotliInitZopfliNodes(nodes, num_bytes + 1);
-                if (i == 0) {
+                if (i == 0)
+                {
                     ZopfliCostModelSetFromLiteralCosts(
                         &model, position, ringbuffer, ringbuffer_mask);
                 }
-                else {
+                else
+                {
                     ZopfliCostModelSetFromCommands(&model, position, ringbuffer,
                         ringbuffer_mask, commands, *num_commands - orig_num_commands,
                         orig_last_insert_len);

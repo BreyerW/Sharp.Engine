@@ -1,8 +1,8 @@
 ﻿//MIT, 2016, Viktor Chlumsky, Multi-channel signed distance field generator, from https://github.com/Chlumsky/msdfgen
 //MIT, 2017-present, WinterDev (C# port)
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.Drawing;
 
 namespace ExtMsdfGen
 {
@@ -207,7 +207,7 @@ namespace ExtMsdfGen
             }
             else
             {
-               
+
             }
             if (existingColor == BLACK)
             {

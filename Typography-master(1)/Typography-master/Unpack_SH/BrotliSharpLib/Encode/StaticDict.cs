@@ -28,8 +28,8 @@ namespace BrotliSharpLib
         {
             size_t offset = kBrotliDictionaryOffsetsByLength[len] + len * id;
             fixed (byte* dict = &kBrotliDictionary[offset])
-            return FindMatchLengthWithLimit(dict, data,
-                Math.Min(len, maxlen));
+                return FindMatchLengthWithLimit(dict, data,
+                    Math.Min(len, maxlen));
         }
 
         private static unsafe bool IsMatch(
@@ -43,41 +43,42 @@ namespace BrotliSharpLib
             {
                 size_t offset = kBrotliDictionaryOffsetsByLength[w.len] +
                                 (size_t)w.len * (size_t)w.idx;
-                fixed (byte* dict = &kBrotliDictionary[offset]) {
-                    
-                if (w.transform == 0)
+                fixed (byte* dict = &kBrotliDictionary[offset])
                 {
-                    /* Match against base dictionary word. */
-                    return
-                        (FindMatchLengthWithLimit(dict, data, w.len) == w.len);
-                }
-                else if (w.transform == 10)
-                {
-                    /* Match against uppercase first transform.
-                       Note that there are only ASCII uppercase words in the lookup table. */
-                    return (dict[0] >= 'a' && dict[0] <= 'z' &&
-                            (dict[0] ^ 32) == data[0] &&
-                            FindMatchLengthWithLimit(&dict[1], &data[1], w.len - 1u) ==
-                            w.len - 1u);
-                }
-                else
-                {
-                    /* Match against uppercase all transform.
-                       Note that there are only ASCII uppercase words in the lookup table. */
-                    size_t i;
-                    for (i = 0; i < w.len; ++i)
+
+                    if (w.transform == 0)
                     {
-                        if (dict[i] >= 'a' && dict[i] <= 'z')
-                        {
-                            if ((dict[i] ^ 32) != data[i]) return false;
-                        }
-                        else
-                        {
-                            if (dict[i] != data[i]) return false;
-                        }
+                        /* Match against base dictionary word. */
+                        return
+                            (FindMatchLengthWithLimit(dict, data, w.len) == w.len);
                     }
-                    return true;
-                }
+                    else if (w.transform == 10)
+                    {
+                        /* Match against uppercase first transform.
+                           Note that there are only ASCII uppercase words in the lookup table. */
+                        return (dict[0] >= 'a' && dict[0] <= 'z' &&
+                                (dict[0] ^ 32) == data[0] &&
+                                FindMatchLengthWithLimit(&dict[1], &data[1], w.len - 1u) ==
+                                w.len - 1u);
+                    }
+                    else
+                    {
+                        /* Match against uppercase all transform.
+                           Note that there are only ASCII uppercase words in the lookup table. */
+                        size_t i;
+                        for (i = 0; i < w.len; ++i)
+                        {
+                            if (dict[i] >= 'a' && dict[i] <= 'z')
+                            {
+                                if ((dict[i] ^ 32) != data[i]) return false;
+                            }
+                            else
+                            {
+                                if (dict[i] != data[i]) return false;
+                            }
+                        }
+                        return true;
+                    }
                 }
             }
         }

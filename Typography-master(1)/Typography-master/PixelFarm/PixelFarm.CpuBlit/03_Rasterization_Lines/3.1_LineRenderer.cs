@@ -14,8 +14,9 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
-using System;
 using PixelFarm.Drawing;
+using System;
+
 namespace PixelFarm.CpuBlit.Rasterization.Lines
 {
     public abstract class LineRenderer

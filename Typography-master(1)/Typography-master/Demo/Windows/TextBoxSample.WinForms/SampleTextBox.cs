@@ -1,10 +1,10 @@
 ﻿//MIT, 2016-present, WinterDev 
 using System;
 using System.Windows.Forms;
+using SampleWinForms.UI;
 
 namespace SampleWinForms
 {
-    using SampleWinForms.UI;
     partial class SampleTextBox : UserControl
     {
         //-----------------

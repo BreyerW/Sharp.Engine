@@ -1,7 +1,6 @@
 ﻿//MIT, 2016-present, WinterDev
-using System;
-
 using PixelFarm.Contours;
+using System;
 
 namespace Typography.Rendering
 {
@@ -41,8 +40,8 @@ namespace Typography.Rendering
     }
 
     class CacheGlyph
-    {       
-        public readonly  ushort glyphIndex;
+    {
+        public readonly ushort glyphIndex;
         internal readonly GlyphImage img;
         public Rectangle area;
         public CacheGlyph(ushort glyphIndex, GlyphImage img)

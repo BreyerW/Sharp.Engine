@@ -1,4 +1,5 @@
-﻿#region License
+﻿
+#region License
 //
 // NSApplicationActivationPolicy.cs
 //

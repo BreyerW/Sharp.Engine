@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+
 namespace Typography.OpenFont.Tables
 {
     /// <summary>

@@ -25,6 +25,7 @@ SOFTWARE.
 */
 
 
+
 namespace System.Numerics
 {
     //FOR NET20

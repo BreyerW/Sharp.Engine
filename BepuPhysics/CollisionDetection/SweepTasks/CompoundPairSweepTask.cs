@@ -1,8 +1,8 @@
-﻿using System;
+﻿using BepuPhysics.Collidables;
+using BepuUtilities.Memory;
+using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using BepuPhysics.Collidables;
-using BepuUtilities.Memory;
 
 namespace BepuPhysics.CollisionDetection.SweepTasks
 {
@@ -45,7 +45,7 @@ namespace BepuPhysics.CollisionDetection.SweepTasks
                     var childTypeB = childB.ShapeIndex.Type;
                     shapes[childTypeB].GetShapeData(childB.ShapeIndex.Index, out var childShapeDataB, out _);
                     if (filter.AllowTest(
-                        flipRequired ? childIndexB : childOverlaps.ChildIndex, 
+                        flipRequired ? childIndexB : childOverlaps.ChildIndex,
                         flipRequired ? childOverlaps.ChildIndex : childIndexB))
                     {
                         var task = sweepTasks.GetTask(childTypeA, childTypeB);

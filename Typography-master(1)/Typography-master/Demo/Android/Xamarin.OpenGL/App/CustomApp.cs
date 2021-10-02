@@ -1,9 +1,9 @@
 ﻿//MIT, 2017, Zou Wei(github/zwcloud)
 //MIT, 2017, WinterDev (modified from Xamarin's Android code template)
 
-using System.IO;
 using DrawingGL;
 using DrawingGL.Text;
+using System.IO;
 
 namespace Test_Android_Glyph
 {

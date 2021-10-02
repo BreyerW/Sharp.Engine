@@ -1,6 +1,7 @@
 ﻿//MIT, 2009, 2010, 2013-2016 by the Brotli Authors.
 //MIT, 2017, brezza92 (C# port from original code, by hand)
 
+
 namespace CSharpBrotli.Decode
 {
     /// <summary>
@@ -22,7 +23,7 @@ namespace CSharpBrotli.Decode
         public static byte[] ReadUniBytes(string uniBytes)
         {
             byte[] result = new byte[uniBytes.Length];
-            for(int i = 0; i < result.Length; i++)
+            for (int i = 0; i < result.Length; i++)
             {
                 result[i] = (byte)uniBytes[i];
             }
@@ -176,7 +177,7 @@ namespace CSharpBrotli.Decode
         private const WordTransformType OMIT_FIRST_8 = WordTransformType.OMIT_FIRST_8;
         private const WordTransformType OMIT_FIRST_9 = WordTransformType.OMIT_FIRST_9;
 
-        public static int TransformDictionaryWord(byte[] dest, int dstOffset, byte[] word, int wordOffset, 
+        public static int TransformDictionaryWord(byte[] dest, int dstOffset, byte[] word, int wordOffset,
             int len, Transform transform)
         {
             int offset = dstOffset;

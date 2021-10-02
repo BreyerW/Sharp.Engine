@@ -1,7 +1,7 @@
-﻿using BepuUtilities;
+﻿using BepuPhysics.Constraints;
+using BepuUtilities;
 using BepuUtilities.Collections;
 using BepuUtilities.Memory;
-using BepuPhysics.Constraints;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

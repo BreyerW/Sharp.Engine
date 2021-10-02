@@ -26,13 +26,12 @@
 // 
 //----------------------------------------------------------------------------
 
-using System;
 using PixelFarm.CpuBlit.Imaging;
 using PixelFarm.Drawing;
+using System;
 
 namespace PixelFarm.CpuBlit.PixelProcessing
 {
-
     /// <summary>
     /// change destination alpha change with red color from source
     /// </summary>
@@ -666,9 +665,9 @@ namespace PixelFarm.CpuBlit.PixelProcessing
         }
 
         protected abstract unsafe void BlendPixel32Internal(int* dstPtr, Color srcColor, int coverageValue);
-    
+
         protected abstract unsafe void BlendPixel32Internal(int* dstPtr, Color srcColor);
-         
+
         internal sealed override void BlendPixels(TempMemPtr dstBuffer, int arrayOffset, Color srcColor)
         {
             unsafe

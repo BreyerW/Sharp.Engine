@@ -18,7 +18,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             //Compute effective mass matrix contributions. No linear contributions for the twist constraint.
             Symmetric3x3Wide.VectorSandwich(angularJacobianA, inertiaA.InverseInertiaTensor, out var inverseEffectiveMass);
-    
+
             //No softening; this constraint is rigid by design. (It does support a maximum force, but that is distinct from a proper damping ratio/natural frequency.)
             //Note that we have to guard against two bodies with infinite inertias. This is a valid state! 
             //(We do not have to do such guarding on constraints with linear jacobians; dynamic bodies cannot have zero *mass*.)
@@ -52,7 +52,7 @@ namespace BepuPhysics.Constraints.Contact
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeCorrectiveImpulse(ref Vector3Wide angularJacobianA, ref TwistFrictionProjection projection, 
+        public static void ComputeCorrectiveImpulse(ref Vector3Wide angularJacobianA, ref TwistFrictionProjection projection,
             ref BodyVelocities wsvA, ref Vector<float> maximumImpulse,
             ref Vector<float> accumulatedImpulse, out Vector<float> correctiveCSI)
         {
@@ -68,7 +68,7 @@ namespace BepuPhysics.Constraints.Contact
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Solve(ref Vector3Wide angularJacobianA, ref BodyInertias inertiaA, ref TwistFrictionProjection projection, 
+        public static void Solve(ref Vector3Wide angularJacobianA, ref BodyInertias inertiaA, ref TwistFrictionProjection projection,
             ref Vector<float> maximumImpulse, ref Vector<float> accumulatedImpulse, ref BodyVelocities wsvA)
         {
             ComputeCorrectiveImpulse(ref angularJacobianA, ref projection, ref wsvA, ref maximumImpulse, ref accumulatedImpulse, out var correctiveCSI);

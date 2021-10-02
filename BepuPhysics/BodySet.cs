@@ -1,10 +1,10 @@
-﻿using BepuUtilities.Memory;
+﻿using BepuPhysics.Collidables;
+using BepuUtilities;
+using BepuUtilities.Collections;
+using BepuUtilities.Memory;
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using BepuPhysics.Collidables;
-using BepuUtilities.Collections;
-using System;
-using BepuUtilities;
 
 namespace BepuPhysics
 {

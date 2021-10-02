@@ -11,7 +11,7 @@ namespace BepuPhysics
     /// <summary>
     /// Collects body handles associated with an active constraint as integers.
     /// </summary>
-    public unsafe struct ActiveConstraintBodyHandleCollector : IForEach<int> 
+    public unsafe struct ActiveConstraintBodyHandleCollector : IForEach<int>
     {
         public Bodies Bodies;
         public int* Handles;

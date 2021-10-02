@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using static BepuUtilities.GatherScatter;
+
 namespace BepuPhysics.Constraints
 {
     /// <summary>
@@ -78,7 +79,7 @@ namespace BepuPhysics.Constraints
         public Vector<float> TargetVelocity;
         public MotorSettingsWide Settings;
     }
-    
+
     public struct LinearAxisMotorFunctions : IConstraintFunctions<LinearAxisMotorPrestepData, LinearAxisServoProjection, Vector<float>>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -91,10 +92,10 @@ namespace BepuPhysics.Constraints
                 out _, out _, out _, out var effectiveMass,
                 out projection.LinearVelocityToImpulseA, out projection.AngularVelocityToImpulseA, out projection.AngularVelocityToImpulseB,
                 out projection.LinearImpulseToVelocityA, out projection.AngularImpulseToVelocityA, out projection.NegatedLinearImpulseToVelocityB, out projection.AngularImpulseToVelocityB);
-                        
+
             projection.BiasImpulse = -prestep.TargetVelocity * effectiveMass;
         }
-                       
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WarmStart(ref BodyVelocities velocityA, ref BodyVelocities velocityB, ref LinearAxisServoProjection projection, ref Vector<float> accumulatedImpulse)
         {
@@ -102,7 +103,7 @@ namespace BepuPhysics.Constraints
                 projection.LinearImpulseToVelocityA, projection.AngularImpulseToVelocityA, projection.NegatedLinearImpulseToVelocityB, projection.AngularImpulseToVelocityB,
                 ref accumulatedImpulse);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Solve(ref BodyVelocities velocityA, ref BodyVelocities velocityB, ref LinearAxisServoProjection projection, ref Vector<float> accumulatedImpulse)
         {

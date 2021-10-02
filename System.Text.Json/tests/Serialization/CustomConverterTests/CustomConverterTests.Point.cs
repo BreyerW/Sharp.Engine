@@ -16,8 +16,8 @@ namespace System.Text.Json.Serialization.Tests
                 Y = y;
             }
 
-            public int X { get;}
-            public int Y { get;}
+            public int X { get; }
+            public int Y { get; }
         }
 
         // Converter for a custom data type that has additional state (coordinateOffset).

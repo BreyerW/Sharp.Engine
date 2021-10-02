@@ -118,12 +118,12 @@ namespace OpenTK.Platform.MacOS
             disposed = true;
         }
 
-        #if DEBUG
+#if DEBUG
         ~CocoaWindowInfo()
         {
             Dispose(false);
         }
-        #endif
+#endif
 
         #endregion
     }

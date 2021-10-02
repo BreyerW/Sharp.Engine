@@ -9,9 +9,10 @@
 /////////////////////////////////////////////////////////////////////////////////
 //Apache2, 2017-present, WinterDev
 
-using System;
 using PaintFx;
 using PaintFx.Effects;
+using System;
+
 namespace PixelFarm.CpuBlit.Imaging
 {
     /// <summary>
@@ -71,7 +72,7 @@ namespace PixelFarm.CpuBlit.Imaging
                         MemHolder destMemHolder = new MemHolder((IntPtr)outputPtr, bufferPtr.LengthInBytes / 4);
                         Surface destSurface = new Surface(stride, w, h, destMemHolder);
                         //
-                      
+
                         _shRenderer1.Amount = radius;
                         _shRenderer1.Render(srcSurface, destSurface, new PixelFarm.Drawing.Rectangle[]{
                             new PixelFarm.Drawing.Rectangle(0,0,w,h)

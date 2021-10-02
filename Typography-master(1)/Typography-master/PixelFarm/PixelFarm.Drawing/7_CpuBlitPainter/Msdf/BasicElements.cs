@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 namespace ExtMsdfGen
 {
-
     public struct Vector2
     {
         public readonly double x;

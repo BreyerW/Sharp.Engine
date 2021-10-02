@@ -28,12 +28,11 @@
 // #endregion
 using System;
 using System.Runtime.InteropServices;
+using CGLContext = IntPtr;
+using CGLPixelFormat = IntPtr;
 
 namespace OpenTK.Platform.MacOS
 {
-    using CGLPixelFormat = IntPtr;
-    using CGLContext = IntPtr;
-
     static class Cgl
     {
         internal enum PixelFormatBool
@@ -106,7 +105,7 @@ namespace OpenTK.Platform.MacOS
         }
 
         [DllImport(cgl, EntryPoint = "CGLChoosePixelFormat")]
-        internal static extern Error ChoosePixelFormat(int []attribs, ref CGLPixelFormat format, ref int numPixelFormats);
+        internal static extern Error ChoosePixelFormat(int[] attribs, ref CGLPixelFormat format, ref int numPixelFormats);
         [DllImport(cgl, EntryPoint = "CGLDescribePixelFormat")]
         internal static extern Error DescribePixelFormat(CGLPixelFormat pix, int pix_num, PixelFormatInt attrib, out int value);
         [DllImport(cgl, EntryPoint = "CGLDescribePixelFormat")]

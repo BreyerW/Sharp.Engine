@@ -1,3 +1,4 @@
+
 #region License
 //
 // The Open Toolkit Library License
@@ -27,14 +28,14 @@
 
 namespace Bind.Structures
 {
-        /// <summary>
-        /// Enumarates the possible flows of a parameter (ie. is this parameter
-        /// used as input or as output?)
-        /// </summary>
-        public enum FlowDirection
-        {
-            Undefined = 0,
-            In,
-            Out
-        }
+    /// <summary>
+    /// Enumarates the possible flows of a parameter (ie. is this parameter
+    /// used as input or as output?)
+    /// </summary>
+    public enum FlowDirection
+    {
+        Undefined = 0,
+        In,
+        Out
+    }
 }

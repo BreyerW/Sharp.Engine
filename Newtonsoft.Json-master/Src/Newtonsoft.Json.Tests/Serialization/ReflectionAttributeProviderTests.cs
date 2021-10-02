@@ -57,7 +57,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             public int TestField;
 
             public ReflectionTestObject(
-                [DefaultValue("1")] [JsonProperty] int testParameter)
+                [DefaultValue("1")][JsonProperty] int testParameter)
             {
                 TestProperty = testParameter;
                 TestField = testParameter;

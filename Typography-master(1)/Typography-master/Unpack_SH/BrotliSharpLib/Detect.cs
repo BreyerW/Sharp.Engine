@@ -2,8 +2,10 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
 #if PROPER_DETECT
         [StructLayout(LayoutKind.Sequential)]
         private struct SYSTEM_INFO {
@@ -43,7 +45,8 @@ namespace BrotliSharpLib {
         private static extern int uname(out utsname buf);
 #endif
 
-        private enum Endianess {
+        private enum Endianess
+        {
             Little,
             Big,
             Unknown
@@ -52,7 +55,8 @@ namespace BrotliSharpLib {
         /// <summary>
         /// Detects the endianness of the current CPU
         /// </summary>
-        private static unsafe Endianess GetEndianess() {
+        private static unsafe Endianess GetEndianess()
+        {
             uint value = 0xaabbccdd;
             byte* b = (byte*)&value;
             if (b[0] == 0xdd)
@@ -65,7 +69,8 @@ namespace BrotliSharpLib {
         /// <summary>
         /// Determines if the current CPU supports unaligned reads
         /// </summary>
-        private static bool IsWhitelistedCPU() {
+        private static bool IsWhitelistedCPU()
+        {
 #if PROPER_DETECT
             // Detect the current CPU architecture to enable unaligned reads
             switch (Environment.OSVersion.Platform) {

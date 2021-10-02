@@ -1,14 +1,13 @@
 ﻿//MIT, 2016-present, WinterDev
 
-using System;
-using PixelFarm.Drawing;
-using PixelFarm.CpuBlit.VertexProcessing;
-using PixelFarm.CpuBlit.Imaging;
-
 using BitmapBufferEx;
+using PixelFarm.CpuBlit.Imaging;
+using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
+using System;
+
 namespace PixelFarm.CpuBlit
 {
-
     partial class AggPainter
     {
         //image processing,
@@ -259,6 +258,6 @@ namespace PixelFarm.CpuBlit
             cpuBlitImgFx.SetTarget(_aggsx.DestBitmapBlender);
             imgFilter.Apply();
         }
-        
+
     }
 }

@@ -38,6 +38,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Diagnostics.CodeAnalysis;
+
 #if HAVE_XLINQ
 using System.Xml.Linq;
 #endif

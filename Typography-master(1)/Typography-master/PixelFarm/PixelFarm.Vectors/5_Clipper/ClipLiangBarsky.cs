@@ -22,6 +22,7 @@
 //
 //----------------------------------------------------------------------------
 
+
 namespace PixelFarm.CpuBlit.PrimitiveProcessing
 {
     public static class ClipLiangBarsky

@@ -1,5 +1,6 @@
 ﻿//BSD, 2014-present, WinterDev
 
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
     public enum AffineMatrixCommand : byte

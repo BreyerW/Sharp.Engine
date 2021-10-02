@@ -1,10 +1,11 @@
 ﻿using BepuPhysics.CollisionDetection;
+using BepuUtilities;
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using BepuUtilities;
+
 namespace BepuPhysics.Constraints.Contact
-{  
+{
     public struct Contact2Nonconvex : INonconvexTwoBodyContactConstraintDescription<Contact2Nonconvex>
     {
         public NonconvexTwoBodyManifoldConstraintProperties Common;
@@ -79,7 +80,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref Unsafe.Add(ref prestep.Contact0, index);
         }
-        
+
         public int ContactCount => 2;
         public int BodyCount => 2;
     }
@@ -117,7 +118,7 @@ namespace BepuPhysics.Constraints.Contact
 
         public int ContactCount => 2;
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 2-contact nonconvex two body manifold constraints.
     /// </summary>
@@ -177,7 +178,7 @@ namespace BepuPhysics.Constraints.Contact
 
     }
 
-    public struct Contact2NonconvexOneBodyPrestepData : INonconvexContactPrestep<Contact2NonconvexOneBodyPrestepData>    
+    public struct Contact2NonconvexOneBodyPrestepData : INonconvexContactPrestep<Contact2NonconvexOneBodyPrestepData>
     {
         //Note that this layout is defined by the execution order in the prestep. The function accesses it sequentially to ensure the prefetcher can do its job.
         public MaterialPropertiesWide MaterialProperties;
@@ -195,7 +196,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref Unsafe.Add(ref prestep.Contact0, index);
         }
-                
+
         public int ContactCount => 2;
         public int BodyCount => 1;
     }
@@ -309,7 +310,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref Unsafe.Add(ref prestep.Contact0, index);
         }
-        
+
         public int ContactCount => 3;
         public int BodyCount => 2;
     }
@@ -349,7 +350,7 @@ namespace BepuPhysics.Constraints.Contact
 
         public int ContactCount => 3;
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 3-contact nonconvex two body manifold constraints.
     /// </summary>
@@ -410,7 +411,7 @@ namespace BepuPhysics.Constraints.Contact
 
     }
 
-    public struct Contact3NonconvexOneBodyPrestepData : INonconvexContactPrestep<Contact3NonconvexOneBodyPrestepData>    
+    public struct Contact3NonconvexOneBodyPrestepData : INonconvexContactPrestep<Contact3NonconvexOneBodyPrestepData>
     {
         //Note that this layout is defined by the execution order in the prestep. The function accesses it sequentially to ensure the prefetcher can do its job.
         public MaterialPropertiesWide MaterialProperties;
@@ -429,7 +430,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref Unsafe.Add(ref prestep.Contact0, index);
         }
-                
+
         public int ContactCount => 3;
         public int BodyCount => 1;
     }
@@ -546,7 +547,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref Unsafe.Add(ref prestep.Contact0, index);
         }
-        
+
         public int ContactCount => 4;
         public int BodyCount => 2;
     }
@@ -588,7 +589,7 @@ namespace BepuPhysics.Constraints.Contact
 
         public int ContactCount => 4;
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 4-contact nonconvex two body manifold constraints.
     /// </summary>
@@ -650,7 +651,7 @@ namespace BepuPhysics.Constraints.Contact
 
     }
 
-    public struct Contact4NonconvexOneBodyPrestepData : INonconvexContactPrestep<Contact4NonconvexOneBodyPrestepData>    
+    public struct Contact4NonconvexOneBodyPrestepData : INonconvexContactPrestep<Contact4NonconvexOneBodyPrestepData>
     {
         //Note that this layout is defined by the execution order in the prestep. The function accesses it sequentially to ensure the prefetcher can do its job.
         public MaterialPropertiesWide MaterialProperties;
@@ -670,7 +671,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref Unsafe.Add(ref prestep.Contact0, index);
         }
-                
+
         public int ContactCount => 4;
         public int BodyCount => 1;
     }

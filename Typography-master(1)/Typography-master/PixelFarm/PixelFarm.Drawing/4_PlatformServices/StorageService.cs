@@ -3,10 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+
 namespace PixelFarm.Platforms
 {
-
-
     public abstract class StorageServiceProvider
     {
         public abstract string[] GetDataDirNameList(string dir);
@@ -43,7 +42,6 @@ namespace PixelFarm.Platforms
 
 namespace LayoutFarm
 {
-
     //temp here, 
     //these will be moved later
 

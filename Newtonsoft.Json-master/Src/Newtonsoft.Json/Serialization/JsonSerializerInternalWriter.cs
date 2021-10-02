@@ -41,6 +41,7 @@ using System.Runtime.CompilerServices;
 using System.Diagnostics.CodeAnalysis;
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;
+
 #else
 using System.Linq;
 #endif
@@ -394,7 +395,7 @@ namespace Newtonsoft.Json.Serialization
             }
         }
 
-        internal static bool TryConvertToString(object value, Type type, [NotNullWhen(true)]out string? s)
+        internal static bool TryConvertToString(object value, Type type, [NotNullWhen(true)] out string? s)
         {
 #if HAVE_TYPE_DESCRIPTOR
             if (JsonTypeReflector.CanTypeDescriptorConvertString(type, out TypeConverter converter))
@@ -528,7 +529,7 @@ namespace Newtonsoft.Json.Serialization
             OnSerialized(writer, contract, value);
         }
 
-        private bool CalculatePropertyValues(JsonWriter writer, object value, JsonContainerContract contract, JsonProperty? member, JsonProperty property, [NotNullWhen(true)]out JsonContract? memberContract, out object? memberValue)
+        private bool CalculatePropertyValues(JsonWriter writer, object value, JsonContainerContract contract, JsonProperty? member, JsonProperty property, [NotNullWhen(true)] out JsonContract? memberContract, out object? memberValue)
         {
             if (!property.Ignored && property.Readable && ShouldSerialize(writer, property, value) && IsSpecified(writer, property, value))
             {
@@ -1133,14 +1134,14 @@ namespace Newtonsoft.Json.Serialization
                 {
                     case PrimitiveTypeCode.DateTime:
                     case PrimitiveTypeCode.DateTimeNullable:
-                    {
-                        DateTime dt = DateTimeUtils.EnsureDateTime((DateTime)name, writer.DateTimeZoneHandling);
+                        {
+                            DateTime dt = DateTimeUtils.EnsureDateTime((DateTime)name, writer.DateTimeZoneHandling);
 
-                        escape = false;
-                        StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
-                        DateTimeUtils.WriteDateTimeString(sw, dt, writer.DateFormatHandling, writer.DateFormatString, writer.Culture);
-                        return sw.ToString();
-                    }
+                            escape = false;
+                            StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
+                            DateTimeUtils.WriteDateTimeString(sw, dt, writer.DateFormatHandling, writer.DateFormatString, writer.Culture);
+                            return sw.ToString();
+                        }
 #if HAVE_DATE_TIME_OFFSET
                     case PrimitiveTypeCode.DateTimeOffset:
                     case PrimitiveTypeCode.DateTimeOffsetNullable:
@@ -1153,31 +1154,31 @@ namespace Newtonsoft.Json.Serialization
 #endif
                     case PrimitiveTypeCode.Double:
                     case PrimitiveTypeCode.DoubleNullable:
-                    {
-                        double d = (double)name;
+                        {
+                            double d = (double)name;
 
-                        escape = false;
-                        return d.ToString("R", CultureInfo.InvariantCulture);
-                    }
+                            escape = false;
+                            return d.ToString("R", CultureInfo.InvariantCulture);
+                        }
                     case PrimitiveTypeCode.Single:
                     case PrimitiveTypeCode.SingleNullable:
-                    {
-                        float f = (float)name;
-
-                        escape = false;
-                        return f.ToString("R", CultureInfo.InvariantCulture);
-                    }
-                    default:
-                    {
-                        escape = true;
-
-                        if (primitiveContract.IsEnum && EnumUtils.TryToString(primitiveContract.NonNullableUnderlyingType, name, null, out string? enumName))
                         {
-                            return enumName;
-                        }
+                            float f = (float)name;
 
-                        return Convert.ToString(name, CultureInfo.InvariantCulture);
-                    }
+                            escape = false;
+                            return f.ToString("R", CultureInfo.InvariantCulture);
+                        }
+                    default:
+                        {
+                            escape = true;
+
+                            if (primitiveContract.IsEnum && EnumUtils.TryToString(primitiveContract.NonNullableUnderlyingType, name, null, out string? enumName))
+                            {
+                                return enumName;
+                            }
+
+                            return Convert.ToString(name, CultureInfo.InvariantCulture);
+                        }
                 }
             }
             else if (TryConvertToString(name, name.GetType(), out string? propertyName))

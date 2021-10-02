@@ -42,7 +42,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Newtonsoft.Json.Converters
 {
-    #region XmlNodeWrappers
+#region XmlNodeWrappers
 #if HAVE_XML_DOCUMENT
     internal class XmlDocumentWrapper : XmlNodeWrapper, IXmlDocument
     {
@@ -979,7 +979,7 @@ namespace Newtonsoft.Json.Converters
         /// <value><c>true</c> if special characters are encoded; otherwise, <c>false</c>.</value>
         public bool EncodeSpecialCharacters { get; set; }
 
-        #region Writing
+#region Writing
         /// <summary>
         /// Writes the JSON representation of the object.
         /// </summary>
@@ -1469,7 +1469,7 @@ namespace Newtonsoft.Json.Converters
         }
 #endregion
 
-        #region Reading
+#region Reading
         /// <summary>
         /// Reads the JSON representation of the object.
         /// </summary>

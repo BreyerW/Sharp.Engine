@@ -867,7 +867,7 @@ namespace Newtonsoft.Json.Tests.Bson
 
             writer.WriteStartObject();
             writer.WritePropertyName("array0");
-            writer.WriteValue(new byte[] {0, 1, 2, 3, 4, 5, 6, 7});
+            writer.WriteValue(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
             writer.WritePropertyName("array1");
             writer.WriteValue(default(byte[]));
             writer.WriteEndObject();
@@ -878,7 +878,7 @@ namespace Newtonsoft.Json.Tests.Bson
             Assert.AreEqual(JsonToken.StartObject, reader.TokenType);
             Assert.IsTrue(reader.Read());
             Assert.AreEqual(JsonToken.PropertyName, reader.TokenType);
-            Assert.AreEqual(new byte[] {0, 1, 2, 3, 4, 5, 6, 7}, reader.ReadAsBytes());
+            Assert.AreEqual(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, reader.ReadAsBytes());
             Assert.IsTrue(reader.Read());
             Assert.AreEqual(JsonToken.PropertyName, reader.TokenType);
             Assert.IsNull(reader.ReadAsBytes());

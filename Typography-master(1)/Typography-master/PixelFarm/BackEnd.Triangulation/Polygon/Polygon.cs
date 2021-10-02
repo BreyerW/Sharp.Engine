@@ -43,6 +43,7 @@
 
 using System;
 using System.Collections.Generic;
+
 namespace Poly2Tri
 {
     public sealed class Polygon : Triangulable

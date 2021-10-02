@@ -1,15 +1,13 @@
 ﻿//MIT, 2014-present, WinterDev
+using PixelFarm.Contours;
+using PixelFarm.CpuBlit;
+using PixelFarm.VectorMath;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-using PixelFarm.Contours;
-using PixelFarm.CpuBlit;
-using PixelFarm.VectorMath;
-
 namespace SampleWinForms.UI
 {
-
     delegate void SimpleAction();
     class DebugGlyphVisualizerInfoView
     {
@@ -109,9 +107,9 @@ namespace SampleWinForms.UI
             _flushOutput = flushOutput;
         }
 
-        public int DebugMarkVertexCommand=> _addDebugVertexCmd;
-            
-        
+        public int DebugMarkVertexCommand => _addDebugVertexCmd;
+
+
         void DrawMarkedNode(TreeNode node)
         {
 

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using static BepuUtilities.GatherScatter;
+
 namespace BepuPhysics.Constraints
 {
     /// <summary>
@@ -182,7 +183,7 @@ namespace BepuPhysics.Constraints
             Vector3Wide.Subtract(velocityA.Angular, velocityB.Angular, out var orientationCSV);
             Vector3Wide.Subtract(velocityA.Linear, velocityB.Linear, out var offsetCSV);
 
-            Vector3Wide.CrossWithoutOverlap(velocityA.Angular, projection.Offset,  out var offsetAngularCSV);
+            Vector3Wide.CrossWithoutOverlap(velocityA.Angular, projection.Offset, out var offsetAngularCSV);
             Vector3Wide.Add(offsetCSV, offsetAngularCSV, out offsetCSV);
 
             //Note subtraction: this is computing biasVelocity - csv, and later we'll compute (biasVelocity-csv) - softness.

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
+﻿using Squid;
+using System;
 using System.Collections;
-using System.Reflection;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
-using Squid;
+using System.Reflection;
+using System.Text;
 
 namespace Squid.Xml
 {
@@ -71,7 +71,7 @@ namespace Squid.Xml
                 Root = CreateLogicalNode(data, false, false);
                 WriteCache.Clear();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -215,7 +215,7 @@ namespace Squid.Xml
                     result.Nodes.Add(sub);
 
                     Type itemType = null;
-                  
+
                     if (valueType.IsGenericType)
                     {
                         Type[] gens = valueType.GetGenericArguments();
@@ -230,7 +230,7 @@ namespace Squid.Xml
                     }
 
                     IDictionary dict = (IDictionary)value;
-                   
+
                     foreach (object key in dict.Keys)
                     {
                         Node element = CreateLogicalNode(dict[key], true, false);
@@ -601,7 +601,7 @@ namespace Squid.Xml
             object result = null;
             object value = null;
 
-            if(type.GetConstructor(new Type[0]{}) != null)
+            if (type.GetConstructor(new Type[0] { }) != null)
                 result = Activator.CreateInstance(type);
 
             if (!(result is IList || result is IDictionary))

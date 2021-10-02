@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Sharp;
+using System;
 using System.Numerics;
-using Sharp;
 
 namespace Sharp
 {

@@ -1,4 +1,5 @@
-﻿namespace PixelFarmTextBox.WinForms
+﻿
+namespace PixelFarmTextBox.WinForms
 {
     partial class Form1
     {

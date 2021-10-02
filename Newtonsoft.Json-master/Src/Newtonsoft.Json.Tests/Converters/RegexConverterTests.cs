@@ -169,7 +169,7 @@ namespace Newtonsoft.Json.Tests.Converters
             ExceptionAssert.Throws<JsonSerializationException>(
                 () => JsonConvert.DeserializeObject<RegexTestClass>(json, new JsonSerializerSettings
                 {
-                    Converters = {new RegexConverter()}
+                    Converters = { new RegexConverter() }
                 }),
                 "Regex pattern must be enclosed by slashes. Path 'Regex', line 2, position 18.");
         }

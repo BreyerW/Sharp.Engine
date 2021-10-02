@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>C:\Users\damia\source\repos\Sharp.Engine\Sharp.Core\Plugins\ImageSharpPlugin\</OutputPath>
+    <OutputPath>C:\Users\damia\source\repos\Sharp.Engine.Legacy\Sharp.Core\Plugins\ImageSharpPlugin\</OutputPath>
 	  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	  <ProduceReferenceAssembly>false</ProduceReferenceAssembly>

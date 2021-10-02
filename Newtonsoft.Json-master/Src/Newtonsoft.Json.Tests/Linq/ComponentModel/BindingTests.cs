@@ -24,9 +24,9 @@
 #endregion
 
 #if !(PORTABLE || PORTABLE40 || DNXCORE50)
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using System.Web.UI;
-using Newtonsoft.Json.Linq;
 
 namespace Newtonsoft.Json.Tests.Linq.ComponentModel
 {

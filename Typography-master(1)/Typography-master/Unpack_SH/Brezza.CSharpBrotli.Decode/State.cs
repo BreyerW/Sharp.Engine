@@ -116,7 +116,7 @@ namespace CSharpBrotli.Decode
                 state.runningState = RunningStage.CLOSED;
                 BitReader.Close(state.br);
             }
-            catch(IOException ex)
+            catch (IOException ex)
             {
                 throw ex;
             }

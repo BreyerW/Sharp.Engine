@@ -1,6 +1,7 @@
 ﻿//MIT, 2009, 2010, 2013-2016 by the Brotli Authors.
 //MIT, 2017, brezza92 (C# port from original code, by hand)
 
+
 namespace CSharpBrotli.Decode
 {
     /// <summary>
@@ -8,7 +9,7 @@ namespace CSharpBrotli.Decode
     /// </summary>
     public sealed class Context
     {
-        public static readonly int[] LOOKUP = 
+        public static readonly int[] LOOKUP =
             {
               // CONTEXT_UTF8, last byte.
               // ASCII range.
@@ -147,7 +148,7 @@ namespace CSharpBrotli.Decode
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             };
 
-        public static readonly int[] LOOKUP_OFFSETS = 
+        public static readonly int[] LOOKUP_OFFSETS =
             {
               // CONTEXT_LSB6
               1024, 1536,

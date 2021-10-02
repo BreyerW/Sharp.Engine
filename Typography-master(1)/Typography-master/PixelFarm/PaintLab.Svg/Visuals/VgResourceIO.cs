@@ -1,8 +1,9 @@
 ﻿//MIT, 2014-present, WinterDev
 
 using System;
+
 namespace PaintLab.Svg
-{ 
+{
     public static class VgResourceIO
     {
         //IO 

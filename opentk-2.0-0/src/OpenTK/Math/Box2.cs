@@ -6,6 +6,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+
 namespace OpenTK
 {
     /// <summary>
@@ -187,7 +188,7 @@ namespace OpenTK
         /// </summary>
         public override bool Equals(object obj)
         {
-            return obj is Box2 && Equals((Box2) obj);
+            return obj is Box2 && Equals((Box2)obj);
         }
 
         ///// <summary>

@@ -28,7 +28,7 @@ namespace BepuUtilities
         /// <param name="broadcasted">Target quaternion to be filled with the selected data.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Rebroadcast(in QuaternionWide source, int slotIndex, out QuaternionWide broadcasted)
-        { 
+        {
             broadcasted.X = new Vector<float>(source.X[slotIndex]);
             broadcasted.Y = new Vector<float>(source.Y[slotIndex]);
             broadcasted.Z = new Vector<float>(source.Z[slotIndex]);

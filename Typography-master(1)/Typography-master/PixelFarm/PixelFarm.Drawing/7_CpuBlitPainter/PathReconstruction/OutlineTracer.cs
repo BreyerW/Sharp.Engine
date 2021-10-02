@@ -1,13 +1,11 @@
 ﻿//MIT, 2019-present, WinterDev
 
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.Drawing;
 
 namespace PixelFarm.PathReconstruction
 {
-
-
     class HSpanColumn
     {
         List<HSpan> _spanList = new List<HSpan>();
@@ -780,7 +778,7 @@ namespace PixelFarm.PathReconstruction
             List<Remaining> incompleteReadList = new List<Remaining>();
             TraceOutlineCcw(new Remaining(_verticalGroupList.GetGroup(0).GetColumn(0), ReadSide.Left), output, true);
 
-            TRACE_AGAIN://**
+        TRACE_AGAIN://**
 
             //check if the shape have hole(s) 
             _verticalGroupList.CollectIncompleteColumns(incompleteReadList);

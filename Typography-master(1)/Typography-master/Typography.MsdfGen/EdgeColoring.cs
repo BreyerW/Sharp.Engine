@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 namespace Msdfgen
 {
-
     /// <summary>
     /// Assigns colors to edges of the shape in accordance to the multi-channel distance field technique.
     /// May split some edges if necessary. 

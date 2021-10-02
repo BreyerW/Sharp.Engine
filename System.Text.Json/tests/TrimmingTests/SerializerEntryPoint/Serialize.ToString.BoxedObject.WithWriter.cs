@@ -17,7 +17,7 @@ namespace SerializerTrimmingTest
         static int Main(string[] args)
         {
             {
-                int[] arr = new [] { 1 };
+                int[] arr = new[] { 1 };
                 using var stream = new MemoryStream();
                 using var writer = new Utf8JsonWriter(stream);
                 JsonSerializer.Serialize(writer, arr, typeof(int[]));

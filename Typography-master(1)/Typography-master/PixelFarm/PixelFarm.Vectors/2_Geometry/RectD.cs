@@ -1,7 +1,8 @@
 ﻿//BSD, 2014-present, WinterDev
 
-using System;
 using PixelFarm.VectorMath;
+using System;
+
 namespace PixelFarm.CpuBlit
 {
     public struct RectD

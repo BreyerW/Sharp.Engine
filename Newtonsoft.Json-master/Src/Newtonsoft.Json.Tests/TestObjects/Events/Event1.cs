@@ -23,9 +23,9 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Converters;
 
 namespace Newtonsoft.Json.Tests.TestObjects.Events
 {

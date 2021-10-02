@@ -25,6 +25,7 @@
 // PostScript and PDF technology for software developers.
 // 
 //----------------------------------------------------------------------------
+
 #define USE_UNSAFE_CODE
 
 namespace PixelFarm.CpuBlit.Imaging

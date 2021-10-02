@@ -1,10 +1,10 @@
-﻿using System;
+﻿using SharpAsset;
+using System;
 using System.Numerics;
-using SharpAsset;
 
 namespace SharpSL
 {
-	/*public interface IEditorBackendRenderer
+    /*public interface IEditorBackendRenderer
 	{
 		void update(ref Skeleton skele);
 

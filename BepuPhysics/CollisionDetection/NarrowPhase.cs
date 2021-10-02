@@ -1,15 +1,15 @@
-﻿using BepuUtilities.Collections;
+﻿using BepuPhysics.Collidables;
+using BepuPhysics.Constraints;
+using BepuPhysics.Constraints.Contact;
+using BepuUtilities;
+using BepuUtilities.Collections;
 using BepuUtilities.Memory;
-using BepuPhysics.Collidables;
+using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System;
-using BepuPhysics.Constraints;
-using System.Diagnostics;
 using System.Threading;
-using BepuUtilities;
-using BepuPhysics.Constraints.Contact;
 
 namespace BepuPhysics.CollisionDetection
 {

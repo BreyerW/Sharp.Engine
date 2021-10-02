@@ -10,7 +10,7 @@ namespace TypographyTest.WinForms
 {
     public partial class GlyphLayoutOptionsUserControl : UserControl
     {
-         
+
         public GlyphLayoutOptionsUserControl()
         {
             InitializeComponent();

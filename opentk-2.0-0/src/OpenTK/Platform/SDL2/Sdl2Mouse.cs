@@ -159,7 +159,7 @@ namespace OpenTK.Platform.SDL2
             SDL.WarpMouseInWindow(IntPtr.Zero, (int)x, (int)y);
         }
 
-    #endregion
+        #endregion
     }
 }
 

@@ -15,10 +15,10 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
+using PixelFarm.CpuBlit;
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.Drawing;
-using PixelFarm.CpuBlit;
 
 namespace PixelFarm.PathReconstruction
 {
@@ -163,7 +163,7 @@ namespace PixelFarm.PathReconstruction
         public void AutoFill(MemBitmap bmp,
             int x, int y, int w, int h,
             List<ReconstructedRegionData> output = null)
-        {   
+        {
             if (x < bmp.Width && y < bmp.Height)
             {
                 //autofill
@@ -172,7 +172,7 @@ namespace PixelFarm.PathReconstruction
                 {
                     _diffMap = new short[bmp.Width * bmp.Height];
                     _pixEval.SetDiffMap(_diffMap);
-                } 
+                }
                 //--------------------
                 //run the filling process
                 _pixEval.SetCustomPixelChecker(p =>

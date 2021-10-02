@@ -1,7 +1,7 @@
 ﻿//BSD, 
+
 namespace PixelFarm.CpuBlit
 {
-
     /////////////////////////////////////////////////////////////////////////////////
     // Paint.NET (MIT,from version 3.36.7, see=> https://github.com/rivy/OpenPDN   //
     // Copyright (C) dotPDN LLC, Rick Brewster, Tom Jackson, and contributors.     //

@@ -1,15 +1,14 @@
 ﻿//MIT, 2016-2017, WinterDev
 
 
+using PixelFarm.Drawing.Fonts;
 using System.Collections.Generic;
 using System.IO;
-
-using PixelFarm.Drawing.Fonts;
 using Typography.OpenFont;
 using Typography.TextLayout;
+
 namespace SampleWinForms
 {
-
     class TextPrinter
     {
         Typeface _currentTypeface;
@@ -113,7 +112,7 @@ namespace SampleWinForms
                 glyphPlan.vxs = vxsBuilder.GetVxs(pxScale);
             }
 
-        } 
+        }
     }
 
     public enum HintTechnique

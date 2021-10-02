@@ -27,11 +27,11 @@
 //
 #endregion
 
+using OpenTK.Platform;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using OpenTK.Platform;
 
 namespace OpenTK.Graphics
 {
@@ -117,14 +117,14 @@ namespace OpenTK.Graphics
 
         protected abstract void Dispose(bool disposing);
 
-        #if DEBUG
+#if DEBUG
         ~GraphicsContextBase()
         {
             Dispose(false);
             Debug.Print("[Warning] {0}:{1} leaked. Did you forget to call Dispose()?",
                 GetType().FullName, Handle);
         }
-        #endif
+#endif
 
         #endregion
 
@@ -152,7 +152,7 @@ namespace OpenTK.Graphics
 
         public override bool Equals(object obj)
         {
-            return 
+            return
                 obj is IGraphicsContextInternal &&
                 Equals((IGraphicsContextInternal)obj);
         }

@@ -27,9 +27,9 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
-using OpenTK.Input;
 
 namespace OpenTK.Platform
 {
@@ -72,7 +72,7 @@ namespace OpenTK.Platform
                         caps.ButtonCount);
                     //device.Description = Joystick.GetName(i);
                     joysticks[i].Description = ConnectedName;
-                    
+
                 }
                 else if (!caps.IsConnected && joysticks[i].Description != DisconnectedName)
                 {

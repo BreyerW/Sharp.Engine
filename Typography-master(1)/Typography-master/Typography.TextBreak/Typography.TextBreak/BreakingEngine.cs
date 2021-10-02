@@ -41,7 +41,7 @@ namespace Typography.TextBreak
 
             for (int i = startAt; i < endAt;)
             {
-                ENTER_LOOP:
+            ENTER_LOOP:
 
                 //find proper start words;
                 char c = charBuff[i];

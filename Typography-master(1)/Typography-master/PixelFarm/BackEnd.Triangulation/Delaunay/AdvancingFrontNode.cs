@@ -29,6 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 /// Changes from the Java version
 ///   Removed getters
 ///   Has* turned into attributes

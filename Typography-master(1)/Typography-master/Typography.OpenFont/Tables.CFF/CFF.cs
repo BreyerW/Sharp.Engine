@@ -984,7 +984,7 @@ namespace Typography.OpenFont.CFF
             }
         }
         void ReadCharsetsFormat2()
-        {   
+        {
 
             //note:eg, Adobe's source-code-pro font
 

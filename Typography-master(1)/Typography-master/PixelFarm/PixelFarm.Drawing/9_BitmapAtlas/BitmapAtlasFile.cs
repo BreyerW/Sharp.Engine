@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+
 namespace PixelFarm.Drawing.BitmapAtlas
 {
     public class BitmapAtlasFile

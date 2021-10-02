@@ -18,8 +18,9 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
-using System;
 using PixelFarm.CpuBlit.VertexProcessing;
+using System;
+
 namespace PixelFarm.CpuBlit.FragmentProcessing
 {
     //============================================span_interpolator_persp_lerp
@@ -221,7 +222,7 @@ namespace PixelFarm.CpuBlit.FragmentProcessing
         {
             x = _coord_x.Y;
             y = _coord_y.Y;
-        } 
+        }
         //----------------------------------------------------------------
         public void transform(ref double x, ref double y)
         {

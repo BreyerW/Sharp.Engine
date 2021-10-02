@@ -341,7 +341,7 @@ namespace BepuPhysics.CollisionDetection.CollisionTasks
             //(Zero velocity shouldn't happen because the local normal points toward the capsule axis, so the only way for the capsuleAxisPlane and the normal to be perpendicular
             //is for the normal and capsuleAxis to be parallel, which is explicitly protected against earlier.)
             Debug.Assert(Vector.EqualsAll(Vector.BitwiseOr(
-                Vector.GreaterThan(Vector.Abs(velocity), new Vector<float>(1e-15f)), 
+                Vector.GreaterThan(Vector.Abs(velocity), new Vector<float>(1e-15f)),
                 Vector.OnesComplement(Vector.Equals(velocity, velocity))), new Vector<int>(-1)), "Velocity should be nonzero except in numerical corner cases.");
             var useFallbackDepth = Vector.LessThan(Vector.Abs(velocity), new Vector<float>(1e-15f));
             manifold.Depth0 = Vector.ConditionalSelect(useFallbackDepth, Vector<float>.Zero, manifold.Depth0);
@@ -368,7 +368,7 @@ namespace BepuPhysics.CollisionDetection.CollisionTasks
             manifold.FeatureId1 = Vector.ConditionalSelect(flipFeatureIds, Vector<int>.Zero, Vector<int>.One);
 
             var faceFlag = Vector.ConditionalSelect(
-                Vector.GreaterThanOrEqual(localNormalDotFaceNormal, new Vector<float>(MeshReduction.MinimumDotForFaceCollision)), 
+                Vector.GreaterThanOrEqual(localNormalDotFaceNormal, new Vector<float>(MeshReduction.MinimumDotForFaceCollision)),
                 new Vector<int>(MeshReduction.FaceCollisionFlag), Vector<int>.Zero);
             manifold.FeatureId0 += faceFlag;
 

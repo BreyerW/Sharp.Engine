@@ -25,13 +25,12 @@
 //
 #endregion
 
+using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-
-using OpenTK.Graphics;
+using System.Text;
 
 namespace OpenTK.Platform.Windows
 {
@@ -66,7 +65,7 @@ namespace OpenTK.Platform.Windows
         public GraphicsMode SelectGraphicsMode(ColorFormat color, int depth, int stencil, int samples,
             ColorFormat accum, int buffers, bool stereo)
         {
-            GraphicsMode mode = new GraphicsMode(color, depth, stencil, samples,accum, buffers, stereo);
+            GraphicsMode mode = new GraphicsMode(color, depth, stencil, samples, accum, buffers, stereo);
             GraphicsMode created_mode = ChoosePixelFormatARB(Device, mode);
 
             // If ChoosePixelFormatARB failed, iterate through all acceleration types in turn (ICD, MCD, None)
@@ -377,10 +376,10 @@ namespace OpenTK.Platform.Windows
                     (int)WGL_ARB_pixel_format.BlueBitsArb,
                     (int)WGL_ARB_pixel_format.AlphaBitsArb,
                     (int)WGL_ARB_pixel_format.ColorBitsArb,
-                    
+
                     (int)WGL_ARB_pixel_format.DepthBitsArb,
                     (int)WGL_ARB_pixel_format.StencilBitsArb,
-                    
+
                     (int)WGL_ARB_multisample.SampleBuffersArb,
                     (int)WGL_ARB_multisample.SamplesArb,
 

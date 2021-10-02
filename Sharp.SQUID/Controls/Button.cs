@@ -28,7 +28,7 @@ namespace Squid
         /// </summary>
         public event EventWithArgs BeforeCheckedChanged;
 
-       
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Button"/> is checked.
         /// </summary>

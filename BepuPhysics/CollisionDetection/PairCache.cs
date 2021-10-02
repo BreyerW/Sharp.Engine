@@ -1,9 +1,9 @@
-﻿using BepuUtilities;
-using BepuUtilities.Collections;
-using BepuUtilities.Memory;
-using BepuPhysics.Collidables;
+﻿using BepuPhysics.Collidables;
 using BepuPhysics.Constraints;
 using BepuPhysics.Constraints.Contact;
+using BepuUtilities;
+using BepuUtilities.Collections;
+using BepuUtilities.Memory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,11 +11,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using static BepuPhysics.CollisionDetection.WorkerPairCache;
+using OverlapMapping = BepuUtilities.Collections.QuickDictionary<BepuPhysics.CollisionDetection.CollidablePair, BepuPhysics.CollisionDetection.CollidablePairPointers, BepuPhysics.CollisionDetection.CollidablePairComparer>;
 
 namespace BepuPhysics.CollisionDetection
 {
-    using OverlapMapping = QuickDictionary<CollidablePair, CollidablePairPointers, CollidablePairComparer>;
-
     [StructLayout(LayoutKind.Explicit, Size = 8)]
     public struct CollidablePair
     {
@@ -379,7 +378,7 @@ namespace BepuPhysics.CollisionDetection
             PairFreshness[pairIndex] = 0xFF;
             NextWorkerCaches[workerIndex].Update(ref pointers, ref collisionCache, ref constraintCache);
         }
-        
+
         //4 convex one body, 4 convex two body, 7 nonconvex one body, 7 convex two body.
         public const int CollisionConstraintTypeCount = 22;
         public const int CollisionTypeCount = 16;

@@ -1,10 +1,10 @@
 ﻿using BepuPhysics.CollisionDetection;
+using BepuUtilities;
 using BepuUtilities.Memory;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using static BepuUtilities.GatherScatter;
-using BepuUtilities;
 
 namespace BepuPhysics.Constraints.Contact
 {
@@ -327,7 +327,7 @@ namespace BepuPhysics.Constraints.Contact
                 Vector3Wide.Subtract(prestepContact.Offset, prestepOffsetB, out var contactOffsetB);
                 TangentFriction.Prestep(ref x, ref z, ref prestepContact.Offset, ref contactOffsetB, ref projectionCommon.InertiaA, ref projectionCommon.InertiaB, out projectionContact.Tangent);
                 PenetrationLimit.Prestep(projectionCommon.InertiaA, projectionCommon.InertiaB,
-                    prestepContact.Offset, contactOffsetB, prestepContact.Normal, prestepContact.Depth, 
+                    prestepContact.Offset, contactOffsetB, prestepContact.Normal, prestepContact.Depth,
                     positionErrorToVelocity, effectiveMassCFMScale, prestepMaterial.MaximumRecoveryVelocity, inverseDt,
                     out projectionContact.Penetration);
             }

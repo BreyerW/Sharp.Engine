@@ -1,6 +1,6 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using OpenTK;
+using System;
 
 namespace OpenTK.Tests
 {
@@ -10,9 +10,9 @@ namespace OpenTK.Tests
         [Test]
         public void Matrix4_SixteenValueConstructor()
         {
-            Matrix4 A = new Matrix4( 0,  1,  2,  3,
-                                     4,  5,  6,  7,
-                                     8,  9, 10, 11,
+            Matrix4 A = new Matrix4(0, 1, 2, 3,
+                                     4, 5, 6, 7,
+                                     8, 9, 10, 11,
                                     12, 13, 14, 15);
 
             Assert.AreEqual(0, A.M11);
@@ -39,7 +39,7 @@ namespace OpenTK.Tests
         [Test]
         public void Matrix4_Matrix3Constructor()
         {
-            Matrix3 B = new Matrix3( 1, 2, 3,
+            Matrix3 B = new Matrix3(1, 2, 3,
                                      4, 5, 6,
                                      7, 8, 9);
 
@@ -93,14 +93,14 @@ namespace OpenTK.Tests
         [Test]
         public void Matrix4_Equal_operator()
         {
-            Matrix4 A = new Matrix4( 0,  1,  2,  3,
-                                     4,  5,  6,  7,
-                                     8,  9, 10, 11,
+            Matrix4 A = new Matrix4(0, 1, 2, 3,
+                                     4, 5, 6, 7,
+                                     8, 9, 10, 11,
                                     12, 13, 14, 15);
 
-            Matrix4 B = new Matrix4( 0,  1,  2,  3,
-                                     4,  5,  6,  7,
-                                     8,  9, 10, 11,
+            Matrix4 B = new Matrix4(0, 1, 2, 3,
+                                     4, 5, 6, 7,
+                                     8, 9, 10, 11,
                                     12, 13, 14, 15);
 
             Assert.IsTrue(A == B);
@@ -109,17 +109,17 @@ namespace OpenTK.Tests
         [Test]
         public void Matrix4_Matrix4TimesMatrix4_operator()
         {
-            Matrix4 A = new Matrix4( 0,  1,  2,  3,
-                                     4,  5,  6,  7,
-                                     8,  9, 10, 11,
+            Matrix4 A = new Matrix4(0, 1, 2, 3,
+                                     4, 5, 6, 7,
+                                     8, 9, 10, 11,
                                     12, 13, 14, 15);
 
-            Matrix4 B = new Matrix4( 0,  1,  2,  3,
-                                     4,  5,  6,  7,
-                                     8,  9, 10, 11,
+            Matrix4 B = new Matrix4(0, 1, 2, 3,
+                                     4, 5, 6, 7,
+                                     8, 9, 10, 11,
                                     12, 13, 14, 15);
 
-            Matrix4 expected = new Matrix4( 56,  62,  68,  74,
+            Matrix4 expected = new Matrix4(56, 62, 68, 74,
                                            152, 174, 196, 218,
                                            248, 286, 324, 362,
                                            344, 398, 452, 506);
@@ -131,17 +131,17 @@ namespace OpenTK.Tests
         [Test]
         public void Matrix4_Matrix4PlusMatrix4_operator()
         {
-            Matrix4 A = new Matrix4( 0,  1,  2,  3,
-                                     4,  5,  6,  7,
-                                     8,  9, 10, 11,
+            Matrix4 A = new Matrix4(0, 1, 2, 3,
+                                     4, 5, 6, 7,
+                                     8, 9, 10, 11,
                                     12, 13, 14, 15);
 
-            Matrix4 B = new Matrix4( 0,  1,  2,  3,
-                                     4,  5,  6,  7,
-                                     8,  9, 10, 11,
+            Matrix4 B = new Matrix4(0, 1, 2, 3,
+                                     4, 5, 6, 7,
+                                     8, 9, 10, 11,
                                     12, 13, 14, 15);
 
-            Matrix4 expected = new Matrix4( 0,  2,  4,  6,
+            Matrix4 expected = new Matrix4(0, 2, 4, 6,
                                             8, 10, 12, 14,
                                            16, 18, 20, 22,
                                            24, 26, 28, 30);
@@ -153,17 +153,17 @@ namespace OpenTK.Tests
         [Test]
         public void Matrix4_Matrix4MinusMatrix4_operator()
         {
-            Matrix4 A = new Matrix4( 0,  1,  2,  3,
-                                     4,  5,  6,  7,
-                                     8,  9, 10, 11,
+            Matrix4 A = new Matrix4(0, 1, 2, 3,
+                                     4, 5, 6, 7,
+                                     8, 9, 10, 11,
                                     12, 13, 14, 15);
 
-            Matrix4 B = new Matrix4( 0,  1,  2,  3,
-                                     4,  5,  6,  7,
-                                     8,  9, 10, 11,
+            Matrix4 B = new Matrix4(0, 1, 2, 3,
+                                     4, 5, 6, 7,
+                                     8, 9, 10, 11,
                                     12, 13, 14, 15);
 
-            Matrix4 expected = new Matrix4( 0, 0, 0, 0,
+            Matrix4 expected = new Matrix4(0, 0, 0, 0,
                                             0, 0, 0, 0,
                                             0, 0, 0, 0,
                                             0, 0, 0, 0);
@@ -219,7 +219,7 @@ namespace OpenTK.Tests
             {
                 A[-1, 2] = 0;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 negativeIndexException = true;
             }

@@ -7,18 +7,17 @@
  */
 #endregion
 
-using System;
-using System.Runtime.InteropServices;
+using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using Android.Runtime;
 using Javax.Microedition.Khronos.Egl;
-
 using OpenTK.Graphics;
 using OpenTK.Platform.Egl;
+using System;
+using System.Runtime.InteropServices;
 
-namespace OpenTK.Platform.Android {
-
+namespace OpenTK.Platform.Android
+{
     class AndroidGraphicsContext : EglContext
     {
         public AndroidGraphicsContext(GraphicsMode mode, EglWindowInfo window, IGraphicsContext sharedContext,
@@ -60,14 +59,16 @@ namespace OpenTK.Platform.Android {
             get { return eglWindowInfo.Surface != IntPtr.Zero; }
         }
 
-        public ISurfaceHolder Holder {
-            get {
+        public ISurfaceHolder Holder
+        {
+            get
+            {
                 return refHolder.Target as ISurfaceHolder;
             }
         }
-        public AndroidWindow (ISurfaceHolder holder)
+        public AndroidWindow(ISurfaceHolder holder)
         {
-            refHolder = new WeakReference (holder);
+            refHolder = new WeakReference(holder);
         }
 
         internal EglWindowInfo CreateEglWindowInfo()
@@ -80,7 +81,8 @@ namespace OpenTK.Platform.Android {
         {
             UpdateEglWindowInfo();
 
-            if (refHolder.Target == null) {
+            if (refHolder.Target == null)
+            {
                 eglWindowInfo.CreatePbufferSurface(config);
                 return;
             }
@@ -115,7 +117,7 @@ namespace OpenTK.Platform.Android {
             }
         }
 
-        public void DestroySurface ()
+        public void DestroySurface()
         {
             eglWindowInfo.DestroySurface();
 
@@ -127,37 +129,38 @@ namespace OpenTK.Platform.Android {
             }
         }
 
-        public void TerminateDisplay ()
+        public void TerminateDisplay()
         {
             eglWindowInfo.TerminateDisplay();
         }
 
-#region IDisposable Members
+        #region IDisposable Members
 
-        public void Dispose ()
+        public void Dispose()
         {
-            Dispose (true);
-            GC.SuppressFinalize (this);
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        void Dispose (bool disposing)
+        void Dispose(bool disposing)
         {
             if (!disposed)
             {
-                if (disposing) {
-                    DestroySurface ();
-                    TerminateDisplay ();
+                if (disposing)
+                {
+                    DestroySurface();
+                    TerminateDisplay();
                     refHolder = null;
                     disposed = true;
                 }
             }
         }
 
-        ~AndroidWindow ()
+        ~AndroidWindow()
         {
-            Dispose (false);
+            Dispose(false);
         }
 
-#endregion
+        #endregion
     }
 }

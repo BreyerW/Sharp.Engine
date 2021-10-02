@@ -60,7 +60,7 @@ namespace Newtonsoft.Json.Tests.Documentation.Samples.Serializer
             ]",
                 new JsonSerializerSettings
                 {
-                    Error = delegate(object sender, ErrorEventArgs args)
+                    Error = delegate (object sender, ErrorEventArgs args)
                     {
                         errors.Add(args.ErrorContext.Error.Message);
                         args.ErrorContext.Handled = true;

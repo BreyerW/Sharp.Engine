@@ -1,10 +1,10 @@
 ﻿//MIT, 2017-present, WinterDev
-using System;
-using Poly2Tri;
 using PixelFarm.VectorMath;
+using Poly2Tri;
+using System;
+
 namespace PixelFarm.Contours
 {
-
     public class AnalyzedTriangle
     {
         public readonly int Id;

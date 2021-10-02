@@ -115,7 +115,7 @@ namespace Newtonsoft.Json.Tests.Linq.JsonPath
 
             Assert.IsFalse(compositeExpression.IsMatch(o3, o3));
         }
-        
+
         [Test]
         public void BooleanExpressionTest_RegexEqualsOperator()
         {

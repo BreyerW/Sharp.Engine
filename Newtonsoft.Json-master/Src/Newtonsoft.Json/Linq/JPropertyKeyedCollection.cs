@@ -23,12 +23,12 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
+using Newtonsoft.Json.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json.Utilities;
 
 namespace Newtonsoft.Json.Linq
 {
@@ -191,7 +191,7 @@ namespace Newtonsoft.Json.Linq
             }
         }
 
-        public bool TryGetValue(string key, [NotNullWhen(true)]out JToken? value)
+        public bool TryGetValue(string key, [NotNullWhen(true)] out JToken? value)
         {
             if (_dictionary == null)
             {

@@ -2,9 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+
 namespace ExtMsdfGen
 {
-
     public enum AreaKind : byte
     {
         BorderInside,

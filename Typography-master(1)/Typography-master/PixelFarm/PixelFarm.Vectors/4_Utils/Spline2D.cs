@@ -1,9 +1,5 @@
 ﻿//MIT, from https://github.com/sinbad/UnitySpline2D
 
-using System;
-using System.Collections.Generic;
-
-
 // Utility class for calculating a Cubic multi-segment (Hermite) spline in 2D
 // Hermite splines are convenient because they only need 2 positions and 2
 // tangents per segment, which can be automatically calculated from the surrounding
@@ -20,6 +16,9 @@ using System.Collections.Generic;
 // save/display one in a scene, use the wrapper Spline2DComponent class.
 
 using PixelFarm.VectorMath;
+using System;
+using System.Collections.Generic;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
     public class Spline2D

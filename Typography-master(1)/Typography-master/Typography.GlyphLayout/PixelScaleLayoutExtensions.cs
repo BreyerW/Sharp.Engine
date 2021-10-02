@@ -257,7 +257,7 @@ namespace Typography.TextLayout
                 for (int i = 0; i < finalGlyphCount; ++i)
                 {
 
-                     //all from pen-pos
+                    //all from pen-pos
                     ushort glyphIndex = glyphPositions.GetGlyph(i,
                         out ushort input_offset,
                         out short offsetX,

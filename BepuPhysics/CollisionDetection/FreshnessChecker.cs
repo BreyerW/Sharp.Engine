@@ -52,7 +52,7 @@ namespace BepuPhysics.CollisionDetection
             }
         }
 
-        
+
         public void CheckFreshnessInRegion(int workerIndex, int startIndex, int endIndex)
         {
             var count = endIndex - startIndex;

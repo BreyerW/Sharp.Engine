@@ -10,9 +10,9 @@
 
 using PaintFx;
 using PixelFarm.Drawing;
+
 namespace PaintFx.Effects
 {
-
     public class InvertColorRenderer : EffectRendererBase
     {
         UnaryPixelOps.Invert invertOp = new UnaryPixelOps.Invert();

@@ -1,7 +1,7 @@
 ﻿//MIT, 2014-present, WinterDev
 
-using System;
 using PixelFarm.CpuBlit;
+using System;
 
 namespace PaintLab.Svg
 {

@@ -25,12 +25,11 @@
 //
 #endregion
 
+using OpenTK.Platform;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
-
-using OpenTK.Platform;
+using System.Text;
 
 namespace OpenTK.Graphics
 {
@@ -67,7 +66,7 @@ namespace OpenTK.Graphics
 
         static bool share_contexts = true;
         static bool direct_rendering = true;
-        readonly static object SyncRoot = new object();        
+        readonly static object SyncRoot = new object();
         // Maps OS-specific context handles to GraphicsContext instances.
         readonly static Dictionary<ContextHandle, IGraphicsContext> available_contexts =
             new Dictionary<ContextHandle, IGraphicsContext>();
@@ -122,7 +121,7 @@ namespace OpenTK.Graphics
                     Debug.Print("Requested version: {0}.{1}", major, minor);
 
                     IGraphicsContext shareContext = FindSharedContext();
-                    
+
                     // Todo: Add a DummyFactory implementing IPlatformFactory.
                     if (designMode)
                     {
@@ -563,7 +562,7 @@ namespace OpenTK.Graphics
 
             implementation.LoadAll();
         }
-        
+
         #endregion
 
         #region --- IGraphicsContextInternal Members ---
@@ -676,7 +675,7 @@ namespace OpenTK.Graphics
         /// Marks this context as deleted, but does not actually release unmanaged resources
         /// due to the threading requirements of OpenGL. Use <see cref="GraphicsContext.Dispose()"/>
         /// instead.
-       /// </summary>
+        /// </summary>
         ~GraphicsContext()
         {
             Dispose(false);

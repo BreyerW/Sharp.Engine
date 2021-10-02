@@ -40,8 +40,9 @@
 
 
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
+
 namespace Poly2Tri
 {
     public sealed class DelaunayTriangle

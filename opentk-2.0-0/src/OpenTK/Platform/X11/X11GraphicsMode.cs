@@ -6,13 +6,12 @@
  */
 #endregion
 
+using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
-
-using OpenTK.Graphics;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OpenTK.Platform.X11
 {
@@ -21,7 +20,7 @@ namespace OpenTK.Platform.X11
         // Todo: Add custom visual selection algorithm, instead of ChooseFBConfig/ChooseVisual.
         // It seems the Choose* methods do not take multisampling into account (at least on some
         // drivers).
-        
+
         #region Constructors
 
         public X11GraphicsMode()
@@ -47,10 +46,10 @@ namespace OpenTK.Platform.X11
                 fbconfig = SelectFBConfig(mode);
                 if (fbconfig != IntPtr.Zero)
                     visual = Glx.GetVisualFromFBConfig(display, fbconfig);
-                
+
                 if (visual == IntPtr.Zero)
                     visual = SelectVisual(mode);
-                
+
                 if (visual == IntPtr.Zero)
                 {
                     // Relax parameters and retry

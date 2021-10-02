@@ -24,6 +24,7 @@
 
 using System;
 using img_subpix_const = PixelFarm.CpuBlit.Imaging.ImageFilterLookUpTable.ImgSubPixConst;
+
 namespace PixelFarm.CpuBlit.FragmentProcessing
 {
     /// <summary>

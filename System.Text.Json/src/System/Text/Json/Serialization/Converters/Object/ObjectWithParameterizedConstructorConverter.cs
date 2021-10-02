@@ -75,7 +75,7 @@ namespace System.Text.Json.Serialization.Converters
                 if (state.Current.ObjectState == StackFrameObjectState.None)
                 {
                     state.Current.ObjectState = StackFrameObjectState.StartToken;
-                    BeginRead(ref state, ref reader,  options);
+                    BeginRead(ref state, ref reader, options);
                 }
 
                 if (!ReadConstructorArgumentsWithContinuation(ref state, ref reader, options))

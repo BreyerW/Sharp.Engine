@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Sharp.Core.Editor.UI.Property
 {
-	/* class MaterialDrawer : PropertyDrawer<Material>
+    /* class MaterialDrawer : PropertyDrawer<Material>
 	{
 		//private static MaterialComparer equality = new MaterialComparer();
 		//private Material mat = new Material();

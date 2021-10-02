@@ -21,15 +21,13 @@
 // Arc vertex generator
 //
 //----------------------------------------------------------------------------
-using System;
-using System.Collections.Generic;
 using PixelFarm.Drawing;
 using PixelFarm.VectorMath;
+using System;
+using System.Collections.Generic;
 
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
-
-
     public static class VertexSourceExtensions
     {
 

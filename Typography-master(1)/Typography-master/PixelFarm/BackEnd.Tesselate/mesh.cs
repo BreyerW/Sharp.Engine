@@ -107,6 +107,7 @@
  */
 
 using System;
+
 namespace Tesselate
 {
     // the mesh class 

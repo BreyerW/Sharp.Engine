@@ -4,9 +4,9 @@
  */
 #endregion
 
+using Bind.Structures;
 using System.Collections.Generic;
 using System.IO;
-using Bind.Structures;
 
 namespace Bind
 {

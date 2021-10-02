@@ -936,7 +936,7 @@ namespace Newtonsoft.Json.Tests
             }
 
             TestDateTimeFormat(value, new IsoDateTimeConverter());
-            
+
             if (value is DateTime)
             {
                 Console.WriteLine(XmlConvert.ToString((DateTime)(object)value, XmlDateTimeSerializationMode.RoundtripKind));
@@ -1269,18 +1269,18 @@ namespace Newtonsoft.Json.Tests
             public string One { get; set; }
         }
 
-        
+
         public class OverloadsJsonConverterer : JsonConverter
         {
             private readonly string _type;
-            
+
             // constructor with Type argument
 
             public OverloadsJsonConverterer(Type typeParam)
             {
                 _type = "Type";
             }
-            
+
             public OverloadsJsonConverterer(object objectParam)
             {
                 _type = string.Format("object({0})", objectParam.GetType().FullName);
@@ -1341,7 +1341,7 @@ namespace Newtonsoft.Json.Tests
             {
                 writer.WriteValue(_type);
             }
-            
+
             public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             {
                 throw new NotImplementedException();
@@ -1351,7 +1351,7 @@ namespace Newtonsoft.Json.Tests
             {
                 return objectType == typeof(int);
             }
-            
+
         }
 
         public class OverloadWithTypeParameter
@@ -1368,7 +1368,7 @@ namespace Newtonsoft.Json.Tests
 
             Assert.AreEqual("{\"Overload\":\"Type\"}", json);
         }
-        
+
         public class OverloadWithUnhandledParameter
         {
             [JsonConverter(typeof(OverloadsJsonConverterer), "str")]
@@ -1407,7 +1407,7 @@ namespace Newtonsoft.Json.Tests
             [JsonConverter(typeof(OverloadsJsonConverterer), 1UL)]
             public int Overload { get; set; }
         }
-        
+
         public class OverloadWithShortParameter
         {
             [JsonConverter(typeof(OverloadsJsonConverterer), (short)1)]
@@ -1425,7 +1425,7 @@ namespace Newtonsoft.Json.Tests
             [JsonConverter(typeof(OverloadsJsonConverterer), (sbyte)1)]
             public int Overload { get; set; }
         }
-        
+
         public class OverloadWithByteParameter
         {
             [JsonConverter(typeof(OverloadsJsonConverterer), (byte)1)]
@@ -1455,7 +1455,7 @@ namespace Newtonsoft.Json.Tests
             [JsonConverter(typeof(OverloadsJsonConverterer), 1.5)]
             public int Overload { get; set; }
         }
-        
+
         [Test]
         public void JsonConverterConstructor_OverloadsWithPrimitiveParams()
         {

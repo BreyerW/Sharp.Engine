@@ -35,7 +35,7 @@ namespace System.Text.Json.Serialization.Tests
         [Fact]
         public static void WriteEmptyByteArray()
         {
-            var input = new byte[] {};
+            var input = new byte[] { };
             string json = JsonSerializer.Serialize(input);
             Assert.Equal(@"""""", json);
         }

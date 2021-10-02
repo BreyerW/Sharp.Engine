@@ -25,7 +25,7 @@ namespace Bind.Structures
         /// Creates a new Parameter without type and name.
         /// </summary>
         public Parameter()
-            :base()
+            : base()
         {
         }
 
@@ -165,7 +165,7 @@ namespace Bind.Structures
         #endregion
 
         #region public bool Generic
-        
+
         bool generic;
         public bool Generic
         {
@@ -212,7 +212,7 @@ namespace Bind.Structures
         {
             return direction == "out" ? FlowDirection.Out : direction == "in" ? FlowDirection.In : FlowDirection.Undefined;
         }
-        
+
         #endregion
 
         #region IComparable<Parameter> Members
@@ -234,7 +234,7 @@ namespace Bind.Structures
             return String.Format("{2}{0} {1}",
                 base.ToString(),
                 Name,
-                Reference ? 
+                Reference ?
                     Flow == FlowDirection.Out ? "out " : "ref " :
                     String.Empty);
         }
@@ -367,7 +367,7 @@ namespace Bind.Structures
                 return hasGenericParameters;
             }
         }
-        
+
         #endregion
 
         #region void BuildReferenceAndPointerParametersCache()
@@ -429,7 +429,7 @@ namespace Bind.Structures
         #endregion
 
         #region IList<Parameter> Members
-        
+
         public void Add(Parameter p)
         {
             Parameters.Add(p);

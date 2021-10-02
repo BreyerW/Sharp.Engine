@@ -3,7 +3,6 @@ using System.IO;
 
 namespace DrawingGL.Text
 {
-
     public delegate Stream LoadFontDelegate(string fontFile);
 
     public static class Utility

@@ -113,14 +113,18 @@ namespace OpenTK
         /// <summary>
         /// Gets or sets the value at the index of the Vector.
         /// </summary>
-        public float this[int index] {
-            get{
-                if(index == 0) return X;
-                else if(index == 1) return Y;
+        public float this[int index]
+        {
+            get
+            {
+                if (index == 0) return X;
+                else if (index == 1) return Y;
                 throw new IndexOutOfRangeException("You tried to access this vector at index: " + index);
-            } set{
-                if(index == 0) X = value;
-                else if(index == 1) Y = value;
+            }
+            set
+            {
+                if (index == 0) X = value;
+                else if (index == 1) Y = value;
                 else throw new IndexOutOfRangeException("You tried to set this vector at index: " + index);
             }
         }
@@ -1074,7 +1078,7 @@ namespace OpenTK
             vec.Y *= scale.Y;
             return vec;
         }
-		
+
         /// <summary>
         /// Divides the specified instance by a scalar.
         /// </summary>

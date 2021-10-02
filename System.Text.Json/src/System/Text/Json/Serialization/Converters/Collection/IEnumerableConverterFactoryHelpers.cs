@@ -118,7 +118,7 @@ namespace System.Text.Json.Serialization
 
         public static bool IsImmutableEnumerableType(this Type type)
         {
-            if (!type.IsGenericType|| !type.Assembly.FullName!.StartsWith("System.Collections.Immutable,", StringComparison.Ordinal))
+            if (!type.IsGenericType || !type.Assembly.FullName!.StartsWith("System.Collections.Immutable,", StringComparison.Ordinal))
             {
                 return false;
             }

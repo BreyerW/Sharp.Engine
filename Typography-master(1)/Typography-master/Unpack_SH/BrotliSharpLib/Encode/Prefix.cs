@@ -20,7 +20,7 @@ namespace BrotliSharpLib
             }
             else
             {
-                size_t dist = ((size_t)1 << (int) (postfix_bits + 2u)) +
+                size_t dist = ((size_t)1 << (int)(postfix_bits + 2u)) +
                               (distance_code - BROTLI_NUM_DISTANCE_SHORT_CODES - num_direct_codes);
                 size_t bucket = Log2FloorNonZero(dist) - 1;
                 size_t postfix_mask = (1u << (int)postfix_bits) - 1;
@@ -30,9 +30,9 @@ namespace BrotliSharpLib
                 size_t nbits = bucket - postfix_bits;
                 *code = (ushort)(
                     (BROTLI_NUM_DISTANCE_SHORT_CODES + num_direct_codes +
-                     ((2 * (nbits - 1) + prefix) << (int) postfix_bits) + postfix));
+                     ((2 * (nbits - 1) + prefix) << (int)postfix_bits) + postfix));
                 *extra_bits = (uint)(
-                    (nbits << 24) | ((dist - offset) >> (int) postfix_bits));
+                    (nbits << 24) | ((dist - offset) >> (int)postfix_bits));
             }
         }
     }

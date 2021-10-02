@@ -7,11 +7,11 @@
  */
 #endregion
 
+using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Reflection;
-using OpenTK.Graphics;
+using System.Runtime.InteropServices;
 
 namespace OpenTK.Platform.Windows
 {

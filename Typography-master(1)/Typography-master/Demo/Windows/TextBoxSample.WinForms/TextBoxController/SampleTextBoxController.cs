@@ -2,9 +2,9 @@
 
 using System.Drawing;
 using Typography.TextLayout;
+
 namespace SampleWinForms.UI
 {
-
     class SampleTextBoxControllerForGdi : SampleTextBoxController
     {
         Graphics g;

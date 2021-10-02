@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using static BepuUtilities.GatherScatter;
+
 namespace BepuPhysics.Constraints
 {
     /// <summary>
@@ -162,7 +163,7 @@ namespace BepuPhysics.Constraints
             Vector3Wide.Add(velocityB.Linear, velocityChangeB, out velocityB.Linear);
             Vector3Wide.Add(velocityC.Linear, velocityChangeC, out velocityC.Linear);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WarmStart(ref BodyVelocities velocityA, ref BodyVelocities velocityB, ref BodyVelocities velocityC, ref AreaConstraintProjection projection, ref Vector<float> accumulatedImpulse)
         {

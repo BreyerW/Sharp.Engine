@@ -19,10 +19,9 @@
 //----------------------------------------------------------------------------
 
 using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit.PixelProcessing
 {
-
-
     /// <summary>
     /// access reader /writer to an image buffer
     /// </summary>

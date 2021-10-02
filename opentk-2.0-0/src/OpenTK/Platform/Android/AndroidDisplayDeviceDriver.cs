@@ -14,9 +14,9 @@ namespace OpenTK.Platform.Android
     class AndroidDisplayDeviceDriver : IDisplayDeviceDriver
     {
         static DisplayDevice dev;
-        static AndroidDisplayDeviceDriver ()
+        static AndroidDisplayDeviceDriver()
         {
-            dev = new DisplayDevice ();
+            dev = new DisplayDevice();
             dev.IsPrimary = true;
             dev.BitsPerPixel = 16;
         }
@@ -27,12 +27,12 @@ namespace OpenTK.Platform.Android
         }
 
 
-        public bool TryChangeResolution (DisplayDevice device, DisplayResolution resolution)
+        public bool TryChangeResolution(DisplayDevice device, DisplayResolution resolution)
         {
             return false;
         }
 
-        public bool TryRestoreResolution (DisplayDevice device)
+        public bool TryRestoreResolution(DisplayDevice device)
         {
             return false;
         }

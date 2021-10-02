@@ -3,11 +3,11 @@
 //-----------------------------------  
 using System;
 using System.Collections.Generic;
- 
+
+
 
 namespace ExtMsdfGen
 {
-
     /// <summary>
     /// parameter for msdf generation
     /// </summary>
@@ -33,7 +33,7 @@ namespace ExtMsdfGen
             this.scaleX = scaleX;
             this.scaleY = scaleY;
         }
-         
+
 
     }
     public static class MsdfGlyphGen
@@ -151,7 +151,7 @@ namespace ExtMsdfGen
         //}
         ////---------------------------------------------------------------------
 
-      
+
         public static void PreviewSizeAndLocation(ExtMsdfGen.Shape shape, ExtMsdfGen.MsdfGenParams genParams,
             out int imgW, out int imgH,
             out Vector2 translate1)

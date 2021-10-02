@@ -23,8 +23,8 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-using System.Globalization;
 using Newtonsoft.Json.Serialization;
+using System.Globalization;
 
 namespace Newtonsoft.Json.Tests.TestObjects
 {

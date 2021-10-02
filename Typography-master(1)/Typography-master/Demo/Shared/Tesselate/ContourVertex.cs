@@ -41,6 +41,7 @@
 */
 
 using System;
+
 namespace Tesselate
 {
     public class ContourVertex : IComparable<ContourVertex>

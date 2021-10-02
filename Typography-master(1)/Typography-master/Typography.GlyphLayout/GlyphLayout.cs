@@ -5,8 +5,6 @@ using Typography.OpenFont;
 
 namespace Typography.TextLayout
 {
-
-
     /// <summary>
     /// unscaled glyph-plan
     /// </summary>

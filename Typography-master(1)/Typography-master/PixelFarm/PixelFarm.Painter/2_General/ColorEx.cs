@@ -1,7 +1,7 @@
 ﻿using System;
+
 namespace PixelFarm.Drawing
 {
-
     /// <summary>
     /// Agg's Color Extension
     /// </summary>

@@ -25,12 +25,11 @@
 //
 #endregion
 
+using OpenTK.Graphics;
+using OpenTK.Platform.Windows;
 using System;
 using System.Collections.Generic;
 using System.Text;
-
-using OpenTK.Graphics;
-using OpenTK.Platform.Windows;
 
 namespace OpenTK.Platform.Egl
 {

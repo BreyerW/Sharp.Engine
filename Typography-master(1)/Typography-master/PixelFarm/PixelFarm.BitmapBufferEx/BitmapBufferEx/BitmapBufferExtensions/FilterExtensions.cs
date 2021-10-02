@@ -16,6 +16,7 @@
 //
 
 using System;
+
 namespace BitmapBufferEx
 {
     /// <summary>

@@ -25,10 +25,10 @@
 //
 #endregion
 
+using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using OpenTK.Graphics;
 
 namespace OpenTK.Platform.Egl
 {
@@ -49,13 +49,13 @@ namespace OpenTK.Platform.Egl
             RenderableFlags renderable_flags)
         {
             IntPtr[] configs = new IntPtr[1];
-            int[] attribList = new int[] 
-            { 
+            int[] attribList = new int[]
+            {
                 Egl.SURFACE_TYPE, Egl.WINDOW_BIT,
                 Egl.RENDERABLE_TYPE, (int)renderable_flags,
 
-                Egl.RED_SIZE, color.Red, 
-                Egl.GREEN_SIZE, color.Green, 
+                Egl.RED_SIZE, color.Red,
+                Egl.GREEN_SIZE, color.Green,
                 Egl.BLUE_SIZE, color.Blue,
                 Egl.ALPHA_SIZE, color.Alpha,
 

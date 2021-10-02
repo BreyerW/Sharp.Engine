@@ -32,6 +32,7 @@ using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
 #else
 using NUnit.Framework;
+
 #endif
 
 namespace Newtonsoft.Json.Tests.Issues
@@ -52,7 +53,7 @@ namespace Newtonsoft.Json.Tests.Issues
             // For all tests, if Type(x) is different from Type(y), return false.
             // given x === y, if Type(x) is Null, return true 
             var target = lhs.Null;
-            AssertAll(StrictEquality, target, rhs.Null);            
+            AssertAll(StrictEquality, target, rhs.Null);
             AssertNone(StrictEquality, target, rhs.ErrybodyButNull);
 
             // given x === y, if x is the same Number value as y, return true.
@@ -93,7 +94,7 @@ namespace Newtonsoft.Json.Tests.Issues
 
         // there was going to be an abstractEquality, but check the exception for it's implementation for why that's skipped for now
         private readonly Comparator StrictEquality = (lhs, rhs) => BooleanQueryExpression.EqualsWithStrictMatch(lhs, rhs);
- 
+
         // a bunch of convenience methods for the test belwo
         // these make sure the comparator returns false for all do not wants
         private void AssertNone(Comparator comparator, JValue token, params JValue[][] doNotWant)

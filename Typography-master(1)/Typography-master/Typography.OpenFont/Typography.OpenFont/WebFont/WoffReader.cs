@@ -205,7 +205,7 @@ namespace Typography.WebFont
             using (ByteOrderSwappingBinaryReader reader = new ByteOrderSwappingBinaryReader(inputStream))
             {
                 return Read(reader);
-            } 
+            }
         }
 
         static TableEntryCollection CreateTableEntryCollection(WoffTableDirectory[] woffTableDirs)

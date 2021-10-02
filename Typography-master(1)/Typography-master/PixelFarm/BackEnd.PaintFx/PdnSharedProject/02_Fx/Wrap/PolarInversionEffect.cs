@@ -9,9 +9,9 @@
 //MIT, 2017-present, WinterDev
 
 using PixelFarm.Drawing;
+
 namespace PaintFx.Effects
 {
-
     public class PolarInversionEffRenderer : WrapBasedRenderer
     {
         private double amount;

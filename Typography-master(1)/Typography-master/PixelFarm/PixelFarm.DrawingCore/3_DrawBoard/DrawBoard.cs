@@ -1,9 +1,9 @@
 ﻿//MIT, 2014-present, WinterDev
 
 
+
 namespace PixelFarm.Drawing
 {
-
     public abstract class DrawBoard : System.IDisposable
     {
 
@@ -85,7 +85,7 @@ namespace PixelFarm.Drawing
         public abstract void FillRectangle(Brush brush, float left, float top, float width, float height);
         public abstract void DrawRectangle(Color color, float left, float top, float width, float height);
         //------------------------------------------------------- 
-       
+
         public abstract void FillPolygon(Brush brush, PointF[] points);
         public abstract void FillPolygon(Color color, PointF[] points);
         //-------------------------------------------------------  

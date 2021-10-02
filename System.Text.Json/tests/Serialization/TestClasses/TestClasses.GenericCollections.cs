@@ -92,7 +92,7 @@ namespace System.Text.Json.Serialization.Tests
         // Call only when testing serialization.
         public void Initialize()
         {
-            MyStringIEnumerableWrapper = new StringIEnumerableWrapper(new List<string>{ "Hello" });
+            MyStringIEnumerableWrapper = new StringIEnumerableWrapper(new List<string> { "Hello" });
         }
     }
 
@@ -514,7 +514,7 @@ namespace System.Text.Json.Serialization.Tests
         }
     }
 
-    public class ReadOnlyStringISetWrapper: StringISetWrapper
+    public class ReadOnlyStringISetWrapper : StringISetWrapper
     {
         public override bool IsReadOnly => true;
     }

@@ -24,9 +24,9 @@
 #endregion
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Xml;
-using System.Globalization;
 
 namespace Newtonsoft.Json.Utilities
 {
@@ -231,45 +231,45 @@ namespace Newtonsoft.Json.Utilities
                     break;
 
                 case ParserTimeZone.LocalWestOfUtc:
-                {
-                    TimeSpan offset = new TimeSpan(dateTimeParser.ZoneHour, dateTimeParser.ZoneMinute, 0);
-                    ticks = d.Ticks + offset.Ticks;
-                    if (ticks <= DateTime.MaxValue.Ticks)
                     {
-                        d = new DateTime(ticks, DateTimeKind.Utc).ToLocalTime();
-                    }
-                    else
-                    {
-                        ticks += d.GetUtcOffset().Ticks;
-                        if (ticks > DateTime.MaxValue.Ticks)
+                        TimeSpan offset = new TimeSpan(dateTimeParser.ZoneHour, dateTimeParser.ZoneMinute, 0);
+                        ticks = d.Ticks + offset.Ticks;
+                        if (ticks <= DateTime.MaxValue.Ticks)
                         {
-                            ticks = DateTime.MaxValue.Ticks;
+                            d = new DateTime(ticks, DateTimeKind.Utc).ToLocalTime();
                         }
+                        else
+                        {
+                            ticks += d.GetUtcOffset().Ticks;
+                            if (ticks > DateTime.MaxValue.Ticks)
+                            {
+                                ticks = DateTime.MaxValue.Ticks;
+                            }
 
-                        d = new DateTime(ticks, DateTimeKind.Local);
+                            d = new DateTime(ticks, DateTimeKind.Local);
+                        }
+                        break;
                     }
-                    break;
-                }
                 case ParserTimeZone.LocalEastOfUtc:
-                {
-                    TimeSpan offset = new TimeSpan(dateTimeParser.ZoneHour, dateTimeParser.ZoneMinute, 0);
-                    ticks = d.Ticks - offset.Ticks;
-                    if (ticks >= DateTime.MinValue.Ticks)
                     {
-                        d = new DateTime(ticks, DateTimeKind.Utc).ToLocalTime();
-                    }
-                    else
-                    {
-                        ticks += d.GetUtcOffset().Ticks;
-                        if (ticks < DateTime.MinValue.Ticks)
+                        TimeSpan offset = new TimeSpan(dateTimeParser.ZoneHour, dateTimeParser.ZoneMinute, 0);
+                        ticks = d.Ticks - offset.Ticks;
+                        if (ticks >= DateTime.MinValue.Ticks)
                         {
-                            ticks = DateTime.MinValue.Ticks;
+                            d = new DateTime(ticks, DateTimeKind.Utc).ToLocalTime();
                         }
+                        else
+                        {
+                            ticks += d.GetUtcOffset().Ticks;
+                            if (ticks < DateTime.MinValue.Ticks)
+                            {
+                                ticks = DateTime.MinValue.Ticks;
+                            }
 
-                        d = new DateTime(ticks, DateTimeKind.Local);
+                            d = new DateTime(ticks, DateTimeKind.Local);
+                        }
+                        break;
                     }
-                    break;
-                }
             }
 
             dt = EnsureDateTime(d, dateTimeZoneHandling);

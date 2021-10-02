@@ -6,8 +6,6 @@ using System.Runtime.CompilerServices;
 
 namespace BepuPhysics.CollisionDetection
 {
-
-
     /// <summary>
     /// The cached pair data created by a single worker during the last execution of narrow phase pair processing.
     /// </summary>

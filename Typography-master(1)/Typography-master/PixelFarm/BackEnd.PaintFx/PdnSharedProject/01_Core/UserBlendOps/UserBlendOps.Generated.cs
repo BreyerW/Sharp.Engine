@@ -12,8 +12,9 @@
 // This file is generated at compile time. DO NOT MODIFY!
 
 
-using System;
 using PaintFx;
+using System;
+
 // The generalized alpha compositing formula, "B OVER A" is:
 // C(A,a,B,b) = bB + aA - baA
 // where:

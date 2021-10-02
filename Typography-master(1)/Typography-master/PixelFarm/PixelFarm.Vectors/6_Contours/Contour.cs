@@ -1,8 +1,7 @@
 ﻿//MIT, 2016-present, WinterDev
+using PixelFarm.VectorMath;
 using System;
 using System.Collections.Generic;
-
-using PixelFarm.VectorMath;
 
 namespace PixelFarm.Contours
 {

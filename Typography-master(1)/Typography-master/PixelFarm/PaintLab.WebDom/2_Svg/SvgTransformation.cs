@@ -3,9 +3,9 @@
 //license : Microsoft Public License (MS-PL) 
 // 
 
+
 namespace PaintLab.Svg
 {
-
     public enum SvgTransformKind
     {
         Matrix,

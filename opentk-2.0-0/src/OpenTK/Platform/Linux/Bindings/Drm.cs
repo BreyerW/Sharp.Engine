@@ -150,11 +150,11 @@ namespace OpenTK.Platform.Linux
         public ModeInfo* modes;
 
         public int count_props;
-        public int *props;
-        public long *prop_values;
+        public int* props;
+        public long* prop_values;
 
         public int count_encoders;
-        public int *encoders;
+        public int* encoders;
     }
 
     struct ModeCrtc

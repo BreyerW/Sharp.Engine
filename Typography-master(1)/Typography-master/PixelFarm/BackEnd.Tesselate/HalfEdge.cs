@@ -40,6 +40,7 @@
 **
 */
 
+
 namespace Tesselate
 {
     public class HalfEdge

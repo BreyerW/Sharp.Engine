@@ -4,7 +4,6 @@ using System;
 
 namespace Typography.OpenFont
 {
-
     class InvalidFontException : Exception
     {
         /// <summary>

@@ -1,11 +1,11 @@
 ﻿//MIT, 2014-present, WinterDev
 
-using System.Drawing;
 using PixelFarm.CpuBlit;
 using PixelFarm.Drawing.Fonts;
+using System.Drawing;
+
 namespace SampleWinForms.UI
 {
-
     class SampleTextBoxControllerForPixelFarm : SampleTextBoxController
     {
         Graphics g;

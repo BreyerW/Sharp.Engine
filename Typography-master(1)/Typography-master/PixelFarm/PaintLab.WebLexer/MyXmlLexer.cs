@@ -1,6 +1,7 @@
 ﻿//BSD, 2014-present, WinterDev
 
 using LayoutFarm.WebLexer;
+
 namespace LayoutFarm.WebDom.Parser
 {
     public sealed partial class MyXmlLexer : XmlLexer

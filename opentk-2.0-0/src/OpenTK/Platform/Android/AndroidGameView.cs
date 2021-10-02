@@ -7,30 +7,28 @@
  */
 #endregion
 
+using Android.Content;
+using Android.Graphics;
+using Android.Runtime;
+using Android.Util;
+using Android.Views;
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Platform;
+using OpenTK.Platform.Android;
+using OpenTK.Platform.Egl;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Timers;
 using System.Threading;
 using System.Threading.Tasks;
-
-using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Platform;
-using OpenTK.Platform.Android;
-
-using Android.Content;
-using Android.Util;
-using Android.Views;
-using Android.Runtime;
-using Android.Graphics;
-using OpenTK.Platform.Egl;
+using System.Timers;
 
 namespace OpenTK.Platform.Android
 {
-    [Register ("opentk_1_1/platform/android/AndroidGameView")]
+    [Register("opentk_1_1/platform/android/AndroidGameView")]
     public partial class AndroidGameView : GameViewBase, ISurfaceHolderCallback
     {
         bool disposed;
@@ -39,7 +37,7 @@ namespace OpenTK.Platform.Android
         ISurfaceHolder mHolder;
         GLCalls gl;
         AndroidWindow windowInfo;
-        Object ticking = new Object ();
+        Object ticking = new Object();
         bool stopped = true;
         bool renderOn = false;
         bool sizeChanged = false;
@@ -56,25 +54,25 @@ namespace OpenTK.Platform.Android
         System.Diagnostics.Stopwatch stopWatch;
         double tick = 0;
 
-        [Register (".ctor", "(Landroid/content/Context;)V", "")]
-        public AndroidGameView (Context context) : base (context)
+        [Register(".ctor", "(Landroid/content/Context;)V", "")]
+        public AndroidGameView(Context context) : base(context)
         {
-            Init ();
+            Init();
         }
 
-        [Register (".ctor", "(Landroid/content/Context;Landroid/util/AttributeSet;)V", "")]
-        public AndroidGameView (Context context, IAttributeSet attrs) : base (context, attrs)
+        [Register(".ctor", "(Landroid/content/Context;Landroid/util/AttributeSet;)V", "")]
+        public AndroidGameView(Context context, IAttributeSet attrs) : base(context, attrs)
         {
-            Init ();
+            Init();
         }
 
-        public AndroidGameView (IntPtr handle, global::Android.Runtime.JniHandleOwnership transfer)
-            : base (handle, transfer)
+        public AndroidGameView(IntPtr handle, global::Android.Runtime.JniHandleOwnership transfer)
+            : base(handle, transfer)
         {
-            Init ();
+            Init();
         }
 
-        private void Init ()
+        private void Init()
         {
             // default
             ContextRenderingApi = GLVersion.ES1;
@@ -82,42 +80,42 @@ namespace OpenTK.Platform.Android
             RenderThreadRestartRetries = 3;
 
             // Add callback to get the SurfaceCreated etc events
-            mHolder.AddCallback (this);
+            mHolder.AddCallback(this);
             // Force the SurfaceType to be Gpu to API_11 and earlier
             // it is ignored in later API's
-            mHolder.SetType (SurfaceType.Gpu);
-            windowInfo = new AndroidWindow (mHolder);
+            mHolder.SetType(SurfaceType.Gpu);
+            windowInfo = new AndroidWindow(mHolder);
 
-            pauseSignal = new ManualResetEvent (true);
+            pauseSignal = new ManualResetEvent(true);
         }
 
-        public void SurfaceCreated (ISurfaceHolder holder)
+        public void SurfaceCreated(ISurfaceHolder holder)
         {
-            log ("SurfaceCreated");
+            log("SurfaceCreated");
 
             callMakeCurrent = true;
-            CreateSurface ();
+            CreateSurface();
 
             // Surface size or format has changed
             surfaceRect = holder.SurfaceFrame;
-            size = new Size (surfaceRect.Right - surfaceRect.Left, surfaceRect.Bottom - surfaceRect.Top);
+            size = new Size(surfaceRect.Right - surfaceRect.Left, surfaceRect.Bottom - surfaceRect.Top);
 
-            LoadInternal (EventArgs.Empty);
+            LoadInternal(EventArgs.Empty);
         }
 
-        public void SurfaceDestroyed (ISurfaceHolder holder)
+        public void SurfaceDestroyed(ISurfaceHolder holder)
         {
-            log ("SurfaceDestroyed");
+            log("SurfaceDestroyed");
 
             // TODO: Somehow DestroySurface is being called twice (once by SurfaceDestroyed and once by UnloadInternal->DestroyFrameBuffer)
             DestroySurface();
 
-            UnloadInternal (EventArgs.Empty);
+            UnloadInternal(EventArgs.Empty);
         }
 
-        public void SurfaceChanged (ISurfaceHolder holder, Format format, int w, int h)
+        public void SurfaceChanged(ISurfaceHolder holder, Format format, int w, int h)
         {
-            log ("SurfaceChanged");
+            log("SurfaceChanged");
 
             callMakeCurrent = true;
 
@@ -126,53 +124,54 @@ namespace OpenTK.Platform.Android
 
             // Surface size or format has changed
             surfaceRect = holder.SurfaceFrame;
-            size = new Size (surfaceRect.Right - surfaceRect.Left, surfaceRect.Bottom - surfaceRect.Top);
+            size = new Size(surfaceRect.Right - surfaceRect.Left, surfaceRect.Bottom - surfaceRect.Top);
 
-            if (OpenTK.Graphics.GraphicsContext.CurrentContextHandle.Handle != IntPtr.Zero && RenderOnUIThread) {
-                GLCalls.Viewport (0, 0, size.Width, size.Height);
-                GLCalls.Scissor (0, 0, size.Width, size.Height);
+            if (OpenTK.Graphics.GraphicsContext.CurrentContextHandle.Handle != IntPtr.Zero && RenderOnUIThread)
+            {
+                GLCalls.Viewport(0, 0, size.Width, size.Height);
+                GLCalls.Scissor(0, 0, size.Width, size.Height);
             }
 
-            OnResize (EventArgs.Empty);
+            OnResize(EventArgs.Empty);
         }
 
-        public override void Close ()
+        public override void Close()
         {
-            EnsureUndisposed ();
-            Stop ();
-            base.Close ();
-            DestroyContext ();
-            windowInfo.TerminateDisplay ();
+            EnsureUndisposed();
+            Stop();
+            base.Close();
+            DestroyContext();
+            windowInfo.TerminateDisplay();
         }
 
-        protected override void Dispose (bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposed)
                 return;
 
             // Stop the timer before anything else
-            StopThread ();
+            StopThread();
 
             if (disposing)
-                OnDisposed (EventArgs.Empty);
+                OnDisposed(EventArgs.Empty);
             disposed = true;
 
-            base.Dispose (disposing);
+            base.Dispose(disposing);
         }
 
-        protected virtual void DestroyFrameBuffer ()
+        protected virtual void DestroyFrameBuffer()
         {
             // TODO: Somehow DestroySurface is being called twice (once by SurfaceDestroyed and once by UnloadInternal->DestroyFrameBuffer)
             DestroySurface();
         }
 
-        public override void MakeCurrent ()
+        public override void MakeCurrent()
         {
-            EnsureUndisposed ();
-            AssertContext ();
+            EnsureUndisposed();
+            AssertContext();
             try
             {
-                GraphicsContext.MakeCurrent (WindowInfo);
+                GraphicsContext.MakeCurrent(WindowInfo);
             }
             catch (EglException e)
             {
@@ -184,84 +183,85 @@ namespace OpenTK.Platform.Android
             }
         }
 
-        protected override void OnContextLost (EventArgs e)
+        protected override void OnContextLost(EventArgs e)
         {
-            base.OnContextLost (e);
-            CreateContext ();
-            GraphicsContext.MakeCurrent (WindowInfo);
+            base.OnContextLost(e);
+            CreateContext();
+            GraphicsContext.MakeCurrent(WindowInfo);
         }
 
-        public override void SwapBuffers ()
+        public override void SwapBuffers()
         {
-            EnsureUndisposed ();
-            AssertContext ();
+            EnsureUndisposed();
+            AssertContext();
 
             if (Context != null)
             {
                 Context.SwapBuffers();
-            } else
-                GraphicsContext.SwapBuffers ();
+            }
+            else
+                GraphicsContext.SwapBuffers();
         }
 
         double updates;
-        public override void Run ()
+        public override void Run()
         {
-            EnsureUndisposed ();
+            EnsureUndisposed();
             updates = 0;
 #if TIMING
             targetFps = currentFps = 0;
             avgFps = 1;
 #endif
             restartCounter = 0;
-            StartThread ();
+            StartThread();
         }
 
-        public override void Run (double updatesPerSecond)
+        public override void Run(double updatesPerSecond)
         {
-            EnsureUndisposed ();
+            EnsureUndisposed();
 #if TIMING
             avgFps = targetFps = currentFps = updatesPerSecond;
 #endif
             updates = 1000 / updatesPerSecond;
             restartCounter = 0;
-            StartThread ();
+            StartThread();
         }
 
-        public void Stop ()
+        public void Stop()
         {
-            EnsureUndisposed ();
+            EnsureUndisposed();
 
-            StopThread ();
-            UnloadInternal (EventArgs.Empty);
+            StopThread();
+            UnloadInternal(EventArgs.Empty);
         }
 
-        public virtual void Pause ()
+        public virtual void Pause()
         {
-            log ("Pause");
-            EnsureUndisposed ();
-            PauseThread ();
+            log("Pause");
+            EnsureUndisposed();
+            PauseThread();
         }
 
-        public virtual void Resume ()
+        public virtual void Resume()
         {
-            log ("Resume");
-            EnsureUndisposed ();
-            ResumeThread ();
+            log("Resume");
+            EnsureUndisposed();
+            ResumeThread();
         }
 
-#region Private
-        void LoadInternal (EventArgs e)
+        #region Private
+        void LoadInternal(EventArgs e)
         {
-            OnLoad (e);
+            OnLoad(e);
         }
 
-        void UnloadInternal (EventArgs e)
+        void UnloadInternal(EventArgs e)
         {
-            OnUnload (e);
-            DestroyFrameBuffer ();
+            OnUnload(e);
+            DestroyFrameBuffer();
         }
 
-        void RenderFrameInternal (FrameEventArgs e)
+        void RenderFrameInternal(FrameEventArgs e)
         {
 #if TIMING
             Mark ();
@@ -270,9 +270,9 @@ namespace OpenTK.Platform.Android
                 return;
 
             if (autoSetContextOnRenderFrame)
-                MakeCurrent ();
+                MakeCurrent();
 
-            OnRenderFrame (e);
+            OnRenderFrame(e);
         }
 
 #if TIMING
@@ -303,24 +303,24 @@ namespace OpenTK.Platform.Android
         }
 #endif
 
-        void UpdateFrameInternal (FrameEventArgs e)
+        void UpdateFrameInternal(FrameEventArgs e)
         {
             if (!ReadyToRender)
                 return;
 
-            OnUpdateFrame (e);
+            OnUpdateFrame(e);
         }
 
-        void EnsureUndisposed ()
+        void EnsureUndisposed()
         {
             if (disposed)
-                throw new ObjectDisposedException ("");
+                throw new ObjectDisposedException("");
         }
 
-        void AssertContext ()
+        void AssertContext()
         {
             if (GraphicsContext == null)
-                throw new InvalidOperationException ("Operation requires a GraphicsContext, which hasn't been created yet.");
+                throw new InvalidOperationException("Operation requires a GraphicsContext, which hasn't been created yet.");
         }
 
         void CreateSurface()
@@ -345,9 +345,9 @@ namespace OpenTK.Platform.Android
             windowInfo.DestroySurface();
         }
 
-        void CreateContext ()
+        void CreateContext()
         {
-            log ("CreateContext");
+            log("CreateContext");
 
             // Setup GraphicsMode to default if not set
             if (GraphicsMode == null)
@@ -356,10 +356,11 @@ namespace OpenTK.Platform.Android
             GraphicsContext = new GraphicsContext(GraphicsMode, WindowInfo, (int)ContextRenderingApi, 0, GraphicsContextFlags.Embedded);
         }
 
-        void DestroyContext ()
+        void DestroyContext()
         {
-            if (GraphicsContext != null) {
-                GraphicsContext.Dispose ();
+            if (GraphicsContext != null)
+            {
+                GraphicsContext.Dispose();
                 GraphicsContext = null;
             }
         }
@@ -368,9 +369,9 @@ namespace OpenTK.Platform.Android
         public int RenderThreadRestartRetries { get; set; }
         public Exception RenderThreadException;
 
-        void StartThread ()
+        void StartThread()
         {
-            log ("StartThread");
+            log("StartThread");
 
             renderOn = true;
             stopped = false;
@@ -379,73 +380,87 @@ namespace OpenTK.Platform.Android
             if (source != null)
                 return;
 
-            source = new CancellationTokenSource ();
+            source = new CancellationTokenSource();
             RenderThreadException = null;
-            renderTask = Task.Factory.StartNew ((k) => {
-                try {
-                    stopWatch = System.Diagnostics.Stopwatch.StartNew ();
+            renderTask = Task.Factory.StartNew((k) =>
+            {
+                try
+                {
+                    stopWatch = System.Diagnostics.Stopwatch.StartNew();
                     tick = 0;
                     renderingThread = Thread.CurrentThread;
                     var token = (CancellationToken)k;
-                    while (true) {
+                    while (true)
+                    {
                         if (token.IsCancellationRequested)
                             return;
 
                         tick = stopWatch.Elapsed.TotalMilliseconds;
 
-                        pauseSignal.WaitOne ();
+                        pauseSignal.WaitOne();
 
-                        if (!RenderOnUIThread && callMakeCurrent) {
-                            MakeCurrent ();
+                        if (!RenderOnUIThread && callMakeCurrent)
+                        {
+                            MakeCurrent();
                             callMakeCurrent = false;
                         }
 
                         if (RenderOnUIThread)
-                            global::Android.App.Application.SynchronizationContext.Send (_ => {
-                                RunIteration (token);
+                            global::Android.App.Application.SynchronizationContext.Send(_ =>
+                            {
+                                RunIteration(token);
                             }, null);
                         else
-                            RunIteration (token);
+                            RunIteration(token);
 
-                        if (updates > 0) {
+                        if (updates > 0)
+                        {
                             var t = updates - (stopWatch.Elapsed.TotalMilliseconds - tick);
-                            if (t > 0) {
+                            if (t > 0)
+                            {
 #if TIMING
                                 //Log.Verbose ("AndroidGameView", "took {0:F2}ms, should take {1:F2}ms, sleeping for {2:F2}", stopWatch.Elapsed.TotalMilliseconds - tick, updates, t);
 #endif
                                 if (token.IsCancellationRequested)
                                     return;
 
-                                pauseSignal.Reset ();
-                                pauseSignal.WaitOne ((int)t);
+                                pauseSignal.Reset();
+                                pauseSignal.WaitOne((int)t);
                                 if (renderOn)
-                                    pauseSignal.Set ();
+                                    pauseSignal.Set();
                             }
                         }
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     RenderThreadException = e;
                 }
-            }, source.Token).ContinueWith ((t) => {
-                if (!source.IsCancellationRequested) {
+            }, source.Token).ContinueWith((t) =>
+            {
+                if (!source.IsCancellationRequested)
+                {
                     restartCounter++;
                     source = null;
                     if (restartCounter >= RenderThreadRestartRetries)
-                        OnRenderThreadExited (null);
-                    else {
+                        OnRenderThreadExited(null);
+                    else
+                    {
                         callMakeCurrent = true;
-                        StartThread ();
+                        StartThread();
                     }
-                } else {
+                }
+                else
+                {
                     restartCounter = 0;
                     source = null;
                 }
             });
         }
 
-        void StopThread ()
+        void StopThread()
         {
-            log ("StopThread");
+            log("StopThread");
             restartCounter = 0;
             if (source == null)
                 return;
@@ -453,39 +468,41 @@ namespace OpenTK.Platform.Android
             stopped = true;
             renderOn = false;
 
-            source.Cancel ();
+            source.Cancel();
 
             // if the render thread is paused, let it run so it exits
-            pauseSignal.Set ();
-            stopWatch.Stop ();
+            pauseSignal.Set();
+            stopWatch.Stop();
         }
 
-        void PauseThread ()
+        void PauseThread()
         {
-            log ("PauseThread");
+            log("PauseThread");
             restartCounter = 0;
             if (source == null)
                 return;
 
-            pauseSignal.Reset ();
+            pauseSignal.Reset();
             renderOn = false;
         }
 
-        void ResumeThread ()
+        void ResumeThread()
         {
-            log ("ResumeThread");
+            log("ResumeThread");
             restartCounter = 0;
             if (source == null)
                 return;
 
-            if (!renderOn) {
+            if (!renderOn)
+            {
                 tick = 0;
                 renderOn = true;
-                pauseSignal.Set ();
+                pauseSignal.Set();
             }
         }
 
-        bool ReadyToRender {
+        bool ReadyToRender
+        {
             get { return windowInfo.HasSurface && renderOn && !stopped; }
         }
 
@@ -497,7 +514,7 @@ namespace OpenTK.Platform.Android
         FrameEventArgs renderEventArgs;
 
         // this method is called on the main thread if RenderOnUIThread is true
-        void RunIteration (CancellationToken token)
+        void RunIteration(CancellationToken token)
         {
             if (token.IsCancellationRequested)
                 return;
@@ -505,28 +522,30 @@ namespace OpenTK.Platform.Android
             if (!ReadyToRender)
                 return;
 
-            updateEventArgs = new FrameEventArgs ();
+            updateEventArgs = new FrameEventArgs();
             curUpdateTime = DateTime.Now;
-            if (prevUpdateTime.Ticks != 0) {
+            if (prevUpdateTime.Ticks != 0)
+            {
                 var t = (curUpdateTime - prevUpdateTime).TotalSeconds;
                 updateEventArgs.Time = t < 0 ? 0 : t;
             }
 
-            UpdateFrameInternal (updateEventArgs);
+            UpdateFrameInternal(updateEventArgs);
             prevUpdateTime = curUpdateTime;
 
-            renderEventArgs = new FrameEventArgs ();
+            renderEventArgs = new FrameEventArgs();
             curRenderTime = DateTime.Now;
-            if (prevRenderTime.Ticks == 0) {
+            if (prevRenderTime.Ticks == 0)
+            {
                 var t = (curRenderTime - prevRenderTime).TotalSeconds;
                 renderEventArgs.Time = t < 0 ? 0 : t;
             }
 
-            RenderFrameInternal (renderEventArgs);
+            RenderFrameInternal(renderEventArgs);
             prevRenderTime = curRenderTime;
         }
 
-        partial void log (string msg);
+        partial void log(string msg);
 
 #if LOGGING
         partial void log (string msg)
@@ -542,42 +561,52 @@ namespace OpenTK.Platform.Android
             global::Android.Util.Log.Debug ("AndroidGameView", String.Format("width:{0} height:{1} size:{2} surfaceRect:{3}", Width, Height, size, surfaceRect));
         }
 #endif
-#endregion
+        #endregion
 
-#region Properties
+        #region Properties
 
 
-        public bool AutoSetContextOnRenderFrame {
-            get {
+        public bool AutoSetContextOnRenderFrame
+        {
+            get
+            {
                 return autoSetContextOnRenderFrame;
             }
-            set {
+            set
+            {
                 autoSetContextOnRenderFrame = value;
             }
         }
 
-        public bool RenderOnUIThread {
-            get {
+        public bool RenderOnUIThread
+        {
+            get
+            {
                 return renderOnUIThread;
             }
-            set {
+            set
+            {
                 renderOnUIThread = value;
             }
         }
 
-        GLCalls GLCalls {
-            get {
+        GLCalls GLCalls
+        {
+            get
+            {
                 if (gl == null || gl.Version != ContextRenderingApi)
-                    gl = GLCalls.GetGLCalls (ContextRenderingApi);
+                    gl = GLCalls.GetGLCalls(ContextRenderingApi);
                 return gl;
             }
         }
 
-        IGraphicsContext Context {
+        IGraphicsContext Context
+        {
             get { return GraphicsContext; }
         }
 
-        public GraphicsMode GraphicsMode {
+        public GraphicsMode GraphicsMode
+        {
             get; set;
         }
 
@@ -586,8 +615,10 @@ namespace OpenTK.Platform.Android
         public Format SurfaceFormat
         {
             get { return surfaceFormat; }
-            set {
-                if (windowInfo.HasSurface) {
+            set
+            {
+                if (windowInfo.HasSurface)
+                {
                     throw new InvalidOperationException("The Surface has already been created");
                 }
                 surfaceFormat = value;
@@ -598,14 +629,16 @@ namespace OpenTK.Platform.Android
         GLVersion api;
         public GLVersion ContextRenderingApi
         {
-            get {
-                EnsureUndisposed ();
+            get
+            {
+                EnsureUndisposed();
                 return api;
             }
-            set {
-                EnsureUndisposed ();
+            set
+            {
+                EnsureUndisposed();
                 if (GraphicsContext != null)
-                    throw new NotSupportedException ("Can't change RenderingApi after GraphicsContext is constructed.");
+                    throw new NotSupportedException("Can't change RenderingApi after GraphicsContext is constructed.");
                 this.api = value;
             }
         }
@@ -613,22 +646,27 @@ namespace OpenTK.Platform.Android
         /// <summary>The visibility of the window. Always returns true.</summary>
         /// <value></value>
         /// <exception cref="T:System.ObjectDisposed">The instance has been disposed</exception>
-        public new virtual bool Visible {
-            get {
-                EnsureUndisposed ();
+        public new virtual bool Visible
+        {
+            get
+            {
+                EnsureUndisposed();
                 return true;
             }
-            set {
-                EnsureUndisposed ();
+            set
+            {
+                EnsureUndisposed();
             }
         }
 
         /// <summary>Gets information about the containing window.</summary>
         /// <value>By default, returns an instance of <see cref="F:OpenTK.Platform.Android.AndroidWindow" /></value>
         /// <exception cref="T:System.ObjectDisposed">The instance has been disposed</exception>
-        public override IWindowInfo WindowInfo {
-            get {
-                EnsureUndisposed ();
+        public override IWindowInfo WindowInfo
+        {
+            get
+            {
+                EnsureUndisposed();
                 return windowInfo;
             }
         }
@@ -636,41 +674,49 @@ namespace OpenTK.Platform.Android
         /// <summary>Always returns <see cref="F:OpenTK.WindowState.Normal" />.</summary>
         /// <value></value>
         /// <exception cref="T:System.ObjectDisposed">The instance has been disposed</exception>
-        public override WindowState WindowState {
-            get {
-                EnsureUndisposed ();
+        public override WindowState WindowState
+        {
+            get
+            {
+                EnsureUndisposed();
                 return WindowState.Normal;
             }
-            set {}
+            set { }
         }
 
         /// <summary>Always returns <see cref="F:OpenTK.WindowBorder.Hidden" />.</summary>
         /// <value></value>
         /// <exception cref="T:System.ObjectDisposed">The instance has been disposed</exception>
-        public override WindowBorder WindowBorder {
-            get {
-                EnsureUndisposed ();
+        public override WindowBorder WindowBorder
+        {
+            get
+            {
+                EnsureUndisposed();
                 return WindowBorder.Hidden;
             }
-            set {}
+            set { }
         }
 
         /// <summary>The size of the current view.</summary>
         /// <value>A <see cref="T:System.Drawing.Size" /> which is the size of the current view.</value>
         /// <exception cref="T:System.ObjectDisposed">The instance has been disposed</exception>
-        public override Size Size {
-            get {
-                EnsureUndisposed ();
+        public override Size Size
+        {
+            get
+            {
+                EnsureUndisposed();
                 return size;
             }
-            set {
-                EnsureUndisposed ();
-                if (size != value) {
+            set
+            {
+                EnsureUndisposed();
+                if (size != value)
+                {
                     size = value;
-                    OnResize (EventArgs.Empty);
+                    OnResize(EventArgs.Empty);
                 }
             }
         }
-#endregion
+        #endregion
     }
 }

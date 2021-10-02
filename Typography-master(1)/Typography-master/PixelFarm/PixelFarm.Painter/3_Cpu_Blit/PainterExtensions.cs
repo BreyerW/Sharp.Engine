@@ -20,6 +20,7 @@
 //----------------------------------------------------------------------------
 
 using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit
 {
     public static class PainterExtensions
@@ -104,7 +105,7 @@ namespace PixelFarm.CpuBlit
 
             p.FillColor = prevColor;
         }
-        
+
 #if DEBUG
         static int dbugId = 0;
 #endif

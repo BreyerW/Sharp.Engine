@@ -1,11 +1,9 @@
 ﻿//MIT, 2014-present, WinterDev 
 using System;
 using System.Collections.Generic;
-
-
+using Typography.Contours;
 using Typography.OpenFont;
 using Typography.OpenFont.Extensions;
-using Typography.Contours;
 
 namespace PixelFarm.Drawing.Fonts
 {

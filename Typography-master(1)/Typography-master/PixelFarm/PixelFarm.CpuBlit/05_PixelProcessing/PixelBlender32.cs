@@ -28,6 +28,7 @@
 #define USE_BLENDER
 
 using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit.PixelProcessing
 {
     public abstract class PixelBlender32

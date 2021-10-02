@@ -3,11 +3,11 @@
 
 
 using System.IO;
+using Typography.OpenFont.MathGlyphs;
 
 
 namespace Typography.OpenFont.MathGlyphs
 {
-
     public struct MathValueRecord
     {
         //MathValueRecord
@@ -535,8 +535,6 @@ namespace Typography.OpenFont.MathGlyphs
 
 namespace Typography.OpenFont.Tables
 {
-    using Typography.OpenFont.MathGlyphs;
-
     static class MathValueRecordReaderHelper
     {
         public static MathValueRecord ReadMathValueRecord(this BinaryReader reader)

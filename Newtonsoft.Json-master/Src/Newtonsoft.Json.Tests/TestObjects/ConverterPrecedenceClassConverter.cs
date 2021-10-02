@@ -23,10 +23,10 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-using System;
-using System.Globalization;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Utilities;
+using System;
+using System.Globalization;
 
 namespace Newtonsoft.Json.Tests.TestObjects
 {

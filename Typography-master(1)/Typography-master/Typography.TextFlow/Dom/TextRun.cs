@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Typography.TextLayout
 {
-
     public class TextRunFontStyle
     {
         //font spec

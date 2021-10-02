@@ -294,7 +294,7 @@ namespace Typography.OpenFont.Tables
                                         inputGlyphs.AppendGlyphAdvance(i + 1, v2.XAdvance, 0);
                                     }
                                 }
-                            } 
+                            }
                         }
 
                     }

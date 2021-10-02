@@ -1,11 +1,10 @@
 ﻿//MIT, 2014-2017, WinterDev  
 
-using System;
-using System.Collections.Generic;
-using OpenTK.Graphics.ES20;
-
 //
 using DrawingGL.Text;
+using OpenTK.Graphics.ES20;
+using System;
+using System.Collections.Generic;
 
 namespace DrawingGL
 {
@@ -134,7 +133,7 @@ namespace DrawingGL
 
                 _fillShader.FillTriangles(
                     run._tessData,
-                    run._vertextCount ,
+                    run._vertextCount,
                     this.FillColor
                     );
             }

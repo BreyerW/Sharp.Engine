@@ -75,10 +75,10 @@ namespace OpenTK.Platform.MacOS
         internal static extern IntPtr dlopen(String fileName, int flags);
         [DllImport(Library)]
         internal static extern int dlclose(IntPtr handle);
-        [DllImport (Library)]
-        internal static extern IntPtr dlsym (IntPtr handle, string symbol);
-        [DllImport (Library)]
-        internal static extern IntPtr dlsym (IntPtr handle, IntPtr symbol);
+        [DllImport(Library)]
+        internal static extern IntPtr dlsym(IntPtr handle, string symbol);
+        [DllImport(Library)]
+        internal static extern IntPtr dlsym(IntPtr handle, IntPtr symbol);
 
         public static IntPtr GetAddress(string function)
         {

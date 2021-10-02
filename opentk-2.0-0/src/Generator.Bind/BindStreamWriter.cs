@@ -27,11 +27,11 @@
 
 #endregion
 
+using Bind.Structures;
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
-using Bind.Structures;
-using Enum=Bind.Structures.Enum;
+using Enum = Bind.Structures.Enum;
 
 namespace Bind
 {
@@ -66,7 +66,7 @@ namespace Bind
             if (indent_level > 0)
                 --indent_level;
         }
-        
+
         public void Write(WriteOptions options, string value)
         {
             var lines = value.Split(SplitStrings, StringSplitOptions.None);

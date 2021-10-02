@@ -24,10 +24,10 @@
 #endregion
 
 #if !(NET40 || NET35 || NET20 || DNXCORE50) || NETSTANDARD1_3 || NETSTANDARD2_0
+using Microsoft.FSharp.Core;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Microsoft.FSharp.Core;
 
 namespace Newtonsoft.Json.Tests.TestObjects.Money
 {

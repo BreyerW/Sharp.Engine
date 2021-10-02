@@ -1,9 +1,11 @@
 ﻿//MIT, 2014-present, WinterDev    
 using System;
 using System.Collections.Generic;
-using Typography.OpenFont;
-using Typography.FontManagement;
 using System.IO;
+using Typography.FontManagement;
+using Typography.OpenFont;
+using Typography.TextBreak;
+using Typography.TextLayout;
 
 namespace Typography.TextLayout
 {
@@ -19,8 +21,6 @@ namespace Typography.TextLayout
 
 namespace Typography.TextServices
 {
-    using Typography.TextBreak;
-    using Typography.TextLayout;
     public class TextServices
     {
         //user can do text shaping by their own

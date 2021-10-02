@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Squid.Xml;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Squid.Xml;
 
 namespace Squid
 {
@@ -23,7 +23,7 @@ namespace Squid
         /// </summary>
         /// <value>The tag.</value>
         [Hidden, XmlIgnore]
-        public object Tag{ get; set; }
+        public object Tag { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ControlStyle"/> class.

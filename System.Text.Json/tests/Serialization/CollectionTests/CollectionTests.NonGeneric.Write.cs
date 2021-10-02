@@ -217,7 +217,7 @@ namespace System.Text.Json.Serialization.Tests
         [Fact]
         public static void WritePrimitiveStack()
         {
-            Stack input = new Stack( new List<int> { 1, 2 });
+            Stack input = new Stack(new List<int> { 1, 2 });
 
             string json = JsonSerializer.Serialize(input);
             Assert.Equal("[2,1]", json);

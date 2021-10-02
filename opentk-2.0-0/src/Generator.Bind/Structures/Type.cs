@@ -182,7 +182,7 @@ namespace Bind.Structures
 
         // Set to true if parameter is an enum.
         public bool IsEnum { get; set; }
-        
+
         #region public bool CLSCompliant
 
         public bool CLSCompliant

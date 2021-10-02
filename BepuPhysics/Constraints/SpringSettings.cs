@@ -75,7 +75,7 @@ namespace BepuPhysics.Constraints
         /// Gets or sets the ratio of the spring's actual damping to its critical damping. 0 is undamped, 1 is critically damped, and higher values are overdamped.
         /// </summary>
         public float DampingRatio { get { return TwiceDampingRatio / 2f; } set { TwiceDampingRatio = value * 2; } }
-        
+
         /// <summary>
         /// Checks if a spring settings instance contains valid values.
         /// </summary>
@@ -98,6 +98,6 @@ namespace BepuPhysics.Constraints
             Debug.Assert(Validate(this), "Spring settings must have positive frequency and nonnegative damping ratio.");
         }
 
-       
+
     }
 }

@@ -12,7 +12,7 @@ namespace Typography.OpenFont.Tables
     class CVar : TableEntry
     {
         public const string _N = "cvar";
-        public override string Name => _N; 
+        public override string Name => _N;
         public CVar()
         {
 

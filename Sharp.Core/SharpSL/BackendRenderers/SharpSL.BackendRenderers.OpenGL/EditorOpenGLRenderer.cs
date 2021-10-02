@@ -1,13 +1,13 @@
-﻿using System;
-using System.Numerics;
-using SharpAsset;
+﻿using SharpAsset;
 using SharpAsset.AssetPipeline;
+using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace SharpSL.BackendRenderers.OpenGL
 {
-	/*public class EditorOpenGLRenderer : IEditorBackendRenderer
+    /*public class EditorOpenGLRenderer : IEditorBackendRenderer
 	{
 
 		private static GCHandle _logCallbackHandle;

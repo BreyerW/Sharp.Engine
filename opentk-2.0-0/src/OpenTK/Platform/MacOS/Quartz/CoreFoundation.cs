@@ -29,18 +29,17 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using CFAllocatorRef = IntPtr;
+using CFIndex = System.IntPtr;
+using CFMachPortRef = IntPtr;
+using CFRunLoop = System.IntPtr;
+using CFRunLoopRef = IntPtr;
+using CFRunLoopSourceRef = IntPtr;
+using CFStringRef = System.IntPtr;
+using CFTypeRef = System.IntPtr;
 
 namespace OpenTK.Platform.MacOS.Carbon
 {
-    using CFAllocatorRef = IntPtr;
-    using CFIndex = System.IntPtr;
-    using CFRunLoop = System.IntPtr;
-    using CFRunLoopRef = IntPtr;
-    using CFRunLoopSourceRef = IntPtr;
-    using CFStringRef = System.IntPtr;
-    using CFTypeRef = System.IntPtr;
-    using CFMachPortRef = IntPtr;
-
     struct CFArray
     {
         IntPtr arrayRef;
@@ -159,9 +158,9 @@ namespace OpenTK.Platform.MacOS.Carbon
         );
 
         [DllImport(appServices)]
-        internal static extern bool CFNumberGetValue (IntPtr number, CFNumberType theType, out int valuePtr);
+        internal static extern bool CFNumberGetValue(IntPtr number, CFNumberType theType, out int valuePtr);
         [DllImport(appServices)]
-        internal static extern bool CFNumberGetValue (IntPtr number, CFNumberType theType, out long valuePtr);
+        internal static extern bool CFNumberGetValue(IntPtr number, CFNumberType theType, out long valuePtr);
         [DllImport(appServices)]
         internal static extern bool CFNumberGetValue(IntPtr number, CFNumberType theType, out double valuePtr);
 

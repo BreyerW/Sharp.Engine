@@ -1,17 +1,13 @@
-﻿using System;
+﻿using PixelFarm.CpuBlit;
+using PixelFarm.Drawing.Fonts;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-
-
-using PixelFarm.CpuBlit;
-using PixelFarm.Drawing.Fonts;
-
-using Typography.OpenFont;
 using Typography.Contours;
+using Typography.OpenFont;
 using Typography.TextLayout;
 
 namespace PixelFarmTextBox.WinForms

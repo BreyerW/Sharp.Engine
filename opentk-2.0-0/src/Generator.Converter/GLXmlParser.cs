@@ -1,4 +1,4 @@
-    #region License
+#region License
 //
 // The Open Toolkit Library License
 //
@@ -69,7 +69,7 @@ namespace OpenTK.Convert
                 else
                     elements[key].Add(e.Elements());
             }
-            
+
             return elements.Values;
         }
 
@@ -79,31 +79,31 @@ namespace OpenTK.Convert
             switch (feature.Name.LocalName)
             {
                 case "feature":
-                {
-                    string v = feature.Attribute("api") != null ? feature.Attribute("api").Value : "gl|glcore";
-                    if (v == "gl")
                     {
-                        // Add all gl features to both compatibility (gl) and core (glcore) profiles.
-                        // Deprecated features will be explicitly marked or removed when parsing
-                        // the <remove> elements.
-                        v = "gl|glcore";
+                        string v = feature.Attribute("api") != null ? feature.Attribute("api").Value : "gl|glcore";
+                        if (v == "gl")
+                        {
+                            // Add all gl features to both compatibility (gl) and core (glcore) profiles.
+                            // Deprecated features will be explicitly marked or removed when parsing
+                            // the <remove> elements.
+                            v = "gl|glcore";
+                        }
+                        apinames = v.Split('|');
+                        break;
                     }
-                    apinames = v.Split('|');
-                    break;
-                }
 
                 case "extension":
-                {
-                    string v = feature.Attribute("supported") != null ? feature.Attribute("supported").Value : "gl|glcore";
-                    apinames = v.Split('|');
-                    break;
-                }
+                    {
+                        string v = feature.Attribute("supported") != null ? feature.Attribute("supported").Value : "gl|glcore";
+                        apinames = v.Split('|');
+                        break;
+                    }
 
                 case "group":
-                {
-                    apinames = new string[] { "gl", "glcore", "gles1", "gles2" };
-                    break;
-                }
+                    {
+                        apinames = new string[] { "gl", "glcore", "gles1", "gles2" };
+                        break;
+                    }
 
                 default:
                     throw new NotSupportedException("Unknown feature type");
@@ -256,7 +256,7 @@ namespace OpenTK.Convert
             {
                 var category = TrimName(feature.Attribute("name").Value);
                 var apinames = GetApiNames(feature);
-                
+
                 var version =
                     (feature.Attribute("number") != null ? feature.Attribute("number").Value : "")
                     .Split('|');

@@ -30,6 +30,7 @@
  */
 
 using System;
+
 namespace Poly2Tri
 {
     public class PolygonGenerator

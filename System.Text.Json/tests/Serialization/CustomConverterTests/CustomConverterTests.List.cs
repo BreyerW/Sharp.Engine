@@ -295,7 +295,7 @@ namespace System.Text.Json.Serialization.Tests
                 @"""ItemsArray"":[""hello"",""1"",""True""]," +
                 @"""ItemsDictionary"":{""hello"":""hello"",""1"":""1"",""true"":""True""}}",
                 jsonRoundTripped);
- 
+
             obj = JsonSerializer.Deserialize<MyModelWithConverterAttributes>(jsonRoundTripped);
             Verify();
         }

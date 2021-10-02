@@ -42,7 +42,8 @@ namespace BrotliSharpLib
             public static unsafe void InitBlockSplitter(
                 ref MemoryManager m, BlockSplitterLiteral* self, size_t alphabet_size,
                 size_t min_block_size, double split_threshold, size_t num_symbols,
-                BlockSplit * split, HistogramLiteral* *histograms, size_t * histograms_size) {
+                BlockSplit* split, HistogramLiteral** histograms, size_t* histograms_size)
+            {
                 size_t max_num_blocks = num_symbols / min_block_size + 1;
                 /* We have to allocate one more histogram than the maximum number of block
                    types for the current histogram when the meta-block is too big. */
@@ -62,7 +63,7 @@ namespace BrotliSharpLib
                 BrotliEnsureCapacity(ref m, sizeof(uint), (void**)&split->lengths, &split->lengths_alloc_size, max_num_blocks);
                 self->split_->num_blocks = max_num_blocks;
                 *histograms_size = max_num_types;
-                *histograms = (HistogramLiteral*) BrotliAllocate(ref m, * histograms_size * sizeof(HistogramLiteral));
+                *histograms = (HistogramLiteral*)BrotliAllocate(ref m, *histograms_size * sizeof(HistogramLiteral));
                 self->histograms_ = *histograms;
                 /* Clear only current histogram. */
                 HistogramLiteral.HistogramClear(&self->histograms_[0]);
@@ -74,13 +75,15 @@ namespace BrotliSharpLib
              (2) emits the current block with the type of the second last block;
              (3) merges the current block with the last block. */
             public static unsafe void BlockSplitterFinishBlock(
-            BlockSplitterLiteral* self, bool is_final) {
+            BlockSplitterLiteral* self, bool is_final)
+            {
                 BlockSplit* split = self->split_;
                 double* last_entropy = self->last_entropy_;
                 HistogramLiteral* histograms = self->histograms_;
                 self->block_size_ =
                     Math.Max(self->block_size_, self->min_block_size_);
-                if (self->num_blocks_ == 0) {
+                if (self->num_blocks_ == 0)
+                {
                     /* Create first block. */
                     split->lengths[0] = (uint)self->block_size_;
                     split->types[0] = 0;
@@ -90,17 +93,20 @@ namespace BrotliSharpLib
                     ++self->num_blocks_;
                     ++split->num_types;
                     ++self->curr_histogram_ix_;
-                    if (self->curr_histogram_ix_< *self->histograms_size_)
+                    if (self->curr_histogram_ix_ < *self->histograms_size_)
                         HistogramLiteral.HistogramClear(&histograms[self->curr_histogram_ix_]);
                     self->block_size_ = 0;
-                } else if (self->block_size_ > 0) {
+                }
+                else if (self->block_size_ > 0)
+                {
                     double entropy = BitsEntropy(histograms[self->curr_histogram_ix_].data_,
                         self->alphabet_size_);
                     HistogramLiteral* combined_histo = stackalloc HistogramLiteral[2];
                     double* combined_entropy = stackalloc double[2];
                     double* diff = stackalloc double[2];
                     size_t j;
-                    for (j = 0; j< 2; ++j) {
+                    for (j = 0; j < 2; ++j)
+                    {
                         size_t last_histogram_ix = j == 0 ? self->last_histogram_ix_0 : self->last_histogram_ix_1;
                         combined_histo[j] = histograms[self->curr_histogram_ix_];
                         HistogramLiteral.HistogramAddHistogram(&combined_histo[j],
@@ -110,9 +116,10 @@ namespace BrotliSharpLib
                         diff[j] = combined_entropy[j] - entropy - last_entropy[j];
                     }
 
-                    if (split->num_types<BROTLI_MAX_NUMBER_OF_BLOCK_TYPES &&
-                        diff[0]> self->split_threshold_ &&
-                        diff[1] > self->split_threshold_) {
+                    if (split->num_types < BROTLI_MAX_NUMBER_OF_BLOCK_TYPES &&
+                        diff[0] > self->split_threshold_ &&
+                        diff[1] > self->split_threshold_)
+                    {
                         /* Create new block. */
                         split->lengths[self->num_blocks_] = (uint)self->block_size_;
                         split->types[self->num_blocks_] = (byte)split->num_types;
@@ -123,12 +130,14 @@ namespace BrotliSharpLib
                         ++self->num_blocks_;
                         ++split->num_types;
                         ++self->curr_histogram_ix_;
-                        if (self->curr_histogram_ix_< *self->histograms_size_)
-                           HistogramLiteral.HistogramClear(&histograms[self->curr_histogram_ix_]);
+                        if (self->curr_histogram_ix_ < *self->histograms_size_)
+                            HistogramLiteral.HistogramClear(&histograms[self->curr_histogram_ix_]);
                         self->block_size_ = 0;
                         self->merge_last_count_ = 0;
                         self->target_block_size_ = self->min_block_size_;
-                    } else if (diff[1] < diff[0] - 20.0) {
+                    }
+                    else if (diff[1] < diff[0] - 20.0)
+                    {
                         /* Combine this block with second last block. */
                         split->lengths[self->num_blocks_] = (uint)self->block_size_;
                         split->types[self->num_blocks_] = split->types[self->num_blocks_ - 2];
@@ -143,33 +152,40 @@ namespace BrotliSharpLib
                         HistogramLiteral.HistogramClear(&histograms[self->curr_histogram_ix_]);
                         self->merge_last_count_ = 0;
                         self->target_block_size_ = self->min_block_size_;
-                    } else {
+                    }
+                    else
+                    {
                         /* Combine this block with last block. */
                         split->lengths[self->num_blocks_ - 1] += (uint)self->block_size_;
                         histograms[self->last_histogram_ix_0] = combined_histo[0];
                         last_entropy[0] = combined_entropy[0];
-                        if (split->num_types == 1) {
+                        if (split->num_types == 1)
+                        {
                             last_entropy[1] = last_entropy[0];
                         }
                         self->block_size_ = 0;
                         HistogramLiteral.HistogramClear(&histograms[self->curr_histogram_ix_]);
-                        if (++self->merge_last_count_ > 1) {
+                        if (++self->merge_last_count_ > 1)
+                        {
                             self->target_block_size_ += self->min_block_size_;
                         }
                     }
                 }
-                if (is_final) {
-                    * self->histograms_size_ = split->num_types;
+                if (is_final)
+                {
+                    *self->histograms_size_ = split->num_types;
                     split->num_blocks = self->num_blocks_;
                 }
             }
 
             /* Adds the next symbol to the current histogram. When the current histogram
                reaches the target size, decides on merging the block. */
-            public static unsafe void BlockSplitterAddSymbol(BlockSplitterLiteral* self, size_t symbol) {
+            public static unsafe void BlockSplitterAddSymbol(BlockSplitterLiteral* self, size_t symbol)
+            {
                 HistogramLiteral.HistogramAdd(&self->histograms_[self->curr_histogram_ix_], symbol);
                 ++self->block_size_;
-                if (self->block_size_ == self->target_block_size_) {
+                if (self->block_size_ == self->target_block_size_)
+                {
                     BlockSplitterFinishBlock(self, /* is_final = */ false);
                 }
             }

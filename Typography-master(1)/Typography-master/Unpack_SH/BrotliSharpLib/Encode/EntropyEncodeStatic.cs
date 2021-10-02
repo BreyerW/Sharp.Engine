@@ -1,9 +1,12 @@
 ﻿using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
         private static unsafe void StoreStaticCodeLengthCode(
-            size_t* storage_ix, byte* storage) {
+            size_t* storage_ix, byte* storage)
+        {
             BrotliWriteBits(
                 40, 0x0000ff55555554U, storage_ix, storage);
         }

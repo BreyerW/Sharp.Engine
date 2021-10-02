@@ -2,9 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+
 namespace Tesselate
 {
-
     //TODO: review this again....
     //-----
     //design for our tess only

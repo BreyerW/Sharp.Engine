@@ -3,9 +3,9 @@
 
 using System;
 using System.Text;
+
 namespace Typography.OpenFont
 {
-
     public class Glyph
     {
         //--------------------
@@ -184,7 +184,7 @@ namespace Typography.OpenFont
         public short MinY => _bounds.YMin;
         public short MaxY => _bounds.YMax;
 
-       
+
 #if DEBUG
         public readonly int dbugId;
         static int s_debugTotalId;

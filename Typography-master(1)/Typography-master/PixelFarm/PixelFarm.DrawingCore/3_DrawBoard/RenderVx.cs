@@ -1,9 +1,10 @@
 ﻿//MIT, 2014-present, WinterDev
 
 using System;
+using PixelFarm.Drawing.Fonts;
+
 namespace PixelFarm.Drawing
 {
-    using Fonts;
     public abstract class RenderVx : IDisposable
     {
         public virtual void Dispose() { }
@@ -14,7 +15,7 @@ namespace PixelFarm.Drawing
         public RenderVxGlyphPlan[] GlyphList { get; set; }
         public int RecommmendLineSpacing { get; set; }
         public int LineGap { get; set; }
-      
+
     }
 
 

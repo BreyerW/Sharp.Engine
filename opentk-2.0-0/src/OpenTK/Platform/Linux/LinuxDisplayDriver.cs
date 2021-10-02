@@ -34,6 +34,7 @@ using OpenTK;
 using OpenTK.Graphics;
 #if !MINIMAL
 using System.Drawing;
+
 #endif
 
 namespace OpenTK.Platform.Linux

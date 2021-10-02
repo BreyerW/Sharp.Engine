@@ -1,11 +1,11 @@
 ﻿//MIT, 2016-present, WinterDev
 //-----------------------------------  
+using PixelFarm.Contours;
 using System;
-using System.Collections.Generic; 
-using PixelFarm.Contours; 
+using System.Collections.Generic;
+
 namespace Typography.Rendering
 {
-
     /// <summary>
     /// parameter for msdf generation
     /// </summary>

@@ -8,13 +8,12 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 //MIT, 2017-present, WinterDev
+using PixelFarm.Drawing;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
 using System.IO;
 using System.Text;
-using PixelFarm.Drawing;
 
 namespace PaintFx
 {

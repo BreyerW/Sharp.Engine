@@ -4,14 +4,14 @@
  */
 #endregion
 
+using Bind.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Bind.Structures;
-using Delegate=Bind.Structures.Delegate;
-using Enum=Bind.Structures.Enum;
+using Delegate = Bind.Structures.Delegate;
+using Enum = Bind.Structures.Enum;
 
 namespace Bind
 {
@@ -111,7 +111,7 @@ namespace Bind
         // You have been warned.
         static List<string> extension_names = new List<string>
         {
-            "SGI", "SGIS", "SGIX", "IBM", "AMD", "INTEL", 
+            "SGI", "SGIS", "SGIX", "IBM", "AMD", "INTEL",
         };
 
         public static void AddExtensions(IEnumerable<string> extensions)
@@ -298,7 +298,7 @@ namespace Bind
         #endregion
 
         #region internal static string StripGL2Extension(string p)
-        
+
         internal static string StripGL2Extension(string p)
         {
             return p.Substring(0, p.Length - GetGL2Extension(p).Length);

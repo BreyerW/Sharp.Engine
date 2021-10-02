@@ -1,6 +1,7 @@
 ﻿//MIT, 2016-present, WinterDev
 //some code from ICU project with BSD license
 
+
 namespace Typography.TextBreak
 {
     public enum TextBreakKind
@@ -8,8 +9,8 @@ namespace Typography.TextBreak
         Word,
         Sentence,
     }
-     
-   
+
+
     public abstract class TextBreaker
     {
         public abstract void DoBreak(char[] input, int start, int len, OnBreak onbreak);
@@ -24,7 +25,7 @@ namespace Typography.TextBreak
             //to end
             DoBreak(charBuff, 0, charBuff.Length, onbreak);
         }
-       
+
         protected bool IsCanceled { get; set; }
         /// <summary>
         /// cancel current breaking task

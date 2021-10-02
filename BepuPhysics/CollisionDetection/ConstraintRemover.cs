@@ -247,7 +247,7 @@ namespace BepuPhysics.CollisionDetection
         //in sequence at that point- sequential removes would cost around 5us in that case, so any kind of multithreaded overhead can overwhelm the work being done.
         //Doubling the cost of the best case, resulting in handfuls of wasted microseconds, isn't concerning (and we could special case it if we really wanted to).
         //Cutting the cost of the worst case when thousands of constraints get removed by a factor of ~ThreadCount is worth this complexity. Frame spikes are evil!
-        
+
         RemovalCache batches;
         /// <summary>
         /// Processes enqueued constraint removals and prepares removal jobs.

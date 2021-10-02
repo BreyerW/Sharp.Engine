@@ -26,6 +26,7 @@
 using System;
 #if !(DNXCORE50)
 using System.Drawing;
+
 #endif
 
 namespace Newtonsoft.Json.Tests.TestObjects

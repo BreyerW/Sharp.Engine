@@ -1,15 +1,14 @@
 ﻿//MIT, 2016-present, WinterDev
 
+using BitmapBufferEx;
+using PixelFarm.CpuBlit.FragmentProcessing;
+using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.Drawing;
-using PixelFarm.CpuBlit.VertexProcessing;
-using PixelFarm.CpuBlit.FragmentProcessing;
 
-using BitmapBufferEx;
 namespace PixelFarm.CpuBlit
 {
-
     partial class AggPainter
     {
 
@@ -405,7 +404,7 @@ namespace PixelFarm.CpuBlit
 #if DEBUG
                         throw new ArgumentException();
 #else
-                return;
+                        return;
 #endif
                     }
 
@@ -421,7 +420,7 @@ namespace PixelFarm.CpuBlit
 #if DEBUG
                         throw new ArgumentException();
 #else
-                return;
+                        return;
 #endif
                     }
 

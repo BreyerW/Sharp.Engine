@@ -25,13 +25,13 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using OpenTK.Input;
 
 namespace OpenTK.Platform.Linux
 {
@@ -383,7 +383,7 @@ namespace OpenTK.Platform.Linux
                     length /= sizeof(InputEvent);
                     for (int i = 0; i < length; i++)
                     {
-                        InputEvent *e = events + i;
+                        InputEvent* e = events + i;
                         switch (e->Type)
                         {
                             case EvdevType.ABS:

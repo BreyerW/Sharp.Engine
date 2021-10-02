@@ -1,4 +1,5 @@
-﻿namespace BepuUtilities.Memory
+﻿
+namespace BepuUtilities.Memory
 {
     /// <summary>
     /// Defines a type that is capable of pooling blocks of unmanaged memory.

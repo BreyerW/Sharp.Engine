@@ -7,9 +7,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Text;
 
 #pragma warning disable 1591
 
@@ -245,14 +245,14 @@ namespace OpenTK.Platform.X11
 
     enum ErrorCode : int
     {
-        NO_ERROR       = 0,
-        BAD_SCREEN     = 1,   /* screen # is bad */
-        BAD_ATTRIBUTE  = 2,   /* attribute to get is bad */
-        NO_EXTENSION   = 3,   /* no glx extension on server */
-        BAD_VISUAL     = 4,   /* visual # not known by GLX */
-        BAD_CONTEXT    = 5,   /* returned only by import_context EXT? */
-        BAD_VALUE      = 6,   /* returned only by glXSwapIntervalSGI? */
-        BAD_ENUM       = 7,   /* unused? */
+        NO_ERROR = 0,
+        BAD_SCREEN = 1,   /* screen # is bad */
+        BAD_ATTRIBUTE = 2,   /* attribute to get is bad */
+        NO_EXTENSION = 3,   /* no glx extension on server */
+        BAD_VISUAL = 4,   /* visual # not known by GLX */
+        BAD_CONTEXT = 5,   /* returned only by import_context EXT? */
+        BAD_VALUE = 6,   /* returned only by glXSwapIntervalSGI? */
+        BAD_ENUM = 7,   /* unused? */
     }
 
     #endregion
@@ -364,7 +364,7 @@ namespace OpenTK.Platform.X11
 
         [DllImport(Library, EntryPoint = "glXCreateContext")]
         public static extern IntPtr CreateContext(IntPtr dpy, ref XVisualInfo vis, IntPtr shareList, bool direct);
-    
+
         [DllImport(Library, EntryPoint = "glXDestroyContext")]
         public static extern void DestroyContext(IntPtr dpy, IntPtr context);
 

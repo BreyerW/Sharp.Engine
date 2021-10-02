@@ -201,7 +201,7 @@ namespace System.Text.Json.Serialization.Tests
 
         private class Level2
         {
-            public Level3[] Level3s {get; set; }
+            public Level3[] Level3s { get; set; }
         }
 
         private class Level3
@@ -210,7 +210,7 @@ namespace System.Text.Json.Serialization.Tests
             public bool ReadWriteTooMuch { get; set; }
         }
 
-        private class Level3ConverterThatsBad: JsonConverter<Level3>
+        private class Level3ConverterThatsBad : JsonConverter<Level3>
         {
             public override Level3 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
@@ -276,7 +276,7 @@ namespace System.Text.Json.Serialization.Tests
             const string json = @"{""Level2"":{""Level3s"":[{""ReadWriteTooMuch"":true}]}}";
 
             var options = new JsonSerializerOptions();
-            options.Converters.Add(new Level3ConverterThatsBad ());
+            options.Converters.Add(new Level3ConverterThatsBad());
 
             try
             {

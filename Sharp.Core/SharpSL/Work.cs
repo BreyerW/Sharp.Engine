@@ -2,11 +2,11 @@
 
 namespace SharpSL
 {
-	public enum Work
-	{
-		Allocate,
-		Use,
-		Delete
-	}
+    public enum Work
+    {
+        Allocate,
+        Use,
+        Delete
+    }
 }
 

@@ -7,10 +7,10 @@
 // .                                                                           //
 /////////////////////////////////////////////////////////////////////////////////
 //MIT, 2017-present, WinterDev
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
 
-using PixelFarm.Drawing;
 namespace PaintFx.Effects
 {
     class ConvolutionRenderer

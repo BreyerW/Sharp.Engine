@@ -34,6 +34,9 @@ using System.Drawing;
 #endif
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Bool = System.Boolean;
+using Time = System.IntPtr;
+using Window = System.IntPtr;
 
 // Disable unused field warnings. This is interop, we don't use everything
 #pragma warning disable 0649
@@ -41,10 +44,6 @@ using System.Runtime.InteropServices;
 // X11 Version
 namespace OpenTK.Platform.X11
 {
-    using Bool = System.Boolean;
-    using Time = System.IntPtr;
-    using Window = System.IntPtr;
-
     //
     // In the structures below, fields of type long are mapped to IntPtr.
     // This will work on all platforms where sizeof(long)==sizeof(void*), which
@@ -1070,7 +1069,7 @@ namespace OpenTK.Platform.X11
         //BackingStore    (1L<<6)
         //BackingPlanes    (1L<<7)
         //BackingPixel    (1L<<8)
-        OverrideRedirect = 1<<9,
+        OverrideRedirect = 1 << 9,
     }
 
     internal enum StackMode
@@ -1737,72 +1736,72 @@ namespace OpenTK.Platform.X11
 
     struct XIDeviceEvent
     {
-        public int           type;         /* GenericEvent */
+        public int type;         /* GenericEvent */
         public IntPtr serial;       /* # of last request processed by server */
-        public bool          send_event;   /* true if this came from a SendEvent request */
+        public bool send_event;   /* true if this came from a SendEvent request */
         public IntPtr display;     /* Display the event was read from */
-        public int           extension;    /* XI extension offset */
-        public XIEventType           evtype;
-        public Time          time;
-        public int           deviceid;
-        public int           sourceid;
-        public int           detail;
-        public Window        root;
-        public Window        @event;
-        public Window        child;
-        public double        root_x;
-        public double        root_y;
-        public double        event_x;
-        public double        event_y;
-        public XIEventFlags        flags;
-        public XIButtonState       buttons;
-        public XIValuatorState     valuators;
-        public XIModifierState     mods;
-        public XIGroupState        @group;
+        public int extension;    /* XI extension offset */
+        public XIEventType evtype;
+        public Time time;
+        public int deviceid;
+        public int sourceid;
+        public int detail;
+        public Window root;
+        public Window @event;
+        public Window child;
+        public double root_x;
+        public double root_y;
+        public double event_x;
+        public double event_y;
+        public XIEventFlags flags;
+        public XIButtonState buttons;
+        public XIValuatorState valuators;
+        public XIModifierState mods;
+        public XIGroupState @group;
     }
 
     struct XIRawEvent
     {
-        public int           type;         /* GenericEvent */
+        public int type;         /* GenericEvent */
         public IntPtr serial;       /* # of last request processed by server */
-        public Bool          send_event;   /* true if this came from a SendEvent request */
+        public Bool send_event;   /* true if this came from a SendEvent request */
         public IntPtr display;     /* Display the event was read from */
-        public int           extension;    /* XI extension offset */
-        public XIEventType   evtype;       /* XI_RawKeyPress, XI_RawKeyRelease, etc. */
-        public Time          time;
-        public int           deviceid;
-        public int           sourceid;
-        public int           detail;
-        public XIEventFlags  flags;
+        public int extension;    /* XI extension offset */
+        public XIEventType evtype;       /* XI_RawKeyPress, XI_RawKeyRelease, etc. */
+        public Time time;
+        public int deviceid;
+        public int sourceid;
+        public int detail;
+        public XIEventFlags flags;
         public XIValuatorState valuators;
         public IntPtr raw_values; // FP3232*
     }
 
     struct XIButtonState
     {
-        public int           mask_len;
+        public int mask_len;
         public IntPtr mask; // byte*
     }
 
     struct XIModifierState
     {
-        public int    @base;
-        public int    latched;
-        public int    locked;
-        public int    effective;
+        public int @base;
+        public int latched;
+        public int locked;
+        public int effective;
     }
 
     struct XIGroupState
     {
-        public int    @base;
-        public int    latched;
-        public int    locked;
-        public int    effective;
+        public int @base;
+        public int latched;
+        public int locked;
+        public int effective;
     }
 
     struct XIValuatorState
     {
-        public int           mask_len;
+        public int mask_len;
         public IntPtr mask; // byte*
         public IntPtr values; // double*
     }
@@ -1821,7 +1820,7 @@ namespace OpenTK.Platform.X11
             {
                 mask = (byte*)Marshal.AllocHGlobal(mask_len);
                 for (int i = 0; i < mask_len; i++)
-                    mask[i] = (byte)((uint)m >> i*8);
+                    mask[i] = (byte)((uint)m >> i * 8);
             }
         }
 
@@ -1858,23 +1857,23 @@ namespace OpenTK.Platform.X11
 
     enum XIEventMasks
     {
-        DeviceChangedMask =            (1 << (int)XIEventType.DeviceChanged),
-        KeyPressMask =                 (1 << (int)XIEventType.KeyPress),
-        KeyReleaseMask =               (1 << (int)XIEventType.KeyRelease),
-        ButtonPressMask =              (1 << (int)XIEventType.ButtonPress),
-        ButtonReleaseMask =            (1 << (int)XIEventType.ButtonRelease),
-        MotionMask =                   (1 << (int)XIEventType.Motion),
-        EnterMask =                    (1 << (int)XIEventType.Enter),
-        LeaveMask =                    (1 << (int)XIEventType.Leave),
-        FocusInMask =                  (1 << (int)XIEventType.FocusIn),
-        FocusOutMask =                 (1 << (int)XIEventType.FocusOut),
-        HierarchyChangedMask =         (1 << (int)XIEventType.HierarchyChanged),
-        PropertyEventMask =            (1 << (int)XIEventType.PropertyEvent),
-        RawKeyPressMask =              (1 << (int)XIEventType.RawKeyPress),
-        RawKeyReleaseMask =            (1 << (int)XIEventType.RawKeyRelease),
-        RawButtonPressMask =           (1 << (int)XIEventType.RawButtonPress),
-        RawButtonReleaseMask =         (1 << (int)XIEventType.RawButtonRelease),
-        RawMotionMask =                (1 << (int)XIEventType.RawMotion),
+        DeviceChangedMask = (1 << (int)XIEventType.DeviceChanged),
+        KeyPressMask = (1 << (int)XIEventType.KeyPress),
+        KeyReleaseMask = (1 << (int)XIEventType.KeyRelease),
+        ButtonPressMask = (1 << (int)XIEventType.ButtonPress),
+        ButtonReleaseMask = (1 << (int)XIEventType.ButtonRelease),
+        MotionMask = (1 << (int)XIEventType.Motion),
+        EnterMask = (1 << (int)XIEventType.Enter),
+        LeaveMask = (1 << (int)XIEventType.Leave),
+        FocusInMask = (1 << (int)XIEventType.FocusIn),
+        FocusOutMask = (1 << (int)XIEventType.FocusOut),
+        HierarchyChangedMask = (1 << (int)XIEventType.HierarchyChanged),
+        PropertyEventMask = (1 << (int)XIEventType.PropertyEvent),
+        RawKeyPressMask = (1 << (int)XIEventType.RawKeyPress),
+        RawKeyReleaseMask = (1 << (int)XIEventType.RawKeyRelease),
+        RawButtonPressMask = (1 << (int)XIEventType.RawButtonPress),
+        RawButtonReleaseMask = (1 << (int)XIEventType.RawButtonRelease),
+        RawMotionMask = (1 << (int)XIEventType.RawMotion),
     }
 
     [Flags]

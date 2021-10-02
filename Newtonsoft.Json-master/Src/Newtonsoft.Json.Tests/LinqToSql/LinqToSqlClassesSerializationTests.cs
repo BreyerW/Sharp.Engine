@@ -24,17 +24,17 @@
 #endregion
 
 #if !(DNXCORE50 || PORTABLE40 || PORTABLE40 || NET20)
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
+using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Tests.LinqToSql;
 using NUnit.Framework;
-using System.Reflection;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using Newtonsoft.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Linq.Mapping;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 
 namespace Newtonsoft.Json.Tests.LinqToSql
 {

@@ -21,13 +21,13 @@ namespace Squid
         /// </summary>
         /// <value>The clip frame.</value>
         public Frame ClipFrame { get; private set; }
-        
+
         /// <summary>
         /// Gets the H scroll.
         /// </summary>
         /// <value>The H scroll.</value>
         public ScrollBar HScroll { get; private set; }
-        
+
         /// <summary>
         /// Gets the V scroll.
         /// </summary>

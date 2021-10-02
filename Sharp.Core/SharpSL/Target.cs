@@ -1,4 +1,5 @@
-﻿namespace SharpSL
+﻿
+namespace SharpSL
 {
-	
+
 }

@@ -5,8 +5,6 @@ using System.Runtime.CompilerServices;
 
 namespace BepuPhysics.Trees
 {
-
-
     partial struct Tree
     {
         unsafe void CollectSubtreesForNodeDirect(int nodeIndex, int remainingDepth,

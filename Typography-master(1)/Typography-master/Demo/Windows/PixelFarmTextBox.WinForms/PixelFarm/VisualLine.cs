@@ -1,11 +1,11 @@
 ﻿//MIT, 2014-present, WinterDev
 
 using System.Collections.Generic;
-using Typography.TextLayout;
 using Typography.Contours;
+using Typography.TextLayout;
+
 namespace SampleWinForms.UI
 {
-
     class VisualLine
     {
 
@@ -35,14 +35,14 @@ namespace SampleWinForms.UI
         public void Draw()
         {
 
-     
+
             //List<UserCodePointToGlyphIndex> userCharToGlyphIndexMap = _line._userCodePointToGlyphIndexMap;
             if (_line.ContentChanged)
             {
                 //TODO: or font face/font-size change 
                 //re-calculate 
                 char[] textBuffer = _line._charBuffer.ToArray();
-          
+
                 //userCharToGlyphIndexMap.Clear();
                 //read glyph plan and userCharToGlyphIndexMap      
                 _reusableUnscaledGlyphPlanList.Clear();

@@ -1,4 +1,5 @@
-﻿namespace BepuUtilities.Collections
+﻿
+namespace BepuUtilities.Collections
 {
     /// <summary>
     /// Defines a type capable of comparing two objects passed by reference.

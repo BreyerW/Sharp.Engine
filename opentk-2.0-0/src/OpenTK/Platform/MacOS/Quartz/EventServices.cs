@@ -29,13 +29,12 @@
 
 using System;
 using System.Runtime.InteropServices;
+using CFMachPortRef = IntPtr;
+using CGEventRef = IntPtr;
+using CGEventTapProxy = IntPtr;
 
 namespace OpenTK.Platform.MacOS
 {
-    using CGEventTapProxy = IntPtr;
-    using CGEventRef = IntPtr;
-    using CFMachPortRef = IntPtr;
-
     partial class CG
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -91,22 +90,22 @@ namespace OpenTK.Platform.MacOS
     [Flags]
     enum CGEventMask : long
     {
-        LeftMouseDown       = 1 << CGEventType.LeftMouseDown,
-        LeftMouseUp         = 1 << CGEventType.LeftMouseUp,
-        RightMouseDown      = 1 << CGEventType.RightMouseDown,
-        RightMouseUp        = 1 << CGEventType.RightMouseUp,
-        MouseMoved          = 1 << CGEventType.MouseMoved,
-        LeftMouseDragged    = 1 << CGEventType.LeftMouseDown,
-        RightMouseDragged   = 1 << CGEventType.RightMouseDown,
-        KeyDown             = 1 << CGEventType.KeyDown,
-        KeyUp               = 1 << CGEventType.KeyUp,
-        FlagsChanged        = 1 << CGEventType.FlagsChanged,
-        ScrollWheel         = 1 << CGEventType.ScrollWheel,
-        TabletPointer       = 1 << CGEventType.TabletPointer,
-        TabletProximity     = 1 << CGEventType.TabletProximity,
-        OtherMouseDown      = 1 << CGEventType.OtherMouseDown,
-        OtherMouseUp        = 1 << CGEventType.OtherMouseUp,
-        OtherMouseDragged   = 1 << CGEventType.OtherMouseDragged,
+        LeftMouseDown = 1 << CGEventType.LeftMouseDown,
+        LeftMouseUp = 1 << CGEventType.LeftMouseUp,
+        RightMouseDown = 1 << CGEventType.RightMouseDown,
+        RightMouseUp = 1 << CGEventType.RightMouseUp,
+        MouseMoved = 1 << CGEventType.MouseMoved,
+        LeftMouseDragged = 1 << CGEventType.LeftMouseDown,
+        RightMouseDragged = 1 << CGEventType.RightMouseDown,
+        KeyDown = 1 << CGEventType.KeyDown,
+        KeyUp = 1 << CGEventType.KeyUp,
+        FlagsChanged = 1 << CGEventType.FlagsChanged,
+        ScrollWheel = 1 << CGEventType.ScrollWheel,
+        TabletPointer = 1 << CGEventType.TabletPointer,
+        TabletProximity = 1 << CGEventType.TabletProximity,
+        OtherMouseDown = 1 << CGEventType.OtherMouseDown,
+        OtherMouseUp = 1 << CGEventType.OtherMouseUp,
+        OtherMouseDragged = 1 << CGEventType.OtherMouseDragged,
         All = -1,
         AllMouse =
             LeftMouseDown | LeftMouseUp | LeftMouseDragged |
@@ -117,23 +116,23 @@ namespace OpenTK.Platform.MacOS
 
     enum CGEventType
     {
-        Null                = 0,
-        LeftMouseDown       = 1,
-        LeftMouseUp         = 2,
-        RightMouseDown      = 3,
-        RightMouseUp        = 4,
-        MouseMoved          = 5,
-        LeftMouseDragged    = 6,
-        RightMouseDragged   = 7,
-        KeyDown             = 10,
-        KeyUp               = 11,
-        FlagsChanged        = 12,
-        ScrollWheel         = 22,
-        TabletPointer       = 23,
-        TabletProximity     = 24,
-        OtherMouseDown      = 25,
-        OtherMouseUp        = 26,
-        OtherMouseDragged   = 27,
+        Null = 0,
+        LeftMouseDown = 1,
+        LeftMouseUp = 2,
+        RightMouseDown = 3,
+        RightMouseUp = 4,
+        MouseMoved = 5,
+        LeftMouseDragged = 6,
+        RightMouseDragged = 7,
+        KeyDown = 10,
+        KeyUp = 11,
+        FlagsChanged = 12,
+        ScrollWheel = 22,
+        TabletPointer = 23,
+        TabletProximity = 24,
+        OtherMouseDown = 25,
+        OtherMouseUp = 26,
+        OtherMouseDragged = 27,
         TapDisabledByTimeout = -2,
         TapDisabledByUserInput = -1
     }

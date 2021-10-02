@@ -18,6 +18,7 @@
 
 
 using System;
+
 namespace BitmapBufferEx
 {
     /// <summary>
@@ -137,7 +138,7 @@ namespace BitmapBufferEx
                     fixed (int* pd0 = &pd[0])
                     {
                         BitmapContext.BlockCopy(pd0, 0, dstContext, 0, ARGB_SIZE * pd.Length);
-                    }                   
+                    }
 
                 }
                 return result;

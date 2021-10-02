@@ -19,6 +19,7 @@
 //----------------------------------------------------------------------------
 
 using System;
+
 namespace PixelFarm.CpuBlit.FragmentProcessing
 {
     public struct GammaNone : IGammaFunction
@@ -87,7 +88,7 @@ namespace PixelFarm.CpuBlit.FragmentProcessing
     {
         float _mul;
         public GammaMultiply() => _mul = 1.0f;
-        public GammaMultiply(float v) => _mul = v; 
+        public GammaMultiply(float v) => _mul = v;
 
         public float GetGamma(float x)
         {

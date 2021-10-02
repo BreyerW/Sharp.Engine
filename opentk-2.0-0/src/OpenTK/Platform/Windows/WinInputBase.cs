@@ -25,11 +25,11 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
-using OpenTK.Input;
 
 namespace OpenTK.Platform.Windows
 {
@@ -39,8 +39,8 @@ namespace OpenTK.Platform.Windows
 
         readonly WindowProcedure WndProc;
         readonly Thread InputThread;
-        readonly AutoResetEvent InputReady = new AutoResetEvent(false); 
-        
+        readonly AutoResetEvent InputReady = new AutoResetEvent(false);
+
         IntPtr OldWndProc;
         INativeWindow native;
 
@@ -126,7 +126,7 @@ namespace OpenTK.Platform.Windows
         IntPtr WndProcHandler(
             IntPtr handle, WindowMessage message, IntPtr wParam, IntPtr lParam)
         {
-            IntPtr ret =  WindowProcedure(handle, message, wParam, lParam);
+            IntPtr ret = WindowProcedure(handle, message, wParam, lParam);
             if (ret == Unhandled)
                 return Functions.CallWindowProc(OldWndProc, handle, message, wParam, lParam);
             else

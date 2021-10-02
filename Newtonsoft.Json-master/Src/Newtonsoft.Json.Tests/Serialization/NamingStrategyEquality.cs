@@ -30,12 +30,13 @@ using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
 #else
 using NUnit.Framework;
+
 #endif
 
 namespace Newtonsoft.Json.Tests.Serialization
 {
     [TestFixture]
-    public class NamingStrategyEquality: TestFixtureBase
+    public class NamingStrategyEquality : TestFixtureBase
     {
         [Test]
         public void CamelCaseNamingStrategyEquality()

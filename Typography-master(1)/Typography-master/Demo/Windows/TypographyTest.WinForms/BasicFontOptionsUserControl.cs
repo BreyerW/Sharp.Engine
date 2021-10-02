@@ -1,12 +1,11 @@
 ﻿//MIT, 2017-present, WinterDev
 using System;
 using System.Windows.Forms;
-
-using Typography.TextLayout;
 using Typography.FontManagement;
+using Typography.TextLayout;
+
 namespace TypographyTest.WinForms
 {
-
     public partial class BasicFontOptionsUserControl : UserControl
     {
         BasicFontOptions _options;

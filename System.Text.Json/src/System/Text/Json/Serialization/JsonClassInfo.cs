@@ -327,7 +327,7 @@ namespace System.Text.Json
             {
                 string propertyName = jsonProperty.MemberInfo!.Name;
                 var key = new ParameterLookupKey(propertyName, GetMemberType(jsonProperty.MemberInfo));
-                var value= new ParameterLookupValue(jsonProperty);
+                var value = new ParameterLookupValue(jsonProperty);
                 if (!JsonHelpers.TryAdd(nameLookup, key, value))
                 {
                     // More than one property has the same case-insensitive name and Type.

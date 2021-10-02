@@ -23,11 +23,11 @@ namespace BrotliSharpLib
                 }
                 else if (offset0 < 7)
                 {
-                    return (0x9750468 >> (int) (4 * offset0)) & 0xF;
+                    return (0x9750468 >> (int)(4 * offset0)) & 0xF;
                 }
                 else if (offset1 < 7)
                 {
-                    return (0xFDB1ACE >> (int) (4 * offset1)) & 0xF;
+                    return (0xFDB1ACE >> (int)(4 * offset1)) & 0xF;
                 }
                 else if (distance == (size_t)dist_cache[2])
                 {
@@ -54,7 +54,8 @@ namespace BrotliSharpLib
             size_t* num_commands,
             size_t* num_literals)
         {
-            switch (params_->hasher.type) {
+            switch (params_->hasher.type)
+            {
                 case 2:
                 case 3:
                 case 4:

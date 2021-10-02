@@ -25,32 +25,31 @@
 //
 #endregion
 
+using OpenTK.Input;
+using OpenTK.Platform.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using OpenTK.Input;
-using OpenTK.Platform.Common;
+using Carbon;
+using CFAllocatorRef = System.IntPtr;
+using CFArrayRef = System.IntPtr;
+using CFDictionaryRef = System.IntPtr;
+using CFIndex = System.IntPtr;
+using CFRunLoop = System.IntPtr;
+using CFString = System.IntPtr;
+using CFStringRef = System.IntPtr; // Here used interchangeably with the CFString
+using CFTypeRef = System.IntPtr;
+using IOHIDDeviceRef = System.IntPtr;
+using IOHIDElementCookie = System.IntPtr;
+using IOHIDElementRef = System.IntPtr;
+using IOHIDManagerRef = System.IntPtr;
+using IOHIDValueRef = System.IntPtr;
+using IOOptionBits = System.IntPtr;
+using IOReturn = System.IntPtr;
 
 namespace OpenTK.Platform.MacOS
 {
-    using Carbon;
-    using CFAllocatorRef = System.IntPtr;
-    using CFArrayRef = System.IntPtr;
-    using CFDictionaryRef = System.IntPtr;
-    using CFIndex = System.IntPtr;
-    using CFRunLoop = System.IntPtr;
-    using CFString = System.IntPtr;
-    using CFStringRef = System.IntPtr; // Here used interchangeably with the CFString
-    using CFTypeRef = System.IntPtr;
-    using IOHIDDeviceRef = System.IntPtr;
-    using IOHIDElementRef = System.IntPtr;
-    using IOHIDElementCookie = System.IntPtr;
-    using IOHIDManagerRef = System.IntPtr;
-    using IOHIDValueRef = System.IntPtr;
-    using IOOptionBits = System.IntPtr;
-    using IOReturn = System.IntPtr;
-
     // Requires Mac OS X 10.5 or higher.
     // Todo: create a driver for older installations. Maybe use CGGetLastMouseDelta for that?
     class HIDInput : IInputDriver2, IMouseDriver2, IKeyboardDriver2, IJoystickDriver2
@@ -251,7 +250,7 @@ namespace OpenTK.Platform.MacOS
             }
 
             Debug.WriteLine(
-                MouseEventTap != IntPtr.Zero  && MouseEventTapSource != IntPtr.Zero ?
+                MouseEventTap != IntPtr.Zero && MouseEventTapSource != IntPtr.Zero ?
                 "success!" : "failed.");
         }
 
@@ -566,7 +565,7 @@ namespace OpenTK.Platform.MacOS
             int v_int = NativeMethods.IOHIDValueGetIntegerValue(val).ToInt32();
             HIDPage page = NativeMethods.IOHIDElementGetUsagePage(elem);
             int usage = NativeMethods.IOHIDElementGetUsage(elem);
- 
+
             // This will supress the debug printing below. Seems like it generates a lot of -1s. 
             // Couldn't find any details in USB spec or Apple docs for this behavior.
             if (usage >= 0)
@@ -1193,7 +1192,7 @@ namespace OpenTK.Platform.MacOS
             [DllImport(hid)]
             public static extern IOReturn IOHIDManagerOpen(
                 IOHIDManagerRef manager,
-                IOOptionBits options) ;
+                IOOptionBits options);
 
             [DllImport(hid)]
             public static extern IOReturn IOHIDDeviceOpen(
@@ -1219,9 +1218,9 @@ namespace OpenTK.Platform.MacOS
             // return the HID elements that match the criteria contained in the matching dictionary
             [DllImport(hid)]
             public static extern CFArrayRef IOHIDDeviceCopyMatchingElements(
-                IOHIDDeviceRef  inIOHIDDeviceRef,       // IOHIDDeviceRef for the HID device
+                IOHIDDeviceRef inIOHIDDeviceRef,       // IOHIDDeviceRef for the HID device
                 CFDictionaryRef inMatchingCFDictRef,    // the matching dictionary
-                IOOptionBits    inOptions);             // Option bits
+                IOOptionBits inOptions);             // Option bits
 
             [DllImport(hid)]
             public static extern void IOHIDDeviceRegisterInputValueCallback(
@@ -1262,7 +1261,7 @@ namespace OpenTK.Platform.MacOS
             [DllImport(hid)]
             public static extern double IOHIDValueGetScaledValue(
                 IOHIDValueRef @value,
-                IOHIDValueScaleType type) ;
+                IOHIDValueScaleType type);
 
             [DllImport(hid)]
             public static extern IOHIDElementType IOHIDElementGetType(
@@ -1306,19 +1305,19 @@ namespace OpenTK.Platform.MacOS
 
         enum HIDButton
         {
-            Button_1  = 0x01, /* (primary/trigger) */
-            Button_2  = 0x02, /* (secondary) */
-            Button_3  = 0x03, /* (tertiary) */
-            Button_4  = 0x04, /* 4th button */
+            Button_1 = 0x01, /* (primary/trigger) */
+            Button_2 = 0x02, /* (secondary) */
+            Button_3 = 0x03, /* (tertiary) */
+            Button_4 = 0x04, /* 4th button */
             /* ... */
-            Button_65535  = 0xFFFF
+            Button_65535 = 0xFFFF
         }
 
         enum HIDKey
         {
             ErrorRollOver = 0x01, /* ErrorRollOver */
-            POSTFail  = 0x02, /* POSTFail */
-            ErrorUndefined    = 0x03, /* ErrorUndefined */
+            POSTFail = 0x02, /* POSTFail */
+            ErrorUndefined = 0x03, /* ErrorUndefined */
             A = 0x04, /* a or A */
             B = 0x05, /* b or B */
             C = 0x06, /* c or C */
@@ -1356,109 +1355,109 @@ namespace OpenTK.Platform.MacOS
             Number9 = 0x26, /* 9 or ( */
             Number0 = 0x27, /* 0 or ) */
             ReturnOrEnter = 0x28, /* Return (Enter) */
-            Escape    = 0x29, /* Escape */
+            Escape = 0x29, /* Escape */
             DeleteOrBackspace = 0x2A, /* Delete (Backspace) */
-            Tab   = 0x2B, /* Tab */
-            Spacebar  = 0x2C, /* Spacebar */
-            Hyphen    = 0x2D, /* - or _ */
+            Tab = 0x2B, /* Tab */
+            Spacebar = 0x2C, /* Spacebar */
+            Hyphen = 0x2D, /* - or _ */
             EqualSign = 0x2E, /* = or + */
-            OpenBracket   = 0x2F, /* [ or { */
-            CloseBracket  = 0x30, /* ] or } */
+            OpenBracket = 0x2F, /* [ or { */
+            CloseBracket = 0x30, /* ] or } */
             Backslash = 0x31, /* \ or | */
-            NonUSPound    = 0x32, /* Non-US # or _ */
+            NonUSPound = 0x32, /* Non-US # or _ */
             Semicolon = 0x33, /* ; or : */
             Quote = 0x34, /* ' or " */
-            GraveAccentAndTilde   = 0x35, /* Grave Accent and Tilde */
+            GraveAccentAndTilde = 0x35, /* Grave Accent and Tilde */
             Comma = 0x36, /* , or < */
-            Period    = 0x37, /* . or > */
+            Period = 0x37, /* . or > */
             Slash = 0x38, /* / or ? */
-            CapsLock  = 0x39, /* Caps Lock */
-            F1    = 0x3A, /* F1 */
-            F2    = 0x3B, /* F2 */
-            F3    = 0x3C, /* F3 */
-            F4    = 0x3D, /* F4 */
-            F5    = 0x3E, /* F5 */
-            F6    = 0x3F, /* F6 */
-            F7    = 0x40, /* F7 */
-            F8    = 0x41, /* F8 */
-            F9    = 0x42, /* F9 */
-            F10   = 0x43, /* F10 */
-            F11   = 0x44, /* F11 */
-            F12   = 0x45, /* F12 */
-            PrintScreen   = 0x46, /* Print Screen */
-            ScrollLock    = 0x47, /* Scroll Lock */
+            CapsLock = 0x39, /* Caps Lock */
+            F1 = 0x3A, /* F1 */
+            F2 = 0x3B, /* F2 */
+            F3 = 0x3C, /* F3 */
+            F4 = 0x3D, /* F4 */
+            F5 = 0x3E, /* F5 */
+            F6 = 0x3F, /* F6 */
+            F7 = 0x40, /* F7 */
+            F8 = 0x41, /* F8 */
+            F9 = 0x42, /* F9 */
+            F10 = 0x43, /* F10 */
+            F11 = 0x44, /* F11 */
+            F12 = 0x45, /* F12 */
+            PrintScreen = 0x46, /* Print Screen */
+            ScrollLock = 0x47, /* Scroll Lock */
             Pause = 0x48, /* Pause */
-            Insert    = 0x49, /* Insert */
-            Home  = 0x4A, /* Home */
-            PageUp    = 0x4B, /* Page Up */
+            Insert = 0x49, /* Insert */
+            Home = 0x4A, /* Home */
+            PageUp = 0x4B, /* Page Up */
             DeleteForward = 0x4C, /* Delete Forward */
-            End   = 0x4D, /* End */
-            PageDown  = 0x4E, /* Page Down */
-            RightArrow    = 0x4F, /* Right Arrow */
+            End = 0x4D, /* End */
+            PageDown = 0x4E, /* Page Down */
+            RightArrow = 0x4F, /* Right Arrow */
             LeftArrow = 0x50, /* Left Arrow */
             DownArrow = 0x51, /* Down Arrow */
-            UpArrow   = 0x52, /* Up Arrow */
+            UpArrow = 0x52, /* Up Arrow */
             KeypadNumLock = 0x53, /* Keypad NumLock or Clear */
-            KeypadSlash   = 0x54, /* Keypad / */
-            KeypadAsterisk    = 0x55, /* Keypad * */
-            KeypadHyphen  = 0x56, /* Keypad - */
-            KeypadPlus    = 0x57, /* Keypad + */
-            KeypadEnter   = 0x58, /* Keypad Enter */
-            Keypad1   = 0x59, /* Keypad 1 or End */
-            Keypad2   = 0x5A, /* Keypad 2 or Down Arrow */
-            Keypad3   = 0x5B, /* Keypad 3 or Page Down */
-            Keypad4   = 0x5C, /* Keypad 4 or Left Arrow */
-            Keypad5   = 0x5D, /* Keypad 5 */
-            Keypad6   = 0x5E, /* Keypad 6 or Right Arrow */
-            Keypad7   = 0x5F, /* Keypad 7 or Home */
-            Keypad8   = 0x60, /* Keypad 8 or Up Arrow */
-            Keypad9   = 0x61, /* Keypad 9 or Page Up */
-            Keypad0   = 0x62, /* Keypad 0 or Insert */
-            KeypadPeriod  = 0x63, /* Keypad . or Delete */
-            NonUSBackslash    = 0x64, /* Non-US \ or | */
-            Application   = 0x65, /* Application */
+            KeypadSlash = 0x54, /* Keypad / */
+            KeypadAsterisk = 0x55, /* Keypad * */
+            KeypadHyphen = 0x56, /* Keypad - */
+            KeypadPlus = 0x57, /* Keypad + */
+            KeypadEnter = 0x58, /* Keypad Enter */
+            Keypad1 = 0x59, /* Keypad 1 or End */
+            Keypad2 = 0x5A, /* Keypad 2 or Down Arrow */
+            Keypad3 = 0x5B, /* Keypad 3 or Page Down */
+            Keypad4 = 0x5C, /* Keypad 4 or Left Arrow */
+            Keypad5 = 0x5D, /* Keypad 5 */
+            Keypad6 = 0x5E, /* Keypad 6 or Right Arrow */
+            Keypad7 = 0x5F, /* Keypad 7 or Home */
+            Keypad8 = 0x60, /* Keypad 8 or Up Arrow */
+            Keypad9 = 0x61, /* Keypad 9 or Page Up */
+            Keypad0 = 0x62, /* Keypad 0 or Insert */
+            KeypadPeriod = 0x63, /* Keypad . or Delete */
+            NonUSBackslash = 0x64, /* Non-US \ or | */
+            Application = 0x65, /* Application */
             Power = 0x66, /* Power */
-            KeypadEqualSign   = 0x67, /* Keypad = */
-            F13   = 0x68, /* F13 */
-            F14   = 0x69, /* F14 */
-            F15   = 0x6A, /* F15 */
-            F16   = 0x6B, /* F16 */
-            F17   = 0x6C, /* F17 */
-            F18   = 0x6D, /* F18 */
-            F19   = 0x6E, /* F19 */
-            F20   = 0x6F, /* F20 */
-            F21   = 0x70, /* F21 */
-            F22   = 0x71, /* F22 */
-            F23   = 0x72, /* F23 */
-            F24   = 0x73, /* F24 */
-            Execute   = 0x74, /* Execute */
-            Help  = 0x75, /* Help */
-            Menu  = 0x76, /* Menu */
-            Select    = 0x77, /* Select */
-            Stop  = 0x78, /* Stop */
+            KeypadEqualSign = 0x67, /* Keypad = */
+            F13 = 0x68, /* F13 */
+            F14 = 0x69, /* F14 */
+            F15 = 0x6A, /* F15 */
+            F16 = 0x6B, /* F16 */
+            F17 = 0x6C, /* F17 */
+            F18 = 0x6D, /* F18 */
+            F19 = 0x6E, /* F19 */
+            F20 = 0x6F, /* F20 */
+            F21 = 0x70, /* F21 */
+            F22 = 0x71, /* F22 */
+            F23 = 0x72, /* F23 */
+            F24 = 0x73, /* F24 */
+            Execute = 0x74, /* Execute */
+            Help = 0x75, /* Help */
+            Menu = 0x76, /* Menu */
+            Select = 0x77, /* Select */
+            Stop = 0x78, /* Stop */
             Again = 0x79, /* Again */
-            Undo  = 0x7A, /* Undo */
-            Cut   = 0x7B, /* Cut */
-            Copy  = 0x7C, /* Copy */
+            Undo = 0x7A, /* Undo */
+            Cut = 0x7B, /* Cut */
+            Copy = 0x7C, /* Copy */
             Paste = 0x7D, /* Paste */
-            Find  = 0x7E, /* Find */
-            Mute  = 0x7F, /* Mute */
-            VolumeUp  = 0x80, /* Volume Up */
-            VolumeDown    = 0x81, /* Volume Down */
-            LockingCapsLock   = 0x82, /* Locking Caps Lock */
-            LockingNumLock    = 0x83, /* Locking Num Lock */
+            Find = 0x7E, /* Find */
+            Mute = 0x7F, /* Mute */
+            VolumeUp = 0x80, /* Volume Up */
+            VolumeDown = 0x81, /* Volume Down */
+            LockingCapsLock = 0x82, /* Locking Caps Lock */
+            LockingNumLock = 0x83, /* Locking Num Lock */
             LockingScrollLock = 0x84, /* Locking Scroll Lock */
-            KeypadComma   = 0x85, /* Keypad Comma */
-            KeypadEqualSignAS400  = 0x86, /* Keypad Equal Sign for AS/400 */
-            International1    = 0x87, /* International1 */
-            International2    = 0x88, /* International2 */
-            International3    = 0x89, /* International3 */
-            International4    = 0x8A, /* International4 */
-            International5    = 0x8B, /* International5 */
-            International6    = 0x8C, /* International6 */
-            International7    = 0x8D, /* International7 */
-            International8    = 0x8E, /* International8 */
-            International9    = 0x8F, /* International9 */
+            KeypadComma = 0x85, /* Keypad Comma */
+            KeypadEqualSignAS400 = 0x86, /* Keypad Equal Sign for AS/400 */
+            International1 = 0x87, /* International1 */
+            International2 = 0x88, /* International2 */
+            International3 = 0x89, /* International3 */
+            International4 = 0x8A, /* International4 */
+            International5 = 0x8B, /* International5 */
+            International6 = 0x8C, /* International6 */
+            International7 = 0x8D, /* International7 */
+            International8 = 0x8E, /* International8 */
+            International9 = 0x8F, /* International9 */
             LANG1 = 0x90, /* LANG1 */
             LANG2 = 0x91, /* LANG2 */
             LANG3 = 0x92, /* LANG3 */
@@ -1468,27 +1467,27 @@ namespace OpenTK.Platform.MacOS
             LANG7 = 0x96, /* LANG7 */
             LANG8 = 0x97, /* LANG8 */
             LANG9 = 0x98, /* LANG9 */
-            AlternateErase    = 0x99, /* AlternateErase */
+            AlternateErase = 0x99, /* AlternateErase */
             SysReqOrAttention = 0x9A, /* SysReq/Attention */
-            Cancel    = 0x9B, /* Cancel */
+            Cancel = 0x9B, /* Cancel */
             Clear = 0x9C, /* Clear */
             Prior = 0x9D, /* Prior */
-            Return    = 0x9E, /* Return */
+            Return = 0x9E, /* Return */
             Separator = 0x9F, /* Separator */
-            Out   = 0xA0, /* Out */
-            Oper  = 0xA1, /* Oper */
-            ClearOrAgain  = 0xA2, /* Clear/Again */
-            CrSelOrProps  = 0xA3, /* CrSel/Props */
+            Out = 0xA0, /* Out */
+            Oper = 0xA1, /* Oper */
+            ClearOrAgain = 0xA2, /* Clear/Again */
+            CrSelOrProps = 0xA3, /* CrSel/Props */
             ExSel = 0xA4, /* ExSel */
             /* 0xA5-0xDF Reserved */
-            LeftControl   = 0xE0, /* Left Control */
+            LeftControl = 0xE0, /* Left Control */
             LeftShift = 0xE1, /* Left Shift */
-            LeftAlt   = 0xE2, /* Left Alt */
-            LeftGUI   = 0xE3, /* Left GUI */
-            RightControl  = 0xE4, /* Right Control */
-            RightShift    = 0xE5, /* Right Shift */
-            RightAlt  = 0xE6, /* Right Alt */
-            RightGUI  = 0xE7, /* Right GUI */
+            LeftAlt = 0xE2, /* Left Alt */
+            LeftGUI = 0xE3, /* Left GUI */
+            RightControl = 0xE4, /* Right Control */
+            RightShift = 0xE5, /* Right Shift */
+            RightAlt = 0xE6, /* Right Alt */
+            RightGUI = 0xE7, /* Right GUI */
             /* 0xE8-0xFFFF Reserved */
             //_Reserved = 0xFFFF
         }

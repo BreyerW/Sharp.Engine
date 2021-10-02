@@ -2,11 +2,11 @@
 
 namespace SharpInput
 {
-	public class MyClass
-	{
-		public MyClass ()
-		{
-		}
-	}
+    public class MyClass
+    {
+        public MyClass()
+        {
+        }
+    }
 }
 

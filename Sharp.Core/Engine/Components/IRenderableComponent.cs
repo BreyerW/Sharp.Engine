@@ -1,7 +1,8 @@
-﻿namespace Sharp.Engine.Components
+﻿
+namespace Sharp.Engine.Components
 {
-	public interface IRenderableComponent
-	{
-		void Render();
-	}
+    public interface IRenderableComponent
+    {
+        void Render();
+    }
 }

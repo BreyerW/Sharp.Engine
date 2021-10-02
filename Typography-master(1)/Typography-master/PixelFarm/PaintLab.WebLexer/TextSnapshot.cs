@@ -1,6 +1,7 @@
 ﻿//BSD, 2014-present, WinterDev 
 
 using System;
+
 namespace LayoutFarm.WebLexer
 {
     public class TextSnapshot

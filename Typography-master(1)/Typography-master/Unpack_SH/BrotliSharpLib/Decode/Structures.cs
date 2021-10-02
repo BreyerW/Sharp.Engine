@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using size_t = BrotliSharpLib.Brotli.SizeT;
 using reg_t = BrotliSharpLib.Brotli.SizeT;
+using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
-        internal enum BrotliDecoderErrorCode {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
+        internal enum BrotliDecoderErrorCode
+        {
             /* Same as BrotliDecoderResult values */
             BROTLI_DECODER_NO_ERROR,
             BROTLI_DECODER_SUCCESS,
@@ -48,7 +51,8 @@ namespace BrotliSharpLib {
             BROTLI_DECODER_ERROR_UNREACHABLE = -31
         }
 
-        internal enum BrotliDecoderResult {
+        internal enum BrotliDecoderResult
+        {
             /// <summary>Decoding error, e.g. corrupted input or memory allocation problem.</summary>
             BROTLI_DECODER_RESULT_ERROR = 0,
 
@@ -62,7 +66,8 @@ namespace BrotliSharpLib {
             BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT = 3
         }
 
-        internal enum BrotliRunningContextMapState {
+        internal enum BrotliRunningContextMapState
+        {
             BROTLI_STATE_CONTEXT_MAP_NONE,
             BROTLI_STATE_CONTEXT_MAP_READ_PREFIX,
             BROTLI_STATE_CONTEXT_MAP_HUFFMAN,
@@ -70,13 +75,15 @@ namespace BrotliSharpLib {
             BROTLI_STATE_CONTEXT_MAP_TRANSFORM
         }
 
-        internal enum BrotliRunningDecodeUint8State {
+        internal enum BrotliRunningDecodeUint8State
+        {
             BROTLI_STATE_DECODE_UINT8_NONE,
             BROTLI_STATE_DECODE_UINT8_SHORT,
             BROTLI_STATE_DECODE_UINT8_LONG
         }
 
-        internal enum BrotliRunningHuffmanState {
+        internal enum BrotliRunningHuffmanState
+        {
             BROTLI_STATE_HUFFMAN_NONE,
             BROTLI_STATE_HUFFMAN_SIMPLE_SIZE,
             BROTLI_STATE_HUFFMAN_SIMPLE_READ,
@@ -85,7 +92,8 @@ namespace BrotliSharpLib {
             BROTLI_STATE_HUFFMAN_LENGTH_SYMBOLS
         }
 
-        internal enum BrotliRunningMetablockHeaderState {
+        internal enum BrotliRunningMetablockHeaderState
+        {
             BROTLI_STATE_METABLOCK_HEADER_NONE,
             BROTLI_STATE_METABLOCK_HEADER_EMPTY,
             BROTLI_STATE_METABLOCK_HEADER_NIBBLES,
@@ -96,12 +104,14 @@ namespace BrotliSharpLib {
             BROTLI_STATE_METABLOCK_HEADER_METADATA
         }
 
-        internal enum BrotliRunningReadBlockLengthState {
+        internal enum BrotliRunningReadBlockLengthState
+        {
             BROTLI_STATE_READ_BLOCK_LENGTH_NONE,
             BROTLI_STATE_READ_BLOCK_LENGTH_SUFFIX
         }
 
-        internal enum BrotliRunningState {
+        internal enum BrotliRunningState
+        {
             BROTLI_STATE_UNINITED,
             BROTLI_STATE_METABLOCK_BEGIN,
             BROTLI_STATE_METABLOCK_HEADER,
@@ -127,12 +137,14 @@ namespace BrotliSharpLib {
             BROTLI_STATE_DONE
         }
 
-        internal enum BrotliRunningTreeGroupState {
+        internal enum BrotliRunningTreeGroupState
+        {
             BROTLI_STATE_TREE_GROUP_NONE,
             BROTLI_STATE_TREE_GROUP_LOOP
         }
 
-        internal enum BrotliRunningUncompressedState {
+        internal enum BrotliRunningUncompressedState
+        {
             BROTLI_STATE_UNCOMPRESSED_NONE,
             BROTLI_STATE_UNCOMPRESSED_WRITE
         }
@@ -144,7 +156,8 @@ namespace BrotliSharpLib {
             " not \0er \0al \0ful \0ive \0less \0est \0ize \0\xc2\xa0\0ous ";
 
         [StructLayout(LayoutKind.Sequential)]
-        internal unsafe struct BrotliBitReader {
+        internal unsafe struct BrotliBitReader
+        {
             public reg_t val_;
             public uint bit_pos_;
             public byte* next_in;
@@ -182,41 +195,50 @@ namespace BrotliSharpLib {
         /* [offset, offset + 2^nbits) */
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct PrefixCodeRange {
+        internal struct PrefixCodeRange
+        {
             public ushort offset;
             public byte nbits;
 
-            public PrefixCodeRange(ushort o, byte n) {
+            public PrefixCodeRange(ushort o, byte n)
+            {
                 offset = o;
                 nbits = n;
             }
 
-            public static implicit operator PrefixCodeRange(ushort[] a) {
-                return new PrefixCodeRange((ushort) a[0], (byte) a[1]);
+            public static implicit operator PrefixCodeRange(ushort[] a)
+            {
+                return new PrefixCodeRange((ushort)a[0], (byte)a[1]);
             }
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct BrotliDecoderStateBuffer {
+        internal struct BrotliDecoderStateBuffer
+        {
             public ulong u64;
 
-            public unsafe byte* u8 {
-                get {
-                    fixed (ulong* u = &u64) {
-                        return (byte*) u;
+            public unsafe byte* u8
+            {
+                get
+                {
+                    fixed (ulong* u = &u64)
+                    {
+                        return (byte*)u;
                     }
                 }
             }
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct HuffmanCode {
+        internal struct HuffmanCode
+        {
             public byte bits;
             public ushort value;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal unsafe struct HuffmanTreeGroup {
+        internal unsafe struct HuffmanTreeGroup
+        {
             public HuffmanCode** htrees;
             public HuffmanCode* codes;
             public ushort alphabet_size;
@@ -224,7 +246,8 @@ namespace BrotliSharpLib {
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal unsafe struct BrotliDecoderStateStruct {
+        internal unsafe struct BrotliDecoderStateStruct
+        {
             public BrotliRunningState state;
 
             /* This counter is reused for several disjoint loops. */
@@ -245,7 +268,7 @@ namespace BrotliSharpLib {
             public int ringbuffer_size;
             public int ringbuffer_mask;
             public int dist_rb_idx;
-            public fixed int dist_rb [4];
+            public fixed int dist_rb[4];
             public int error_code;
             public uint sub_loop_counter;
             public byte* ringbuffer;
@@ -271,9 +294,9 @@ namespace BrotliSharpLib {
             public int distance_context;
             public int meta_block_remaining_len;
             public uint block_length_index;
-            public fixed uint block_length [3];
-            public fixed uint num_block_types [3];
-            public fixed uint block_type_rb [6];
+            public fixed uint block_length[3];
+            public fixed uint num_block_types[3];
+            public fixed uint block_type_rb[6];
             public uint distance_postfix_bits;
             public uint num_direct_distance_codes;
             public int distance_postfix_mask;
@@ -298,8 +321,10 @@ namespace BrotliSharpLib {
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)] public HuffmanCode[] table;
             /* List of of symbol chains. */
-            public ushort* symbol_lists {
-                get {
+            public ushort* symbol_lists
+            {
+                get
+                {
                     /* Make small negative indexes addressable. */
                     fixed (ushort* sla = symbols_lists_array)
                         return &sla[BROTLI_HUFFMAN_MAX_CODE_LENGTH + 1];
@@ -308,14 +333,14 @@ namespace BrotliSharpLib {
 
             /* Storage from symbol_lists. */
 
-            public fixed ushort symbols_lists_array [BROTLI_HUFFMAN_MAX_CODE_LENGTH + 1 +
+            public fixed ushort symbols_lists_array[BROTLI_HUFFMAN_MAX_CODE_LENGTH + 1 +
                                                      BROTLI_NUM_COMMAND_SYMBOLS];
 
             /* Tails of symbol chains. */
-            public fixed int next_symbol [32];
-            public fixed byte code_length_code_lengths [BROTLI_CODE_LENGTH_CODES];
+            public fixed int next_symbol[32];
+            public fixed byte code_length_code_lengths[BROTLI_CODE_LENGTH_CODES];
             /* Population counts for the code lengths */
-            public fixed ushort code_length_histo [16];
+            public fixed ushort code_length_histo[16];
 
             /* For HuffmanTreeGroupDecode */
             public int htree_index;
@@ -326,12 +351,13 @@ namespace BrotliSharpLib {
             public uint max_run_length_prefix;
             public uint code;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = BROTLI_HUFFMAN_MAX_SIZE_272)] public HuffmanCode[]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = BROTLI_HUFFMAN_MAX_SIZE_272)]
+            public HuffmanCode[]
                 context_map_table;
 
             /* For InverseMoveToFrontTransform */
             public uint mtf_upper_bound;
-            public fixed uint mtf [64 + 1];
+            public fixed uint mtf[64 + 1];
 
             /* For custom dictionaries */
             public byte* custom_dict;
@@ -361,10 +387,11 @@ namespace BrotliSharpLib {
             public byte* context_modes;
             public byte* dictionary;
 
-            public fixed uint trivial_literal_contexts [8]; /* 256 bits */
+            public fixed uint trivial_literal_contexts[8]; /* 256 bits */
         }
 
-        private enum TransformID {
+        private enum TransformID
+        {
             /* EMPTY = ""
                SP = " "
                DQUOT = "\""
@@ -426,7 +453,8 @@ namespace BrotliSharpLib {
             kPFix_ousSP = 203
         }
 
-        private enum WordTransformType {
+        private enum WordTransformType
+        {
             kIdentity = 0,
             kOmitLast1 = 1,
             kOmitLast2 = 2,
@@ -450,13 +478,16 @@ namespace BrotliSharpLib {
             kOmitFirst9 = 20
         }
 
-        internal struct Transform {
+        internal struct Transform
+        {
             public byte prefix_id;
             public byte transform;
             public byte suffix_id;
 
-            public static implicit operator Transform(Enum[] e) {
-                return new Transform {
+            public static implicit operator Transform(Enum[] e)
+            {
+                return new Transform
+                {
                     prefix_id = Convert.ToByte(e[0]),
                     transform = Convert.ToByte(e[1]),
                     suffix_id = Convert.ToByte(e[2])

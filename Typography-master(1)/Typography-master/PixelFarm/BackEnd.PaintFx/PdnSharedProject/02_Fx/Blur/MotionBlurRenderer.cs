@@ -7,11 +7,11 @@
 // .                                                                           //
 /////////////////////////////////////////////////////////////////////////////////
 //MIT, 2017-present, WinterDev
-using System;
 using PixelFarm.Drawing;
+using System;
+
 namespace PaintFx.Effects
 {
-
     public class MotionBlurRenderer : EffectRendererBase
     {
         private double angle;

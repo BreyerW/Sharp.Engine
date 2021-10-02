@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+
 namespace PixelFarm.VectorMath
 {
     /// <summary>

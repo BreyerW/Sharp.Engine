@@ -61,7 +61,6 @@ using System.IO;
 
 namespace Typography.OpenFont.Tables
 {
-
     class GDEF : TableEntry
     {
         public const string _N = "GDEF";

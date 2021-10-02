@@ -185,7 +185,7 @@ namespace System.Text.Json.Serialization.Tests
         private enum MyCustomEnum
         {
             First = 1,
-            Second =2
+            Second = 2
         }
 
         [Fact]

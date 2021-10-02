@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace System.Text.Json.Serialization.Tests
@@ -185,7 +185,7 @@ namespace System.Text.Json.Serialization.Tests
         public static async Task ParseNullStringShouldThrowJsonExceptionAsync()
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("null")))
-            { 
+            {
                 await Assert.ThrowsAsync<JsonException>(async () => await JsonSerializer.DeserializeAsync<SimpleStruct>(stream));
             }
         }

@@ -1,4 +1,5 @@
-﻿namespace BepuUtilities.Collections
+﻿
+namespace BepuUtilities.Collections
 {
     /// <summary>
     /// Defines a type able to match an element.

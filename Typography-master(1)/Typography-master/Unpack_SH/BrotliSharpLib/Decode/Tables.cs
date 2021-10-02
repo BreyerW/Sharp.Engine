@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
         private static readonly PrefixCodeRange[] kBlockLengthPrefixCode = {
             new ushort[] {1, 2}, new ushort[] {5, 2}, new ushort[] {9, 2}, new ushort[] {13, 2},
             new ushort[] {17, 3}, new ushort[] {25, 3}, new ushort[] {33, 3}, new ushort[] {41, 3},

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+
 namespace System.Text.Json.Serialization.Converters
 {
     internal class NullableConverter<T> : JsonConverter<T?> where T : struct

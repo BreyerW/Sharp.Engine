@@ -45,7 +45,7 @@ namespace Newtonsoft.Json.Converters
     /// </summary>
     public class DiscriminatedUnionConverter : JsonConverter
     {
-        #region UnionDefinition
+#region UnionDefinition
         internal class Union
         {
             public readonly FSharpFunction TagReader;
@@ -75,7 +75,7 @@ namespace Newtonsoft.Json.Converters
                 Constructor = constructor;
             }
         }
-        #endregion
+#endregion
 
         private const string CasePropertyName = "Case";
         private const string FieldsPropertyName = "Fields";

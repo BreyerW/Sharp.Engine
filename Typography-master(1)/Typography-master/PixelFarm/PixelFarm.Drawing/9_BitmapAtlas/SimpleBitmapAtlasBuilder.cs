@@ -1,12 +1,11 @@
 ﻿//MIT, 2016-present, WinterDev
 //----------------------------------- 
 
-using System.Collections.Generic;
 using PixelFarm.CpuBlit;
+using System.Collections.Generic;
 
 namespace PixelFarm.Drawing.BitmapAtlas
 {
-
     public class SimpleBitmapAtlasBuilder
     {
         AtlasItemImage _latestGenGlyphImage;

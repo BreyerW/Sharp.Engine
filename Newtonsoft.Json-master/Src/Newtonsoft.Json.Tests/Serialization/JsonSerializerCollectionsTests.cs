@@ -54,6 +54,7 @@ using NUnit.Framework;
 #endif
 #if !NET20 && !PORTABLE40
 using System.Xml.Linq;
+
 #endif
 
 namespace Newtonsoft.Json.Tests.Serialization
@@ -89,7 +90,7 @@ namespace Newtonsoft.Json.Tests.Serialization
         public void DeserializeConcurrentDictionaryWithNullValue()
         {
             const string key = "id";
-            
+
             var jsonValue = $"{{\"{key}\":null}}";
 
             var deserializedObject = JsonConvert.DeserializeObject<ConcurrentDictionary<string, string>>(jsonValue);
@@ -1321,7 +1322,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             Array3D aa = new Array3D();
             aa.Before = "Before!";
             aa.After = "After!";
-            aa.Coordinates = new[,,] { { { 1, 1, 1 }, { 1, 1, 2 } }, { { 1, 2, 1 }, { 1, 2, 2 } }, { { 2, 1, 1 }, { 2, 1, 2 } }, { { 2, 2, 1 }, { 2, 2, 2 } } };
+            aa.Coordinates = new[, ,] { { { 1, 1, 1 }, { 1, 1, 2 } }, { { 1, 2, 1 }, { 1, 2, 2 } }, { { 2, 1, 1 }, { 2, 1, 2 } }, { { 2, 2, 1 }, { 2, 2, 2 } } };
 
             string json = JsonConvert.SerializeObject(aa);
 
@@ -1334,7 +1335,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             Array3DWithConverter aa = new Array3DWithConverter();
             aa.Before = "Before!";
             aa.After = "After!";
-            aa.Coordinates = new[,,] { { { 1, 1, 1 }, { 1, 1, 2 } }, { { 1, 2, 1 }, { 1, 2, 2 } }, { { 2, 1, 1 }, { 2, 1, 2 } }, { { 2, 2, 1 }, { 2, 2, 2 } } };
+            aa.Coordinates = new[, ,] { { { 1, 1, 1 }, { 1, 1, 2 } }, { { 1, 2, 1 }, { 1, 2, 2 } }, { { 2, 1, 1 }, { 2, 1, 2 } }, { { 2, 2, 1 }, { 2, 2, 2 } } };
 
             string json = JsonConvert.SerializeObject(aa, Formatting.Indented);
 

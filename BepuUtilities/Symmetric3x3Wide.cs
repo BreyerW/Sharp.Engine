@@ -107,7 +107,7 @@ namespace BepuUtilities
             result.ZY = m.ZY * scale;
             result.ZZ = m.ZZ * scale;
         }
-        
+
         //If you ever need a triangular invert, a couple of options:
         //For matrices of the form:
         //[ 1  0  0 ]
@@ -401,7 +401,7 @@ namespace BepuUtilities
             result.ZX = a.X.Z * b.X.X + a.Y.Z * b.Y.X + a.Z.Z * b.Z.X;
             result.ZY = a.X.Z * b.X.Y + a.Y.Z * b.Y.Y + a.Z.Z * b.Z.Y;
             result.ZZ = a.X.Z * b.X.Z + a.Y.Z * b.Y.Z + a.Z.Z * b.Z.Z;
-        }        
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void TransformWithoutOverlap(in Vector3Wide v, in Symmetric3x3Wide m, out Vector3Wide result)

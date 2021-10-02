@@ -1,8 +1,8 @@
 ﻿//MIT, 2009-2015, Rene Schulte and WriteableBitmapEx Contributors, https://github.com/teichgraf/WriteableBitmapEx
 //MIT, 2017-present, WinterDev
 
-using System;
 using PixelFarm.CpuBlit.VertexProcessing;
+using System;
 
 namespace BitmapBufferEx
 {

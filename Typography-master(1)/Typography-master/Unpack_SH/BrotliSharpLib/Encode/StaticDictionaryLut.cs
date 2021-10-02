@@ -1,4 +1,5 @@
-﻿namespace BrotliSharpLib
+﻿
+namespace BrotliSharpLib
 {
     public static partial class Brotli
     {
@@ -9,7 +10,8 @@
             public byte transform;
             public ushort idx;
 
-            public DictWord(byte len, byte transform, ushort idx) {
+            public DictWord(byte len, byte transform, ushort idx)
+            {
                 this.len = len;
                 this.transform = transform;
                 this.idx = idx;

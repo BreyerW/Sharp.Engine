@@ -18,40 +18,37 @@ using System.Drawing.Imaging;
 #endif
 using System.Text;
 using System.Runtime.InteropServices;
+#region Types
+
+using Atom = System.IntPtr;
+// Randr and Xrandr
+using Bool = System.Boolean;
+using Colormap = System.IntPtr;
+using Cursor = System.IntPtr;
+using Display = System.IntPtr;
+using Drawable = System.IntPtr;
+using Font = System.IntPtr;
+using GContext = System.IntPtr;
+using KeyCode = System.Byte;    // Or maybe ushort?
+using KeySym = System.IntPtr;
+using Mask = System.IntPtr;
+using Pixmap = System.IntPtr;
+using Rotation = System.UInt16;
+using SizeID = System.UInt16;
+using Status = System.Int32;
+using Time = System.IntPtr;
+using VisualID = System.IntPtr;
+// using XID = System.Int32;
+using Window = System.IntPtr;
+using XPointer = System.IntPtr;
+using XRRScreenConfiguration = System.IntPtr; // opaque datatype
 
 namespace OpenTK.Platform.X11
 {
-    #region Types
-
-    // using XID = System.Int32;
-    using Window = System.IntPtr;
-    using Drawable = System.IntPtr;
-    using Font = System.IntPtr;
-    using Pixmap = System.IntPtr;
-    using Cursor = System.IntPtr;
-    using Colormap = System.IntPtr;
-    using GContext = System.IntPtr;
-    using KeySym = System.IntPtr;
-    using Mask = System.IntPtr;
-    using Atom = System.IntPtr;
-    using VisualID = System.IntPtr;
-    using Time = System.IntPtr;
-    using KeyCode = System.Byte;    // Or maybe ushort?
-
-    using Display = System.IntPtr;
-    using XPointer = System.IntPtr;
-
-    // Randr and Xrandr
-    using Bool = System.Boolean;
-    using XRRScreenConfiguration = System.IntPtr; // opaque datatype
-    using Rotation = System.UInt16;
-    using Status = System.Int32;
-    using SizeID = System.UInt16;
-
     #endregion
-    
+
     #region Structs
-   
+
     #endregion
 
     internal static partial class Functions
@@ -107,9 +104,9 @@ namespace OpenTK.Platform.X11
         [return: MarshalAs(UnmanagedType.Bool)]
         public delegate Bool EventPredicate(IntPtr display, ref XEvent e, IntPtr arg);
         [DllImport("libX11")]
-        public extern static Bool XIfEvent(Display display, ref XEvent e, IntPtr predicate, IntPtr arg );
+        public extern static Bool XIfEvent(Display display, ref XEvent e, IntPtr predicate, IntPtr arg);
         [DllImport("libX11")]
-        public extern static Bool XCheckIfEvent(Display display, ref XEvent e, IntPtr predicate, IntPtr arg );
+        public extern static Bool XCheckIfEvent(Display display, ref XEvent e, IntPtr predicate, IntPtr arg);
 
         [DllImport("libX11")]
         public extern static int XConnectionNumber(IntPtr diplay);
@@ -130,7 +127,7 @@ namespace OpenTK.Platform.X11
 
         [DllImport("libX11", EntryPoint = "XMoveWindow")]
         public extern static int XMoveWindow(IntPtr display, IntPtr w, int x, int y);
-        
+
         [DllImport("libX11", EntryPoint = "XResizeWindow")]
         public extern static int XResizeWindow(IntPtr display, IntPtr window, int width, int height);
 
@@ -399,7 +396,7 @@ namespace OpenTK.Platform.X11
 
         [DllImport("libX11")]
         public static extern IntPtr XAllocWMHints();
-        
+
         [DllImport("libX11", EntryPoint = "XGetIconSizes")]
         public extern static int XGetIconSizes(IntPtr display, IntPtr window, out IntPtr size_list, out int count);
 
@@ -448,15 +445,15 @@ namespace OpenTK.Platform.X11
 
         [DllImport("libX11", EntryPoint = "XGetVisualInfo")]
         static extern IntPtr XGetVisualInfoInternal(IntPtr display, IntPtr vinfo_mask, ref XVisualInfo template, out int nitems);
-                                                    
+
         public static IntPtr XGetVisualInfo(IntPtr display, XVisualInfoMask vinfo_mask, ref XVisualInfo template, out int nitems)
         {
             return XGetVisualInfoInternal(display, (IntPtr)(int)vinfo_mask, ref template, out nitems);
         }
-        
+
         [DllImport("libX11")]
         public static extern IntPtr XCreateColormap(Display display, Window window, IntPtr visual, int alloc);
-        
+
         [DllImport("libX11")]
         public static extern void XLockDisplay(Display display);
 
@@ -537,7 +534,7 @@ namespace OpenTK.Platform.X11
                        new IntPtr((int)(EventMask.SubstructureRedirectMask | EventMask.SubstructureNotifyMask)),
                        ref xev);
         }
-        
+
         public static void SendNetClientMessage(X11WindowInfo window, IntPtr message_type,
                                                 IntPtr l0, IntPtr l1, IntPtr l2)
         {
@@ -557,12 +554,12 @@ namespace OpenTK.Platform.X11
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct  Pixel
+        struct Pixel
         {
             public byte A, R, G, B;
             public Pixel(byte a, byte r, byte g, byte b)
             {
-                A= a;
+                A = a;
                 R = r;
                 G = g;
                 B = b;
@@ -576,53 +573,53 @@ namespace OpenTK.Platform.X11
                     (byte)(argb & 0xFF));
             }
         }
-        public static IntPtr CreatePixmapFromImage(Display display, Bitmap image) 
-        { 
+        public static IntPtr CreatePixmapFromImage(Display display, Bitmap image)
+        {
             int width = image.Width;
             int height = image.Height;
 
             BitmapData data = image.LockBits(new Rectangle(0, 0, width, height),
                 ImageLockMode.ReadOnly,
                 PixelFormat.Format32bppArgb);
-            
-            IntPtr ximage = XCreateImage(display, CopyFromParent, 24, ImageFormat.ZPixmap, 
-                0, data.Scan0, (uint)width, (uint)height, 32, 0); 
-            IntPtr pixmap = XCreatePixmap(display, XDefaultRootWindow(display), 
-                width, height, 24); 
+
+            IntPtr ximage = XCreateImage(display, CopyFromParent, 24, ImageFormat.ZPixmap,
+                0, data.Scan0, (uint)width, (uint)height, 32, 0);
+            IntPtr pixmap = XCreatePixmap(display, XDefaultRootWindow(display),
+                width, height, 24);
             IntPtr gc = XCreateGC(display, pixmap, IntPtr.Zero, null);
-            
+
             XPutImage(display, pixmap, gc, ximage, 0, 0, 0, 0, (uint)width, (uint)height);
-            
+
             XFreeGC(display, gc);
             image.UnlockBits(data);
 
-            return pixmap; 
-        } 
-        
-        public static IntPtr CreateMaskFromImage(Display display, Bitmap image) 
-        { 
-            int width = image.Width; 
-            int height = image.Height; 
-            int stride = (width + 7) >> 3; 
+            return pixmap;
+        }
+
+        public static IntPtr CreateMaskFromImage(Display display, Bitmap image)
+        {
+            int width = image.Width;
+            int height = image.Height;
+            int stride = (width + 7) >> 3;
             byte[] mask = new byte[stride * height];
             bool msbfirst = (XBitmapBitOrder(display) == 1); // 1 = MSBFirst
-        
-            for (int y = 0; y < height; ++y) 
-            { 
-                for (int x = 0; x < width; ++x) 
-                { 
-                    byte bit = (byte) (1 << (msbfirst ? (7 - (x & 7)) : (x & 7))); 
-                    int offset = y * stride + (x >> 3); 
-        
-                    if (image.GetPixel(x, y).A >= 128) 
-                        mask[offset] |= bit; 
-                } 
-            } 
-        
-            Pixmap pixmap = XCreatePixmapFromBitmapData(display, XDefaultRootWindow(display), 
-                mask, width, height, new IntPtr(1), IntPtr.Zero, 1); 
-        
-            return pixmap; 
+
+            for (int y = 0; y < height; ++y)
+            {
+                for (int x = 0; x < width; ++x)
+                {
+                    byte bit = (byte)(1 << (msbfirst ? (7 - (x & 7)) : (x & 7)));
+                    int offset = y * stride + (x >> 3);
+
+                    if (image.GetPixel(x, y).A >= 128)
+                        mask[offset] |= bit;
+                }
+            }
+
+            Pixmap pixmap = XCreatePixmapFromBitmapData(display, XDefaultRootWindow(display),
+                mask, width, height, new IntPtr(1), IntPtr.Zero, 1);
+
+            return pixmap;
         }
     }
 }

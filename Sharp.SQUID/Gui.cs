@@ -1,4 +1,5 @@
-﻿namespace Squid
+﻿
+namespace Squid
 {
     public delegate string TranslateStringHandler(string text);
 

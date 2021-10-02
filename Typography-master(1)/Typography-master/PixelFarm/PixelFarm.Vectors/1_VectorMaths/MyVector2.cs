@@ -1,5 +1,6 @@
 ﻿//MIT, 2017-present, WinterDev
 using System;
+
 namespace PixelFarm.VectorMath
 {
     public struct PointF

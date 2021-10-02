@@ -6,7 +6,6 @@ using System.Collections.Generic;
 
 namespace Msdfgen
 {
-
     public static class SdfGenerator
     {
         //siged distance field generator

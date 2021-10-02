@@ -25,18 +25,17 @@
 //
 #endregion
 
+using OpenTK.Graphics;
+using OpenTK.Platform;
+using OpenTK.Platform.MacOS;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 
-using OpenTK.Graphics;
-using OpenTK.Platform;
-using OpenTK.Platform.MacOS;
-
 namespace OpenTK
 {
-    class CarbonGLControl : IGLControl 
+    class CarbonGLControl : IGLControl
     {
         GraphicsMode mode;
         Control control;
@@ -57,10 +56,10 @@ namespace OpenTK
 
         private int GetYOffset()
         {
-            if (control.TopLevelControl != null) 
+            if (control.TopLevelControl != null)
             {
-                System.Drawing.Point offset = control.PointToScreen (control.Location);
-                System.Drawing.Point windowOffset = control.TopLevelControl.PointToScreen (System.Drawing.Point.Empty);
+                System.Drawing.Point offset = control.PointToScreen(control.Location);
+                System.Drawing.Point windowOffset = control.TopLevelControl.PointToScreen(System.Drawing.Point.Empty);
                 int relativeY = offset.Y - windowOffset.Y; //control.TopLevelControl.Location.Y is not the same as windowOffset.Y for some reason.
                 return control.TopLevelControl.ClientSize.Height - control.Bottom - relativeY;
             }
@@ -79,8 +78,8 @@ namespace OpenTK
         bool lastIsIdle = false;
         public bool IsIdle
         {
-            get 
-            { 
+            get
+            {
                 lastIsIdle = !lastIsIdle;
                 return lastIsIdle;
             }

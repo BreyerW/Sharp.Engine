@@ -4,10 +4,9 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 
 
+
 namespace Typography.TextBreak
 {
-
-
     public class LaoDictionaryBreakingEngine : DictionaryBreakingEngine
     {
         CustomDic _customDic;

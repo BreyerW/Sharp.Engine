@@ -29,6 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 namespace Poly2Tri
 {
     public static class P2T
@@ -59,7 +60,7 @@ namespace Poly2Tri
         {
             Triangulate(_defaultAlgorithm, ps);
         }
- 
+
         static System.Collections.Generic.Stack<DTSweepContext> contextStacks = new System.Collections.Generic.Stack<DTSweepContext>();
         static TriangulationContext GetFreeTcxContext(TriangulationAlgorithm algorithm)
         {
@@ -110,22 +111,22 @@ namespace Poly2Tri
         }
 
 
-//        /// <summary>
-//        /// Will do a warmup run to let the JVM optimize the triangulation code -- or would if this were Java --MM
-//        /// </summary>
-//        public static void Warmup()
-//        {
-//#if false
-//			/*
-//			 * After a method is run 10000 times, the Hotspot compiler will compile
-//			 * it into native code. Periodically, the Hotspot compiler may recompile
-//			 * the method. After an unspecified amount of time, then the compilation
-//			 * system should become quiet.
-//			 */
-//			Polygon poly = PolygonGenerator.RandomCircleSweep2(50, 50000);
-//			TriangulationProcess process = new TriangulationProcess();
-//			process.triangulate(poly);
-//#endif
-//        }
+        //        /// <summary>
+        //        /// Will do a warmup run to let the JVM optimize the triangulation code -- or would if this were Java --MM
+        //        /// </summary>
+        //        public static void Warmup()
+        //        {
+        //#if false
+        //			/*
+        //			 * After a method is run 10000 times, the Hotspot compiler will compile
+        //			 * it into native code. Periodically, the Hotspot compiler may recompile
+        //			 * the method. After an unspecified amount of time, then the compilation
+        //			 * system should become quiet.
+        //			 */
+        //			Polygon poly = PolygonGenerator.RandomCircleSweep2(50, 50000);
+        //			TriangulationProcess process = new TriangulationProcess();
+        //			process.triangulate(poly);
+        //#endif
+        //        }
     }
 }

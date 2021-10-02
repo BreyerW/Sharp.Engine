@@ -75,7 +75,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             [JsonProperty(PropertyName = "myText", DefaultValueHandling = DefaultValueHandling.Populate)]
             public readonly string Text;
 
-            public DefaultValueWithConstructor([JsonProperty(PropertyName = "myText")]string text = DefaultText)
+            public DefaultValueWithConstructor([JsonProperty(PropertyName = "myText")] string text = DefaultText)
             {
                 Text = text;
             }

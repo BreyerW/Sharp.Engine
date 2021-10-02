@@ -1,4 +1,5 @@
-﻿namespace BepuPhysics.Constraints.Contact
+﻿
+namespace BepuPhysics.Constraints.Contact
 {
     /// <summary>
     /// Callbacks for direct references to the solver's contact constraint data.

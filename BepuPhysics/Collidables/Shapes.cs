@@ -1,12 +1,12 @@
-﻿using BepuUtilities.Collections;
+﻿using BepuPhysics.CollisionDetection;
+using BepuPhysics.Trees;
+using BepuUtilities;
+using BepuUtilities.Collections;
 using BepuUtilities.Memory;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using System;
 using System.Diagnostics;
-using BepuPhysics.CollisionDetection;
-using BepuUtilities;
-using BepuPhysics.Trees;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace BepuPhysics.Collidables
 {

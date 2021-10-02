@@ -12,7 +12,6 @@ using PixelFarm.Drawing;
 
 namespace PaintFx.Effects
 {
-
     public class UnfocusRenderer : HistogramRenderer
     {
         private int radius;

@@ -1,23 +1,22 @@
-﻿using System;
+﻿using EricsLib.Geometries;
+using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-using Microsoft.Xna.Framework;
-using EricsLib.Geometries;
 
 namespace EricsLib
 {
     public class IntersectionRecord
     {
-        
+
         Vector3 m_position;
         /// <summary>
         /// This is the exact point in 3D space which has an intersection.
         /// </summary>
         public Vector3 Position { get { return m_position; } }
 
-        
+
         Vector3 m_normal;
         /// <summary>
         /// This is the normal of the surface at the point of intersection
@@ -34,8 +33,8 @@ namespace EricsLib
         /// <summary>
         /// This is the object which is being intersected
         /// </summary>
-        public Physical PhysicalObject 
-        { 
+        public Physical PhysicalObject
+        {
             get { return m_intersectedObject1; }
             set { m_intersectedObject1 = value; }
         }
@@ -55,7 +54,7 @@ namespace EricsLib
         /// will want to be able to spawn new objects and insert them into the tree. This node is a good starting place for inserting these objects
         /// since it is a very near approximation to where we want to be in the tree.
         /// </summary>
-        OctTree m_treeNode;     
+        OctTree m_treeNode;
 
         /// <summary>
         /// check the object identities between the two intersection records. If they match in either order, we have a duplicate.
@@ -78,7 +77,7 @@ namespace EricsLib
 
         }
 
-        
+
         double m_distance;
         /// <summary>
         /// This is the distance from the ray to the intersection point. 

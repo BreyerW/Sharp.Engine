@@ -1,4 +1,5 @@
-﻿namespace TypographyTest.WinForms
+﻿
+namespace TypographyTest.WinForms
 {
     partial class BasicFontOptionsUserControl
     {

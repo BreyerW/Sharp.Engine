@@ -69,7 +69,6 @@ typedef void ALCvoid;
 
 namespace OpenTK.Audio.OpenAL
 {
-
     /// <summary>Alc = Audio Library Context</summary>
     public static class Alc
     {
@@ -123,7 +122,7 @@ namespace OpenTK.Audio.OpenAL
         /// <summary>This function makes a specified context the current context.</summary>
         /// <param name="context">A pointer to the new context.</param>
         /// <returns>Returns True on success, or False on failure.</returns>
-         public static bool MakeContextCurrent(ContextHandle context)
+        public static bool MakeContextCurrent(ContextHandle context)
         {
             return MakeContextCurrent(context.Handle);
         }
@@ -467,7 +466,7 @@ namespace OpenTK.Audio.OpenAL
         /// <param name="buffer">a buffer, which must be large enough to accommodate the number of samples.</param>
         /// <param name="samples">the number of samples to be retrieved.</param>
         [CLSCompliant(false)]
-        public static void CaptureSamples<T>(IntPtr device, T[, ,] buffer, int samples)
+        public static void CaptureSamples<T>(IntPtr device, T[,,] buffer, int samples)
             where T : struct
         {
             CaptureSamples(device, ref buffer[0, 0, 0], samples);

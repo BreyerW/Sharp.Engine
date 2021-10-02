@@ -1,8 +1,8 @@
 ﻿//MIT, 2018-present, WinterDev
 using System;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
-
     public class SimpleRectBorderBuilder
     {
 

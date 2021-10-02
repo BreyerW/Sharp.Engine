@@ -1,4 +1,5 @@
-﻿namespace BepuPhysics.Collidables
+﻿
+namespace BepuPhysics.Collidables
 {
     public struct CollidableDescription
     {

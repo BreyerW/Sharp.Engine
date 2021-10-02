@@ -1,43 +1,49 @@
 ﻿using System;
-using size_t = BrotliSharpLib.Brotli.SizeT;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using size_t = BrotliSharpLib.Brotli.SizeT;
 
 namespace BrotliSharpLib
 {
     public static partial class Brotli
     {
         [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct HistogramLiteral {
+        private unsafe struct HistogramLiteral
+        {
             private const int DATA_SIZE = BROTLI_NUM_LITERAL_SYMBOLS;
 
             public fixed uint data_[DATA_SIZE];
             public size_t total_count_;
             public double bit_cost_;
 
-            public static void HistogramClear(HistogramLiteral* self) {
+            public static void HistogramClear(HistogramLiteral* self)
+            {
                 memset(self->data_, 0, DATA_SIZE * sizeof(uint));
                 self->total_count_ = 0;
                 self->bit_cost_ = double.MaxValue;
             }
 
-            public static void ClearHistograms(HistogramLiteral* array, size_t length) {
+            public static void ClearHistograms(HistogramLiteral* array, size_t length)
+            {
                 size_t i;
                 for (i = 0; i < length; ++i) HistogramClear(array + i);
             }
 
-            public static void HistogramAdd(HistogramLiteral* self, size_t val) {
+            public static void HistogramAdd(HistogramLiteral* self, size_t val)
+            {
                 ++self->data_[val];
                 ++self->total_count_;
             }
 
-            public static void HistogramAddVector(HistogramLiteral* self, byte* p, size_t n) {
+            public static void HistogramAddVector(HistogramLiteral* self, byte* p, size_t n)
+            {
                 self->total_count_ += n;
                 n += 1;
                 while (--n != 0) ++self->data_[*p++];
             }
 
-            public static void HistogramAddHistogram(HistogramLiteral* self, HistogramLiteral* v) {
+            public static void HistogramAddHistogram(HistogramLiteral* self, HistogramLiteral* v)
+            {
                 size_t i;
                 self->total_count_ += v->total_count_;
                 for (i = 0; i < DATA_SIZE; ++i)
@@ -46,7 +52,8 @@ namespace BrotliSharpLib
                 }
             }
 
-            public static size_t HistogramDataSize() {
+            public static size_t HistogramDataSize()
+            {
                 return DATA_SIZE;
             }
         }

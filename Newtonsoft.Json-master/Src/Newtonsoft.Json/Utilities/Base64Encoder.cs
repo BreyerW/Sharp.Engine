@@ -25,6 +25,7 @@
 
 using System;
 using System.IO;
+
 #if HAVE_ASYNC
 using System.Threading;
 using System.Threading.Tasks;
@@ -78,7 +79,7 @@ namespace Newtonsoft.Json.Utilities
 
             if (_leftOverBytesCount > 0)
             {
-                if(FulfillFromLeftover(buffer, index, ref count))
+                if (FulfillFromLeftover(buffer, index, ref count))
                 {
                     return;
                 }

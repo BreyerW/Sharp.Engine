@@ -1,5 +1,6 @@
 ﻿//MIT, 2017-present, WinterDev
 using System;
+
 namespace PixelFarm.CpuBlit.Imaging
 {
     public delegate void SaveImageBufferToFileDel(IntPtr imgBuffer, int stride, int width, int height, string filename);

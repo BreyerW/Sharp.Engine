@@ -27,12 +27,11 @@
 //----------------------------------------------------------------------------
 
 
-using System;
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit.Imaging;
-
-using subpix_const = PixelFarm.CpuBlit.Imaging.ImageFilterLookUpTable.ImgSubPixConst;
+using PixelFarm.Drawing;
+using System;
 using filter_const = PixelFarm.CpuBlit.Imaging.ImageFilterLookUpTable.ImgFilterConst;
+using subpix_const = PixelFarm.CpuBlit.Imaging.ImageFilterLookUpTable.ImgSubPixConst;
 
 
 namespace PixelFarm.CpuBlit.FragmentProcessing

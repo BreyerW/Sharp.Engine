@@ -9,8 +9,11 @@ using System.Reflection;
 [assembly: AssemblyFileVersionAttribute("2.0.0")]
 [assembly: CLSCompliantAttribute(true)]
 [assembly: AssemblyCopyrightAttribute("Copyright (c) 2006 - 2016 Stefanos Apostolopoulos <stapostol@gmail.com> for the Open Toolkit library.")]
-namespace System {
-    internal static class AssemblyVersionInformation {
+
+namespace System
+{
+    internal static class AssemblyVersionInformation
+    {
         internal const string Version = "2.0.0";
         internal const string InformationalVersion = "2.0.0";
     }

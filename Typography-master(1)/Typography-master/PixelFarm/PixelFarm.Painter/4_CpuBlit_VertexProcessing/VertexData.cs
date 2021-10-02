@@ -20,6 +20,7 @@
 
 
 using PixelFarm.VectorMath;
+
 namespace PixelFarm.CpuBlit
 {
     public struct VertexData

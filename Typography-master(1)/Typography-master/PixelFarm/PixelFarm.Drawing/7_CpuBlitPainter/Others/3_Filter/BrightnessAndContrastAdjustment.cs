@@ -1,6 +1,6 @@
-﻿namespace PixelFarm.CpuBlit.Imaging
+﻿
+namespace PixelFarm.CpuBlit.Imaging
 {
-
     /////////////////////////////////////////////////////////////////////////////////
     // Paint.NET                                                                   //
     // Copyright (C) dotPDN LLC, Rick Brewster, Tom Jackson, and contributors.     //

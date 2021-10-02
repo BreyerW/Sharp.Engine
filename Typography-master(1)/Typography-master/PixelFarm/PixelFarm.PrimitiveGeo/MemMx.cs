@@ -22,6 +22,7 @@
 //#define USE_UNSAFE // no real code for this yet
 
 using System;
+
 namespace PixelFarm.CpuBlit
 {
     public static class MemMx

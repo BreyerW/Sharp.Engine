@@ -27,9 +27,9 @@
 //----------------------------------------------------------------------------
 #define USE_BLENDER
 
-using System;
 using PixelFarm.CpuBlit.Imaging;
 using PixelFarm.Drawing;
+using System;
 
 
 namespace PixelFarm.CpuBlit.PixelProcessing

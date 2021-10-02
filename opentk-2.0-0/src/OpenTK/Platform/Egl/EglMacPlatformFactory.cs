@@ -25,11 +25,11 @@
 //
 #endregion
 
+using OpenTK.Graphics;
+using OpenTK.Platform.MacOS;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using OpenTK.Graphics;
-using OpenTK.Platform.MacOS;
 
 namespace OpenTK.Platform.Egl
 {

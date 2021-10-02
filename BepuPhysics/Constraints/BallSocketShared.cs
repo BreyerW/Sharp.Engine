@@ -1,6 +1,7 @@
 ﻿using BepuUtilities;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+
 namespace BepuPhysics.Constraints
 {
     /// <summary>

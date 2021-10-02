@@ -27,8 +27,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
+using System.Text;
 
 namespace OpenTK.Graphics.ES20
 {

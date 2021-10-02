@@ -25,12 +25,11 @@
 //
 #endregion
 
+using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-
-using OpenTK.Audio.OpenAL;
 
 namespace OpenTK.Audio
 {

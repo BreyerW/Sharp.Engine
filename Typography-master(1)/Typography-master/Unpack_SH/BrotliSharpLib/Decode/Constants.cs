@@ -2,8 +2,10 @@
 using System.Runtime.InteropServices;
 using reg_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
         private const int BROTLI_HUFFMAN_MAX_CODE_LENGTH = 15;
 
 
@@ -20,7 +22,7 @@ namespace BrotliSharpLib {
 
         private const int HUFFMAN_TABLE_BITS = 8;
 
-        private static readonly reg_t BROTLI_REVERSE_BITS_LOWEST = (reg_t) 1 <<
+        private static readonly reg_t BROTLI_REVERSE_BITS_LOWEST = (reg_t)1 <<
                                                                    (BROTLI_REVERSE_BITS_MAX - 1 +
                                                                     BROTLI_REVERSE_BITS_BASE);
 

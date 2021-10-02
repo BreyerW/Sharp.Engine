@@ -18,9 +18,10 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 #if true
-using System;
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit.PixelProcessing;
+using PixelFarm.Drawing;
+using System;
+
 namespace PixelFarm.CpuBlit.Rasterization.Lines
 {
     /*

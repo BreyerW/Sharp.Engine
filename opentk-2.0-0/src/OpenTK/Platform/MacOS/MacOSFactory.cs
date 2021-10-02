@@ -25,16 +25,15 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using OpenTK.Input;
+using Graphics;
 
 namespace OpenTK.Platform.MacOS
 {
-    using Graphics;
-
     class MacOSFactory : PlatformFactoryBase
     {
         // Todo: we can query the exact amount via
@@ -83,7 +82,7 @@ namespace OpenTK.Platform.MacOS
 
         public override IKeyboardDriver2 CreateKeyboardDriver()
         {
-           return InputDriver.KeyboardDriver;
+            return InputDriver.KeyboardDriver;
         }
 
         public override IMouseDriver2 CreateMouseDriver()
@@ -100,7 +99,7 @@ namespace OpenTK.Platform.MacOS
         {
             return new MappedGamePadDriver();
         }
-        
+
         #endregion
 
         #region IDisposable Members

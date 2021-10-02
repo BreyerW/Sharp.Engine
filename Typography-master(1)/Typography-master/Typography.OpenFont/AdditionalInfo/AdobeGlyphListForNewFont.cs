@@ -110,13 +110,14 @@
 //#   removing duplicate Unicode mappings; and
 //#   renaming "tcommaaccent" to "tcedilla" and "Tcommaaccent" to "Tcedilla"
 //# 
-using System.Text;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
+
 namespace Typography.OpenFont
 {
     static class AdobeGlyphListForNewFont
-    {       
+    {
         const string aglfn =
             @"# 
 0041; A;LATIN CAPITAL LETTER A

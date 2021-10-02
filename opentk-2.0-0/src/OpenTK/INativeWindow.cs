@@ -50,32 +50,32 @@ namespace OpenTK
         /// Gets or sets the title of the window.
         /// </summary>
         string Title { get; set; }
-        
+
         /// <summary>
         /// Gets a System.Boolean that indicates whether this window has input focus.
         /// </summary>
         bool Focused { get; }
-        
+
         /// <summary>
         /// Gets or sets a System.Boolean that indicates whether the window is visible.
         /// </summary>
         bool Visible { get; set; }
-        
+
         /// <summary>
         /// Gets a System.Boolean that indicates whether the window has been created and has not been destroyed.
         /// </summary>
         bool Exists { get; }
-        
+
         /// <summary>
         /// Gets the <see cref="OpenTK.Platform.IWindowInfo"/> for this window.
         /// </summary>
         IWindowInfo WindowInfo { get; }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="OpenTK.WindowState"/> for this window.
         /// </summary>
         WindowState WindowState { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="OpenTK.WindowBorder"/> for this window.
         /// </summary>
@@ -86,43 +86,43 @@ namespace OpenTK
         /// External bounds include the title bar, borders and drawing area of the window.
         /// </summary>
         Rectangle Bounds { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a <see cref="System.Drawing.Point"/> structure that contains the location of this window on the desktop.
         /// </summary>
         Point Location { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a <see cref="System.Drawing.Size"/> structure that contains the external size of this window.
         /// </summary>
         Size Size { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the horizontal location of this window on the desktop.
         /// </summary>
         int X { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the vertical location of this window on the desktop.
         /// </summary>
         int Y { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the external width of this window.
         /// </summary>
         int Width { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the external height of this window.
         /// </summary>
         int Height { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a <see cref="System.Drawing.Rectangle"/> structure that contains the internal bounds of this window, in client coordinates.
         /// The internal bounds include the drawing area of the window, but exclude the titlebar and window borders.
         /// </summary>
         Rectangle ClientRectangle { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a <see cref="System.Drawing.Size"/> structure that contains the internal size this window.
         /// </summary>
@@ -145,21 +145,21 @@ namespace OpenTK
         /// </summary>
         bool CursorVisible { get; set; }
 
-//        /// <summary>
-//        /// Gets or sets a value, indicating whether the mouse cursor is confined inside the window size.
-//        /// </summary>
-//        bool CursorGrabbed { get; set; }
+        //        /// <summary>
+        //        /// Gets or sets a value, indicating whether the mouse cursor is confined inside the window size.
+        //        /// </summary>
+        //        bool CursorGrabbed { get; set; }
 
         /// <summary>
         /// Closes this window.
         /// </summary>
         void Close();
-        
+
         /// <summary>
         /// Processes pending window events.
         /// </summary>
         void ProcessEvents();
-        
+
         /// <summary>
         /// Transforms the specified point from screen to client coordinates. 
         /// </summary>
@@ -170,7 +170,7 @@ namespace OpenTK
         /// The point transformed to client coordinates.
         /// </returns>
         Point PointToClient(Point point);
-        
+
         /// <summary>
         /// Transforms the specified point from client to screen coordinates. 
         /// </summary>
@@ -246,7 +246,7 @@ namespace OpenTK
         /// Occurs whenever a character is typed.
         /// </summary>
         event EventHandler<KeyPressEventArgs> KeyPress;
-        
+
         /// <summary>
         /// Occurs whenever a keyboard key is released.
         /// </summary>

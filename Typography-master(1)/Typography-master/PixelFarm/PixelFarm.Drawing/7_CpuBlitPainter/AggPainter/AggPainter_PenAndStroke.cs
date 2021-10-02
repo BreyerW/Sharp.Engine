@@ -1,15 +1,14 @@
 ﻿//MIT, 2016-present, WinterDev
 
-using System;
-using PixelFarm.Drawing;
-using PixelFarm.CpuBlit.VertexProcessing;
+using BitmapBufferEx;
 using PixelFarm.CpuBlit.Imaging;
 using PixelFarm.CpuBlit.PixelProcessing;
+using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
+using System;
 
-using BitmapBufferEx;
 namespace PixelFarm.CpuBlit
 {
-
     partial class AggPainter
     {
         public enum LineRenderingTechnique

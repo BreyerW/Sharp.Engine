@@ -1,6 +1,7 @@
 ﻿//MIT, 2014-2017, WinterDev  
 
 
+
 namespace DrawingGL
 {
     public struct Color

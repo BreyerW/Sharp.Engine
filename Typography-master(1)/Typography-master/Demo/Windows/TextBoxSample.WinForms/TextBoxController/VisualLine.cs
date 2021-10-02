@@ -1,11 +1,11 @@
 ﻿//MIT, 2014-present, WinterDev
 
 using System.Collections.Generic;
-using Typography.TextLayout;
 using Typography.Contours;
+using Typography.TextLayout;
+
 namespace SampleWinForms.UI
 {
-
     class VisualLine
     {
 
@@ -52,7 +52,7 @@ namespace SampleWinForms.UI
             {
 
                 _printer.DrawFromGlyphPlans(
-                    new GlyphPlanSequence(_reusableUnscaledGlyphPlanList), 
+                    new GlyphPlanSequence(_reusableUnscaledGlyphPlanList),
                     X, Y);
                 ////draw caret 
                 ////not blink in this version

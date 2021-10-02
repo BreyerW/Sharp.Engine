@@ -16,11 +16,12 @@
 
 #region Using Directives
 
+using OpenTK;
+using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using OpenTK;
-using OpenTK.Graphics;
+
 #endregion
 
 

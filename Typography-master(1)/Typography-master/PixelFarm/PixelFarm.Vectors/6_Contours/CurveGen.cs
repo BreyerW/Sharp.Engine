@@ -8,6 +8,7 @@
  */
 #endregion
 using PixelFarm.VectorMath;
+
 namespace PixelFarm.Contours
 {
     static class Vector2fExtensions
@@ -18,7 +19,7 @@ namespace PixelFarm.Contours
         }
     }
 
-   
+
     /// <summary>
     /// Represents a cubic bezier curve with two anchor and two control points.
     /// </summary>

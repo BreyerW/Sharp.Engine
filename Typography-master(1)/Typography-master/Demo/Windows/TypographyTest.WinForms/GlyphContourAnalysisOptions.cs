@@ -1,6 +1,7 @@
 ﻿//MIT, 2017-present, WinterDev
 
 using System;
+
 namespace TypographyTest
 {
     public class ContourAnalysisOptions
@@ -33,7 +34,7 @@ namespace TypographyTest
         public bool DrawLineHubConn { get; set; }
         public bool DrawPerpendicularLine { get; set; }
         public bool DrawGlyphPoint { get; set; }
-       
+
         public bool DynamicOutline { get; set; }
 
         public bool EnableGridFit { get; set; }

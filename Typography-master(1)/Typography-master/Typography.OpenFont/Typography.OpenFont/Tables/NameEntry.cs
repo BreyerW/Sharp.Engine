@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Text;
+
 namespace Typography.OpenFont.Tables
 {
     //https://docs.microsoft.com/en-us/typography/opentype/spec/name

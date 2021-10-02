@@ -4,10 +4,9 @@ using Typography.Contours;
 using Typography.OpenFont;
 using Typography.OpenFont.Extensions;
 using Typography.TextLayout;
+
 namespace PixelFarm.Drawing.Fonts
 {
-
-
     public class VxsTextPrinter : TextPrinterBase, ITextPrinter
     {
         LayoutFarm.OpenFontTextService _textServices;
@@ -142,7 +141,7 @@ namespace PixelFarm.Drawing.Fonts
             //}
         }
 
-        
+
         public void MeasureString(char[] buffer, int startAt, int len, out int w, out int h)
         {
             UpdateGlyphLayoutSettings();
@@ -244,10 +243,10 @@ namespace PixelFarm.Drawing.Fonts
                     GlyphBitmap glyphBmp = _glyphSvgStore.GetGlyphBitmap(snapToPx.CurrentGlyphIndex);
                     //how to draw the image
                     //1. 
-                    if(glyphBmp != null)
+                    if (glyphBmp != null)
                     {
                         _painter.DrawImage(glyphBmp.Bitmap);
-                    }                    
+                    }
                 }
             }
             else if (_currentTypeface.IsBitmapFont)

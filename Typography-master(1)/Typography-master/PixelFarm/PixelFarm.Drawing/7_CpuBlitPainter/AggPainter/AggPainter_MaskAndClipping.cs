@@ -1,13 +1,13 @@
 ﻿//MIT, 2016-present, WinterDev
 
-using System;
-using PixelFarm.Drawing;
+using BitmapBufferEx;
 using PixelFarm.CpuBlit.Imaging;
 using PixelFarm.CpuBlit.PixelProcessing;
-using BitmapBufferEx;
+using PixelFarm.Drawing;
+using System;
+
 namespace PixelFarm.CpuBlit
 {
-
     partial class AggPainter
     {
         AggRenderSurface _aggsx_mask;
@@ -110,7 +110,7 @@ namespace PixelFarm.CpuBlit
             //same size as primary _aggsx_0 
 
             _alphaBitmap = new MemBitmap(_aggsx_0.Width, _aggsx_0.Height);
- 
+
             _aggsx_mask = new AggRenderSurface() { PixelBlender = new PixelBlenderBGRA() };
             _aggsx_mask.AttachDstBitmap(_alphaBitmap);
             _aggsx_mask.SetScanlineRasOrigin(this.OriginX, this.OriginY); //also set the canvas origin for the aggsx_mask

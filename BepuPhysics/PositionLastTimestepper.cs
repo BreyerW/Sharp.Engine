@@ -1,8 +1,8 @@
-﻿using System;
+﻿using BepuUtilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using BepuUtilities;
 
 namespace BepuPhysics
 {

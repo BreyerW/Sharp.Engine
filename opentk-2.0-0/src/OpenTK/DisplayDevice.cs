@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 #if !MINIMAL
 using System.Drawing;
+
 #endif
 
 namespace OpenTK
@@ -51,7 +52,7 @@ namespace OpenTK
         DisplayResolution original_resolution;
         List<DisplayResolution> available_resolutions = new List<DisplayResolution>();
         IList<DisplayResolution> available_resolutions_readonly;
-        
+
         internal object Id; // A platform-specific id for this monitor
 
         static readonly object display_lock = new object();
@@ -82,9 +83,9 @@ namespace OpenTK
             this.current_resolution = currentResolution;
             IsPrimary = primary;
             this.available_resolutions.AddRange(availableResolutions);
-            #pragma warning disable 612,618
+#pragma warning disable 612, 618
             this.bounds = bounds == Rectangle.Empty ? currentResolution.Bounds : bounds;
-            #pragma warning restore 612,618
+#pragma warning restore 612, 618
             this.Id = id;
         }
 
@@ -381,7 +382,7 @@ namespace OpenTK
 
         DisplayResolution FindResolution(int width, int height, int bitsPerPixel, float refreshRate)
         {
-            return available_resolutions.Find(delegate(DisplayResolution test)
+            return available_resolutions.Find(delegate (DisplayResolution test)
             {
                 return
                     ((width > 0 && width == test.Width) || width == 0) &&
@@ -550,7 +551,7 @@ namespace OpenTK
                 form.Visible = false;
         }
 
-        #region IDisposable Members
+    #region IDisposable Members
 
         public void Dispose()
         {
@@ -558,7 +559,7 @@ namespace OpenTK
                 form.Dispose();
         }
 
-        #endregion
+    #endregion
     }
 #endif
     #endregion

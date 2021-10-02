@@ -7,11 +7,12 @@
 // .                                                                           //
 /////////////////////////////////////////////////////////////////////////////////
 
+
 //MIT, 2017-present, WinterDev
 namespace PaintFx
 {
     static class BlendResources
-    { 
+    {
         public static string GetString(string stringName)
         {
             return "";

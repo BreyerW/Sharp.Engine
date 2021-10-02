@@ -12,7 +12,7 @@ namespace BepuUtilities
     /// Provides XNA-like axis-aligned bounding box functionality.
     /// </summary>
     //NOTE: The explicit size avoids https://github.com/dotnet/coreclr/issues/12950
-    [StructLayout(LayoutKind.Explicit, Size = 32)] 
+    [StructLayout(LayoutKind.Explicit, Size = 32)]
     public struct BoundingBox
     {
         /// <summary>

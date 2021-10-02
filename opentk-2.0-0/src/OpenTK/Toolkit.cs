@@ -25,11 +25,11 @@
 //
 #endregion
 
+using OpenTK.Platform;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using OpenTK.Platform;
 using System.Diagnostics;
+using System.Text;
 
 namespace OpenTK
 {
@@ -180,7 +180,7 @@ namespace OpenTK
             }
         }
 
-        #if DEBUG
+#if DEBUG
         /// <summary>
         /// Finalizes this instance.
         /// </summary>
@@ -190,7 +190,7 @@ namespace OpenTK
             // We may not Dispose() the toolkit from the finalizer thread,
             // as that will crash on many operating systems.
         }
-        #endif
+#endif
 
         #endregion
     }

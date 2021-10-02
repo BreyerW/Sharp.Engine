@@ -1,10 +1,10 @@
 ﻿//MIT, 2016-present, WinterDev
 
+using PixelFarm.CpuBlit.FragmentProcessing;
+using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.Drawing;
-using PixelFarm.CpuBlit.VertexProcessing;
-using PixelFarm.CpuBlit.FragmentProcessing;
 
 namespace PixelFarm.CpuBlit
 {

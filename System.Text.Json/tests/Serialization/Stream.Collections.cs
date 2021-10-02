@@ -98,7 +98,7 @@ namespace System.Text.Json.Serialization.Tests
 
                 // TODO: https://github.com/dotnet/runtime/issues/35611.
                 // Can't control order of dictionary elements when serializing, so reference metadata might not match up.
-                if(!(DictionaryTypes<TElement>().Contains(type) && options.ReferenceHandler == ReferenceHandler.Preserve))
+                if (!(DictionaryTypes<TElement>().Contains(type) && options.ReferenceHandler == ReferenceHandler.Preserve))
                 {
                     JsonTestHelper.AssertJsonEqual(expectedJson, serialized);
                 }
@@ -243,7 +243,8 @@ namespace System.Text.Json.Serialization.Tests
             char randomChar = (char)rand.Next('a', 'z');
 
             string value = new string(randomChar, stringLength);
-            var kvp = new KeyValuePair<string, SimpleStruct>(value, new SimpleStruct {
+            var kvp = new KeyValuePair<string, SimpleStruct>(value, new SimpleStruct
+            {
                 One = 1,
                 Two = 2
             });

@@ -1,6 +1,7 @@
 ﻿//MIT, 2009, 2010, 2013-2016 by the Brotli Authors.
 //MIT, 2017, brezza92 (C# port from original code, by hand)
 
+
 namespace CSharpBrotli.Decode
 {
     /// <summary>

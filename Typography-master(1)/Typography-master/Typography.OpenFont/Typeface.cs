@@ -5,7 +5,6 @@ using Typography.OpenFont.Tables;
 
 namespace Typography.OpenFont
 {
-
     public class Typeface
     {
         readonly Bounds _bounds;
@@ -420,7 +419,6 @@ namespace Typography.OpenFont
 
     namespace Extensions
     {
-
         public static class TypefaceExtensions
         {
 

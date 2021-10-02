@@ -22,6 +22,7 @@ SOFTWARE.
 
 using System;
 using System.Runtime.InteropServices;
+
 namespace PixelFarm.VectorMath
 {
     /// <summary>Represents a 4D vector using four double-precision floating-point numbers.</summary>

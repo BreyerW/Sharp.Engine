@@ -34,9 +34,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+
 namespace Typography.TextBreak
 {
-
     public static class IcuData
     {
         //this data is a modified version from 

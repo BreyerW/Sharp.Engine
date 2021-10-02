@@ -33,7 +33,7 @@ namespace OpenTK.Convert
     {
         // Defines a prefix that should be removed from methods and tokens in the XML files, e.g. "gl", "cl", etc.
         public string Prefix { get; set; }
-        
+
         // Defines the version of the spec files (optional).
         public string Version { get; set; }
 

@@ -1,4 +1,5 @@
-﻿namespace SampleWinForms
+﻿
+namespace SampleWinForms
 {
     partial class FormMsdfTest2
     {

@@ -1,15 +1,12 @@
 ﻿//MIT, 2016-present, WinterDev
 //----------------------------------- 
 
-using System.Collections.Generic;
-
-using PixelFarm.Drawing.Fonts;
-
 using PixelFarm.Contours;
+using PixelFarm.Drawing.Fonts;
+using System.Collections.Generic;
 
 namespace Typography.Rendering
 {
-
     public class SimpleFontAtlasBuilder
     {
         GlyphImage _latestGenGlyphImage;

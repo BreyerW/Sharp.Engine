@@ -12,9 +12,9 @@
 using System;
 using System.Collections.Generic;
 using Tesselate;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
-
     /// <summary>
     /// listen and handle the event from tesslator
     /// </summary>

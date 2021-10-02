@@ -6,7 +6,6 @@ using PixelFarm.Drawing;
 
 namespace PaintLab.Svg
 {
-
     public abstract class SvgElemSpec
     {
 

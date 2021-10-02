@@ -23,12 +23,12 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
+using Newtonsoft.Json.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Newtonsoft.Json.Utilities;
-using System.IO;
 using System.Globalization;
+using System.IO;
 
 namespace Newtonsoft.Json.Linq
 {

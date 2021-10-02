@@ -1,6 +1,7 @@
 ﻿//BSD, 2014-present, WinterDev
 
 using System.Text;
+
 namespace LayoutFarm.WebDom
 {
     /// <summary>

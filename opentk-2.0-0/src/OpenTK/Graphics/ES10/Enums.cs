@@ -29,7 +29,7 @@ using System;
 
 namespace OpenTK.Graphics.ES10
 {
-    #pragma warning disable 1591
+#pragma warning disable 1591
 
     public enum All : int
     {

@@ -19,7 +19,7 @@ namespace SerializerTrimmingTest
         {
             using (var stream = new MemoryStream())
             {
-                int[] arr = new [] { 1 };
+                int[] arr = new[] { 1 };
                 await JsonSerializer.SerializeAsync(stream, arr, typeof(int[]));
                 string actual = Encoding.UTF8.GetString(stream.ToArray());
                 if ("[1]" != actual)

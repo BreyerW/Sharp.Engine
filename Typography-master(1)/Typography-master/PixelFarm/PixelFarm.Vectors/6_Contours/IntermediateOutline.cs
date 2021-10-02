@@ -1,10 +1,10 @@
 ﻿//MIT, 2017-present, WinterDev
+using Poly2Tri;
 using System;
 using System.Collections.Generic;
-using Poly2Tri;
+
 namespace PixelFarm.Contours
 {
-
     public class IntermediateOutline
     {
 
@@ -54,7 +54,7 @@ namespace PixelFarm.Contours
         }
         static void CreateCentroidLineHubs(Polygon polygon, List<AnalyzedTriangle> triangles, List<CentroidLineHub> outputLineHubs)
         {
-             
+
             int id = 0;
             foreach (DelaunayTriangle delnTri in polygon.Triangles)
             {

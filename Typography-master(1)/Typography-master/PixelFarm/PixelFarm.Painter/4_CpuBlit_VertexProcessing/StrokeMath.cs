@@ -22,8 +22,8 @@
 // Stroke math
 //
 //----------------------------------------------------------------------------
-using System;
 using PixelFarm.Drawing;
+using System;
 
 namespace PixelFarm.CpuBlit.VertexProcessing
 {

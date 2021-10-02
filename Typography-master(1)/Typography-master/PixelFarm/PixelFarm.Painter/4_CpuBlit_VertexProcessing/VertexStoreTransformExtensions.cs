@@ -29,12 +29,12 @@
 
 
 using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
-
     public static class VertexStoreTransformExtensions
     {
-       
+
         /// <summary>
         /// we do NOT store vxs, return original outputVxs
         /// </summary>

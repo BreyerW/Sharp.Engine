@@ -25,6 +25,7 @@
 //
 #endregion
 
+using Bind.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,13 +33,11 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using Bind.Structures;
+using Delegate = Bind.Structures.Delegate;
+using Enum = Bind.Structures.Enum;
 
 namespace Bind
 {
-    using Delegate = Bind.Structures.Delegate;
-    using Enum = Bind.Structures.Enum;
-
     class XmlSpecReader : ISpecReader
     {
         Settings Settings { get; set; }
@@ -230,7 +229,7 @@ namespace Bind
                     "(contains(concat('|', @version, '|'), '|{1}|') or not(boolean(@version)))]",
                     apiname,
                     apiversion);
-                xpath_add += match; 
+                xpath_add += match;
                 xpath_delete += match;
             }
             else if (!String.IsNullOrEmpty(apiname))
@@ -312,7 +311,7 @@ namespace Bind
                                     }
                                 }
                             }
-                            
+
                             p.ComputeSize = param.GetAttribute("count", String.Empty).Trim();
                             if (p.ComputeSize.StartsWith("COMPSIZE"))
                             {
@@ -431,8 +430,8 @@ namespace Bind
                     Utilities.Merge(enums, e);
                 }
 
-                // Second pass: resolve "reuse" directives
-restart:
+            // Second pass: resolve "reuse" directives
+            restart:
                 foreach (var pair in reuse_list)
                 {
                     var e = pair.Key;

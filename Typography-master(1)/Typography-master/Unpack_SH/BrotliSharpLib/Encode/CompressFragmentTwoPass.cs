@@ -1,140 +1,165 @@
 ﻿using System;
 using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
-        private class CompressFragmentTwoPass {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
+        private class CompressFragmentTwoPass
+        {
             private static readonly size_t MAX_DISTANCE = BROTLI_MAX_BACKWARD_LIMIT(18);
 
-            private static unsafe uint Hash(byte* p, size_t shift) {
-                ulong h = (*(ulong*) (p) << 16) * kHashMul32;
-                return (uint) (h >> (int) shift);
+            private static unsafe uint Hash(byte* p, size_t shift)
+            {
+                ulong h = (*(ulong*)(p) << 16) * kHashMul32;
+                return (uint)(h >> (int)shift);
             }
 
             private static unsafe uint HashBytesAtOffset(
-                ulong v, int offset, size_t shift) {
+                ulong v, int offset, size_t shift)
+            {
                 {
                     ulong h = ((v >> (8 * offset)) << 16) * kHashMul32;
-                    return (uint) (h >> (int) shift);
+                    return (uint)(h >> (int)shift);
                 }
             }
 
-            private static unsafe bool IsMatch(byte* p1, byte* p2) {
+            private static unsafe bool IsMatch(byte* p1, byte* p2)
+            {
                 return (
-                    *(uint*) (p1) == *(uint*) (p2) &&
+                    *(uint*)(p1) == *(uint*)(p2) &&
                     p1[4] == p2[4] &&
                     p1[5] == p2[5]);
             }
 
             private static unsafe void EmitInsertLen(
-                uint insertlen, uint** commands) {
-                if (insertlen < 6) {
+                uint insertlen, uint** commands)
+            {
+                if (insertlen < 6)
+                {
                     **commands = insertlen;
                 }
-                else if (insertlen < 130) {
+                else if (insertlen < 130)
+                {
                     uint tail = insertlen - 2;
                     uint nbits = Log2FloorNonZero(tail) - 1u;
-                    uint prefix = tail >> (int) nbits;
+                    uint prefix = tail >> (int)nbits;
                     uint inscode = (nbits << 1) + prefix + 2;
-                    uint extra = tail - (prefix << (int) nbits);
+                    uint extra = tail - (prefix << (int)nbits);
                     **commands = inscode | (extra << 8);
                 }
-                else if (insertlen < 2114) {
+                else if (insertlen < 2114)
+                {
                     uint tail = insertlen - 66;
                     uint nbits = Log2FloorNonZero(tail);
                     uint code = nbits + 10;
-                    uint extra = tail - (1u << (int) nbits);
+                    uint extra = tail - (1u << (int)nbits);
                     **commands = code | (extra << 8);
                 }
-                else if (insertlen < 6210) {
+                else if (insertlen < 6210)
+                {
                     uint extra = insertlen - 2114;
                     **commands = 21 | (extra << 8);
                 }
-                else if (insertlen < 22594) {
+                else if (insertlen < 22594)
+                {
                     uint extra = insertlen - 6210;
                     **commands = 22 | (extra << 8);
                 }
-                else {
+                else
+                {
                     uint extra = insertlen - 22594;
                     **commands = 23 | (extra << 8);
                 }
                 ++(*commands);
             }
 
-            private static unsafe void EmitCopyLen(size_t copylen, uint** commands) {
-                if (copylen < 10) {
-                    **commands = (uint) (copylen + 38);
+            private static unsafe void EmitCopyLen(size_t copylen, uint** commands)
+            {
+                if (copylen < 10)
+                {
+                    **commands = (uint)(copylen + 38);
                 }
-                else if (copylen < 134) {
+                else if (copylen < 134)
+                {
                     size_t tail = copylen - 6;
                     size_t nbits = Log2FloorNonZero(tail) - 1;
-                    size_t prefix = tail >> (int) nbits;
+                    size_t prefix = tail >> (int)nbits;
                     size_t code = (nbits << 1) + prefix + 44;
-                    size_t extra = tail - (prefix << (int) nbits);
-                    **commands = (uint) (code | (extra << 8));
+                    size_t extra = tail - (prefix << (int)nbits);
+                    **commands = (uint)(code | (extra << 8));
                 }
-                else if (copylen < 2118) {
+                else if (copylen < 2118)
+                {
                     size_t tail = copylen - 70;
                     size_t nbits = Log2FloorNonZero(tail);
                     size_t code = nbits + 52;
-                    size_t extra = tail - ((size_t) 1 << (int) nbits);
-                    **commands = (uint) (code | (extra << 8));
+                    size_t extra = tail - ((size_t)1 << (int)nbits);
+                    **commands = (uint)(code | (extra << 8));
                 }
-                else {
+                else
+                {
                     size_t extra = copylen - 2118;
-                    **commands = (uint) (63 | (extra << 8));
+                    **commands = (uint)(63 | (extra << 8));
                 }
                 ++(*commands);
             }
 
             private static unsafe void EmitCopyLenLastDistance(
-                size_t copylen, uint** commands) {
-                if (copylen < 12) {
-                    **commands = (uint) (copylen + 20);
+                size_t copylen, uint** commands)
+            {
+                if (copylen < 12)
+                {
+                    **commands = (uint)(copylen + 20);
                     ++(*commands);
                 }
-                else if (copylen < 72) {
+                else if (copylen < 72)
+                {
                     size_t tail = copylen - 8;
                     size_t nbits = Log2FloorNonZero(tail) - 1;
-                    size_t prefix = tail >> (int) nbits;
+                    size_t prefix = tail >> (int)nbits;
                     size_t code = (nbits << 1) + prefix + 28;
-                    size_t extra = tail - (prefix << (int) nbits);
-                    **commands = (uint) (code | (extra << 8));
+                    size_t extra = tail - (prefix << (int)nbits);
+                    **commands = (uint)(code | (extra << 8));
                     ++(*commands);
                 }
-                else if (copylen < 136) {
+                else if (copylen < 136)
+                {
                     size_t tail = copylen - 8;
                     size_t code = (tail >> 5) + 54;
                     size_t extra = tail & 31;
-                    **commands = (uint) (code | (extra << 8));
+                    **commands = (uint)(code | (extra << 8));
                     ++(*commands);
                     **commands = 64;
                     ++(*commands);
                 }
-                else if (copylen < 2120) {
+                else if (copylen < 2120)
+                {
                     size_t tail = copylen - 72;
                     size_t nbits = Log2FloorNonZero(tail);
                     size_t code = nbits + 52;
-                    size_t extra = tail - ((size_t) 1 << (int) nbits);
-                    **commands = (uint) (code | (extra << 8));
+                    size_t extra = tail - ((size_t)1 << (int)nbits);
+                    **commands = (uint)(code | (extra << 8));
                     ++(*commands);
                     **commands = 64;
                     ++(*commands);
                 }
-                else {
+                else
+                {
                     size_t extra = copylen - 2120;
-                    **commands = (uint) (63 | (extra << 8));
+                    **commands = (uint)(63 | (extra << 8));
                     ++(*commands);
                     **commands = 64;
                     ++(*commands);
                 }
             }
 
-            private static unsafe void EmitDistance(uint distance, uint** commands) {
+            private static unsafe void EmitDistance(uint distance, uint** commands)
+            {
                 uint d = distance + 3;
                 uint nbits = Log2FloorNonZero(d) - 1;
-                uint prefix = (d >> (int) nbits) & 1;
-                uint offset = (2 + prefix) << (int) nbits;
+                uint prefix = (d >> (int)nbits) & 1;
+                uint offset = (2 + prefix) << (int)nbits;
                 uint distcode = 2 * (nbits - 1) + prefix + 80;
                 uint extra = d - offset;
                 **commands = distcode | (extra << 8);
@@ -143,7 +168,8 @@ namespace BrotliSharpLib {
 
             private static unsafe void CreateCommands(byte* input,
                 size_t block_size, size_t input_size, byte* base_ip, int* table,
-                size_t table_bits, byte** literals, uint** commands) {
+                size_t table_bits, byte** literals, uint** commands)
+            {
                 /* "ip" is the input pointer. */
                 byte* ip = input;
                 size_t shift = 64u - table_bits;
@@ -157,7 +183,8 @@ namespace BrotliSharpLib {
                 size_t kInputMarginBytes = BROTLI_WINDOW_GAP;
                 size_t kMinMatchLen = 6;
 
-                if ((block_size >= kInputMarginBytes)) {
+                if ((block_size >= kInputMarginBytes))
+                {
                     /* For the last block, we need to keep a 16 bytes margin so that we can be
                        sure that all distances are at most window size - 16.
                        For all other blocks, we only need to keep a margin of 5 bytes so that
@@ -167,7 +194,8 @@ namespace BrotliSharpLib {
                     byte* ip_limit = input + len_limit;
 
                     uint next_hash;
-                    for (next_hash = Hash(++ip, shift);;) {
+                    for (next_hash = Hash(++ip, shift); ;)
+                    {
                         /* Step 1: Scan forward in the input looking for a 6-byte-long match.
                            If we get close to exhausting the input then goto emit_remainder.
 
@@ -188,26 +216,30 @@ namespace BrotliSharpLib {
                         byte* next_ip = ip;
                         byte* candidate;
 
-                        trawl:
-                        do {
+                    trawl:
+                        do
+                        {
                             uint hash = next_hash;
                             uint bytes_between_hash_lookups = skip++ >> 5;
                             ip = next_ip;
                             next_ip = ip + bytes_between_hash_lookups;
-                            if ((next_ip > ip_limit)) {
+                            if ((next_ip > ip_limit))
+                            {
                                 goto emit_remainder;
                             }
                             next_hash = Hash(next_ip, shift);
                             candidate = ip - last_distance;
-                            if (IsMatch(ip, candidate)) {
-                                if ((candidate < ip)) {
-                                    table[hash] = (int) (ip - base_ip);
+                            if (IsMatch(ip, candidate))
+                            {
+                                if ((candidate < ip))
+                                {
+                                    table[hash] = (int)(ip - base_ip);
                                     break;
                                 }
                             }
                             candidate = base_ip + table[hash];
 
-                            table[hash] = (int) (ip - base_ip);
+                            table[hash] = (int)(ip - base_ip);
                         } while ((!IsMatch(ip, candidate)));
 
                         /* Check copy distance. If candidate is not feasible, continue search.
@@ -224,87 +256,92 @@ namespace BrotliSharpLib {
                                [next_emit, ip). */
                             byte* base_ = ip;
                             size_t matched = 6 + FindMatchLengthWithLimit(
-                                                 candidate + 6, ip + 6, (size_t) (ip_end - ip) - 6);
-                            int distance = (int) (base_ - candidate); /* > 0 */
-                            int insert = (int) (base_ - next_emit);
+                                                 candidate + 6, ip + 6, (size_t)(ip_end - ip) - 6);
+                            int distance = (int)(base_ - candidate); /* > 0 */
+                            int insert = (int)(base_ - next_emit);
                             ip += matched;
-                            EmitInsertLen((uint) insert, commands);
-                            memcpy(*literals, next_emit, (size_t) insert);
+                            EmitInsertLen((uint)insert, commands);
+                            memcpy(*literals, next_emit, (size_t)insert);
                             *literals += insert;
-                            if (distance == last_distance) {
+                            if (distance == last_distance)
+                            {
                                 **commands = 64;
                                 ++(*commands);
                             }
-                            else {
-                                EmitDistance((uint) distance, commands);
+                            else
+                            {
+                                EmitDistance((uint)distance, commands);
                                 last_distance = distance;
                             }
                             EmitCopyLenLastDistance(matched, commands);
 
                             next_emit = ip;
-                            if ((ip >= ip_limit)) {
+                            if ((ip >= ip_limit))
+                            {
                                 goto emit_remainder;
                             }
                             {
                                 /* We could immediately start working at ip now, but to improve
                                    compression we first update "table" with the hashes of some
                                    positions within the last copy. */
-                                ulong input_bytes = *(ulong*) (ip - 5);
+                                ulong input_bytes = *(ulong*)(ip - 5);
                                 uint prev_hash = HashBytesAtOffset(input_bytes, 0, shift);
                                 uint cur_hash;
-                                table[prev_hash] = (int) (ip - base_ip - 5);
+                                table[prev_hash] = (int)(ip - base_ip - 5);
                                 prev_hash = HashBytesAtOffset(input_bytes, 1, shift);
-                                table[prev_hash] = (int) (ip - base_ip - 4);
+                                table[prev_hash] = (int)(ip - base_ip - 4);
                                 prev_hash = HashBytesAtOffset(input_bytes, 2, shift);
-                                table[prev_hash] = (int) (ip - base_ip - 3);
-                                input_bytes = *(ulong*) (ip - 2);
+                                table[prev_hash] = (int)(ip - base_ip - 3);
+                                input_bytes = *(ulong*)(ip - 2);
                                 cur_hash = HashBytesAtOffset(input_bytes, 2, shift);
                                 prev_hash = HashBytesAtOffset(input_bytes, 0, shift);
-                                table[prev_hash] = (int) (ip - base_ip - 2);
+                                table[prev_hash] = (int)(ip - base_ip - 2);
                                 prev_hash = HashBytesAtOffset(input_bytes, 1, shift);
-                                table[prev_hash] = (int) (ip - base_ip - 1);
+                                table[prev_hash] = (int)(ip - base_ip - 1);
 
                                 candidate = base_ip + table[cur_hash];
-                                table[cur_hash] = (int) (ip - base_ip);
+                                table[cur_hash] = (int)(ip - base_ip);
                             }
                         }
 
-                        while (ip - candidate <= MAX_DISTANCE && IsMatch(ip, candidate)) {
+                        while (ip - candidate <= MAX_DISTANCE && IsMatch(ip, candidate))
+                        {
                             /* We have a 6-byte match at ip, and no need to emit any
                                literal bytes prior to ip. */
                             byte* base_ = ip;
                             size_t matched = 6 + FindMatchLengthWithLimit(
-                                                 candidate + 6, ip + 6, (size_t) (ip_end - ip) - 6);
+                                                 candidate + 6, ip + 6, (size_t)(ip_end - ip) - 6);
                             ip += matched;
-                            last_distance = (int) (base_ - candidate); /* > 0 */
+                            last_distance = (int)(base_ - candidate); /* > 0 */
                             EmitCopyLen(matched, commands);
-                            EmitDistance((uint) last_distance, commands);
+                            EmitDistance((uint)last_distance, commands);
 
                             next_emit = ip;
-                            if ((ip >= ip_limit)) {
+                            if ((ip >= ip_limit))
+                            {
                                 goto emit_remainder;
                             }
                             {
                                 /* We could immediately start working at ip now, but to improve
                                    compression we first update "table" with the hashes of some
                                    positions within the last copy. */
-                                ulong input_bytes = *(ulong*) (ip - 5);
+                                ulong input_bytes = *(ulong*)(ip - 5);
                                 uint prev_hash = HashBytesAtOffset(input_bytes, 0, shift);
                                 uint cur_hash;
-                                table[prev_hash] = (int) (ip - base_ip - 5);
+                                table[prev_hash] = (int)(ip - base_ip - 5);
                                 prev_hash = HashBytesAtOffset(input_bytes, 1, shift);
-                                table[prev_hash] = (int) (ip - base_ip - 4);
+                                table[prev_hash] = (int)(ip - base_ip - 4);
                                 prev_hash = HashBytesAtOffset(input_bytes, 2, shift);
-                                table[prev_hash] = (int) (ip - base_ip - 3);
-                                input_bytes = *(ulong*) (ip - 2);
+                                table[prev_hash] = (int)(ip - base_ip - 3);
+                                input_bytes = *(ulong*)(ip - 2);
                                 cur_hash = HashBytesAtOffset(input_bytes, 2, shift);
                                 prev_hash = HashBytesAtOffset(input_bytes, 0, shift);
-                                table[prev_hash] = (int) (ip - base_ip - 2);
+                                table[prev_hash] = (int)(ip - base_ip - 2);
                                 prev_hash = HashBytesAtOffset(input_bytes, 1, shift);
-                                table[prev_hash] = (int) (ip - base_ip - 1);
+                                table[prev_hash] = (int)(ip - base_ip - 1);
 
                                 candidate = base_ip + table[cur_hash];
-                                table[cur_hash] = (int) (ip - base_ip);
+                                table[cur_hash] = (int)(ip - base_ip);
                             }
                         }
 
@@ -312,10 +349,11 @@ namespace BrotliSharpLib {
                     }
                 }
 
-                emit_remainder:
+            emit_remainder:
                 /* Emit the remaining bytes as literals. */
-                if (next_emit < ip_end) {
-                    uint insert = (uint) (ip_end - next_emit);
+                if (next_emit < ip_end)
+                {
+                    uint insert = (uint)(ip_end - next_emit);
                     EmitInsertLen(insert, commands);
                     memcpy(*literals, next_emit, insert);
                     *literals += insert;
@@ -328,16 +366,20 @@ namespace BrotliSharpLib {
             private const int SAMPLE_RATE = 43;
 
             private static unsafe bool ShouldCompress(
-                byte* input, size_t input_size, size_t num_literals) {
-                double corpus_size = (double) input_size;
-                if (num_literals < MIN_RATIO * corpus_size) {
+                byte* input, size_t input_size, size_t num_literals)
+            {
+                double corpus_size = (double)input_size;
+                if (num_literals < MIN_RATIO * corpus_size)
+                {
                     return true;
                 }
-                else {
+                else
+                {
                     uint* literal_histo = stackalloc uint[256];
                     double max_total_bit_cost = corpus_size * 8 * MIN_RATIO / SAMPLE_RATE;
                     size_t i;
-                    for (i = 0; i < input_size; i += SAMPLE_RATE) {
+                    for (i = 0; i < input_size; i += SAMPLE_RATE)
+                    {
                         ++literal_histo[input[i]];
                     }
                     return (BitsEntropy(literal_histo, 256) < max_total_bit_cost);
@@ -401,7 +443,8 @@ namespace BrotliSharpLib {
             private static unsafe void StoreCommands(ref MemoryManager m,
                 byte* literals, size_t num_literals,
                 uint* commands, size_t num_commands,
-                size_t* storage_ix, byte* storage) {
+                size_t* storage_ix, byte* storage)
+            {
                 uint[] kNumExtraBits = {
                     0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 9, 10, 12, 14, 24,
                     0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4,
@@ -472,12 +515,14 @@ namespace BrotliSharpLib {
             private static unsafe void BrotliCompressFragmentTwoPassImpl(
                 ref MemoryManager m, byte* input, size_t input_size,
                 bool is_last, uint* command_buf, byte* literal_buf,
-                int* table, size_t table_bits, size_t* storage_ix, byte* storage) {
+                int* table, size_t table_bits, size_t* storage_ix, byte* storage)
+            {
                 /* Save the start of the first block for position and distance computations.
                 */
                 byte* base_ip = input;
 
-                while (input_size > 0) {
+                while (input_size > 0)
+                {
                     size_t block_size =
                         Math.Min(input_size, kCompressFragmentTwoPassBlockSize);
                     uint* commands = command_buf;
@@ -485,16 +530,18 @@ namespace BrotliSharpLib {
                     size_t num_literals;
                     CreateCommands(input, block_size, input_size, base_ip, table, table_bits,
                         &literals, &commands);
-                    num_literals = (size_t) (literals - literal_buf);
-                    if (ShouldCompress(input, block_size, num_literals)) {
-                        size_t num_commands = (size_t) (commands - command_buf);
+                    num_literals = (size_t)(literals - literal_buf);
+                    if (ShouldCompress(input, block_size, num_literals))
+                    {
+                        size_t num_commands = (size_t)(commands - command_buf);
                         BrotliStoreMetaBlockHeader(block_size, false, storage_ix, storage);
                         /* No block splits, no contexts. */
                         BrotliWriteBits(13, 0, storage_ix, storage);
                         StoreCommands(ref m, literal_buf, num_literals, command_buf, num_commands,
                             storage_ix, storage);
                     }
-                    else {
+                    else
+                    {
                         /* Since we did not find many backward references and the entropy of
                            the data is close to 8 bits, we can simply emit an uncompressed block.
                            This makes compression speed of uncompressible data about 3x faster. */
@@ -506,24 +553,28 @@ namespace BrotliSharpLib {
             }
 
             private static unsafe void RewindBitPosition(size_t new_storage_ix,
-                size_t* storage_ix, byte* storage) {
+                size_t* storage_ix, byte* storage)
+            {
                 size_t bitpos = new_storage_ix & 7;
-                size_t mask = (1u << (int) bitpos) - 1;
-                storage[new_storage_ix >> 3] &= (byte) mask;
+                size_t mask = (1u << (int)bitpos) - 1;
+                storage[new_storage_ix >> 3] &= (byte)mask;
                 *storage_ix = new_storage_ix;
             }
 
             /* REQUIRES: len <= 1 << 24. */
             private static unsafe void BrotliStoreMetaBlockHeader(
                 size_t len, bool is_uncompressed, size_t* storage_ix,
-                byte* storage) {
+                byte* storage)
+            {
                 size_t nibbles = 6;
                 /* ISLAST */
                 BrotliWriteBits(1, 0, storage_ix, storage);
-                if (len <= (1U << 16)) {
+                if (len <= (1U << 16))
+                {
                     nibbles = 4;
                 }
-                else if (len <= (1U << 20)) {
+                else if (len <= (1U << 20))
+                {
                     nibbles = 5;
                 }
                 BrotliWriteBits(2, nibbles - 4, storage_ix, storage);
@@ -533,7 +584,8 @@ namespace BrotliSharpLib {
             }
 
             private static unsafe void EmitUncompressedMetaBlock(byte* input, size_t input_size,
-                size_t* storage_ix, byte* storage) {
+                size_t* storage_ix, byte* storage)
+            {
                 BrotliStoreMetaBlockHeader(input_size, true, storage_ix, storage);
                 *storage_ix = (*storage_ix + 7u) & ~7u;
                 memcpy(&storage[*storage_ix >> 3], input, input_size);
@@ -544,11 +596,13 @@ namespace BrotliSharpLib {
             public static unsafe void BrotliCompressFragmentTwoPass(
                 ref MemoryManager m, byte* input, size_t input_size,
                 bool is_last, uint* command_buf, byte* literal_buf,
-                int* table, size_t table_size, size_t* storage_ix, byte* storage) {
+                int* table, size_t table_size, size_t* storage_ix, byte* storage)
+            {
                 size_t initial_storage_ix = *storage_ix;
                 size_t table_bits = Log2FloorNonZero(table_size);
 
-                switch ((int) table_bits) {
+                switch ((int)table_bits)
+                {
                     case 8:
                     case 9:
                     case 10:
@@ -565,12 +619,14 @@ namespace BrotliSharpLib {
                 }
 
                 /* If output is larger than single uncompressed block, rewrite it. */
-                if (*storage_ix - initial_storage_ix > 31 + (input_size << 3)) {
+                if (*storage_ix - initial_storage_ix > 31 + (input_size << 3))
+                {
                     RewindBitPosition(initial_storage_ix, storage_ix, storage);
                     EmitUncompressedMetaBlock(input, input_size, storage_ix, storage);
                 }
 
-                if (is_last) {
+                if (is_last)
+                {
                     BrotliWriteBits(1, 1, storage_ix, storage); /* islast */
                     BrotliWriteBits(1, 1, storage_ix, storage); /* isempty */
                     *storage_ix = (*storage_ix + 7u) & ~7u;
@@ -581,7 +637,8 @@ namespace BrotliSharpLib {
         private static unsafe void BrotliCompressFragmentTwoPass(
             ref MemoryManager m, byte* input, size_t input_size,
             bool is_last, uint* command_buf, byte* literal_buf,
-            int* table, size_t table_size, size_t* storage_ix, byte* storage) {
+            int* table, size_t table_size, size_t* storage_ix, byte* storage)
+        {
             CompressFragmentTwoPass.BrotliCompressFragmentTwoPass(ref m,
                 input, input_size, is_last, command_buf, literal_buf,
                 table, table_size, storage_ix, storage);

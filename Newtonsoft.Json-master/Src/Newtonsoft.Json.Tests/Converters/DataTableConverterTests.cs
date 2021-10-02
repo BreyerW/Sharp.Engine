@@ -44,6 +44,7 @@ using System.Linq;
 using Newtonsoft.Json.Tests.TestObjects;
 #if !(NET20 || NET35)
 using System.Numerics;
+
 #endif
 
 namespace Newtonsoft.Json.Tests.Converters
@@ -119,7 +120,7 @@ namespace Newtonsoft.Json.Tests.Converters
             Dictionary<Type, object> types = new Dictionary<Type, object>
             {
                 [typeof(TimeSpan)] = TimeSpan.Zero,
-                [typeof(char[])] = new char[] {'a', 'b', 'c' },
+                [typeof(char[])] = new char[] { 'a', 'b', 'c' },
                 [typeof(Type)] = typeof(string),
                 [typeof(Object)] = new object(),
                 [typeof(byte[])] = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 },

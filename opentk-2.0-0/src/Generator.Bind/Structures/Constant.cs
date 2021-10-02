@@ -43,7 +43,7 @@ namespace Bind.Structures
         public string Name
         {
             get { return _name; }
-            set 
+            set
             {
                 if (String.IsNullOrEmpty(value))
                     throw new ArgumentNullException("value");
@@ -111,7 +111,7 @@ namespace Bind.Structures
                 string test = Value;
                 return UInt64.TryParse(test.ToLower().Replace("0x", String.Empty),
                     NumberStyles.AllowHexSpecifier, null, out number) &&
-                    number > Int32.MaxValue; 
+                    number > Int32.MaxValue;
             }
         }
 

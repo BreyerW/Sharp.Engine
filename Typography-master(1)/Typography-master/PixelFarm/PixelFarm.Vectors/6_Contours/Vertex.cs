@@ -1,8 +1,8 @@
 ﻿//MIT, 2016-present, WinterDev
 
+
 namespace PixelFarm.Contours
 {
-
     public enum VertexKind : byte
     {
         LineStart,

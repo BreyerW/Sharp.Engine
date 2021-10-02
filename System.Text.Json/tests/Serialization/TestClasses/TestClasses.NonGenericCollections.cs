@@ -34,7 +34,7 @@ namespace System.Text.Json.Serialization.Tests
         {
             MyIListWrapper = new WrapperForIList() { "Hello" };
             MyIDictionaryWrapper = new WrapperForIDictionary() { { "key", "value" } };
-            MyHashtableWrapper = new HashtableWrapper(new List<KeyValuePair<string, object>> { new KeyValuePair<string, object>("key", "value" ) });
+            MyHashtableWrapper = new HashtableWrapper(new List<KeyValuePair<string, object>> { new KeyValuePair<string, object>("key", "value") });
             MyArrayListWrapper = new ArrayListWrapper() { "Hello" };
             MySortedListWrapper = new SortedListWrapper() { { "key", "value" } };
             MyStackWrapper = new StackWrapper();

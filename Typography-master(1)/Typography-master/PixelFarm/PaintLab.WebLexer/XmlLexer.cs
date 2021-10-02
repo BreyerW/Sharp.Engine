@@ -1,6 +1,7 @@
 ﻿//BSD, 2014-present, WinterDev
 
 using LayoutFarm.WebLexer;
+
 namespace LayoutFarm.WebDom.Parser
 {
     public enum XmlLexerEvent
@@ -46,7 +47,7 @@ namespace LayoutFarm.WebDom.Parser
         /// ?&gt;
         /// </summary>
         CloseProcessInstruction, //  ?>
-        NodeNameOrAttribute, 
+        NodeNameOrAttribute,
         NamePrefix,
         NodeNameLocal,
         Attribute,
@@ -55,7 +56,7 @@ namespace LayoutFarm.WebDom.Parser
         AttributeValueAsLiteralString,
         SwitchToContentPart,
         FromContentPart,
-        CommentContent,        
+        CommentContent,
     }
 
     enum XmlLexState

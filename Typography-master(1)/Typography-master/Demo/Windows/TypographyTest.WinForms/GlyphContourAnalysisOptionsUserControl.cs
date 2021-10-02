@@ -59,7 +59,7 @@ namespace TypographyTest.WinForms
             chkShowGrid.CheckedChanged += (s, e) => UpdateRenderOutput();
             chkShowTess.CheckedChanged += (s, e) => UpdateRenderOutput();
             chkXGridFitting.CheckedChanged += (s, e) => UpdateRenderOutput();
-            chkYGridFitting.CheckedChanged += (s, e) => UpdateRenderOutput(); 
+            chkYGridFitting.CheckedChanged += (s, e) => UpdateRenderOutput();
             chkLcdTechnique.CheckedChanged += (s, e) => UpdateRenderOutput();
 
             //----------           
@@ -106,13 +106,13 @@ namespace TypographyTest.WinForms
             _options.YGridFitting = chkYGridFitting.Checked;
 
             _options.ShowTriangles = chkDrawTriangles.Checked;
-            
+
             _options.LcdTechnique = chkLcdTechnique.Checked;
             _options.DrawCentroidBone = chkDrawCentroidBone.Checked;
             _options.DrawGlyphBone = chkDrawGlyphBone.Checked;
             _options.DrawGlyphPoint = chkDrawGlyphPoint.Checked;
             _options.DrawPerpendicularLine = chkDrawPerpendicularLine.Checked;
-            
+
             _options.DrawLineHubConn = chkDrawLineHubConn.Checked;
             //
             _options.DynamicOutline = chkDynamicOutline.Checked;

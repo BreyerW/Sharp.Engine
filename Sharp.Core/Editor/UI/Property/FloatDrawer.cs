@@ -7,15 +7,15 @@ using System.Text;
 
 namespace Sharp.Core.Editor.UI.Property
 {
-	class FloatDrawer : PropertyDrawer<float>
-	{
-		private FloatField fl;
+    class FloatDrawer : PropertyDrawer<float>
+    {
+        private FloatField fl;
 
-		public FloatDrawer(MemberInfo memInfo) : base(memInfo)
-		{
+        public FloatDrawer(MemberInfo memInfo) : base(memInfo)
+        {
 
-			fl = new FloatField(() => Value, (x) => Value = x);
-			Childs.Add(fl);
-		}
-	}
+            fl = new FloatField(() => Value, (x) => Value = x);
+            Childs.Add(fl);
+        }
+    }
 }

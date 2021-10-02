@@ -25,9 +25,9 @@
 //
 #endregion
 
-using System;
 using OpenTK.Graphics;
 using OpenTK.Platform;
+using System;
 
 namespace OpenTK
 {

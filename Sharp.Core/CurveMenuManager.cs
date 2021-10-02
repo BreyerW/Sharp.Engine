@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Squid;
+using System;
 using System.Collections.Generic;
-using System.Numerics;
-using Squid;
 using System.Linq;
+using System.Numerics;
 
 namespace Sharp
 {

@@ -7,6 +7,7 @@
  */
 
 
+
 namespace PixelFarm.VectorMath
 {
     /// <summary>

@@ -36,8 +36,9 @@
 ///   Comments comments and more comments!
 
 
-using System.Text;
 using System;
+using System.Text;
+
 namespace Poly2Tri
 {
     /**

@@ -41,6 +41,7 @@ using System.Runtime.CompilerServices;
 using System.Diagnostics.CodeAnalysis;
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;
+
 #else
 using System.Linq;
 #endif
@@ -560,7 +561,7 @@ namespace Newtonsoft.Json.Linq
         /// <param name="value">The value.</param>
         /// <param name="comparison">One of the enumeration values that specifies how the strings will be compared.</param>
         /// <returns><c>true</c> if a value was successfully retrieved; otherwise, <c>false</c>.</returns>
-        public bool TryGetValue(string propertyName, StringComparison comparison, [NotNullWhen(true)]out JToken? value)
+        public bool TryGetValue(string propertyName, StringComparison comparison, [NotNullWhen(true)] out JToken? value)
         {
             value = GetValue(propertyName, comparison);
             return (value != null);
@@ -614,7 +615,7 @@ namespace Newtonsoft.Json.Linq
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="value">The value.</param>
         /// <returns><c>true</c> if a value was successfully retrieved; otherwise, <c>false</c>.</returns>
-        public bool TryGetValue(string propertyName, [NotNullWhen(true)]out JToken? value)
+        public bool TryGetValue(string propertyName, [NotNullWhen(true)] out JToken? value)
         {
             JProperty? property = Property(propertyName, StringComparison.Ordinal);
             if (property == null)

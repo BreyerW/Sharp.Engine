@@ -24,9 +24,9 @@
 //----------------------------------------------------------------------------
 
 using System;
+
 namespace PixelFarm.CpuBlit.Imaging
 {
-
     public struct ImageFilterBilinear : IImageFilterFunc
     {
         public double GetRadius() => 1.0;
@@ -106,7 +106,7 @@ namespace PixelFarm.CpuBlit.Imaging
         double _a;
         double _i0a;
         double _epsilon;
-         
+
         public ImageFilterKaiser(double b = 6.33)
         {
             _a = (b);

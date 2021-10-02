@@ -4,7 +4,6 @@ using System.IO;
 
 namespace Typography.OpenFont.Tables
 {
-
     //from https://www.microsoft.com/typography/otfntdev/standot/features.aspx
     //The order for applying standard features encoded in OpenType fonts:
 

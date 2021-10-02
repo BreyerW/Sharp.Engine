@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using Typography.OpenFont;
 using Typography.OpenFont.Tables;
+
 namespace Typography.TextLayout
 {
-
-
     /// <summary>
     /// glyph set position manager
     /// </summary>

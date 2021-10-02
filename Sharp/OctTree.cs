@@ -1,11 +1,10 @@
-﻿using System;
+﻿using EricsLib.Geometries;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-
-using EricsLib.Geometries;
 
 namespace EricsLib
 {
@@ -55,10 +54,10 @@ namespace EricsLib
         /// we need to let our parent know that we're empty so that it can delete us.
         /// </summary>
         OctTree _parent;
-        
+
         static bool m_treeReady = false;       //the tree has a few objects which need to be inserted before it is complete
         static bool m_treeBuilt = false;       //there is no pre-existing tree yet.
-        
+
 
         /*Note: we want to avoid allocating memory for as long as possible since there can be lots of nodes.*/
         /// <summary>
@@ -153,7 +152,7 @@ namespace EricsLib
                 {
                     if (m_curLife != -1)
                     {
-                        if(m_maxLifespan <= 64)
+                        if (m_maxLifespan <= 64)
                             m_maxLifespan *= 2;
                         m_curLife = -1;
                     }
@@ -184,7 +183,7 @@ namespace EricsLib
                 }
 
                 //recursively update any child nodes.
-                for( int flags = m_activeNodes, index = 0; flags > 0; flags >>=1, index++)
+                for (int flags = m_activeNodes, index = 0; flags > 0; flags >>= 1, index++)
                     if ((flags & 1) == 1) m_childNode[index].Update(gameTime);
 
 
@@ -217,7 +216,7 @@ namespace EricsLib
 
                 //prune out any dead branches in the tree
                 for (int flags = m_activeNodes, index = 0; flags > 0; flags >>= 1, index++)
-                    if ((flags & 1) == 1 && m_childNode[index].m_curLife == 0) 
+                    if ((flags & 1) == 1 && m_childNode[index].m_curLife == 0)
                     {
                         m_childNode[index] = null;
                         m_activeNodes ^= (byte)(1 << index);       //remove the node from the active nodes flag list
@@ -240,7 +239,7 @@ namespace EricsLib
                             ir.OtherPhysicalObject.HandleIntersection(ir);
                     }
                 }
-                
+
             }
             else
             {
@@ -270,7 +269,7 @@ namespace EricsLib
 
         }
 
-        public void Add<T>(T Item) where T: Physical
+        public void Add<T>(T Item) where T : Physical
         {
             if (Item.HasBounds) //sanity check
             {
@@ -288,7 +287,7 @@ namespace EricsLib
         public void Remove<T>(T Item) where T : Physical
         {
             //not recursive
-            if(m_objects.Contains(Item))
+            if (m_objects.Contains(Item))
                 m_objects.Remove(Item);
         }
 
@@ -336,7 +335,7 @@ namespace EricsLib
             {
                 bool found = false;
                 //we will try to place the object into a child node. If we can't fit it in a child node, then we insert it into the current node object list.
-                for(int a=0;a<8;a++)
+                for (int a = 0; a < 8; a++)
                 {
                     //is the object fully contained within a quadrant?
                     if (childOctant[a].Contains(Item.BoundingBox) == ContainmentType.Contains)
@@ -351,7 +350,7 @@ namespace EricsLib
                         found = true;
                     }
                 }
-                if(!found) m_objects.Add(Item);
+                if (!found) m_objects.Add(Item);
 
             }
             else if (Item.BoundingSphere.Radius != 0 && m_region.Contains(Item.BoundingSphere) == ContainmentType.Contains)
@@ -527,7 +526,7 @@ namespace EricsLib
         {
             Vector3 global_min = m_region.Min, global_max = m_region.Max;
 
-            
+
 
             //go through all the objects in the list and find the extremes for their bounding areas.
             foreach (Physical obj in m_objects)
@@ -550,9 +549,9 @@ namespace EricsLib
 
                 if (obj.BoundingSphere != null && obj.BoundingSphere.Radius != 0.0f)
                 {
-                    
-                    local_min = new Vector3(obj.BoundingSphere.Center.X - obj.BoundingSphere.Radius, 
-                        obj.BoundingSphere.Center.Y - obj.BoundingSphere.Radius, 
+
+                    local_min = new Vector3(obj.BoundingSphere.Center.X - obj.BoundingSphere.Radius,
+                        obj.BoundingSphere.Center.Y - obj.BoundingSphere.Radius,
                         obj.BoundingSphere.Center.Z - obj.BoundingSphere.Radius);
                     local_max = new Vector3(obj.BoundingSphere.Center.X + obj.BoundingSphere.Radius,
                         obj.BoundingSphere.Center.Y + obj.BoundingSphere.Radius,
@@ -602,7 +601,7 @@ namespace EricsLib
 
             //gets the most significant bit value, so that we essentially do a Ceiling(X) with the 
             //ceiling result being to the nearest power of 2 rather than the nearest integer.
-            int x = Calc.SigBit(highX);     
+            int x = Calc.SigBit(highX);
 
             m_region.Max = new Vector3(x, x, x);
 
@@ -664,7 +663,7 @@ namespace EricsLib
             List<IntersectionRecord> ret = new List<IntersectionRecord>();
 
             //the ray is intersecting this region, so we have to check for intersection with all of our contained objects and child regions.
-            
+
             //test each object in the list for intersection
             foreach (Physical obj in m_objects)
             {
@@ -765,7 +764,7 @@ namespace EricsLib
                     }
 
                     //remove this object from the temp list so that we can run in O(N(N+1)/2) time instead of O(N*N)
-                    tmp.RemoveAt(tmp.Count-1);
+                    tmp.RemoveAt(tmp.Count - 1);
                 }
             }
 
@@ -778,7 +777,7 @@ namespace EricsLib
             //each child node will give us a list of intersection records, which we then merge with our own intersection records.
             for (int flags = m_activeNodes, index = 0; flags > 0; flags >>= 1, index++)
                 if ((flags & 1) == 1) intersections.AddRange(m_childNode[index].GetIntersection(parentObjs, type));
-            
+
             return intersections;
         }
 

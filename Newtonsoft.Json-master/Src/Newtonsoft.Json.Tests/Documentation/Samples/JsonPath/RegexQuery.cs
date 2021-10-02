@@ -67,7 +67,7 @@ namespace Newtonsoft.Json.Tests.Documentation.Samples.JsonPath
 
             foreach (JToken item in newtonsoftPackages)
             {
-                Console.WriteLine((string) item["PackageId"]);
+                Console.WriteLine((string)item["PackageId"]);
             }
             // Newtonsoft.Json
             #endregion

@@ -46,9 +46,10 @@
 //#   (2) Unicode scalar value--four uppercase hexadecimal digits
 //#
 
-using System.Text;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
+
 namespace Typography.OpenFont
 {
     static class AdobeGlyphList
@@ -129,7 +130,7 @@ namespace Typography.OpenFont
                                   int.Parse(unicodeParts[3], System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture);
                                 break;
                         }
-                         
+
 
                         if (!s_unicodeScalarValueToGlyphNameDic.ContainsKey(unicodeValue))
                         {

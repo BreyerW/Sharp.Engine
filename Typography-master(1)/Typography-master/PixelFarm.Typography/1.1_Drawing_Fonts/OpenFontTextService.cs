@@ -1,19 +1,16 @@
 ﻿//Apache2, 2014-present, WinterDev
-using System;
-using System.Collections.Generic;
 using PixelFarm.Drawing;
 using PixelFarm.Drawing.Fonts;
-
+using System;
+using System.Collections.Generic;
+using Typography.FontManagement;
 using Typography.OpenFont;
 using Typography.OpenFont.Extensions;
-
 using Typography.TextLayout;
 using Typography.TextServices;
-using Typography.FontManagement;
 
 namespace LayoutFarm
 {
-
     public class OpenFontTextService : ITextService
     {
         /// <summary>
@@ -266,7 +263,7 @@ namespace LayoutFarm
 
         }
         float ITextService.MeasureBlankLineHeight(RequestFont font)
-        { 
+        {
             Typeface typeface = ResolveTypeface(font);
 
             return (int)(Math.Round(typeface.CalculateMaxLineClipHeight() *

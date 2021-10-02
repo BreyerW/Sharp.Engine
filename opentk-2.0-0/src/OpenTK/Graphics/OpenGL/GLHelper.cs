@@ -137,7 +137,7 @@ namespace OpenTK.Graphics.OpenGL
 
         public static void Color3(Color color)
         {
-			GL.Color3(color.R, color.G, color.B);
+            GL.Color3(color.R, color.G, color.B);
         }
 
         public static void Color4(Color color)
@@ -1435,26 +1435,26 @@ namespace OpenTK.Graphics.OpenGL
         }
 
         [Obsolete("Use strongly-typed overload instead")]
-		public static void GetBufferParameteri64(Version32 target, Version32 pname, [OutAttribute] Int64[] @params)
+        public static void GetBufferParameteri64(Version32 target, Version32 pname, [OutAttribute] Int64[] @params)
         {
             GL.GetBufferParameter((BufferTarget)target, (BufferParameterName)pname, @params);
         }
 
         [Obsolete("Use strongly-typed overload instead")]
-		public static void GetBufferParameteri64(Version32 target, Version32 pname, out Int64 @params)
+        public static void GetBufferParameteri64(Version32 target, Version32 pname, out Int64 @params)
         {
             GL.GetBufferParameter((BufferTarget)target, (BufferParameterName)pname, out @params);
         }
 
         [Obsolete("Use strongly-typed overload instead")]
-		[CLSCompliant(false)]
-		public static unsafe void GetBufferParameteri64(Version32 target, Version32 pname, [OutAttribute] Int64* @params)
+        [CLSCompliant(false)]
+        public static unsafe void GetBufferParameteri64(Version32 target, Version32 pname, [OutAttribute] Int64* @params)
         {
             GL.GetBufferParameter((BufferTarget)target, (BufferParameterName)pname, @params);
         }
 
         [Obsolete("Use GL.Arb.FramebufferTextureFace instead (OpenGL spec bug)")]
-		public static void FramebufferTextureFace(Version32 target, Version32 attachment,
+        public static void FramebufferTextureFace(Version32 target, Version32 attachment,
             int texture, int level, Version32 face)
         {
             Arb.FramebufferTextureFace((FramebufferTarget)target,
@@ -1462,9 +1462,9 @@ namespace OpenTK.Graphics.OpenGL
         }
 
         [Obsolete("Use GL.Arb.FramebufferTextureFace instead (OpenGL spec bug)")]
-		[CLSCompliant(false)]
-		public static void FramebufferTextureFace(Version32 target, Version32 attachment,
-			uint texture, int level, Version32 face)
+        [CLSCompliant(false)]
+        public static void FramebufferTextureFace(Version32 target, Version32 attachment,
+            uint texture, int level, Version32 face)
         {
             Arb.FramebufferTextureFace((FramebufferTarget)target,
                 (FramebufferAttachment)attachment, texture, level, (TextureTarget)face);
@@ -1600,7 +1600,7 @@ namespace OpenTK.Graphics.OpenGL
         #endregion
     }
 
-    #pragma warning disable 1574 // XML comment cref attribute could not be resolved, compiler bug in Mono 3.4.0
+#pragma warning disable 1574 // XML comment cref attribute could not be resolved, compiler bug in Mono 3.4.0
 
     /// <summary>
     /// Defines the signature of a debug callback for 
@@ -1668,5 +1668,5 @@ namespace OpenTK.Graphics.OpenGL
         DebugSeverity severity, int length, IntPtr message,
         IntPtr userParam);
 
-    #pragma warning restore 1574 // XML comment cref attribute could not be resolved, compiler bug in Mono 3.4.0
+#pragma warning restore 1574 // XML comment cref attribute could not be resolved, compiler bug in Mono 3.4.0
 }

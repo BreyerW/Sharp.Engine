@@ -218,7 +218,7 @@ namespace Newtonsoft.Json.Tests.Linq.JsonPath
             Assert.AreEqual(2, path.Filters.Count);
             Assert.AreEqual("elements", ((FieldFilter)path.Filters[0]).Name);
 
-            BooleanQueryExpression expression = (BooleanQueryExpression)((QueryScanFilter) path.Filters[1]).Expression;
+            BooleanQueryExpression expression = (BooleanQueryExpression)((QueryScanFilter)path.Filters[1]).Expression;
 
             List<PathFilter> paths = (List<PathFilter>)expression.Left;
 

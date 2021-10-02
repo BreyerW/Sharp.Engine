@@ -27,18 +27,17 @@
 //
 #endregion
 
+using OpenTK.Graphics;
+using OpenTK.Input;
+using OpenTK.Platform.Egl;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using OpenTK.Graphics;
-using OpenTK.Input;
-using OpenTK.Platform.Egl;
+using Egl = OpenTK.Platform.Egl.Egl;
 
 namespace OpenTK.Platform.Linux
 {
-    using Egl = OpenTK.Platform.Egl.Egl;
-
     // Linux KMS platform
     class LinuxFactory : PlatformFactoryBase
     {
@@ -127,7 +126,7 @@ namespace OpenTK.Platform.Linux
 
             gbm_device = IntPtr.Zero;
             egl_display = IntPtr.Zero;
-            
+
             int fd = Libc.open(gpu, OpenFlags.ReadWrite | OpenFlags.CloseOnExec);
             if (fd < 0)
             {

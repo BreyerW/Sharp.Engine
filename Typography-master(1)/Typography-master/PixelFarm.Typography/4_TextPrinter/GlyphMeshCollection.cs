@@ -4,7 +4,6 @@ using Typography.OpenFont;
 
 namespace Typography.Contours
 {
-
     //see also: PixelFarm's  class HintedVxsGlyphCollection 
 
     //TODO: review this class name again 

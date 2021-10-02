@@ -25,6 +25,7 @@
 //
 #endregion
 
+using Bind.Structures;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,14 +34,12 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.XPath;
-using Bind.Structures;
 using Delegate = Bind.Structures.Delegate;
+using Enum = Bind.Structures.Enum;
+using Type = Bind.Structures.Type;
 
 namespace Bind
 {
-    using Enum = Bind.Structures.Enum;
-    using Type = Bind.Structures.Type;
-
     class FuncProcessor
     {
         static readonly Regex Endings = new Regex(
@@ -189,7 +188,7 @@ namespace Bind
                 }
             }
         }
-        
+
         // When we have a list of overloaded delegates, make sure that
         // all generated wrappers use the first (original) delegate, not
         // the overloaded ones. This allows us to reduce the amount
@@ -1203,7 +1202,7 @@ namespace Bind
                         }
                         else
                         {
-                            p.QualifiedType = "String"; 
+                            p.QualifiedType = "String";
                         }
                     }
 

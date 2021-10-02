@@ -5,10 +5,10 @@ using System;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using DepthRefiner = BepuPhysics.CollisionDetection.DepthRefiner<BepuPhysics.Collidables.Cylinder, BepuPhysics.Collidables.CylinderWide, BepuPhysics.Collidables.CylinderSupportFinder, BepuPhysics.Collidables.Box, BepuPhysics.Collidables.BoxWide, BepuPhysics.Collidables.BoxSupportFinder>;
 
 namespace BepuPhysics.CollisionDetection.CollisionTasks
 {
-    using DepthRefiner = DepthRefiner<Cylinder, CylinderWide, CylinderSupportFinder, Box, BoxWide, BoxSupportFinder>;
     public struct BoxCylinderTester : IPairTester<BoxWide, CylinderWide, Convex4ContactManifoldWide>
     {
         public int BatchSize => 16;
@@ -157,8 +157,8 @@ namespace BepuPhysics.CollisionDetection.CollisionTasks
             Vector3Wide.ConditionalSelect(useY, rA.Z, boxFaceX, out boxFaceX);
             Vector3Wide.ConditionalSelect(useX, rA.Z, rA.Y, out var boxFaceY);
             Vector3Wide.ConditionalSelect(useY, rA.X, boxFaceY, out boxFaceY);
-            var negateFace = 
-                Vector.ConditionalSelect(useX, Vector.GreaterThan(localNormalInA.X, Vector<float>.Zero), 
+            var negateFace =
+                Vector.ConditionalSelect(useX, Vector.GreaterThan(localNormalInA.X, Vector<float>.Zero),
                 Vector.ConditionalSelect(useY, Vector.GreaterThan(localNormalInA.Y, Vector<float>.Zero), Vector.GreaterThan(localNormalInA.Z, Vector<float>.Zero)));
             Vector3Wide.ConditionallyNegate(negateFace, ref boxFaceNormal);
             Vector3Wide.ConditionallyNegate(negateFace, ref boxFaceX);

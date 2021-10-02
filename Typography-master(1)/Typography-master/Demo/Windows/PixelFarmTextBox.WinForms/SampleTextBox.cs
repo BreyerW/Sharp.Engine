@@ -3,9 +3,10 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Typography.Rendering;
+using SampleWinForms.UI;
+
 namespace SampleWinForms
 {
-    using SampleWinForms.UI;
     partial class SampleTextBox : UserControl
     {
         //-----------------
@@ -74,7 +75,7 @@ namespace SampleWinForms
         protected override void OnPaint(PaintEventArgs e)
         {
             if (!this.DesignMode)
-            {  
+            {
                 _txtBoxController.UpdateOutput();
             }
             base.OnPaint(e);

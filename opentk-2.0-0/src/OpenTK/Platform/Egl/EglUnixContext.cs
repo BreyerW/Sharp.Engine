@@ -27,9 +27,9 @@
 //
 #endregion
 
+using OpenTK.Graphics;
 using System;
 using System.Diagnostics;
-using OpenTK.Graphics;
 
 namespace OpenTK.Platform.Egl
 {

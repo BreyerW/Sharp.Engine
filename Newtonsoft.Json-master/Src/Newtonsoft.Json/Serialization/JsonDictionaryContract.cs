@@ -32,6 +32,7 @@ using System.Collections;
 
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;
+
 #endif
 
 namespace Newtonsoft.Json.Serialization
@@ -204,7 +205,7 @@ namespace Newtonsoft.Json.Serialization
             }
 #endif
 
-            if (DictionaryKeyType != null && 
+            if (DictionaryKeyType != null &&
                 DictionaryValueType != null &&
                 ImmutableCollectionsUtils.TryBuildImmutableForDictionaryContract(
                     NonNullableUnderlyingType,

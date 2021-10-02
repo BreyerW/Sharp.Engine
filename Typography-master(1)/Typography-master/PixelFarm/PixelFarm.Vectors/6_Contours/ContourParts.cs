@@ -1,6 +1,7 @@
 ﻿//MIT, 2016-present, WinterDev
 
 using PixelFarm.VectorMath;
+
 namespace PixelFarm.Contours
 {
     public enum PartKind

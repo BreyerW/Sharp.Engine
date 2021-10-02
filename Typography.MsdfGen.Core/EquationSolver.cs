@@ -2,6 +2,7 @@
 //MIT, 2017-present, WinterDev (C# port)
 
 using System;
+
 namespace Msdfgen
 {
     //#include "equation-solver.h"

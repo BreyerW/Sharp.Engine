@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.XUnitExtensions;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using Microsoft.DotNet.XUnitExtensions;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace System.Text.Json.Tests

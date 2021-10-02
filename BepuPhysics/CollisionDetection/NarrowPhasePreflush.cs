@@ -205,7 +205,7 @@ namespace BepuPhysics.CollisionDetection
                     break;
             }
         }
-        
+
         protected override void OnPreflush(IThreadDispatcher threadDispatcher, bool deterministic)
         {
             var threadCount = threadDispatcher == null ? 1 : threadDispatcher.ThreadCount;
@@ -338,7 +338,7 @@ namespace BepuPhysics.CollisionDetection
                 {
                     preflushJobs.Add(new PreflushJob { Type = PreflushJobType.AwakenerPhaseTwo, JobIndex = i }, Pool);
                 }
-                
+
                 //start = Stopwatch.GetTimestamp();
                 preflushJobIndex = -1;
                 threadDispatcher.DispatchWorkers(preflushWorkerLoop);

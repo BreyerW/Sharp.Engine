@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Squid;
+﻿using Squid;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 namespace Squid
 {
@@ -241,7 +241,7 @@ namespace Squid
         /// The cell formatter delegate
         /// </summary>
         public CellFormatter CreateCell;
-        
+
         /// <summary>
         /// The header formatter delegate
         /// </summary>

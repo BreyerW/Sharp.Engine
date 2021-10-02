@@ -31,8 +31,9 @@ namespace BrotliSharpLib
 
         private const int BROTLI_WINDOW_GAP = 16;
 
-        private static size_t BROTLI_MAX_BACKWARD_LIMIT(size_t W) {
-            return ((size_t) 1 << (int) W) - BROTLI_WINDOW_GAP;
+        private static size_t BROTLI_MAX_BACKWARD_LIMIT(size_t W)
+        {
+            return ((size_t)1 << (int)W) - BROTLI_WINDOW_GAP;
         }
 
 #if X86 || X64

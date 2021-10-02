@@ -1,9 +1,9 @@
 ﻿//MIT, 2017, Zou Wei(github/zwcloud), WinterDev
 using System.Collections.Generic;
+using Tesselate;
+using Typography.Contours;
 using Typography.OpenFont;
 using Typography.TextLayout;
-using Typography.Contours;
-using Tesselate;
 
 namespace DrawingGL.Text
 {

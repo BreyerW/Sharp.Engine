@@ -1,12 +1,11 @@
 ﻿//----------------------------------------------------------------------------
 //MIT, 2014-present, WinterDev
 
-using System;
 using PixelFarm.Drawing;
+using System;
 
 namespace PixelFarm.CpuBlit
 {
-
     public class VxsRenderVx : RenderVx
     {
         public VertexStore _vxs;
@@ -24,6 +23,6 @@ namespace PixelFarm.CpuBlit
         public static void SetResolvedObject(VxsRenderVx vxsRenerVx, object obj)
         {
             vxsRenerVx._resolvedObject = obj;
-        } 
-    } 
+        }
+    }
 }

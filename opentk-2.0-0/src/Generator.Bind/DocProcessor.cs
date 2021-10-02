@@ -1,3 +1,4 @@
+using Bind.Structures;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,8 +9,6 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-
-using Bind.Structures;
 
 namespace Bind
 {
@@ -68,7 +67,7 @@ namespace Bind
                 if (!DocumentationFiles.ContainsKey(file))
                     file = Settings.FunctionPrefix + f.TrimmedName.TrimEnd(numbers) + ".xml";
 
-                docs = 
+                docs =
                     (DocumentationFiles.ContainsKey(file) ? ProcessFile(DocumentationFiles[file], processor) : null) ??
                     new Documentation
                     {

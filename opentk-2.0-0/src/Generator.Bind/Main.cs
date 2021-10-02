@@ -4,6 +4,9 @@
  */
 #endregion
 
+using Bind.CL;
+using Bind.ES;
+using Bind.GL2;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,9 +15,6 @@ using System.Linq;
 using System.Reflection;
 using System.Security;
 using System.Text.RegularExpressions;
-using Bind.CL;
-using Bind.ES;
-using Bind.GL2;
 
 namespace Bind
 {
@@ -52,7 +52,7 @@ namespace Bind
                 Assembly.GetExecutingAssembly().GetName().Version.ToString());
             Console.WriteLine("For comments, bugs and suggestions visit http://github.com/opentk/opentk");
             Console.WriteLine();
-            
+
             try
             {
                 var split = new Regex(@"-\w+", RegexOptions.Compiled);
@@ -97,35 +97,35 @@ namespace Bind
                             case "legacy":
                             case "o":
                             case "option":
-                            {
-                                val = val.ToLower();
-                                bool enable = !opt.StartsWith("-");
-                                if (val.StartsWith("+") || val.StartsWith("-"))
-                                    val = val.Substring(1);
-
-                                var settings = Settings.Legacy.None;
-                                switch (val)
                                 {
-                                    case "tao": settings |= Settings.Legacy.Tao; break;
-                                    case "simple_enums": settings |= Settings.Legacy.NoAdvancedEnumProcessing; break;
-                                    case "safe": settings |= Settings.Legacy.NoPublicUnsafeFunctions; break;
-                                    case "permutations": settings |= Settings.Legacy.GenerateAllPermutations; break;
-                                    case "enums_in_class": settings |= Settings.Legacy.NestedEnums; break;
-                                    case "nodocs": settings |= Settings.Legacy.NoDocumentation; break;
-                                    case "keep_untyped_enums": settings |= Settings.Legacy.KeepUntypedEnums; break;
-                                }
+                                    val = val.ToLower();
+                                    bool enable = !opt.StartsWith("-");
+                                    if (val.StartsWith("+") || val.StartsWith("-"))
+                                        val = val.Substring(1);
 
-                                if (enable)
-                                {
-                                    Settings.Compatibility |= settings;
-                                }
-                                else
-                                {
-                                    Settings.Compatibility &= ~settings;
-                                }
+                                    var settings = Settings.Legacy.None;
+                                    switch (val)
+                                    {
+                                        case "tao": settings |= Settings.Legacy.Tao; break;
+                                        case "simple_enums": settings |= Settings.Legacy.NoAdvancedEnumProcessing; break;
+                                        case "safe": settings |= Settings.Legacy.NoPublicUnsafeFunctions; break;
+                                        case "permutations": settings |= Settings.Legacy.GenerateAllPermutations; break;
+                                        case "enums_in_class": settings |= Settings.Legacy.NestedEnums; break;
+                                        case "nodocs": settings |= Settings.Legacy.NoDocumentation; break;
+                                        case "keep_untyped_enums": settings |= Settings.Legacy.KeepUntypedEnums; break;
+                                    }
 
-                                break;
-                            }
+                                    if (enable)
+                                    {
+                                        Settings.Compatibility |= settings;
+                                    }
+                                    else
+                                    {
+                                        Settings.Compatibility &= ~settings;
+                                    }
+
+                                    break;
+                                }
                             default:
                                 throw new ArgumentException(
                                     String.Format("Argument {0} not recognized. Use the '/?' switch for help.", a)
@@ -172,11 +172,11 @@ namespace Bind
                     case GeneratorMode.ES10:
                         Generators.Add(new ESGenerator(Settings));
                         break;
-                    
+
                     case GeneratorMode.ES11:
                         Generators.Add(new ESGenerator(Settings));
                         break;
-                    
+
                     case GeneratorMode.ES20:
                         Generators.Add(new ES2Generator(Settings));
                         break;
@@ -192,7 +192,7 @@ namespace Bind
                     case GeneratorMode.CL10:
                         Generators.Add(new CLGenerator(Settings));
                         break;
-                    
+
                     default:
                         Console.WriteLine("Please specify a generator mode (use '-mode:gl2/gl4/es10/es11/es20/es30')");
                         return;
@@ -212,7 +212,7 @@ namespace Bind
                     Console.WriteLine();
                     Console.WriteLine("Bindings generated in {0} seconds.", ticks / (double)10000000.0);
                 }
-                
+
                 Console.WriteLine();
                 if (Debugger.IsAttached)
                 {
@@ -243,7 +243,7 @@ namespace Bind
 
                 case "gl3":
                 case "gl4":
-					mode = GeneratorMode.GL4;
+                    mode = GeneratorMode.GL4;
                     break;
 
                 case "es10":

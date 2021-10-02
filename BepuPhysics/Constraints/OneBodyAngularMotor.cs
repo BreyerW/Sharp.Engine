@@ -99,7 +99,7 @@ namespace BepuPhysics.Constraints
             Vector3Wide.Subtract(biasImpulse, softnessComponent, out var csi);
             Vector3Wide.Subtract(csi, csiVelocityComponent, out csi);
 
-            ServoSettingsWide.ClampImpulse(maximumImpulse, ref accumulatedImpulse, ref csi);            
+            ServoSettingsWide.ClampImpulse(maximumImpulse, ref accumulatedImpulse, ref csi);
 
             ApplyImpulse(ref velocityA.Angular, impulseToVelocityA, csi);
         }

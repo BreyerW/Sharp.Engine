@@ -980,7 +980,7 @@ namespace Newtonsoft.Json.Tests.Bson
             sb.Append(Euro);
 
             string expected = sb.ToString();
-            Assert.AreEqual(expected, await  WriteAndReadStringValueAsync(expected));
+            Assert.AreEqual(expected, await WriteAndReadStringValueAsync(expected));
         }
 
         [Test]
@@ -993,7 +993,7 @@ namespace Newtonsoft.Json.Tests.Bson
             sb.Append(Euro);
 
             string expected = sb.ToString();
-            string result = await  WriteAndReadStringValueAsync(expected);
+            string result = await WriteAndReadStringValueAsync(expected);
             Assert.AreEqual(expected, result);
         }
 
@@ -1004,7 +1004,7 @@ namespace Newtonsoft.Json.Tests.Bson
             sb.Append(Euro, 1); //Just one triple byte char in the string.
 
             string expected = sb.ToString();
-            Assert.AreEqual(expected, await  WriteAndReadStringValueAsync(expected));
+            Assert.AreEqual(expected, await WriteAndReadStringValueAsync(expected));
         }
 
         [Test]
@@ -1017,14 +1017,14 @@ namespace Newtonsoft.Json.Tests.Bson
             sb.Append(Euro);
 
             string expected = sb.ToString();
-            Assert.AreEqual(expected, await  WriteAndReadStringValueAsync(expected));
+            Assert.AreEqual(expected, await WriteAndReadStringValueAsync(expected));
         }
 
         [Test]
         public async Task TestReadStringValueAsync()
         {
             string expected = "test";
-            Assert.AreEqual(expected, await  WriteAndReadStringValueAsync(expected));
+            Assert.AreEqual(expected, await WriteAndReadStringValueAsync(expected));
         }
 
         [Test]
@@ -1033,7 +1033,7 @@ namespace Newtonsoft.Json.Tests.Bson
             StringBuilder sb = new StringBuilder();
             sb.Append('t', 150);
             string expected = sb.ToString();
-            Assert.AreEqual(expected, await  WriteAndReadStringValueAsync(expected));
+            Assert.AreEqual(expected, await WriteAndReadStringValueAsync(expected));
         }
 
         [Test]

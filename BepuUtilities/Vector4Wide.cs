@@ -10,7 +10,7 @@ namespace BepuUtilities
         public Vector<float> Y;
         public Vector<float> Z;
         public Vector<float> W;
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Broadcast(in Vector4 source, out Vector4Wide broadcasted)
         {
@@ -37,7 +37,7 @@ namespace BepuUtilities
             result.Z = a.Z - b.Z;
             result.W = a.W - b.W;
         }
-  
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Dot(in Vector4Wide a, in Vector4Wide b, out Vector<float> result)
@@ -147,7 +147,7 @@ namespace BepuUtilities
             result.Z = Vector.ConditionalSelect(condition, left.Z, right.Z);
             result.W = Vector.ConditionalSelect(condition, left.W, right.W);
         }
-        
+
         /// <summary>
         /// Pulls one lane out of the wide representation.
         /// </summary>

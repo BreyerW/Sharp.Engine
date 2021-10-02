@@ -481,7 +481,7 @@ namespace Newtonsoft.Json.Tests.Converters
             Assert.AreEqual(@"<_x0024_>test</_x0024_>", doc.ToString());
 
             var json2 = JsonConvert.SerializeXNode(doc);
-            
+
             Assert.AreEqual(json1, json2);
         }
 

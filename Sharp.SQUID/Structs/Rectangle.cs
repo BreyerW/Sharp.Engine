@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.ComponentModel;
 using System.ComponentModel.Design.Serialization;
 using System.Globalization;
-using System.Collections;
 
 namespace Squid
 {

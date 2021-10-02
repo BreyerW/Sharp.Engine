@@ -2,6 +2,7 @@
 //example and test for WritableBitmap (https://github.com/teichgraf/WriteableBitmapEx) on Gdi+
 
 using System;
+
 //for .NET 2.0 
 namespace System
 {

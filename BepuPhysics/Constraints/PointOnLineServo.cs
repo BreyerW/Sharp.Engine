@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using static BepuUtilities.GatherScatter;
+
 namespace BepuPhysics.Constraints
 {
     /// <summary>
@@ -178,7 +179,7 @@ namespace BepuPhysics.Constraints
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ApplyImpulse(ref BodyVelocities velocityA, ref BodyVelocities velocityB, 
+        public static void ApplyImpulse(ref BodyVelocities velocityA, ref BodyVelocities velocityB,
             in Matrix2x3Wide linearJacobian, in Matrix2x3Wide angularJacobianA, in Matrix2x3Wide angularJacobianB, in BodyInertias inertiaA, in BodyInertias inertiaB, ref Vector2Wide csi)
         {
             Matrix2x3Wide.Transform(csi, linearJacobian, out var linearImpulseA);

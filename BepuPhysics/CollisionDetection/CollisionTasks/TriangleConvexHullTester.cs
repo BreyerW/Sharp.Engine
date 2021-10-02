@@ -4,10 +4,10 @@ using System;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using DepthRefiner = BepuPhysics.CollisionDetection.DepthRefiner<BepuPhysics.Collidables.ConvexHull, BepuPhysics.Collidables.ConvexHullWide, BepuPhysics.Collidables.ConvexHullSupportFinder, BepuPhysics.Collidables.Triangle, BepuPhysics.Collidables.TriangleWide, BepuPhysics.CollisionDetection.CollisionTasks.PretransformedTriangleSupportFinder>;
 
 namespace BepuPhysics.CollisionDetection.CollisionTasks
 {
-    using DepthRefiner = DepthRefiner<ConvexHull, ConvexHullWide, ConvexHullSupportFinder, Triangle, TriangleWide, PretransformedTriangleSupportFinder>;
     public struct TriangleConvexHullTester : IPairTester<TriangleWide, ConvexHullWide, Convex4ContactManifoldWide>
     {
         public int BatchSize => 16;
@@ -104,10 +104,10 @@ namespace BepuPhysics.CollisionDetection.CollisionTasks
             //Merely being above the surface is insufficient- imagine a hull off to the side of the triangle, wedged beneath it.
             var triangleNormalIsMinimal = Vector.BitwiseAnd(
                 Vector.BitwiseAnd(
-                    Vector.AndNot(hullInsideTriangleEdgePlanes, hullBelowPlane), 
-                    Vector.LessThanOrEqual(extremeABPlaneTest, Vector<float>.Zero)), 
+                    Vector.AndNot(hullInsideTriangleEdgePlanes, hullBelowPlane),
+                    Vector.LessThanOrEqual(extremeABPlaneTest, Vector<float>.Zero)),
                 Vector.BitwiseAnd(
-                    Vector.LessThanOrEqual(extremeBCPlaneTest, Vector<float>.Zero), 
+                    Vector.LessThanOrEqual(extremeBCPlaneTest, Vector<float>.Zero),
                     Vector.LessThanOrEqual(extremeCAPlaneTest, Vector<float>.Zero)));
 
             var depthThreshold = -speculativeMargin;
@@ -122,7 +122,7 @@ namespace BepuPhysics.CollisionDetection.CollisionTasks
                 Vector3Wide.ConditionalSelect(skipDepthRefine, hullSupportAlongNegatedTriangleNormal, refinedClosestOnHull, out closestOnHull);
                 Vector3Wide.ConditionalSelect(skipDepthRefine, negatedTriangleNormal, refinedNormal, out localNormal);
                 depth = Vector.ConditionalSelect(skipDepthRefine, triangleFaceDepth, refinedDepth);
-                
+
             }
             else
             {

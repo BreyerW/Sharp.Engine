@@ -3,6 +3,7 @@
 
 
 using System.Numerics;
+
 namespace Typography.OpenFont
 {
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]

@@ -79,10 +79,10 @@ namespace OpenTK
 
         readonly Stopwatch watch = new Stopwatch();
 
-        #pragma warning disable 612,618
+#pragma warning disable 612, 618
         readonly IJoystickDriver LegacyJoystick =
             Factory.Default.CreateLegacyJoystickDriver();
-        #pragma warning restore 612,618
+#pragma warning restore 612, 618
 
 
         IGraphicsContext glContext;
@@ -91,7 +91,7 @@ namespace OpenTK
 
         double update_period, render_period;
         double target_update_period, target_render_period;
-        
+
         double update_time; // length of last UpdateFrame event
         double render_time; // length of last RenderFrame event
 
@@ -462,7 +462,7 @@ namespace OpenTK
             while (elapsed > 0 && elapsed + update_epsilon >= TargetUpdatePeriod)
             {
                 RaiseUpdateFrame(elapsed, ref timestamp);
-                
+
                 // Calculate difference (positive or negative) between
                 // actual elapsed time and target elapsed time. We must
                 // compensate for this difference.
@@ -596,7 +596,7 @@ namespace OpenTK
 
         #region Keyboard
 
-        #pragma warning disable 0612
+#pragma warning disable 0612
 
         /// <summary>
         /// Gets the primary Keyboard device, or null if no Keyboard exists.
@@ -606,13 +606,13 @@ namespace OpenTK
             get { return InputDriver.Keyboard.Count > 0 ? InputDriver.Keyboard[0] : null; }
         }
 
-        #pragma warning restore 0612
+#pragma warning restore 0612
 
         #endregion
 
         #region Mouse
 
-        #pragma warning disable 0612
+#pragma warning disable 0612
 
         /// <summary>
         /// Gets the primary Mouse device, or null if no Mouse exists.
@@ -622,7 +622,7 @@ namespace OpenTK
             get { return InputDriver.Mouse.Count > 0 ? InputDriver.Mouse[0] : null; }
         }
 
-        #pragma warning restore 0612
+#pragma warning restore 0612
 
         #endregion
 

@@ -13,7 +13,6 @@ using System.Text;
 
 namespace BepuPhysics.CollisionDetection
 {
-
     public static class DepthRefiner<TShapeA, TShapeWideA, TSupportFinderA, TShapeB, TShapeWideB, TSupportFinderB>
         where TShapeA : IConvexShape
         where TShapeWideA : IShapeWide<TShapeA>
@@ -21,12 +20,12 @@ namespace BepuPhysics.CollisionDetection
         where TShapeB : IConvexShape
         where TShapeWideB : IShapeWide<TShapeB>
         where TSupportFinderB : ISupportFinder<TShapeB, TShapeWideB>
-    {        
+    {
         struct HasNewSupport { }
         struct HasNoNewSupport { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void FindSupport(in TShapeWideA a, in TShapeWideB b, in Vector3Wide localOffsetB, in Matrix3x3Wide localOrientationB, ref TSupportFinderA supportFinderA, ref TSupportFinderB supportFinderB, in Vector3Wide direction, 
+        public static void FindSupport(in TShapeWideA a, in TShapeWideB b, in Vector3Wide localOffsetB, in Matrix3x3Wide localOrientationB, ref TSupportFinderA supportFinderA, ref TSupportFinderB supportFinderB, in Vector3Wide direction,
             in Vector<int> terminatedLanes, out Vector3Wide support)
         {
             //support(N, A) - support(-N, B)
@@ -56,7 +55,7 @@ namespace BepuPhysics.CollisionDetection
         {
             //Note that this always fills empty slots. That's important- we avoid figuring out what subsimplex is active
             //and instead just treat it as a degenerate simplex with some duplicates. (Shares code with the actual degenerate path.)
-			var dontFillSlot = Vector.BitwiseOr(vertex.Exists, terminatedLanes);
+            var dontFillSlot = Vector.BitwiseOr(vertex.Exists, terminatedLanes);
             Vector3Wide.ConditionalSelect(dontFillSlot, vertex.Support, support, out vertex.Support);
             vertex.Exists = Vector.ConditionalSelect(dontFillSlot, vertex.Exists, new Vector<int>(-1));
         }
@@ -307,7 +306,7 @@ namespace BepuPhysics.CollisionDetection
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void FindMinimumDepth(in TShapeWideA a, in TShapeWideB b, in Vector3Wide localOffsetB, in Matrix3x3Wide localOrientationB, ref TSupportFinderA supportFinderA, ref TSupportFinderB supportFinderB,
-            in Vector3Wide initialNormal, in Vector<int> inactiveLanes, in Vector<float> searchEpsilon, in Vector<float> minimumDepthThreshold, 
+            in Vector3Wide initialNormal, in Vector<int> inactiveLanes, in Vector<float> searchEpsilon, in Vector<float> minimumDepthThreshold,
             out Vector<float> depth, out Vector3Wide refinedNormal, int maximumIterations = 25)
         {
 #if DEBUG
@@ -322,7 +321,7 @@ namespace BepuPhysics.CollisionDetection
 
         public static void FindMinimumDepth(in TShapeWideA a, in TShapeWideB b, in Vector3Wide localOffsetB, in Matrix3x3Wide localOrientationB, ref TSupportFinderA supportFinderA, ref TSupportFinderB supportFinderB,
             ref Simplex simplex, in Vector3Wide initialNormal, in Vector<float> initialDepth,
-            in Vector<int> inactiveLanes, in Vector<float> convergenceThreshold, in Vector<float> minimumDepthThreshold, 
+            in Vector<int> inactiveLanes, in Vector<float> convergenceThreshold, in Vector<float> minimumDepthThreshold,
             out Vector<float> refinedDepth, out Vector3Wide refinedNormal, int maximumIterations = 50)
         {
             Vector<float> depthThreshold = minimumDepthThreshold;
@@ -346,7 +345,7 @@ namespace BepuPhysics.CollisionDetection
                 return;
             }
 
-            GetNextNormal<HasNoNewSupport>(ref simplex, default, ref terminatedLanes, refinedNormal, refinedDepth, convergenceThreshold, out var normal);			
+            GetNextNormal<HasNoNewSupport>(ref simplex, default, ref terminatedLanes, refinedNormal, refinedDepth, convergenceThreshold, out var normal);
 
             for (int i = 0; i < maximumIterations; ++i)
             {
@@ -377,7 +376,7 @@ namespace BepuPhysics.CollisionDetection
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void FindSupport(in TShapeWideA a, in TShapeWideB b, in Vector3Wide localOffsetB, in Matrix3x3Wide localOrientationB, ref TSupportFinderA supportFinderA, ref TSupportFinderB supportFinderB, in Vector3Wide direction, 
+        public static void FindSupport(in TShapeWideA a, in TShapeWideB b, in Vector3Wide localOffsetB, in Matrix3x3Wide localOrientationB, ref TSupportFinderA supportFinderA, ref TSupportFinderB supportFinderB, in Vector3Wide direction,
             in Vector<int> terminatedLanes, out Vector3Wide support, out Vector3Wide supportOnA)
         {
             //support(N, A) - support(-N, B)
@@ -410,7 +409,7 @@ namespace BepuPhysics.CollisionDetection
         {
             //Note that this always fills empty slots. That's important- we avoid figuring out what subsimplex is active
             //and instead just treat it as a degenerate simplex with some duplicates. (Shares code with the actual degenerate path.)
-			var dontFillSlot = Vector.BitwiseOr(vertex.Exists, terminatedLanes);
+            var dontFillSlot = Vector.BitwiseOr(vertex.Exists, terminatedLanes);
             Vector3Wide.ConditionalSelect(dontFillSlot, vertex.Support, support, out vertex.Support);
             Vector3Wide.ConditionalSelect(dontFillSlot, vertex.SupportOnA, supportOnA, out vertex.SupportOnA);
             vertex.Exists = Vector.ConditionalSelect(dontFillSlot, vertex.Exists, new Vector<int>(-1));
@@ -677,7 +676,7 @@ namespace BepuPhysics.CollisionDetection
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void FindMinimumDepth(in TShapeWideA a, in TShapeWideB b, in Vector3Wide localOffsetB, in Matrix3x3Wide localOrientationB, ref TSupportFinderA supportFinderA, ref TSupportFinderB supportFinderB,
-            in Vector3Wide initialNormal, in Vector<int> inactiveLanes, in Vector<float> searchEpsilon, in Vector<float> minimumDepthThreshold, 
+            in Vector3Wide initialNormal, in Vector<int> inactiveLanes, in Vector<float> searchEpsilon, in Vector<float> minimumDepthThreshold,
             out Vector<float> depth, out Vector3Wide refinedNormal, out Vector3Wide witnessOnA, int maximumIterations = 25)
         {
 #if DEBUG
@@ -692,7 +691,7 @@ namespace BepuPhysics.CollisionDetection
 
         public static void FindMinimumDepth(in TShapeWideA a, in TShapeWideB b, in Vector3Wide localOffsetB, in Matrix3x3Wide localOrientationB, ref TSupportFinderA supportFinderA, ref TSupportFinderB supportFinderB,
             ref SimplexWithWitness simplex, in Vector3Wide initialNormal, in Vector<float> initialDepth,
-            in Vector<int> inactiveLanes, in Vector<float> convergenceThreshold, in Vector<float> minimumDepthThreshold, 
+            in Vector<int> inactiveLanes, in Vector<float> convergenceThreshold, in Vector<float> minimumDepthThreshold,
             out Vector<float> refinedDepth, out Vector3Wide refinedNormal, out Vector3Wide witnessOnA, int maximumIterations = 50)
         {
             Vector<float> depthThreshold = minimumDepthThreshold;
@@ -717,7 +716,7 @@ namespace BepuPhysics.CollisionDetection
                 return;
             }
 
-            GetNextNormal<HasNoNewSupport>(ref simplex, default, default, ref terminatedLanes, refinedNormal, refinedDepth, convergenceThreshold, out var normal);			
+            GetNextNormal<HasNoNewSupport>(ref simplex, default, default, ref terminatedLanes, refinedNormal, refinedDepth, convergenceThreshold, out var normal);
 
             for (int i = 0; i < maximumIterations; ++i)
             {
@@ -752,7 +751,7 @@ namespace BepuPhysics.CollisionDetection
             Vector3Wide.Scale(simplex.B.SupportOnA, simplex.B.Weight * inverseDenominator, out var weightedB);
             Vector3Wide.Scale(simplex.C.SupportOnA, simplex.C.Weight * inverseDenominator, out var weightedC);
             Vector3Wide.Add(weightedA, weightedB, out witnessOnA);
-            Vector3Wide.Add(weightedC, witnessOnA, out witnessOnA);		
+            Vector3Wide.Add(weightedC, witnessOnA, out witnessOnA);
             if (supportFinderA.HasMargin)
             {
                 supportFinderA.GetMargin(a, out var margin);

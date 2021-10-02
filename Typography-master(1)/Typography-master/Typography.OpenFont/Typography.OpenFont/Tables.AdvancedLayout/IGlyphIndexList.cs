@@ -1,6 +1,7 @@
 ﻿//Apache2, 2016-present, WinterDev
 
 
+
 namespace Typography.OpenFont.Tables
 {
     /// <summary>

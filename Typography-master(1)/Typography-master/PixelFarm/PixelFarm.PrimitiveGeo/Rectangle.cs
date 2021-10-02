@@ -32,6 +32,7 @@
 //
 
 using System;
+
 namespace PixelFarm.Drawing
 {
     public struct Rectangle
@@ -514,7 +515,7 @@ namespace PixelFarm.Drawing
         /// </remarks>
 
         public override int GetHashCode()
-        {   
+        {
             return (_height + _width) ^ _x + _y;
         }
 

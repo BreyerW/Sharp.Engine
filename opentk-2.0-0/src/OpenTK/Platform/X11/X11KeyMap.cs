@@ -1,4 +1,4 @@
-﻿﻿#region License
+﻿#region License
 //
 // X11KeyMap.cs
 //
@@ -27,11 +27,11 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
-using OpenTK.Input;
+using System.Text;
 
 namespace OpenTK.Platform.X11
 {
@@ -568,12 +568,12 @@ namespace OpenTK.Platform.X11
                     return Key.Home;
                 case XKey.End:
                     return Key.End;
-            //case XKey.Prior: return Key.PageUp;   // XKey.Prior == XKey.Page_Up
+                //case XKey.Prior: return Key.PageUp;   // XKey.Prior == XKey.Page_Up
                 case XKey.Page_Up:
                     return Key.PageUp;
                 case XKey.Page_Down:
                     return Key.PageDown;
-            //case XKey.Next: return Key.PageDown;  // XKey.Next == XKey.Page_Down
+                //case XKey.Next: return Key.PageDown;  // XKey.Next == XKey.Page_Down
 
                 case XKey.KP_Add:
                     return Key.KeypadAdd;

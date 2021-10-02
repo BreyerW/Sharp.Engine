@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace BepuUtilities
-{    
+{
     /// <summary>
     /// Some helpers for indexing into vector bundles.
     /// </summary>

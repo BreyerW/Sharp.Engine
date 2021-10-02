@@ -23,6 +23,7 @@
 //----------------------------------------------------------------------------
 
 using System;
+
 namespace PixelFarm.CpuBlit.FragmentProcessing
 {
     //===================================================dda_line_interpolator

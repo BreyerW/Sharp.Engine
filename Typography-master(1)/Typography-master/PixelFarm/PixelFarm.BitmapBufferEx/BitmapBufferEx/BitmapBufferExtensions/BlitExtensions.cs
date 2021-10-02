@@ -18,6 +18,7 @@
 
 
 
+
 namespace BitmapBufferEx
 {
     /// <summary>
@@ -524,7 +525,7 @@ namespace BitmapBufferEx
                     int dstW = srcW;
 
 
-                    RectInt32 intersect = new RectInt32(0, 0, dpw, dstContextH); 
+                    RectInt32 intersect = new RectInt32(0, 0, dpw, dstContextH);
                     intersect.Intersect(new RectInt32(dstX, dstY, dstW, dstH));
                     if (intersect.IsEmpty)
                     {
@@ -568,7 +569,7 @@ namespace BitmapBufferEx
                     jj = sourceStartY;
                     y = py;
 
-                
+
                     for (int j = 0; j < dstH; j++)
                     {
                         if (y >= 0 && y < dstContextH)

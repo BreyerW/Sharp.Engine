@@ -136,17 +136,17 @@ namespace OpenTK.Platform.MacOS
         {
             if (disposed)
                 return;
-            
+
             if (disposing)
             {
-                
+
             }
-            
+
             if (ownHandle)
             {
                 windowRef = IntPtr.Zero;
             }
-            
+
             disposed = true;
         }
 
@@ -154,7 +154,7 @@ namespace OpenTK.Platform.MacOS
         {
             Dispose(false);
         }
-        
+
         #endregion
     }
 }

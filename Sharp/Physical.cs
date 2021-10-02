@@ -1,14 +1,12 @@
-﻿using System;
+﻿using EricsLib;
+using EricsLib.Engine;
+using EricsLib.Utilities;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-
-using EricsLib.Engine;
-using EricsLib.Utilities;
-using EricsLib;
 
 namespace EricsLib
 {
@@ -37,7 +35,7 @@ namespace EricsLib
         /// then there isn't a need for any further collision checks.
         /// </summary>
         protected BoundingBox m_boundingBox;
-        
+
         protected Vector3 m_position;
         protected Vector3 m_lastPosition;
         protected Quaternion m_orientation;
@@ -107,7 +105,7 @@ namespace EricsLib
                 m_lod = 1;
             else
                 m_lod = 2;
-        
+
         }
         public abstract IntersectionRecord Intersects(Ray intersectionRay);
 
@@ -126,7 +124,7 @@ namespace EricsLib
             m_effect.Parameters["xLightColor0"].SetValue(color.ToVector3());
             m_effect.Parameters["xEnableLighting"].SetValue(true);
         }
-        
+
         /// <summary>
         /// Tells you if the bounding regions for this object [intersect or are contained within] the bounding frustum
         /// </summary>
@@ -346,8 +344,8 @@ namespace EricsLib
         public float Speed
         {
             get { return m_velocity.Length(); }
-            set 
-            { 
+            set
+            {
                 m_velocity.Normalize();
                 m_velocity *= value;
             }
@@ -369,7 +367,7 @@ namespace EricsLib
             get { return m_effect; }
             set { m_effect = value; }
         }
-        
+
         #endregion
     }
 }

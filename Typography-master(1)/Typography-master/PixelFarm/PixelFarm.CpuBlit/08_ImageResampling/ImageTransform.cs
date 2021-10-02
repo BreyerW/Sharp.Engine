@@ -1,5 +1,6 @@
 ﻿//BSD, 2014-present, WinterDev
 using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit.Imaging
 {
     public class CubicInterpolator

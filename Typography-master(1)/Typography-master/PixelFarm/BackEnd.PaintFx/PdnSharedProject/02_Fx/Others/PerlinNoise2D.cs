@@ -34,9 +34,8 @@
 // http://mrl.nyu.edu/~perlin/noise/
 
 //MIT, 2017-present, WinterDev
-using System;
-
 using PixelFarm.Drawing;
+using System;
 
 namespace PaintFx.Effects
 {

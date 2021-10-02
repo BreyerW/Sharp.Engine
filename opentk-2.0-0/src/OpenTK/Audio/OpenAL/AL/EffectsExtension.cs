@@ -450,7 +450,7 @@ namespace OpenTK.Audio.OpenAL
         #region alGetEffectf
 
         //[CLSCompliant(false)]
-        unsafe private delegate void Delegate_alGetEffectf(uint eid, EfxEffectf pname, [Out]float* value);
+        unsafe private delegate void Delegate_alGetEffectf(uint eid, EfxEffectf pname, [Out] float* value);
         // typedef void (__cdecl *LPALGETEFFECTF)( ALuint eid, ALenum pname, ALfloat* value );
 
         //[CLSCompliant(false)]

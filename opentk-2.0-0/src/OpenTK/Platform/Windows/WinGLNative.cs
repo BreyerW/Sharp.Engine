@@ -36,6 +36,7 @@ using System.IO;
 #if !MINIMAL
 using System.Drawing;
 using System.Drawing.Imaging;
+
 #endif
 
 namespace OpenTK.Platform.Windows
@@ -186,7 +187,7 @@ namespace OpenTK.Platform.Windows
         {
             return Scale(x, ScaleDirection.X);
         }
-        
+
         static int ScaleY(int y)
         {
             return Scale(y, ScaleDirection.Y);
@@ -425,7 +426,7 @@ namespace OpenTK.Platform.Windows
                     // have to manually call OnMouseLeave here.
                     // Mouse tracking is disabled automatically by the OS
                     OnMouseLeave(EventArgs.Empty);
-                } 
+                }
                 else if (!mouse_outside_window && mouse_was_outside_window)
                 {
                     // Mouse entring
@@ -522,7 +523,7 @@ namespace OpenTK.Platform.Windows
         {
             // If the mouse is captured we get spurious MOUSELEAVE events.
             // So ignore WM_MOUSELEAVE if capture count != 0.
-            if (mouse_capture_count == 0 )
+            if (mouse_capture_count == 0)
             {
                 mouse_outside_window = true;
                 // Mouse tracking is disabled automatically by the OS
@@ -816,7 +817,7 @@ namespace OpenTK.Platform.Windows
                     HandleDestroy(handle, message, wParam, lParam);
                     break;
 
-                #endregion
+                    #endregion
             }
 
             if (result.HasValue)
@@ -1169,7 +1170,7 @@ namespace OpenTK.Platform.Windows
 
         #region Exists
 
-        public override  bool Exists { get { return exists; } }
+        public override bool Exists { get { return exists; } }
 
         #endregion
 
@@ -1256,7 +1257,7 @@ namespace OpenTK.Platform.Windows
                             }
                         }
                     }
-                    
+
                     Debug.Assert(oldCursorHandle != IntPtr.Zero);
                     Debug.Assert(oldCursorHandle != cursor_handle);
                     Debug.Assert(oldCursor != cursor);
@@ -1301,7 +1302,7 @@ namespace OpenTK.Platform.Windows
                 }
             }
         }
-        
+
         #endregion
 
         #region Close

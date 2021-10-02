@@ -1,8 +1,8 @@
 ﻿//MIT, 2014-present, WinterDev
 using System;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
-  
     public static class SvgPathSegArcInfo
     {
         public const double RAD_PER_DEG = Math.PI / 180.0;

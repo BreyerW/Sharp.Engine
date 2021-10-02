@@ -1,9 +1,9 @@
 ﻿//MIT, 2014-present, WinterDev
 
 using System;
+
 namespace PixelFarm.Drawing
 {
-
     public abstract class Image : IDisposable
     {
         IDisposable _innerImg;
@@ -14,7 +14,7 @@ namespace PixelFarm.Drawing
         public abstract int Height { get; }
         public Size Size => new Size(this.Width, this.Height);
         public abstract bool IsReferenceImage { get; }
-        
+
         public abstract int ReferenceX { get; }
         public abstract int ReferenceY { get; }
 

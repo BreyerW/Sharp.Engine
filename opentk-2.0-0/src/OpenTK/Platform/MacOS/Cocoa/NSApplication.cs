@@ -27,12 +27,12 @@
 //
 #endregion
 
+using OpenTK.Platform.MacOS;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
-using OpenTK.Platform.MacOS;
 
 namespace OpenTK.Platform.MacOS
 {
@@ -93,7 +93,7 @@ namespace OpenTK.Platform.MacOS
             IntPtr press_and_hold = Cocoa.SendIntPtr(Class.NSNumber, Selector.Get("numberWithBool:"), false);
 
             // Initialize and register the settings dictionary
-            settings = 
+            settings =
                 Cocoa.SendIntPtr(settings, Selector.Get("initWithObjectsAndKeys:"),
                     //momentum_scrolling, Cocoa.ToNSString("AppleMomentumScrollSupported"),
                     press_and_hold, Cocoa.ToNSString("ApplePressAndHoldEnabled"),

@@ -99,24 +99,24 @@ namespace OpenTK.Input
         #endregion
 
         #region Events
-        
+
         /// <summary>
         /// Occurs when an axis of this JoystickDevice instance is moved.
         /// </summary>
         public EventHandler<JoystickMoveEventArgs> Move =
-            delegate(object sender, JoystickMoveEventArgs e) { };
+            delegate (object sender, JoystickMoveEventArgs e) { };
 
         /// <summary>
         /// Occurs when a button of this JoystickDevice instance is pressed.
         /// </summary>
         public EventHandler<JoystickButtonEventArgs> ButtonDown =
-            delegate(object sender, JoystickButtonEventArgs e) { };
+            delegate (object sender, JoystickButtonEventArgs e) { };
 
         /// <summary>
         /// Occurs when a button of this JoystickDevice is released.
         /// </summary>
         public EventHandler<JoystickButtonEventArgs> ButtonUp =
-            delegate(object sender, JoystickButtonEventArgs e) { };
+            delegate (object sender, JoystickButtonEventArgs e) { };
 
         #endregion
 

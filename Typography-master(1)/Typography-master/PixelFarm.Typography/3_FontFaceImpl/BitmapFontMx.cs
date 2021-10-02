@@ -1,12 +1,10 @@
 ﻿//MIT, 2016-present, WinterDev 
 //----------------------------------- 
-using System;
-using System.Collections.Generic;
-
 using PixelFarm.Drawing;
 using PixelFarm.Drawing.Fonts;
 using PixelFarm.Platforms;
-
+using System;
+using System.Collections.Generic;
 using Typography.OpenFont;
 
 namespace Typography.Rendering
@@ -106,7 +104,7 @@ namespace Typography.Rendering
                     DoFilter = false ,  HintTechnique = Typography.Contours.HintTechnique.None},
                 new GlyphTextureBuildDetail{ ScriptLang= ScriptLangs.Thai, DoFilter= false, HintTechnique = Typography.Contours.HintTechnique.None},
             });
-            
+
         }
         public static void SetDefaultDetails(GlyphTextureBuildDetail[] defaultDetails)
         {

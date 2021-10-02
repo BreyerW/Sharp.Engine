@@ -22,9 +22,9 @@
 //
 //----------------------------------------------------------------------------
 using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
-
     public class SimpleRect
     {
         RectD _bounds;

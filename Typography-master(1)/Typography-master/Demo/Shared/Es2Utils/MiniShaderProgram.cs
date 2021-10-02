@@ -1,6 +1,7 @@
 ﻿//MIT, 2014-2017, WinterDev
 
 using System;
+
 namespace OpenTK.Graphics.ES20
 {
     public struct ShaderVtxAttrib2f

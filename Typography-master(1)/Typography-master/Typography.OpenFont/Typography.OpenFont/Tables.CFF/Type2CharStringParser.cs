@@ -10,8 +10,6 @@ using System.IO;
 
 namespace Typography.OpenFont.CFF
 {
-
-
     //The Type 2 Charstring Format
     //...
     //must be used in a CFF (Compact Font Format) or OpenType font 

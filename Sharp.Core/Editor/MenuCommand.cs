@@ -1,5 +1,5 @@
-﻿using System;
-using Sharp.Commands;
+﻿using Sharp.Commands;
+using System;
 
 namespace Sharp.Editor
 {

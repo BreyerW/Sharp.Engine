@@ -4,6 +4,7 @@
  */
 #endregion
 
+using Bind.Structures;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,10 +12,9 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.XPath;
-using Bind.Structures;
-using Delegate=Bind.Structures.Delegate;
-using Enum=Bind.Structures.Enum;
-using Type=Bind.Structures.Type;
+using Delegate = Bind.Structures.Delegate;
+using Enum = Bind.Structures.Enum;
+using Type = Bind.Structures.Type;
 
 namespace Bind.GL2
 {

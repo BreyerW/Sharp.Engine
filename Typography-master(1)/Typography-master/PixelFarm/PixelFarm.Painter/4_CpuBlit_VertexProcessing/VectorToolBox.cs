@@ -1,13 +1,14 @@
 ﻿//BSD, 2014-present, WinterDev
 
+using PixelFarm.CpuBlit.VertexProcessing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
+
+using PixelFarm.CpuBlit;
 
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
-    using PixelFarm.Drawing;
-
     //-----------------------------------
     public struct VxsContext1 : IDisposable
     {
@@ -69,9 +70,6 @@ namespace PixelFarm.CpuBlit.VertexProcessing
 }
 namespace PixelFarm.Drawing
 {
-
-    using PixelFarm.CpuBlit;
-
     public static class VxsTemp
     {
 

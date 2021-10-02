@@ -1,13 +1,13 @@
-﻿using System.Runtime.CompilerServices;
+﻿using BepuPhysics.Collidables;
+using BepuPhysics.CollisionDetection;
+using BepuUtilities;
+using BepuUtilities.Collections;
+using BepuUtilities.Memory;
 using System;
 using System.Diagnostics;
-using BepuUtilities.Memory;
-using BepuUtilities.Collections;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-using BepuUtilities;
-using BepuPhysics.Collidables;
-using BepuPhysics.CollisionDetection;
 
 namespace BepuPhysics
 {
@@ -37,14 +37,14 @@ namespace BepuPhysics
                 optimizationFraction = value;
             }
         }
-        
+
         public BodyLayoutOptimizer(Bodies bodies, BroadPhase broadPhase, Solver solver, BufferPool pool, float optimizationFraction = 0.005f)
         {
             this.bodies = bodies;
             this.broadPhase = broadPhase;
             this.solver = solver;
             OptimizationFraction = optimizationFraction;
-            
+
         }
 
         public static void SwapBodyLocation(Bodies bodies, Solver solver, int a, int b)

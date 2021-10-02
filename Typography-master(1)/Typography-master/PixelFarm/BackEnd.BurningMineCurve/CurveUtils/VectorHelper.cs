@@ -31,8 +31,9 @@ using FLOAT = System.Single;
 using VECTOR = UnityEngine.Vector2;
 using FLOAT = System.Single;
 #elif PIXEL_FARM
-using VECTOR = PixelFarm.VectorMath.Vector2;
 using FLOAT = System.Double;
+using VECTOR = PixelFarm.VectorMath.Vector2;
+
 #else
 #error Unknown vector type -- must define one of SYSTEM_WINDOWS_VECTOR, SYSTEM_NUMERICS_VECTOR or UNITY
 #endif

@@ -4,13 +4,12 @@
  */
 #endregion
 
+using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
-
-using OpenTK.Graphics;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OpenTK.Platform.X11
 {
@@ -100,12 +99,12 @@ namespace OpenTK.Platform.X11
 
             ContextHandle shareHandle = shared != null ?
                 (shared as IGraphicsContextInternal).Context : (ContextHandle)IntPtr.Zero;
-            
+
             Debug.Write("Creating X11GLContext context: ");
             Debug.Write(direct ? "direct, " : "indirect, ");
             Debug.WriteLine(shareHandle.Handle == IntPtr.Zero ? "not shared... " :
                 String.Format("shared with ({0})... ", shareHandle));
-            
+
             // Try using the new context creation method. If it fails, fall back to the old one.
             // For each of these methods, we try two times to create a context:
             // one with the "direct" flag intact, the other with the flag inversed.
@@ -117,12 +116,12 @@ namespace OpenTK.Platform.X11
                 Handle = CreateContextAttribs(Display, currentWindow.Screen,
                     fbconfig, direct, major, minor, flags, shareHandle);
             }
-            
+
             if (Handle == ContextHandle.Zero)
             {
                 Handle = CreateContextLegacy(Display, visual, direct, shareHandle);
             }
-            
+
             if (Handle != ContextHandle.Zero)
                 Debug.Print("Context created (id: {0}).", Handle);
             else

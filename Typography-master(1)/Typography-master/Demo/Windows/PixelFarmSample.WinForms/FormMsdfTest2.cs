@@ -1,19 +1,16 @@
 ﻿//MIT, 2016-present, WinterDev
+using PixelFarm.Contours;
+using PixelFarm.CpuBlit;
+using PixelFarm.Drawing;
+using PixelFarm.Drawing.Fonts;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-
 using System.IO;
 using System.Windows.Forms;
-
+using Typography.Contours;
 using Typography.OpenFont;
 using Typography.Rendering;
-using Typography.Contours;
-
-using PixelFarm.Drawing;
-using PixelFarm.CpuBlit;
-using PixelFarm.Drawing.Fonts;
-using PixelFarm.Contours;
 
 namespace SampleWinForms
 {

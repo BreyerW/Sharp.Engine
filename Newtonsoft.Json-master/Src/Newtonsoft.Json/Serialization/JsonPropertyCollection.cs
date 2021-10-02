@@ -23,15 +23,15 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
+using Newtonsoft.Json.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Collections.ObjectModel;
-using Newtonsoft.Json.Utilities;
-using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Newtonsoft.Json.Serialization
 {
@@ -109,7 +109,7 @@ namespace Newtonsoft.Json.Serialization
                             // current property is hidden by the existing so don't add it
                             return;
                         }
-                        
+
                         if (_type.ImplementInterface(existingProperty.DeclaringType) && _type.ImplementInterface(property.DeclaringType))
                         {
                             // current property was already defined on another interface
@@ -145,7 +145,7 @@ namespace Newtonsoft.Json.Serialization
             return property;
         }
 
-        private bool TryGetValue(string key, [NotNullWhen(true)]out JsonProperty? item)
+        private bool TryGetValue(string key, [NotNullWhen(true)] out JsonProperty? item)
         {
             if (Dictionary == null)
             {

@@ -1,12 +1,11 @@
 ﻿//MIT, 2019-present, WinterDev 
+using PixelFarm.CpuBlit;
 using System;
 using System.Collections.Generic;
 using Typography.OpenFont;
-using PixelFarm.CpuBlit;
 
 namespace PixelFarm.Drawing.Fonts
 {
-
     class GlyphBitmap
     {
         public MemBitmap Bitmap { get; set; }
@@ -70,7 +69,7 @@ namespace PixelFarm.Drawing.Fonts
                     ms.SetLength(0);
 
                     Glyph glyph = typeface.GetGlyphByIndex(i);
-                    typeface.ReadBitmapContent(glyph, ms);                    
+                    typeface.ReadBitmapContent(glyph, ms);
 
                     GlyphBitmap glyphBitmap = new GlyphBitmap();
                     glyphBitmap.Width = glyph.MaxX - glyph.MinX;

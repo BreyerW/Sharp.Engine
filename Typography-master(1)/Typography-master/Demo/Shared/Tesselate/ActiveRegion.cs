@@ -51,6 +51,7 @@
 
 
 using System;
+
 namespace Tesselate
 {
     public class ActiveRegion

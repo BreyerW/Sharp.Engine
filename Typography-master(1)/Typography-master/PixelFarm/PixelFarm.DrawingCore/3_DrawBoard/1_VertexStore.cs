@@ -21,6 +21,7 @@
 
 
 using PixelFarm.CpuBlit;
+
 namespace PixelFarm.Drawing
 {
     public sealed class VertexStore
@@ -47,7 +48,7 @@ namespace PixelFarm.Drawing
             System.Diagnostics.Debug.WriteLine("vxs_1_dbugId=" + dbugId);
 #endif
             AllocIfRequired(2);
-        } 
+        }
         public static void SetSharedState(VertexStore vxs, bool isShared)
         {
             vxs.IsShared = isShared;

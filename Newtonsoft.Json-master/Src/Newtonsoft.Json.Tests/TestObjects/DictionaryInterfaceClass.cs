@@ -23,8 +23,8 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-using System.Collections.Generic;
 using Newtonsoft.Json.Tests.TestObjects;
+using System.Collections.Generic;
 
 namespace Newtonsoft.Json.Tests.TestObjects
 {

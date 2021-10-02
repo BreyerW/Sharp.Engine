@@ -2,7 +2,8 @@
 
 namespace BrotliSharpLib
 {
-    public static partial class Brotli {
+    public static partial class Brotli
+    {
         private static readonly ushort[] kStaticDictionaryHash = {
             32072,0,0,0,0,0,0,0,0,21860,0,0,0,0,0,0,0,40486,0,0,0,0,0,45798,0,0,0,0,0,0,1292
             ,0,0,0,0,4964,278,23717,0,19972,0,0,0,0,0,0,0,0,0,0,0,0,2126,16102,0,0,0,14437,0

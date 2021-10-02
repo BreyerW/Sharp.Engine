@@ -102,7 +102,7 @@ namespace OpenTK.Input
         /// <value><c>true</c> if the up button is pressed; otherwise, <c>false</c>.</value>
         public bool IsUp
         {
-            get { return (buttons  & DPadButtons.Up) != 0; }
+            get { return (buttons & DPadButtons.Up) != 0; }
             internal set { SetButton(DPadButtons.Up, value); }
         }
 

@@ -1,8 +1,9 @@
 ﻿//MIT, 2016-present, WinterDev
 
-using System.Collections.Generic;
 using ClipperLib;
 using PixelFarm.Drawing;
+using System.Collections.Generic;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
     public enum VxsClipperType : byte

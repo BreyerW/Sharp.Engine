@@ -1,4 +1,5 @@
-﻿namespace TextBreakerTest
+﻿
+namespace TextBreakerTest
 {
     partial class Form1
     {

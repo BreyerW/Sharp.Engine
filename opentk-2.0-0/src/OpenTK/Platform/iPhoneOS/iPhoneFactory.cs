@@ -26,13 +26,11 @@
 //
 #endregion
 
+using OpenGLES;
+using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Text;
-
-using OpenGLES;
-
-using OpenTK.Graphics;
 
 namespace OpenTK.Platform.iPhoneOS
 {
@@ -52,7 +50,8 @@ namespace OpenTK.Platform.iPhoneOS
 
         public override GraphicsContext.GetCurrentContextDelegate CreateGetCurrentGraphicsContext()
         {
-            return () => {
+            return () =>
+            {
                 EAGLContext c = EAGLContext.CurrentContext;
                 IntPtr h = IntPtr.Zero;
                 if (c != null)

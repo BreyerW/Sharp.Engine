@@ -5,10 +5,9 @@
 
 
 
+
 namespace Typography.TextBreak
 {
-
-
     public class ThaiDictionaryBreakingEngine : DictionaryBreakingEngine
     {
         CustomDic _customDic;
@@ -26,7 +25,7 @@ namespace Typography.TextBreak
             return s_canbeStartChars[c - this.FirstUnicodeChar];
         }
         protected override WordGroup GetWordGroupForFirstChar(char c)
-        { 
+        {
             return _customDic.GetWordGroupForFirstChar(c);
         }
         //

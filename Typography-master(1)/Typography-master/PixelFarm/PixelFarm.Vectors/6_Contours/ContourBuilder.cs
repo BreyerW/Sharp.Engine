@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 namespace PixelFarm.Contours
 {
-
     //this is PixelFarm version ***
     //render with MiniAgg 
 

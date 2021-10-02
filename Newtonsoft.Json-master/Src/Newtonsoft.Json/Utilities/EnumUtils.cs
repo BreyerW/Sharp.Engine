@@ -125,12 +125,12 @@ namespace Newtonsoft.Json.Utilities
 
         // Used by Newtonsoft.Json.Schema
         private static CamelCaseNamingStrategy _camelCaseNamingStrategy = new CamelCaseNamingStrategy();
-        public static bool TryToString(Type enumType, object value, bool camelCase, [NotNullWhen(true)]out string? name)
+        public static bool TryToString(Type enumType, object value, bool camelCase, [NotNullWhen(true)] out string? name)
         {
             return TryToString(enumType, value, camelCase ? _camelCaseNamingStrategy : null, out name);
         }
 
-        public static bool TryToString(Type enumType, object value, NamingStrategy? namingStrategy, [NotNullWhen(true)]out string? name)
+        public static bool TryToString(Type enumType, object value, NamingStrategy? namingStrategy, [NotNullWhen(true)] out string? name)
         {
             EnumInfo enumInfo = ValuesAndNamesPerEnum.Get(new StructMultiKey<Type, NamingStrategy?>(enumType, namingStrategy));
             ulong v = ToUInt64(value);

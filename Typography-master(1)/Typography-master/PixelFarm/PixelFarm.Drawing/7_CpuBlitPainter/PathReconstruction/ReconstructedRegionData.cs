@@ -12,7 +12,7 @@ namespace PixelFarm.PathReconstruction
         bool _evalBounds;
         PixelFarm.Drawing.Rectangle _cacheBounds;
         public ReconstructedRegionData(bool copyHSpans = true)
-        {   
+        {
             WithHSpansTable = copyHSpans;
         }
 
@@ -21,7 +21,7 @@ namespace PixelFarm.PathReconstruction
         /// <summary>
         /// (must be) sorted hSpans, from reconstruction
         /// </summary>
-        public HSpan[] HSpans { get;  set; }
+        public HSpan[] HSpans { get; set; }
         /// <summary>
         /// reconstructed outline
         /// </summary>

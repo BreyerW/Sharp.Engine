@@ -155,11 +155,11 @@ namespace BrotliSharpLib
             switch (mode)
             {
                 case ContextType.CONTEXT_LSB6:
-                    return (byte) (p1 & 0x3f);
+                    return (byte)(p1 & 0x3f);
                 case ContextType.CONTEXT_MSB6:
                     return (byte)(p1 >> 2);
                 case ContextType.CONTEXT_UTF8:
-                    return (byte) (kUTF8ContextLookup[p1] | kUTF8ContextLookup[p2 + 256]);
+                    return (byte)(kUTF8ContextLookup[p1] | kUTF8ContextLookup[p2 + 256]);
                 case ContextType.CONTEXT_SIGNED:
                     return (byte)((kSigned3BitContextLookup[p1] << 3) +
                                   kSigned3BitContextLookup[p2]);

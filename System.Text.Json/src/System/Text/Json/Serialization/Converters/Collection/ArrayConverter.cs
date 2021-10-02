@@ -11,7 +11,7 @@ namespace System.Text.Json.Serialization.Converters
     /// </summary>
     internal sealed class ArrayConverter<TCollection, TElement>
         : IEnumerableDefaultConverter<TCollection, TElement>
-        where TCollection: IEnumerable
+        where TCollection : IEnumerable
     {
         internal override bool CanHaveIdMetadata => false;
 

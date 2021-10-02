@@ -5,6 +5,7 @@
 
 
 
+
 namespace Typography.TextBreak
 {
     public class EngBreakingEngine : BreakingEngine

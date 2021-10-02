@@ -27,9 +27,9 @@
 //
 #endregion
 
-using System.Runtime.InteropServices;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace OpenTK.Platform.MacOS
 {
@@ -40,22 +40,22 @@ namespace OpenTK.Platform.MacOS
         public static readonly IntPtr NSNumber = Get("NSNumber");
         public static readonly IntPtr NSUserDefaults = Get("NSUserDefaults");
 
-        [DllImport (Cocoa.LibObjC)]
+        [DllImport(Cocoa.LibObjC)]
         extern static IntPtr class_getName(IntPtr handle);
 
-        [DllImport (Cocoa.LibObjC)]
+        [DllImport(Cocoa.LibObjC)]
         extern static bool class_addMethod(IntPtr classHandle, IntPtr selector, IntPtr method, string types);
 
-        [DllImport (Cocoa.LibObjC)]
+        [DllImport(Cocoa.LibObjC)]
         extern static IntPtr objc_getClass(string name);
 
-        [DllImport (Cocoa.LibObjC)]
+        [DllImport(Cocoa.LibObjC)]
         extern static IntPtr objc_allocateClassPair(IntPtr parentClass, string name, int extraBytes);
 
-        [DllImport (Cocoa.LibObjC)]
+        [DllImport(Cocoa.LibObjC)]
         extern static void objc_registerClassPair(IntPtr classToRegister);
 
-        [DllImport (Cocoa.LibObjC)]
+        [DllImport(Cocoa.LibObjC)]
         extern static void objc_disposeClassPair(IntPtr cls);
 
         public static IntPtr Get(string name)

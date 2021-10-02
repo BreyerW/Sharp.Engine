@@ -14,8 +14,9 @@
 //          mcseemagg@yahoo.com
 //          http://www.antigrain.com
 
-using System;
 using PixelFarm.Drawing;
+using System;
+
 namespace PixelFarm.CpuBlit.Rasterization
 {
     public enum ScanlineRenderMode : byte
@@ -633,7 +634,7 @@ namespace PixelFarm.CpuBlit.Rasterization
                 }
             }
         }
-        
+
 #if DEBUG
         static float mix(float farColor, float nearColor, float weight)
         {

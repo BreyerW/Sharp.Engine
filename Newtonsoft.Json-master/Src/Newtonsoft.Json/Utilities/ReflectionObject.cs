@@ -30,6 +30,7 @@ using System.Reflection;
 using System.Globalization;
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;
+
 #else
 using System.Linq;
 

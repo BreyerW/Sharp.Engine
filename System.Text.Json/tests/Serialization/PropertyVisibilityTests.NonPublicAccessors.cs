@@ -251,7 +251,7 @@ namespace System.Text.Json.Serialization.Tests
             [JsonInclude]
             public int X { get; internal set; }
             [JsonInclude]
-            public int Y { internal get; set;  }
+            public int Y { internal get; set; }
 
             internal int GetY => Y;
 

@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+
 namespace Typography.OpenFont.Tables
 {
-
     //---------------------------------------------------
     //cmap - Character To Glyph Index Mapping Table
     //---------------------------------------------------

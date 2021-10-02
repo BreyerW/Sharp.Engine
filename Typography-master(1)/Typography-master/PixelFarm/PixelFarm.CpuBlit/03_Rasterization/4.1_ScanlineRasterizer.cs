@@ -32,13 +32,12 @@
 // 
 //----------------------------------------------------------------------------
 
-using poly_subpix = PixelFarm.CpuBlit.Rasterization.PolySubPix;
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit.FragmentProcessing;
+using PixelFarm.Drawing;
+using poly_subpix = PixelFarm.CpuBlit.Rasterization.PolySubPix;
 
 namespace PixelFarm.CpuBlit.Rasterization
 {
-
     //==================================================rasterizer_scanline_aa
     // Polygon rasterizer that is used to render filled polygons with 
     // high-quality Anti-Aliasing. Internally, by default, the class uses 
@@ -261,7 +260,7 @@ namespace PixelFarm.CpuBlit.Rasterization
                 case VertexCmd.C4:
                     LineTo(x, y);
                     break;
-                case VertexCmd.Close: 
+                case VertexCmd.Close:
                     ClosePolygon();
                     break;
                 default:

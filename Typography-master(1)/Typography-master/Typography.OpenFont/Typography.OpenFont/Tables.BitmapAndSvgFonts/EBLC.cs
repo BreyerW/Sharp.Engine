@@ -50,7 +50,7 @@ namespace Typography.OpenFont.Tables
                 throw new Exception("Too many bitmap strikes in font.");
 
             //----------------
-            var bmpSizeTables = new BitmapSizeTable[numSizes]; 
+            var bmpSizeTables = new BitmapSizeTable[numSizes];
             for (int i = 0; i < numSizes; i++)
             {
                 bmpSizeTables[i] = BitmapSizeTable.ReadBitmapSizeTable(reader);

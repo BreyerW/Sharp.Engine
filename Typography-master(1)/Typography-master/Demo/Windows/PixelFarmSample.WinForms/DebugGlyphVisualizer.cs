@@ -1,11 +1,11 @@
 ﻿//MIT, 2014-present, WinterDev
+using PixelFarm.Contours;
 using PixelFarm.CpuBlit;
 using PixelFarm.Drawing.Fonts;
-using System;
 using PixelFarm.VectorMath;
+using System;
 using Typography.Contours;
 using Typography.OpenFont;
-using PixelFarm.Contours;
 
 namespace SampleWinForms.UI
 {

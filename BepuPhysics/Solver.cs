@@ -1,11 +1,11 @@
-﻿using BepuUtilities.Collections;
-using BepuUtilities.Memory;
+﻿using BepuPhysics.CollisionDetection;
 using BepuPhysics.Constraints;
+using BepuUtilities;
+using BepuUtilities.Collections;
+using BepuUtilities.Memory;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using BepuPhysics.CollisionDetection;
-using BepuUtilities;
 using System.Runtime.InteropServices;
 
 namespace BepuPhysics

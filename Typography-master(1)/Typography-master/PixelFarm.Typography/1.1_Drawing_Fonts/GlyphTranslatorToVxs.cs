@@ -7,7 +7,6 @@ using Typography.OpenFont;
 
 namespace PixelFarm.Drawing.Fonts
 {
-
     //this is PixelFarm version ***
 
     /// <summary>

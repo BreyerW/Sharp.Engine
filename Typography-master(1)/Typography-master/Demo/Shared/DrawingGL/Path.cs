@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Typography.OpenFont;
+
 namespace DrawingGL
 {
     enum PathPointKind : byte

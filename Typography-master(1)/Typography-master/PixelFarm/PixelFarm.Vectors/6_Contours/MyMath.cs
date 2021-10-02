@@ -1,8 +1,8 @@
 ﻿//MIT, 2017-present, WinterDev
 using PixelFarm.VectorMath;
+
 namespace PixelFarm.Contours
 {
-
     public static class MyMath
     {
         static internal void FindMinMax(ref float currentMin, ref float currentMax, float value)

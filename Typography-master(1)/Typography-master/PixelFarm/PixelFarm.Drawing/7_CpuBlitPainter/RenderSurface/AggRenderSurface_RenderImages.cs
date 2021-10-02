@@ -26,14 +26,14 @@
 //---------------------------------------------------------------------------- 
 
 
-using System;
-using PixelFarm.Drawing;
-using PixelFarm.VectorMath;
-//
-using PixelFarm.CpuBlit.VertexProcessing;
-using PixelFarm.CpuBlit.Rasterization;
 using PixelFarm.CpuBlit.FragmentProcessing;
 using PixelFarm.CpuBlit.Imaging;
+using PixelFarm.CpuBlit.Rasterization;
+//
+using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
+using PixelFarm.VectorMath;
+using System;
 
 
 namespace PixelFarm.CpuBlit

@@ -35,22 +35,22 @@ namespace OpenTK.Compute.CL10
 {
     struct ErrorHelper : IDisposable
     {
-        #region Constructors
+#region Constructors
 
         public ErrorHelper(IntPtr context)
         {
         }
 
-        #endregion
+#endregion
 
-        #region IDisposable Members
+#region IDisposable Members
 
         public void Dispose()
         {
             throw new NotImplementedException();
         }
 
-        #endregion
+#endregion
     }
 }
 

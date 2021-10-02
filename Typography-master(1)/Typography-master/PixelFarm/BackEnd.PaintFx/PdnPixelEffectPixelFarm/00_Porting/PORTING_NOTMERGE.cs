@@ -6,8 +6,6 @@ using System.Runtime.InteropServices;
 
 namespace PixelFarm.Drawing
 {
-    
-
     public class StillNotPortedException : Exception { }
 
 
@@ -1034,8 +1032,8 @@ namespace PixelFarm.Drawing
         }
     }
 
-   
-  
+
+
     public struct RectangleF
     {
         float x, y, width, height;
@@ -1589,7 +1587,7 @@ namespace PixelFarm.Drawing
     }
 }
 
- 
+
 //for .NET 2.0 
 namespace System
 {

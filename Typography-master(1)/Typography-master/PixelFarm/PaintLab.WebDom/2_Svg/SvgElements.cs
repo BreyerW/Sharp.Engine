@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+
 namespace PaintLab.Svg
 {
     public enum WellknownSvgElementName

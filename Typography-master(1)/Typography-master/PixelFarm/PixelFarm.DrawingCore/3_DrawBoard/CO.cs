@@ -18,6 +18,7 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
+
 //#define ABGR
 #define ARGB
 namespace PixelFarm.Drawing

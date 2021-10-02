@@ -1,24 +1,20 @@
 ﻿//MIT, 2016-present, WinterDev
+using BrotliSharpLib;
+using LayoutFarm.WebLexer;
+using PaintLab.Svg;
+using PixelFarm.Contours;
+using PixelFarm.CpuBlit;
+using PixelFarm.Drawing.Fonts;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-
 using System.IO;
 using System.Windows.Forms;
-
-using PixelFarm.CpuBlit;
-using PixelFarm.Drawing.Fonts;
-using PixelFarm.Contours;
-
-using Typography.OpenFont;
-using Typography.TextLayout;
-using Typography.Rendering;
 using Typography.Contours;
+using Typography.OpenFont;
+using Typography.Rendering;
+using Typography.TextLayout;
 using Typography.WebFont;
-
-using BrotliSharpLib;
-using PaintLab.Svg;
-using LayoutFarm.WebLexer;
 
 namespace SampleWinForms
 {

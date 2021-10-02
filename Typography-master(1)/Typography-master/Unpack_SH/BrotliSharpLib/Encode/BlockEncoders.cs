@@ -4,7 +4,8 @@ namespace BrotliSharpLib
 {
     public static partial class Brotli
     {
-        private static unsafe class BlockEncoderLiteral {
+        private static unsafe class BlockEncoderLiteral
+        {
             public static unsafe void BuildAndStoreEntropyCodes(ref MemoryManager m, BlockEncoder* self,
                 HistogramLiteral* histograms, size_t histograms_size,
                 HuffmanTree* tree, size_t* storage_ix, byte* storage)

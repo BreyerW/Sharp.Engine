@@ -1,8 +1,8 @@
-﻿using BepuUtilities;
+﻿using BepuPhysics.Collidables;
+using BepuPhysics.Constraints;
+using BepuUtilities;
 using BepuUtilities.Collections;
 using BepuUtilities.Memory;
-using BepuPhysics.Collidables;
-using BepuPhysics.Constraints;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

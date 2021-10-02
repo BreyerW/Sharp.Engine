@@ -8,9 +8,10 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 //MIT, 2017-present, WinterDev
+using PixelFarm.Drawing;
 using System;
 using System.Runtime.InteropServices;
-using PixelFarm.Drawing;
+
 namespace PaintFx
 {
     /// <summary>
@@ -37,7 +38,7 @@ namespace PaintFx
         /// <summary>
         /// Lets you change B, G, R, and A at the same time.
         /// </summary>
-       
+
         [FieldOffset(0)]
         public uint Bgra;
 

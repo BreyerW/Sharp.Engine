@@ -3,9 +3,9 @@
 
 using System;
 using Typography.OpenFont;
+
 namespace DrawingGL.Text
 {
-
     /// <summary>
     /// for translate raw glyph data to target path
     /// </summary>

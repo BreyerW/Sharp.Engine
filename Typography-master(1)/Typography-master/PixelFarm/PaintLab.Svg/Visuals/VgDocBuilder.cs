@@ -1,9 +1,8 @@
 ﻿//MIT, 2014-present, WinterDev
 
+using LayoutFarm.WebDom.Parser;
 using System;
 using System.Collections.Generic;
-
-using LayoutFarm.WebDom.Parser;
 
 namespace PaintLab.Svg
 {

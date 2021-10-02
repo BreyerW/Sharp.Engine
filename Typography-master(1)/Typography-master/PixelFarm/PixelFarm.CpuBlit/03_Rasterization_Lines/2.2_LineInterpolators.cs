@@ -14,8 +14,8 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
-using System;
 using PixelFarm.CpuBlit.FragmentProcessing;
+using System;
 
 namespace PixelFarm.CpuBlit.Rasterization.Lines
 {
@@ -100,7 +100,7 @@ namespace PixelFarm.CpuBlit.Rasterization.Lines
         public void Dispose()
         {
             _ren.ReleaseConvArray(_covers);
-            _ren.ReleaseDistArray(_dist); 
+            _ren.ReleaseDistArray(_dist);
         }
 
         public void AdjustForward()

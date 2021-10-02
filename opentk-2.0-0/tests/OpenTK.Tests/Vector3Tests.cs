@@ -1,10 +1,10 @@
-﻿using System;
+﻿using NUnit.Framework;
+using OpenTK;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
-using OpenTK;
 
 namespace OpenTK.Tests
 {
@@ -23,7 +23,7 @@ namespace OpenTK.Tests
         [Test]
         public void Vector3_ThreeValueConstructor()
         {
-            Vector3 V = new Vector3(1,2,3);
+            Vector3 V = new Vector3(1, 2, 3);
             Assert.AreEqual(1, V.X);
             Assert.AreEqual(2, V.Y);
             Assert.AreEqual(3, V.Z);

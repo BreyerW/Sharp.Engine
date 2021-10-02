@@ -52,7 +52,7 @@ namespace Bind.Structures
             {
                 if (value == null)
                     throw new ArgumentNullException("value");
-                
+
                 _constant_collection.Clear();
                 foreach (var item in value)
                 {
@@ -98,12 +98,12 @@ namespace Bind.Structures
             int ret = PreferEmpty(ext1, ext2);
             if (ret != 0)
                 return ret;
-            
+
             ext1 = ext1.Replace("Arb", ""); ext2 = ext2.Replace("Arb", "");
             ret = PreferEmpty(ext1, ext2);
             if (ret != 0)
                 return ret;
-            
+
             ext1 = ext1.Replace("Ext", ""); ext2 = ext2.Replace("Ext", "");
             return PreferEmpty(ext1, ext2);
         }

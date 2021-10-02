@@ -1,8 +1,9 @@
 ﻿//MIT, 2014-present, WinterDev
 //-----------------------------------
-using System.Collections.Generic;
 using PixelFarm.Drawing.Fonts;
+using System.Collections.Generic;
 using Typography.TextLayout;
+
 namespace PixelFarm.Drawing.Text
 {
     public class ManagedShapingService : TextShapingService

@@ -34,6 +34,7 @@ using System.Collections;
 using System.Diagnostics;
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;
+
 #else
 using System.Linq;
 

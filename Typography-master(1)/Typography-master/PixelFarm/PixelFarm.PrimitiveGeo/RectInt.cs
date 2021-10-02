@@ -18,6 +18,7 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 using System;
+
 namespace PixelFarm.CpuBlit
 {
     //TODO: merge with Rectangle

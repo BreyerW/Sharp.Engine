@@ -15,6 +15,7 @@
 //   This code is open source. Please read the License.txt for details. No worries, we won't sue you! ;)
 //
 using System;
+
 namespace BitmapBufferEx
 {
     public static partial class BitmapBufferExtensions

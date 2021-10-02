@@ -3,18 +3,14 @@
 //(MIT, 2016, Viktor Chlumsky, Multi-channel signed distance field generator, from https://github.com/Chlumsky/msdfge)
 //-----------------------------------  
 
-using System;
-using System.Collections.Generic;
-
 using PixelFarm.CpuBlit;
 using PixelFarm.CpuBlit.VertexProcessing;
 using PixelFarm.Drawing;
+using System;
+using System.Collections.Generic;
 
 namespace ExtMsdfGen
 {
-
-
-
     /// <summary>
     /// msdf texture generator
     /// </summary>

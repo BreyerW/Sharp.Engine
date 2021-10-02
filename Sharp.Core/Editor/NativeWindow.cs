@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Sharp.Editor.Views;
 using Squid;
-using Sharp.Editor.Views;
+using System;
+using System.Collections.Generic;
 
 namespace Sharp.Editor
 {

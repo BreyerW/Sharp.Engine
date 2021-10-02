@@ -17,14 +17,13 @@
 //          mcseemagg@yahoo.com
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
-using System;
-using PixelFarm.VectorMath;
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
+using PixelFarm.VectorMath;
+using System;
+
 namespace PixelFarm.CpuBlit
 {
-
-
     //https://en.wikipedia.org/wiki/B%C3%A9zier_curve
     //--------------------
     //Line, has 2 points..
@@ -117,7 +116,7 @@ namespace PixelFarm.CpuBlit
             //TODO:
             //goto latest path command
         }
-      
+
         public void UnbindVxs()
         {
             _myvxs = null;

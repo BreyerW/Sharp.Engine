@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Newtonsoft.Json;
 using System.Buffers;
 using System.Buffers.Text;
 using System.Collections.Generic;
@@ -12,7 +13,6 @@ using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace System.Text.Json.Tests

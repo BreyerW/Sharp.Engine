@@ -137,7 +137,7 @@ namespace Newtonsoft.Json.Tests.Serialization
                 Name = "Bad Boys III",
                 Description = "It's no Bad Boys"
             };
-            
+
             string ignored = JsonConvert.SerializeObject(movie,
                 Formatting.Indented,
                 new JsonSerializerSettings { NullValueHandling = NullValueHandling.Include });

@@ -1,13 +1,14 @@
 ﻿using BepuPhysics.CollisionDetection;
-using System;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Diagnostics;
 using BepuUtilities;
 using BepuUtilities.Memory;
+using System;
+using System.Diagnostics;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 using static BepuUtilities.GatherScatter;
+
 namespace BepuPhysics.Constraints.Contact
-{  
+{
     public struct Contact1AccumulatedImpulses : IConvexContactAccumulatedImpulses<Contact1AccumulatedImpulses>
     {
         public Vector2Wide Tangent;
@@ -122,8 +123,8 @@ namespace BepuPhysics.Constraints.Contact
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ComputeFrictionCenter(
-            in Vector3Wide offsetA0, in Vector3Wide offsetA1, 
-            in Vector<float> depth0,in Vector<float> depth1, out Vector3Wide center)
+            in Vector3Wide offsetA0, in Vector3Wide offsetA1,
+            in Vector<float> depth0, in Vector<float> depth1, out Vector3Wide center)
         {
             //This can sometimes cause a weird center of friction. That's a bit strange, but the alternative is often stranger:
             //Without this, if one contact is active and the other is speculative, friction will use the manifold center as halfway between the two points. If something is holding 
@@ -143,8 +144,8 @@ namespace BepuPhysics.Constraints.Contact
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ComputeFrictionCenter(
-            in Vector3Wide offsetA0, in Vector3Wide offsetA1, in Vector3Wide offsetA2, 
-            in Vector<float> depth0,in Vector<float> depth1,in Vector<float> depth2, out Vector3Wide center)
+            in Vector3Wide offsetA0, in Vector3Wide offsetA1, in Vector3Wide offsetA2,
+            in Vector<float> depth0, in Vector<float> depth1, in Vector<float> depth2, out Vector3Wide center)
         {
             //This can sometimes cause a weird center of friction. That's a bit strange, but the alternative is often stranger:
             //Without this, if one contact is active and the other is speculative, friction will use the manifold center as halfway between the two points. If something is holding 
@@ -168,8 +169,8 @@ namespace BepuPhysics.Constraints.Contact
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ComputeFrictionCenter(
-            in Vector3Wide offsetA0, in Vector3Wide offsetA1, in Vector3Wide offsetA2, in Vector3Wide offsetA3, 
-            in Vector<float> depth0,in Vector<float> depth1,in Vector<float> depth2,in Vector<float> depth3, out Vector3Wide center)
+            in Vector3Wide offsetA0, in Vector3Wide offsetA1, in Vector3Wide offsetA2, in Vector3Wide offsetA3,
+            in Vector<float> depth0, in Vector<float> depth1, in Vector<float> depth2, in Vector<float> depth3, out Vector3Wide center)
         {
             //This can sometimes cause a weird center of friction. That's a bit strange, but the alternative is often stranger:
             //Without this, if one contact is active and the other is speculative, friction will use the manifold center as halfway between the two points. If something is holding 
@@ -210,7 +211,7 @@ namespace BepuPhysics.Constraints.Contact
             ref var target = ref GetOffsetInstance(ref Buffer<Contact1OneBodyPrestepData>.Get(ref batch.PrestepData, bundleIndex), innerIndex);
             Vector3Wide.WriteFirst(Contact0.OffsetA, ref target.Contact0.OffsetA);
             GetFirst(ref target.Contact0.Depth) = Contact0.PenetrationDepth;
-            
+
             Vector3Wide.WriteFirst(Normal, ref target.Normal);
             GetFirst(ref target.MaterialProperties.FrictionCoefficient) = FrictionCoefficient;
             SpringSettingsWide.WriteFirst(SpringSettings, ref target.MaterialProperties.SpringSettings);
@@ -218,7 +219,7 @@ namespace BepuPhysics.Constraints.Contact
         }
 
         public void BuildDescription(ref TypeBatch batch, int bundleIndex, int innerIndex, out Contact1OneBody description)
-        {    
+        {
             Debug.Assert(batch.TypeId == ConstraintTypeId, "The type batch passed to the description must match the description's expected type.");
             ref var source = ref GetOffsetInstance(ref Buffer<Contact1OneBodyPrestepData>.Get(ref batch.PrestepData, bundleIndex), innerIndex);
             Vector3Wide.ReadFirst(source.Contact0.OffsetA, out description.Contact0.OffsetA);
@@ -243,7 +244,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref description.Contact0;
         }
-        
+
         public int ConstraintTypeId
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -263,7 +264,7 @@ namespace BepuPhysics.Constraints.Contact
         //In a convex manifold, all contacts share the same normal and tangents.
         public Vector3Wide Normal;
         public MaterialPropertiesWide MaterialProperties;
-		
+
         public int BodyCount => 1;
         public int ContactCount => 1;
 
@@ -351,7 +352,7 @@ namespace BepuPhysics.Constraints.Contact
             PenetrationLimitOneBody.UpdatePenetrationDepth(dt, prestep.Contact0.OffsetA, prestep.Normal, velocityA, ref prestep.Contact0.Depth);
         }
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 1-contact one body manifold constraints.
     /// </summary>
@@ -380,7 +381,7 @@ namespace BepuPhysics.Constraints.Contact
             GetFirst(ref target.Contact0.Depth) = Contact0.PenetrationDepth;
             Vector3Wide.WriteFirst(Contact1.OffsetA, ref target.Contact1.OffsetA);
             GetFirst(ref target.Contact1.Depth) = Contact1.PenetrationDepth;
-            
+
             Vector3Wide.WriteFirst(Normal, ref target.Normal);
             GetFirst(ref target.MaterialProperties.FrictionCoefficient) = FrictionCoefficient;
             SpringSettingsWide.WriteFirst(SpringSettings, ref target.MaterialProperties.SpringSettings);
@@ -388,7 +389,7 @@ namespace BepuPhysics.Constraints.Contact
         }
 
         public void BuildDescription(ref TypeBatch batch, int bundleIndex, int innerIndex, out Contact2OneBody description)
-        {    
+        {
             Debug.Assert(batch.TypeId == ConstraintTypeId, "The type batch passed to the description must match the description's expected type.");
             ref var source = ref GetOffsetInstance(ref Buffer<Contact2OneBodyPrestepData>.Get(ref batch.PrestepData, bundleIndex), innerIndex);
             Vector3Wide.ReadFirst(source.Contact0.OffsetA, out description.Contact0.OffsetA);
@@ -415,7 +416,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref description.Contact0;
         }
-        
+
         public int ConstraintTypeId
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -436,7 +437,7 @@ namespace BepuPhysics.Constraints.Contact
         //In a convex manifold, all contacts share the same normal and tangents.
         public Vector3Wide Normal;
         public MaterialPropertiesWide MaterialProperties;
-		
+
         public int BodyCount => 1;
         public int ContactCount => 2;
 
@@ -531,7 +532,7 @@ namespace BepuPhysics.Constraints.Contact
             PenetrationLimitOneBody.UpdatePenetrationDepth(dt, prestep.Contact1.OffsetA, prestep.Normal, velocityA, ref prestep.Contact1.Depth);
         }
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 2-contact one body manifold constraints.
     /// </summary>
@@ -563,7 +564,7 @@ namespace BepuPhysics.Constraints.Contact
             GetFirst(ref target.Contact1.Depth) = Contact1.PenetrationDepth;
             Vector3Wide.WriteFirst(Contact2.OffsetA, ref target.Contact2.OffsetA);
             GetFirst(ref target.Contact2.Depth) = Contact2.PenetrationDepth;
-            
+
             Vector3Wide.WriteFirst(Normal, ref target.Normal);
             GetFirst(ref target.MaterialProperties.FrictionCoefficient) = FrictionCoefficient;
             SpringSettingsWide.WriteFirst(SpringSettings, ref target.MaterialProperties.SpringSettings);
@@ -571,7 +572,7 @@ namespace BepuPhysics.Constraints.Contact
         }
 
         public void BuildDescription(ref TypeBatch batch, int bundleIndex, int innerIndex, out Contact3OneBody description)
-        {    
+        {
             Debug.Assert(batch.TypeId == ConstraintTypeId, "The type batch passed to the description must match the description's expected type.");
             ref var source = ref GetOffsetInstance(ref Buffer<Contact3OneBodyPrestepData>.Get(ref batch.PrestepData, bundleIndex), innerIndex);
             Vector3Wide.ReadFirst(source.Contact0.OffsetA, out description.Contact0.OffsetA);
@@ -600,7 +601,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref description.Contact0;
         }
-        
+
         public int ConstraintTypeId
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -622,7 +623,7 @@ namespace BepuPhysics.Constraints.Contact
         //In a convex manifold, all contacts share the same normal and tangents.
         public Vector3Wide Normal;
         public MaterialPropertiesWide MaterialProperties;
-		
+
         public int BodyCount => 1;
         public int ContactCount => 3;
 
@@ -725,7 +726,7 @@ namespace BepuPhysics.Constraints.Contact
             PenetrationLimitOneBody.UpdatePenetrationDepth(dt, prestep.Contact2.OffsetA, prestep.Normal, velocityA, ref prestep.Contact2.Depth);
         }
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 3-contact one body manifold constraints.
     /// </summary>
@@ -760,7 +761,7 @@ namespace BepuPhysics.Constraints.Contact
             GetFirst(ref target.Contact2.Depth) = Contact2.PenetrationDepth;
             Vector3Wide.WriteFirst(Contact3.OffsetA, ref target.Contact3.OffsetA);
             GetFirst(ref target.Contact3.Depth) = Contact3.PenetrationDepth;
-            
+
             Vector3Wide.WriteFirst(Normal, ref target.Normal);
             GetFirst(ref target.MaterialProperties.FrictionCoefficient) = FrictionCoefficient;
             SpringSettingsWide.WriteFirst(SpringSettings, ref target.MaterialProperties.SpringSettings);
@@ -768,7 +769,7 @@ namespace BepuPhysics.Constraints.Contact
         }
 
         public void BuildDescription(ref TypeBatch batch, int bundleIndex, int innerIndex, out Contact4OneBody description)
-        {    
+        {
             Debug.Assert(batch.TypeId == ConstraintTypeId, "The type batch passed to the description must match the description's expected type.");
             ref var source = ref GetOffsetInstance(ref Buffer<Contact4OneBodyPrestepData>.Get(ref batch.PrestepData, bundleIndex), innerIndex);
             Vector3Wide.ReadFirst(source.Contact0.OffsetA, out description.Contact0.OffsetA);
@@ -799,7 +800,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref description.Contact0;
         }
-        
+
         public int ConstraintTypeId
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -822,7 +823,7 @@ namespace BepuPhysics.Constraints.Contact
         //In a convex manifold, all contacts share the same normal and tangents.
         public Vector3Wide Normal;
         public MaterialPropertiesWide MaterialProperties;
-		
+
         public int BodyCount => 1;
         public int ContactCount => 4;
 
@@ -933,7 +934,7 @@ namespace BepuPhysics.Constraints.Contact
             PenetrationLimitOneBody.UpdatePenetrationDepth(dt, prestep.Contact3.OffsetA, prestep.Normal, velocityA, ref prestep.Contact3.Depth);
         }
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 4-contact one body manifold constraints.
     /// </summary>
@@ -960,7 +961,7 @@ namespace BepuPhysics.Constraints.Contact
             ref var target = ref GetOffsetInstance(ref Buffer<Contact1PrestepData>.Get(ref batch.PrestepData, bundleIndex), innerIndex);
             Vector3Wide.WriteFirst(Contact0.OffsetA, ref target.Contact0.OffsetA);
             GetFirst(ref target.Contact0.Depth) = Contact0.PenetrationDepth;
-            
+
             Vector3Wide.WriteFirst(OffsetB, ref target.OffsetB);
             Vector3Wide.WriteFirst(Normal, ref target.Normal);
             GetFirst(ref target.MaterialProperties.FrictionCoefficient) = FrictionCoefficient;
@@ -969,12 +970,12 @@ namespace BepuPhysics.Constraints.Contact
         }
 
         public void BuildDescription(ref TypeBatch batch, int bundleIndex, int innerIndex, out Contact1 description)
-        {    
+        {
             Debug.Assert(batch.TypeId == ConstraintTypeId, "The type batch passed to the description must match the description's expected type.");
             ref var source = ref GetOffsetInstance(ref Buffer<Contact1PrestepData>.Get(ref batch.PrestepData, bundleIndex), innerIndex);
             Vector3Wide.ReadFirst(source.Contact0.OffsetA, out description.Contact0.OffsetA);
             description.Contact0.PenetrationDepth = GetFirst(ref source.Contact0.Depth);
-            
+
             Vector3Wide.ReadFirst(source.OffsetB, out description.OffsetB);
             Vector3Wide.ReadFirst(source.Normal, out description.Normal);
             description.FrictionCoefficient = GetFirst(ref source.MaterialProperties.FrictionCoefficient);
@@ -997,7 +998,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref description.Contact0;
         }
-        
+
         public int ConstraintTypeId
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1018,7 +1019,7 @@ namespace BepuPhysics.Constraints.Contact
         //In a convex manifold, all contacts share the same normal and tangents.
         public Vector3Wide Normal;
         public MaterialPropertiesWide MaterialProperties;
-		
+
         public int BodyCount => 2;
         public int ContactCount => 1;
 
@@ -1065,7 +1066,7 @@ namespace BepuPhysics.Constraints.Contact
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Prestep(Bodies bodies, ref TwoBodyReferences bodyReferences, int count,
-            float dt, float inverseDt, ref BodyInertias inertiaA, ref BodyInertias inertiaB,ref Contact1PrestepData prestep, out Contact1Projection projection)
+            float dt, float inverseDt, ref BodyInertias inertiaA, ref BodyInertias inertiaB, ref Contact1PrestepData prestep, out Contact1Projection projection)
         {
             //Be careful about the execution order here. It should be aligned with the prestep data layout to ensure prefetching works well.
             projection.InertiaA = inertiaA;
@@ -1116,7 +1117,7 @@ namespace BepuPhysics.Constraints.Contact
             PenetrationLimit.UpdatePenetrationDepth(dt, prestep.Contact0.OffsetA, prestep.OffsetB, prestep.Normal, velocityA, velocityB, ref prestep.Contact0.Depth);
         }
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 1-contact two body manifold constraints.
     /// </summary>
@@ -1146,7 +1147,7 @@ namespace BepuPhysics.Constraints.Contact
             GetFirst(ref target.Contact0.Depth) = Contact0.PenetrationDepth;
             Vector3Wide.WriteFirst(Contact1.OffsetA, ref target.Contact1.OffsetA);
             GetFirst(ref target.Contact1.Depth) = Contact1.PenetrationDepth;
-            
+
             Vector3Wide.WriteFirst(OffsetB, ref target.OffsetB);
             Vector3Wide.WriteFirst(Normal, ref target.Normal);
             GetFirst(ref target.MaterialProperties.FrictionCoefficient) = FrictionCoefficient;
@@ -1155,14 +1156,14 @@ namespace BepuPhysics.Constraints.Contact
         }
 
         public void BuildDescription(ref TypeBatch batch, int bundleIndex, int innerIndex, out Contact2 description)
-        {    
+        {
             Debug.Assert(batch.TypeId == ConstraintTypeId, "The type batch passed to the description must match the description's expected type.");
             ref var source = ref GetOffsetInstance(ref Buffer<Contact2PrestepData>.Get(ref batch.PrestepData, bundleIndex), innerIndex);
             Vector3Wide.ReadFirst(source.Contact0.OffsetA, out description.Contact0.OffsetA);
             description.Contact0.PenetrationDepth = GetFirst(ref source.Contact0.Depth);
             Vector3Wide.ReadFirst(source.Contact1.OffsetA, out description.Contact1.OffsetA);
             description.Contact1.PenetrationDepth = GetFirst(ref source.Contact1.Depth);
-            
+
             Vector3Wide.ReadFirst(source.OffsetB, out description.OffsetB);
             Vector3Wide.ReadFirst(source.Normal, out description.Normal);
             description.FrictionCoefficient = GetFirst(ref source.MaterialProperties.FrictionCoefficient);
@@ -1185,7 +1186,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref description.Contact0;
         }
-        
+
         public int ConstraintTypeId
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1207,7 +1208,7 @@ namespace BepuPhysics.Constraints.Contact
         //In a convex manifold, all contacts share the same normal and tangents.
         public Vector3Wide Normal;
         public MaterialPropertiesWide MaterialProperties;
-		
+
         public int BodyCount => 2;
         public int ContactCount => 2;
 
@@ -1256,7 +1257,7 @@ namespace BepuPhysics.Constraints.Contact
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Prestep(Bodies bodies, ref TwoBodyReferences bodyReferences, int count,
-            float dt, float inverseDt, ref BodyInertias inertiaA, ref BodyInertias inertiaB,ref Contact2PrestepData prestep, out Contact2Projection projection)
+            float dt, float inverseDt, ref BodyInertias inertiaA, ref BodyInertias inertiaB, ref Contact2PrestepData prestep, out Contact2Projection projection)
         {
             //Be careful about the execution order here. It should be aligned with the prestep data layout to ensure prefetching works well.
             projection.InertiaA = inertiaA;
@@ -1313,7 +1314,7 @@ namespace BepuPhysics.Constraints.Contact
             PenetrationLimit.UpdatePenetrationDepth(dt, prestep.Contact1.OffsetA, prestep.OffsetB, prestep.Normal, velocityA, velocityB, ref prestep.Contact1.Depth);
         }
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 2-contact two body manifold constraints.
     /// </summary>
@@ -1346,7 +1347,7 @@ namespace BepuPhysics.Constraints.Contact
             GetFirst(ref target.Contact1.Depth) = Contact1.PenetrationDepth;
             Vector3Wide.WriteFirst(Contact2.OffsetA, ref target.Contact2.OffsetA);
             GetFirst(ref target.Contact2.Depth) = Contact2.PenetrationDepth;
-            
+
             Vector3Wide.WriteFirst(OffsetB, ref target.OffsetB);
             Vector3Wide.WriteFirst(Normal, ref target.Normal);
             GetFirst(ref target.MaterialProperties.FrictionCoefficient) = FrictionCoefficient;
@@ -1355,7 +1356,7 @@ namespace BepuPhysics.Constraints.Contact
         }
 
         public void BuildDescription(ref TypeBatch batch, int bundleIndex, int innerIndex, out Contact3 description)
-        {    
+        {
             Debug.Assert(batch.TypeId == ConstraintTypeId, "The type batch passed to the description must match the description's expected type.");
             ref var source = ref GetOffsetInstance(ref Buffer<Contact3PrestepData>.Get(ref batch.PrestepData, bundleIndex), innerIndex);
             Vector3Wide.ReadFirst(source.Contact0.OffsetA, out description.Contact0.OffsetA);
@@ -1364,7 +1365,7 @@ namespace BepuPhysics.Constraints.Contact
             description.Contact1.PenetrationDepth = GetFirst(ref source.Contact1.Depth);
             Vector3Wide.ReadFirst(source.Contact2.OffsetA, out description.Contact2.OffsetA);
             description.Contact2.PenetrationDepth = GetFirst(ref source.Contact2.Depth);
-            
+
             Vector3Wide.ReadFirst(source.OffsetB, out description.OffsetB);
             Vector3Wide.ReadFirst(source.Normal, out description.Normal);
             description.FrictionCoefficient = GetFirst(ref source.MaterialProperties.FrictionCoefficient);
@@ -1387,7 +1388,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref description.Contact0;
         }
-        
+
         public int ConstraintTypeId
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1410,7 +1411,7 @@ namespace BepuPhysics.Constraints.Contact
         //In a convex manifold, all contacts share the same normal and tangents.
         public Vector3Wide Normal;
         public MaterialPropertiesWide MaterialProperties;
-		
+
         public int BodyCount => 2;
         public int ContactCount => 3;
 
@@ -1461,7 +1462,7 @@ namespace BepuPhysics.Constraints.Contact
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Prestep(Bodies bodies, ref TwoBodyReferences bodyReferences, int count,
-            float dt, float inverseDt, ref BodyInertias inertiaA, ref BodyInertias inertiaB,ref Contact3PrestepData prestep, out Contact3Projection projection)
+            float dt, float inverseDt, ref BodyInertias inertiaA, ref BodyInertias inertiaB, ref Contact3PrestepData prestep, out Contact3Projection projection)
         {
             //Be careful about the execution order here. It should be aligned with the prestep data layout to ensure prefetching works well.
             projection.InertiaA = inertiaA;
@@ -1525,7 +1526,7 @@ namespace BepuPhysics.Constraints.Contact
             PenetrationLimit.UpdatePenetrationDepth(dt, prestep.Contact2.OffsetA, prestep.OffsetB, prestep.Normal, velocityA, velocityB, ref prestep.Contact2.Depth);
         }
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 3-contact two body manifold constraints.
     /// </summary>
@@ -1561,7 +1562,7 @@ namespace BepuPhysics.Constraints.Contact
             GetFirst(ref target.Contact2.Depth) = Contact2.PenetrationDepth;
             Vector3Wide.WriteFirst(Contact3.OffsetA, ref target.Contact3.OffsetA);
             GetFirst(ref target.Contact3.Depth) = Contact3.PenetrationDepth;
-            
+
             Vector3Wide.WriteFirst(OffsetB, ref target.OffsetB);
             Vector3Wide.WriteFirst(Normal, ref target.Normal);
             GetFirst(ref target.MaterialProperties.FrictionCoefficient) = FrictionCoefficient;
@@ -1570,7 +1571,7 @@ namespace BepuPhysics.Constraints.Contact
         }
 
         public void BuildDescription(ref TypeBatch batch, int bundleIndex, int innerIndex, out Contact4 description)
-        {    
+        {
             Debug.Assert(batch.TypeId == ConstraintTypeId, "The type batch passed to the description must match the description's expected type.");
             ref var source = ref GetOffsetInstance(ref Buffer<Contact4PrestepData>.Get(ref batch.PrestepData, bundleIndex), innerIndex);
             Vector3Wide.ReadFirst(source.Contact0.OffsetA, out description.Contact0.OffsetA);
@@ -1581,7 +1582,7 @@ namespace BepuPhysics.Constraints.Contact
             description.Contact2.PenetrationDepth = GetFirst(ref source.Contact2.Depth);
             Vector3Wide.ReadFirst(source.Contact3.OffsetA, out description.Contact3.OffsetA);
             description.Contact3.PenetrationDepth = GetFirst(ref source.Contact3.Depth);
-            
+
             Vector3Wide.ReadFirst(source.OffsetB, out description.OffsetB);
             Vector3Wide.ReadFirst(source.Normal, out description.Normal);
             description.FrictionCoefficient = GetFirst(ref source.MaterialProperties.FrictionCoefficient);
@@ -1604,7 +1605,7 @@ namespace BepuPhysics.Constraints.Contact
         {
             return ref description.Contact0;
         }
-        
+
         public int ConstraintTypeId
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1628,7 +1629,7 @@ namespace BepuPhysics.Constraints.Contact
         //In a convex manifold, all contacts share the same normal and tangents.
         public Vector3Wide Normal;
         public MaterialPropertiesWide MaterialProperties;
-		
+
         public int BodyCount => 2;
         public int ContactCount => 4;
 
@@ -1681,7 +1682,7 @@ namespace BepuPhysics.Constraints.Contact
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Prestep(Bodies bodies, ref TwoBodyReferences bodyReferences, int count,
-            float dt, float inverseDt, ref BodyInertias inertiaA, ref BodyInertias inertiaB,ref Contact4PrestepData prestep, out Contact4Projection projection)
+            float dt, float inverseDt, ref BodyInertias inertiaA, ref BodyInertias inertiaB, ref Contact4PrestepData prestep, out Contact4Projection projection)
         {
             //Be careful about the execution order here. It should be aligned with the prestep data layout to ensure prefetching works well.
             projection.InertiaA = inertiaA;
@@ -1752,7 +1753,7 @@ namespace BepuPhysics.Constraints.Contact
             PenetrationLimit.UpdatePenetrationDepth(dt, prestep.Contact3.OffsetA, prestep.OffsetB, prestep.Normal, velocityA, velocityB, ref prestep.Contact3.Depth);
         }
     }
-    
+
     /// <summary>
     /// Handles the solve iterations of a bunch of 4-contact two body manifold constraints.
     /// </summary>

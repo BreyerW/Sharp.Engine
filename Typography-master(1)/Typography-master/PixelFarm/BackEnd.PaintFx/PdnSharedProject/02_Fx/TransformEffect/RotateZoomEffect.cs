@@ -9,11 +9,11 @@
 
 //Apache2, 2018, WinterDev
 
-using System;
 using PixelFarm.Drawing;
+using System;
+
 namespace PaintFx.Effects
 {
-
     public sealed class RotateZoomEffect : EffectRendererBase
     {
         public Rectangle SelectionBounds { get; set; }

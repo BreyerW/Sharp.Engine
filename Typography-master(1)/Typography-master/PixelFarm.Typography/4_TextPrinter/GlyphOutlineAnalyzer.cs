@@ -1,12 +1,11 @@
 ﻿//MIT, 2016-present, WinterDev
+using PixelFarm.CpuBlit.VertexProcessing;
 using System;
 using System.Collections.Generic;
 using Typography.OpenFont;
-using PixelFarm.CpuBlit.VertexProcessing;
 
 namespace PixelFarm.Contours
 {
-
     //This is PixelFarm's AutoFit
     //NOT FREE TYPE AUTO FIT***
 

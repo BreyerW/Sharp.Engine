@@ -2,12 +2,12 @@
 
 namespace Sharp
 {
-	public abstract class Player
-	{
-		public Player ()
-		{
-		}
-		public abstract void Play ();
-	}
+    public abstract class Player
+    {
+        public Player()
+        {
+        }
+        public abstract void Play();
+    }
 }
 

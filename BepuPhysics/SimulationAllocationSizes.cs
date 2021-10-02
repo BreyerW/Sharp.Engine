@@ -1,4 +1,5 @@
-﻿namespace BepuPhysics
+﻿
+namespace BepuPhysics
 {
     /// <summary>
     /// The common set of allocation sizes for a simulation.

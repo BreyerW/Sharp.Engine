@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 
 namespace BepuUtilities
 {
-    
     public struct Matrix2x3Wide
     {
         /// <summary>

@@ -29,13 +29,12 @@
 
 using System;
 using System.Runtime.InteropServices;
+using BufferObjectHandle = IntPtr;
+using Device = IntPtr; // struct gbm_device*
+using Surface = IntPtr;
 
 namespace OpenTK.Platform.Linux
 {
-    using Device = IntPtr; // struct gbm_device*
-    using Surface = IntPtr;
-    using BufferObjectHandle = IntPtr;
-
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     delegate void DestroyUserDataCallback(BufferObject bo, IntPtr data);
 

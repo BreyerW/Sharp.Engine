@@ -22,6 +22,7 @@
 //
 //----------------------------------------------------------------------------
 using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
     public sealed class Stroke

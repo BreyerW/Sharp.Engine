@@ -1,6 +1,7 @@
 ﻿//MIT, 2009, 2010, 2013-2016 by the Brotli Authors.
 //MIT, 2017, brezza92 (C# port from original code, by hand)
 
+
 namespace CSharpBrotli.Decode
 {
     /// <summary>
@@ -64,7 +65,7 @@ namespace CSharpBrotli.Decode
         /// <summary>
         /// Builds Huffman lookup table assuming code lengths are in symbol order.
         /// </summary>
-        public static void BuildHuffmanTable(int[] rootTable, int tableOffset, int rootBits, 
+        public static void BuildHuffmanTable(int[] rootTable, int tableOffset, int rootBits,
             int[] codeLengths, int codeLengthsSize)
         {
             int key; // Reversed prefix code.

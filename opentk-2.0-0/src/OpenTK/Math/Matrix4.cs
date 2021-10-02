@@ -56,7 +56,7 @@ namespace OpenTK
         /// Bottom row of the matrix.
         /// </summary>
         public Vector4 Row3;
- 
+
         /// <summary>
         /// The identity matrix.
         /// </summary>
@@ -284,7 +284,7 @@ namespace OpenTK
         /// Gets or sets the value at row 4, column 4 of this instance.
         /// </summary>
         public float M44 { get { return Row3.W; } set { Row3.W = value; } }
-        
+
         /// <summary>
         /// Gets or sets the values along the main diagonal of the matrix.
         /// </summary>
@@ -525,9 +525,9 @@ namespace OpenTK
         #endregion
 
         #region Static
-        
+
         #region CreateFromAxisAngle
-        
+
         /// <summary>
         /// Build a rotation matrix from the specified axis/angle rotation.
         /// </summary>
@@ -571,7 +571,7 @@ namespace OpenTK
             result.Row2.W = 0;
             result.Row3 = Vector4.UnitW;
         }
-        
+
         /// <summary>
         /// Build a rotation matrix from the specified axis/angle rotation.
         /// </summary>
@@ -584,7 +584,7 @@ namespace OpenTK
             CreateFromAxisAngle(axis, angle, out result);
             return result;
         }
-        
+
         #endregion
 
         #region CreateFromQuaternion
@@ -927,9 +927,9 @@ namespace OpenTK
         }
 
         #endregion
-        
+
         #region CreatePerspectiveFieldOfView
-        
+
         /// <summary>
         /// Creates a perspective projection matrix.
         /// </summary>
@@ -958,7 +958,7 @@ namespace OpenTK
                 throw new ArgumentOutOfRangeException("zNear");
             if (zFar <= 0)
                 throw new ArgumentOutOfRangeException("zFar");
-            
+
             float yMax = zNear * (float)System.Math.Tan(0.5f * fovy);
             float yMin = -yMax;
             float xMin = yMin * aspect;
@@ -966,7 +966,7 @@ namespace OpenTK
 
             CreatePerspectiveOffCenter(xMin, xMax, yMin, yMax, zNear, zFar, out result);
         }
-        
+
         /// <summary>
         /// Creates a perspective projection matrix.
         /// </summary>
@@ -991,11 +991,11 @@ namespace OpenTK
             CreatePerspectiveFieldOfView(fovy, aspect, zNear, zFar, out result);
             return result;
         }
-        
+
         #endregion
-        
+
         #region CreatePerspectiveOffCenter
-        
+
         /// <summary>
         /// Creates an perspective projection matrix.
         /// </summary>
@@ -1022,7 +1022,7 @@ namespace OpenTK
                 throw new ArgumentOutOfRangeException("zFar");
             if (zNear >= zFar)
                 throw new ArgumentOutOfRangeException("zNear");
-            
+
             float x = (2.0f * zNear) / (right - left);
             float y = (2.0f * zNear) / (top - bottom);
             float a = (right + left) / (right - left);
@@ -1047,7 +1047,7 @@ namespace OpenTK
             result.Row3.Z = d;
             result.Row3.W = 0;
         }
-        
+
         /// <summary>
         /// Creates an perspective projection matrix.
         /// </summary>
@@ -1469,9 +1469,9 @@ namespace OpenTK
             int[] pivotIdx = { -1, -1, -1, -1 };
 
             // convert the matrix to an array for easy looping
-            float[,] inverse = {{mat.Row0.X, mat.Row0.Y, mat.Row0.Z, mat.Row0.W}, 
-                                {mat.Row1.X, mat.Row1.Y, mat.Row1.Z, mat.Row1.W}, 
-                                {mat.Row2.X, mat.Row2.Y, mat.Row2.Z, mat.Row2.W}, 
+            float[,] inverse = {{mat.Row0.X, mat.Row0.Y, mat.Row0.Z, mat.Row0.W},
+                                {mat.Row1.X, mat.Row1.Y, mat.Row1.Z, mat.Row1.W},
+                                {mat.Row2.X, mat.Row2.Y, mat.Row2.Z, mat.Row2.W},
                                 {mat.Row3.X, mat.Row3.Y, mat.Row3.Z, mat.Row3.W} };
             int icol = 0;
             int irow = 0;

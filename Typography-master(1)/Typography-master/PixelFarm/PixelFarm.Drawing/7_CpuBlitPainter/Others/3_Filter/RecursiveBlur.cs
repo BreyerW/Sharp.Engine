@@ -29,9 +29,9 @@
 //
 //----------------------------------------------------------------------------
 
-using System;
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit.PixelProcessing;
+using PixelFarm.Drawing;
+using System;
 
 namespace PixelFarm.CpuBlit.Imaging
 {
@@ -389,7 +389,7 @@ namespace PixelFarm.CpuBlit.Imaging
 
         void StackBlurRGBA32(BitmapBlenderBase img, int radius, int ry)
         {
-            int width = img.Width; 
+            int width = img.Width;
             int height = img.Height;
 
             //TODO: review here again

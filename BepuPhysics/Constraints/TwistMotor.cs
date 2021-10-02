@@ -87,7 +87,7 @@ namespace BepuPhysics.Constraints
     public struct TwistMotorFunctions : IConstraintFunctions<TwistMotorPrestepData, TwistMotorProjection, Vector<float>>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Prestep(Bodies bodies, ref TwoBodyReferences bodyReferences, int count, float dt, float inverseDt, ref BodyInertias inertiaA, ref BodyInertias inertiaB, 
+        public void Prestep(Bodies bodies, ref TwoBodyReferences bodyReferences, int count, float dt, float inverseDt, ref BodyInertias inertiaA, ref BodyInertias inertiaB,
             ref TwistMotorPrestepData prestep, out TwistMotorProjection projection)
         {
             bodies.GatherOrientation(ref bodyReferences, count, out var orientationA, out var orientationB);
@@ -105,7 +105,7 @@ namespace BepuPhysics.Constraints
             MotorSettingsWide.ComputeSoftness(prestep.Settings, dt, out var effectiveMassCFMScale, out projection.SoftnessImpulseScale, out projection.MaximumImpulse);
             var effectiveMass = effectiveMassCFMScale / unsoftenedInverseEffectiveMass;
             Vector3Wide.Scale(jacobianA, effectiveMass, out projection.VelocityToImpulseA);
-            
+
             projection.BiasImpulse = prestep.TargetVelocity * effectiveMass;
         }
 

@@ -29,16 +29,15 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using Bool = Boolean;
+using Cursor = IntPtr;
+using Display = IntPtr;
+using Status = ErrorCodes;
+using Time = IntPtr;
+using Window = IntPtr;
 
 namespace OpenTK.Platform.X11
 {
-    using Bool = Boolean;
-    using Cursor = IntPtr;
-    using Display = IntPtr;
-    using Status = ErrorCodes;
-    using Time = IntPtr;
-    using Window = IntPtr;
-
     // Bindings for the XInput2 extension
     class XI
     {
@@ -82,7 +81,7 @@ namespace OpenTK.Platform.X11
 
         [DllImport(lib, EntryPoint = "XISelectEvents")]
         static extern int SelectEvents(IntPtr dpy, Window win, [In] XIEventMask[] masks, int num_masks);
-        
+
         [DllImport(lib, EntryPoint = "XISelectEvents")]
         static extern int SelectEvents(IntPtr dpy, Window win, [In] ref XIEventMask masks, int num_masks);
 

@@ -561,7 +561,7 @@ namespace OpenTK
             Invert(ref mat, out result);
             return result;
         }
-        
+
         #endregion
 
         #region Transpose

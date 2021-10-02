@@ -1,6 +1,7 @@
 ﻿//BSD, 2014-present, WinterDev
 
 using System.IO;
+
 namespace LayoutFarm.WebLexer
 {
 #if DEBUG

@@ -40,6 +40,7 @@ using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;
+
 #endif
 #if HAVE_ADO_NET
 using System.Data.SqlTypes;
@@ -360,7 +361,7 @@ namespace Newtonsoft.Json.Utilities
         }
 #endif
 
-#region TryConvert
+        #region TryConvert
         internal enum ConvertResult
         {
             Success = 0,
@@ -561,9 +562,9 @@ namespace Newtonsoft.Json.Utilities
             value = null;
             return ConvertResult.NoValidConversion;
         }
-#endregion
+        #endregion
 
-#region ConvertOrCast
+        #region ConvertOrCast
         /// <summary>
         /// Converts the value to the specified type. If the value is unable to be converted, the
         /// value is checked whether it assignable to the specified type.
@@ -594,7 +595,7 @@ namespace Newtonsoft.Json.Utilities
 
             return EnsureTypeAssignable(initialValue, ReflectionUtils.GetObjectType(initialValue)!, targetType);
         }
-#endregion
+        #endregion
 
         private static object? EnsureTypeAssignable(object? value, Type initialType, Type targetType)
         {
@@ -624,7 +625,7 @@ namespace Newtonsoft.Json.Utilities
             throw new ArgumentException("Could not cast or convert from {0} to {1}.".FormatWith(CultureInfo.InvariantCulture, initialType?.ToString() ?? "{null}", targetType));
         }
 
-        public static bool VersionTryParse(string input, [NotNullWhen(true)]out Version? result)
+        public static bool VersionTryParse(string input, [NotNullWhen(true)] out Version? result)
         {
 #if HAVE_VERSION_TRY_PARSE
             return Version.TryParse(input, out result);

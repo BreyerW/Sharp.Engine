@@ -10,8 +10,9 @@
 
 
 using PixelFarm.Drawing;
+
 namespace PaintFx.Effects
-{   
+{
     public class HueAndSatRenderer : EffectRendererBase
     {
         private int hue;

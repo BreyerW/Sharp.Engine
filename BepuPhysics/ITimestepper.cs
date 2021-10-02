@@ -29,7 +29,7 @@ namespace BepuPhysics
         /// Callbacks to execute immediately before collision detection executes.
         /// </summary>
         event TimestepperStageHandler BeforeCollisionDetection;
-        
+
         /// <summary>
         /// Callbacks to execute after collision detection completes.
         /// </summary>

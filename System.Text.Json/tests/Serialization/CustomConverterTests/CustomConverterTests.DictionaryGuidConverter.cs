@@ -80,7 +80,7 @@ namespace System.Text.Json.Serialization.Tests
                         string propertyName = reader.GetString();
 
                         // Parse guid in "D" format: 00000000-0000-0000-0000-00000000000
-                        if (!Guid.TryParseExact(propertyName, format:"D", out Guid result))
+                        if (!Guid.TryParseExact(propertyName, format: "D", out Guid result))
                         {
                             throw new JsonException($"Unable to convert \"{propertyName}\" to a Guid.");
                         }

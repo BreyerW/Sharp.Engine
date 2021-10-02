@@ -2,6 +2,7 @@
 //ref:  adapt from snippetsfor.net/CSharp/StackBlur
 
 using System;
+
 namespace PixelFarm.CpuBlit.Imaging
 {
     public static class StackBlurARGB

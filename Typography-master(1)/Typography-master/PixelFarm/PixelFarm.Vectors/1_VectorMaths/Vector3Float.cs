@@ -22,6 +22,7 @@ SOFTWARE.
 
 using System;
 using System.Runtime.InteropServices;
+
 namespace PixelFarm.VectorMath
 {
     /// <summary>

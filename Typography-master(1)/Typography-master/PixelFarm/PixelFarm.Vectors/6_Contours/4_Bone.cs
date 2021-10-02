@@ -1,10 +1,9 @@
 ﻿//MIT, 2017-present, WinterDev
-using System;
 using PixelFarm.VectorMath;
+using System;
 
 namespace PixelFarm.Contours
 {
-
     /// <summary>
     /// link between  (GlyphBoneJoint and Joint) or (GlyphBoneJoint and tipEdge)
     /// </summary>

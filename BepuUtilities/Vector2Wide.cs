@@ -21,7 +21,7 @@ namespace BepuUtilities
         {
             result.X = a.X - b.X;
             result.Y = a.Y - b.Y;
-        }                  
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Dot(in Vector2Wide a, in Vector2Wide b, out Vector<float> result)
@@ -142,6 +142,6 @@ namespace BepuUtilities
         {
             return $"<{X}, {Y}>";
         }
-  
+
     }
 }

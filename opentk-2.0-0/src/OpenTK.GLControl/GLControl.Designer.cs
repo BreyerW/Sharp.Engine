@@ -1,4 +1,5 @@
-﻿namespace OpenTK
+﻿
+namespace OpenTK
 {
     partial class GLControl
     {

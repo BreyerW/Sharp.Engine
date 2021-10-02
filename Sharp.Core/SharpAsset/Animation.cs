@@ -2,11 +2,11 @@
 
 namespace Sharp
 {
-	public class Animation
-	{
-		public Animation ()
-		{
-		}
-	}
+    public class Animation
+    {
+        public Animation()
+        {
+        }
+    }
 }
 

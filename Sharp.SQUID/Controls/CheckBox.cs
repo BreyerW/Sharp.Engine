@@ -40,7 +40,7 @@ namespace Squid
             {
                 _text = value;
 
-                if(Label != null)
+                if (Label != null)
                     Label.Text = value;
             }
         }
@@ -56,7 +56,7 @@ namespace Squid
             {
                 _checked = value;
 
-                if(Button != null)
+                if (Button != null)
                     Button.IsChecked = value;
             }
         }
@@ -97,7 +97,7 @@ namespace Squid
             if (CheckedChanged != null)
                 CheckedChanged(this);
         }
-     
+
         protected override void OnStateChanged()
         {
             base.OnStateChanged();

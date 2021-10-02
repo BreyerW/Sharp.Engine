@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 #if !BUILDING_INBOX_LIBRARY
 using System.Runtime.InteropServices;
+
 #endif
 
 namespace System.Text.Json

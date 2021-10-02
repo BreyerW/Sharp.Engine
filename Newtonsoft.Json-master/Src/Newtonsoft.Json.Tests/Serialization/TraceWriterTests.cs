@@ -30,10 +30,11 @@ using System.Linq;
 #endif
 #if !(NET20 || NET35 || NET40 || PORTABLE40 || PORTABLE) || DNXCORE50
 using System.Threading.Tasks;
+
 #endif
 
 namespace Newtonsoft.Json.Tests.Serialization
-{ 
+{
     public class Staff
     {
         public string Name { get; set; }

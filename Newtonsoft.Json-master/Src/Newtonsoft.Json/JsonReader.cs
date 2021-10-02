@@ -515,44 +515,44 @@ namespace Newtonsoft.Json
             switch (t)
             {
                 case JsonToken.StartObject:
-                {
-                    ReadIntoWrappedTypeObject();
-
-                    byte[]? data = ReadAsBytes();
-                    ReaderReadAndAssert();
-
-                    if (TokenType != JsonToken.EndObject)
                     {
-                        throw JsonReaderException.Create(this, "Error reading bytes. Unexpected token: {0}.".FormatWith(CultureInfo.InvariantCulture, TokenType));
-                    }
+                        ReadIntoWrappedTypeObject();
 
-                    SetToken(JsonToken.Bytes, data, false);
-                    return data;
-                }
+                        byte[]? data = ReadAsBytes();
+                        ReaderReadAndAssert();
+
+                        if (TokenType != JsonToken.EndObject)
+                        {
+                            throw JsonReaderException.Create(this, "Error reading bytes. Unexpected token: {0}.".FormatWith(CultureInfo.InvariantCulture, TokenType));
+                        }
+
+                        SetToken(JsonToken.Bytes, data, false);
+                        return data;
+                    }
                 case JsonToken.String:
-                {
-                    // attempt to convert possible base 64 or GUID string to bytes
-                    // GUID has to have format 00000000-0000-0000-0000-000000000000
-                    string s = (string)Value!;
-
-                    byte[] data;
-
-                    if (s.Length == 0)
                     {
-                        data = CollectionUtils.ArrayEmpty<byte>();
-                    }
-                    else if (ConvertUtils.TryConvertGuid(s, out Guid g1))
-                    {
-                        data = g1.ToByteArray();
-                    }
-                    else
-                    {
-                        data = Convert.FromBase64String(s);
-                    }
+                        // attempt to convert possible base 64 or GUID string to bytes
+                        // GUID has to have format 00000000-0000-0000-0000-000000000000
+                        string s = (string)Value!;
 
-                    SetToken(JsonToken.Bytes, data, false);
-                    return data;
-                }
+                        byte[] data;
+
+                        if (s.Length == 0)
+                        {
+                            data = CollectionUtils.ArrayEmpty<byte>();
+                        }
+                        else if (ConvertUtils.TryConvertGuid(s, out Guid g1))
+                        {
+                            data = g1.ToByteArray();
+                        }
+                        else
+                        {
+                            data = Convert.FromBase64String(s);
+                        }
+
+                        SetToken(JsonToken.Bytes, data, false);
+                        return data;
+                    }
                 case JsonToken.None:
                 case JsonToken.Null:
                 case JsonToken.EndArray:
@@ -750,7 +750,7 @@ namespace Newtonsoft.Json
                 case JsonToken.Integer:
                 case JsonToken.Float:
                     object v = Value!;
-                    
+
                     if (v is decimal d)
                     {
                         return d;

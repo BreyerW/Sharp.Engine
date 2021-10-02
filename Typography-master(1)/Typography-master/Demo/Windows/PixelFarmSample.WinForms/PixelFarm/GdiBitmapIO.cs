@@ -1,8 +1,9 @@
 ﻿//Apache2, 2014-present, WinterDev
 
-using System;
 using PixelFarm.CpuBlit;
+using System;
 using System.IO;
+
 namespace PixelFarm.Drawing.WinGdi
 {
     public sealed class GdiBitmapIO : MemBitmapIO

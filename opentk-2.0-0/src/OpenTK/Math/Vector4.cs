@@ -182,18 +182,22 @@ namespace OpenTK
         /// <summary>
         /// Gets or sets the value at the index of the Vector.
         /// </summary>
-        public float this[int index] {
-            get{
-                if(index == 0) return X;
-                else if(index == 1) return Y;
-                else if(index == 2) return Z;
-                else if(index == 3) return W;
+        public float this[int index]
+        {
+            get
+            {
+                if (index == 0) return X;
+                else if (index == 1) return Y;
+                else if (index == 2) return Z;
+                else if (index == 3) return W;
                 throw new IndexOutOfRangeException("You tried to access this vector at index: " + index);
-            } set{
-                if(index == 0) X = value;
-                else if(index == 1) Y = value;
-                else if(index == 2) Z = value;
-                else if(index == 3) W = value;
+            }
+            set
+            {
+                if (index == 0) X = value;
+                else if (index == 1) Y = value;
+                else if (index == 2) Z = value;
+                else if (index == 3) W = value;
                 else throw new IndexOutOfRangeException("You tried to set this vector at index: " + index);
             }
         }
@@ -1514,7 +1518,7 @@ namespace OpenTK
             vec.W *= scale;
             return vec;
         }
-        
+
         /// <summary>
         /// Component-wise multiplication between the specified instance by a scale vector.
         /// </summary>

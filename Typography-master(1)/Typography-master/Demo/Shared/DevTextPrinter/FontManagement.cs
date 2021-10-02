@@ -6,8 +6,6 @@ using Typography.OpenFont;
 
 namespace Typography.TextServices
 {
-
-
     public class InstalledFont
     {
         internal InstalledFont(string fontName,

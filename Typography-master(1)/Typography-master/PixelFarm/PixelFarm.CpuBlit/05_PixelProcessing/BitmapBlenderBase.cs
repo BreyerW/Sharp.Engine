@@ -18,13 +18,12 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
-using System;
 using PixelFarm.Drawing;
+using System;
 
 
 namespace PixelFarm.CpuBlit.PixelProcessing
 {
-
     /// <summary>
     /// base class for access(read/write/blend) pixel buffer
     /// </summary>
@@ -539,7 +538,7 @@ namespace PixelFarm.CpuBlit.PixelProcessing
             }
 #endif
         }
-        
+
         public void BlendSolidHSpan(int x, int y, int len, Color sourceColor, byte[] covers, int coversIndex)
         {
             int colorAlpha = sourceColor.alpha;

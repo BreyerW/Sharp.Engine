@@ -7,22 +7,20 @@
  */
 #endregion
 
-using System;
-
 using ObjCRuntime;
 using OpenGLES;
-
 using OpenTK.Graphics;
+using System;
 
-namespace OpenTK.Platform.iPhoneOS {
-
+namespace OpenTK.Platform.iPhoneOS
+{
     class iPhoneOSGraphicsContext : EmbeddedGraphicsContext
     {
-        public EAGLContext EAGLContext {get; private set;}
+        public EAGLContext EAGLContext { get; private set; }
 
         internal iPhoneOSGraphicsContext(ContextHandle h)
         {
-            EAGLContext = (EAGLContext) Runtime.GetNSObject(h.Handle);
+            EAGLContext = (EAGLContext)Runtime.GetNSObject(h.Handle);
         }
 
         internal iPhoneOSGraphicsContext(ContextHandle handle, IWindowInfo window, IGraphicsContext sharedContext, int major, int minor, GraphicsContextFlags flags)
@@ -39,15 +37,18 @@ namespace OpenTK.Platform.iPhoneOS {
             else if (major == 3 && minor == 0)
                 version = EAGLRenderingAPI.OpenGLES3;
             else
-                throw new ArgumentException (string.Format("Unsupported GLES version {0}.{1}.", major, minor));
+                throw new ArgumentException(string.Format("Unsupported GLES version {0}.{1}.", major, minor));
 
-            if (handle.Handle == IntPtr.Zero) {
+            if (handle.Handle == IntPtr.Zero)
+            {
                 EAGLContext = shared != null && shared.EAGLContext != null
                     ? new EAGLContext(version, shared.EAGLContext.ShareGroup)
                     : new EAGLContext(version);
                 Handle = new ContextHandle(EAGLContext.Handle);
-            } else {
-                EAGLContext = (EAGLContext) Runtime.GetNSObject (handle.Handle);
+            }
+            else
+            {
+                EAGLContext = (EAGLContext)Runtime.GetNSObject(handle.Handle);
                 Handle = handle;
             }
         }
@@ -66,7 +67,7 @@ namespace OpenTK.Platform.iPhoneOS {
             else if (major == 3 && minor == 0)
                 version = EAGLRenderingAPI.OpenGLES3;
             else
-                throw new ArgumentException (string.Format("Unsupported GLES version {0}.{1}.", major, minor));
+                throw new ArgumentException(string.Format("Unsupported GLES version {0}.{1}.", major, minor));
 
             EAGLContext = shared != null && shared.EAGLContext != null
                 ? new EAGLContext(version, shared.EAGLContext.ShareGroup)
@@ -76,8 +77,8 @@ namespace OpenTK.Platform.iPhoneOS {
 
         public override void SwapBuffers()
         {
-            if (!EAGLContext.PresentRenderBuffer((uint) OpenTK.Graphics.ES11.All.RenderbufferOes))
-                throw new InvalidOperationException ("EAGLContext.PresentRenderbuffer failed.");
+            if (!EAGLContext.PresentRenderBuffer((uint)OpenTK.Graphics.ES11.All.RenderbufferOes))
+                throw new InvalidOperationException("EAGLContext.PresentRenderbuffer failed.");
         }
 
         public override void MakeCurrent(IWindowInfo window)
@@ -88,7 +89,7 @@ namespace OpenTK.Platform.iPhoneOS {
 
         public override bool IsCurrent
         {
-            get {return EAGLContext.CurrentContext == EAGLContext;}
+            get { return EAGLContext.CurrentContext == EAGLContext; }
         }
 
         public override int SwapInterval
@@ -102,7 +103,7 @@ namespace OpenTK.Platform.iPhoneOS {
             return IntPtr.Zero;
         }
 
-        public GraphicsMode GraphicsMode {get; private set;}
+        public GraphicsMode GraphicsMode { get; private set; }
 
         protected override void Dispose(bool disposing)
         {

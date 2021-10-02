@@ -343,13 +343,13 @@ namespace OpenTK
             return new Vector4(left).Add(right);
         }
 
-        #endregion
+    #endregion
 
     #region --- Subtraction ---
 
 
 
-        #endregion
+    #endregion
 
     #region --- Cross ---
 
@@ -363,9 +363,9 @@ namespace OpenTK
             return new Vector3(left).Cross(right);
         }
 
-        #endregion
+    #endregion
 
-        #endregion
+    #endregion
     }
 #endif
 }

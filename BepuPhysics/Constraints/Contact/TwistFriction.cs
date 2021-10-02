@@ -69,7 +69,7 @@ namespace BepuPhysics.Constraints.Contact
             Vector3Wide.Dot(wsvA.Angular, angularJacobianA, out var csvA);
             Vector3Wide.Dot(wsvB.Angular, angularJacobianA, out var negatedCSVB);
             var negatedCSI = (csvA - negatedCSVB) * projection.EffectiveMass; //Since there is no bias or softness to give us the negative, we just do it when we apply to the accumulated impulse.
-            
+
             var previousAccumulated = accumulatedImpulse;
             accumulatedImpulse = Vector.Min(maximumImpulse, Vector.Max(-maximumImpulse, accumulatedImpulse - negatedCSI));
 

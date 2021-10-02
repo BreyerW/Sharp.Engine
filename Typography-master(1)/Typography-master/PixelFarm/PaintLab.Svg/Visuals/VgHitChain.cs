@@ -1,8 +1,8 @@
 ﻿//MIT, 2014-present, WinterDev
 
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.Drawing;
 
 namespace PaintLab.Svg
 {

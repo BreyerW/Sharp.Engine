@@ -328,7 +328,7 @@ namespace System.Text.Json.Serialization.Tests
             int length = ListLength * depthFactor;
             List<Order>[] orders = new List<Order>[length];
             orders[0] = PopulateLargeObject(1);
-            for (int i = 1; i < length; i++ )
+            for (int i = 1; i < length; i++)
             {
                 orders[i] = PopulateLargeObject(1);
                 orders[i - 1][0].RelatedOrder = orders[i];
@@ -389,7 +389,7 @@ namespace System.Text.Json.Serialization.Tests
             // Create a cycle.
             orders[length - 1][0].RelatedOrder = orders[0];
 
-            Assert.Throws<JsonException> (() => JsonSerializer.Serialize(orders[0], options));
+            Assert.Throws<JsonException>(() => JsonSerializer.Serialize(orders[0], options));
 
             using (var memoryStream = new MemoryStream())
             {
@@ -430,12 +430,12 @@ namespace System.Text.Json.Serialization.Tests
 
                 List<object> deserializedList = JsonSerializer.Deserialize<List<object>>(json, options);
                 Assert.Equal(stringOfThresholdSize, ((JsonElement)deserializedList[0]).GetString());
-                JsonElement obj = (JsonElement)deserializedList[1];             
+                JsonElement obj = (JsonElement)deserializedList[1];
                 Assert.Equal(stringOfThresholdSize, obj.GetProperty("StringProperty").GetString());
             }
         }
 
-        private class FlushThresholdTestClass 
+        private class FlushThresholdTestClass
         {
             public string StringProperty { get; set; }
             public List<int> ListOfInts { get; set; }
@@ -623,8 +623,8 @@ namespace System.Text.Json.Serialization.Tests
                             Stars = j + k,
                             Title = $"Title {i}{j}{k}",
                             Comment = "",
-                            Images = new List<Uri>{ new Uri($"http://dotnet.test/link/images/image/{k}"), new Uri($"http://dotnet.test/link/images/image/{j}")},
-                            ReviewId = i + j +k
+                            Images = new List<Uri> { new Uri($"http://dotnet.test/link/images/image/{k}"), new Uri($"http://dotnet.test/link/images/image/{j}") },
+                            ReviewId = i + j + k
                         };
                         reviews.Add(review);
                     }

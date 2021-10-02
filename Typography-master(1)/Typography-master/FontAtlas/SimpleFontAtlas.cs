@@ -8,7 +8,6 @@ using Typography.Rendering;
 
 namespace PixelFarm.Drawing.Fonts
 {
-
     public class SimpleFontAtlas
     {
 

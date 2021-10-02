@@ -39,7 +39,7 @@ namespace OpenTK
         public static void Flush() { }
     }
 
-    #if MINIMAL
+#if MINIMAL
 
     // System.Diagnostics.Stopwatch
     sealed class Stopwatch
@@ -85,7 +85,7 @@ namespace OpenTK
 #endif
     }
 
-    #endif
+#endif
 
     // System.Xml.XmlIgnoreAttribute
     class XmlIgnoreAttribute : Attribute
@@ -106,7 +106,7 @@ namespace OpenTK
         Advanced = 2,
     }
 
-    #region RegistryKey
+#region RegistryKey
 
     class RegistryKey
     {
@@ -121,28 +121,28 @@ namespace OpenTK
         }
     }
 
-    #endregion
+#endregion
 
-    #region Registry
+#region Registry
 
     class Registry
     {
         public static readonly RegistryKey LocalMachine = new RegistryKey();
     }
 
-    #endregion
+#endregion
 
-    #region PointF
+#region PointF
 
     public struct PointF : IEquatable<PointF>
     {
-        #region Fields
+#region Fields
 
         float x, y;
 
-        #endregion
+#endregion
 
-        #region Constructors
+#region Constructors
 
         /// <summary>
         /// Constructs a new PointF instance.
@@ -156,9 +156,9 @@ namespace OpenTK
             Y = y;
         }
 
-        #endregion
+#endregion
 
-        #region Public Members
+#region Public Members
 
         /// <summary>
         /// Gets a <see cref="System.Boolean"/> that indicates whether this instance is empty or zero.
@@ -272,9 +272,9 @@ namespace OpenTK
             return String.Format("{{{0}, {1}}}", X, Y);
         }
 
-        #endregion
+#endregion
 
-        #region IEquatable<PointF> Members
+#region IEquatable<PointF> Members
 
         /// <summary>
         /// Indicates whether this instance is equal to the specified PointF.
@@ -286,22 +286,22 @@ namespace OpenTK
             return X == other.X && Y == other.Y;
         }
 
-        #endregion
+#endregion
     }
 
-    #endregion
+#endregion
 
-    #region SizeF
+#region SizeF
 
     public struct SizeF : IEquatable<SizeF>
     {
-        #region Fields
+#region Fields
 
         float width, height;
 
-        #endregion
+#endregion
 
-        #region Constructors
+#region Constructors
 
         /// <summary>
         /// Constructs a new SizeF instance.
@@ -315,9 +315,9 @@ namespace OpenTK
             Height = height;
         }
 
-        #endregion
+#endregion
 
-        #region Public Members
+#region Public Members
 
         /// <summary>
         /// Gets or sets the width of this instance.
@@ -418,9 +418,9 @@ namespace OpenTK
             return String.Format("{{{0}, {1}}}", Width, Height);
         }
 
-        #endregion
+#endregion
 
-        #region IEquatable<SizeF> Members
+#region IEquatable<SizeF> Members
 
         /// <summary>
         /// Indicates whether this instance is equal to the specified SizeF.
@@ -432,23 +432,23 @@ namespace OpenTK
             return Width == other.Width && Height == other.Height;
         }
 
-        #endregion
+#endregion
     }
 
-    #endregion
+#endregion
 
-    #region RectangleF
+#region RectangleF
 
     public struct RectangleF : IEquatable<RectangleF>
     {
-        #region Fields
+#region Fields
 
         PointF location;
         SizeF size;
 
-        #endregion
+#endregion
 
-        #region Constructors
+#region Constructors
 
         /// <summary>
         /// Constructs a new RectangleF instance.
@@ -473,9 +473,9 @@ namespace OpenTK
             : this(new PointF(x, y), new SizeF(width, height))
         { }
 
-        #endregion
+#endregion
 
-        #region Public Members
+#region Public Members
 
         /// <summary>
         /// Gets or sets the x coordinate of the RectangleF.
@@ -663,9 +663,9 @@ namespace OpenTK
             return String.Format("{{{0}-{1}}}", Location, Location + Size);
         }
 
-        #endregion
+#endregion
 
-        #region IEquatable<RectangleF> Members
+#region IEquatable<RectangleF> Members
 
         /// <summary>
         /// Indicates whether this instance is equal to the specified RectangleF.
@@ -678,12 +678,12 @@ namespace OpenTK
                 Size.Equals(other.Size);
         }
 
-        #endregion
+#endregion
     }
 
-    #endregion
+#endregion
 
-    #region Icon
+#region Icon
 
     public sealed class Icon : IDisposable
     {
@@ -716,9 +716,9 @@ namespace OpenTK
         }
     }
 
-    #endregion
+#endregion
 
-    #region Image
+#region Image
 
     public abstract class Image : IDisposable
     {
@@ -729,9 +729,9 @@ namespace OpenTK
         }
     }
 
-    #endregion
+#endregion
 
-    #region Bitmap
+#region Bitmap
 
     public sealed class Bitmap : Image
     {
@@ -782,9 +782,9 @@ namespace OpenTK
         }
     }
 
-    #endregion
+#endregion
 
-    #region Color
+#region Color
 
     /// <summary>
     /// Represents a color with 4 8bit components (R, G, B, A).
@@ -792,7 +792,7 @@ namespace OpenTK
     [Serializable]
     public struct Color : IEquatable<Color>
     {
-        #region Fields
+#region Fields
 
         /// <summary>
         /// The red component of this Color structure.
@@ -814,9 +814,9 @@ namespace OpenTK
         /// </summary>
         public byte A;
 
-        #endregion
+#endregion
 
-        #region Constructors
+#region Constructors
 
         /// <summary>
         /// Constructs a new Color structure from the specified components.
@@ -833,9 +833,9 @@ namespace OpenTK
             A = (byte)a;
         }
 
-        #endregion
+#endregion
 
-        #region Public Members
+#region Public Members
 
         /// <summary>
         /// Converts this color to an integer representation with 8 bits per channel.
@@ -1613,11 +1613,11 @@ namespace OpenTK
         /// </summary>
         public static Color YellowGreen { get { return new Color(154, 205, 50, 255); } }
 
-        #endregion
+#endregion
 
-        #endregion
+#endregion
 
-        #region IEquatable<Color> Members
+#region IEquatable<Color> Members
 
         /// <summary>
         /// Compares whether this Color structure is equal to the specified Color.
@@ -1633,7 +1633,7 @@ namespace OpenTK
                 this.A == other.A;
         }
 
-        #endregion
+#endregion
 
         public static Color FromArgb(int a, int r, int g, int b)
         {
@@ -1641,9 +1641,9 @@ namespace OpenTK
         }
     }
 
-    #endregion
+#endregion
 
-    #region BitmapData
+#region BitmapData
 
     sealed class BitmapData
     {
@@ -1660,9 +1660,9 @@ namespace OpenTK
         public int Stride { get; private set; }
     }
 
-    #endregion
+#endregion
 
-    #region ImageLockMode
+#region ImageLockMode
 
     enum ImageLockMode
     {
@@ -1672,9 +1672,9 @@ namespace OpenTK
         UserInputBuffer
     }
 
-    #endregion
+#endregion
 
-    #region PixelFormat
+#region PixelFormat
 
     enum PixelFormat
     {
@@ -1685,22 +1685,22 @@ namespace OpenTK
         Png
     }
 
-    #endregion
+#endregion
 
-    #region SystemEvents
+#region SystemEvents
 
     sealed class SystemEvents
     {
         public static event EventHandler DisplaySettingsChanged;
     }
 
-    #endregion
+#endregion
 }
 
 // Need a different namespace to avoid clash with OpenTK.Graphics.
 namespace OpenTK.Minimal
 {
-    #region Graphics
+#region Graphics
 
     sealed class Graphics : IDisposable
     {
@@ -1717,7 +1717,7 @@ namespace OpenTK.Minimal
         }
     }
 
-    #endregion
+#endregion
 }
 
 

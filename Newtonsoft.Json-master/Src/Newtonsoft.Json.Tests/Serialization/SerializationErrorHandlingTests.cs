@@ -354,7 +354,7 @@ namespace Newtonsoft.Json.Tests.Serialization
 
             JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings
             {
-                Error = delegate(object sender, ErrorEventArgs args)
+                Error = delegate (object sender, ErrorEventArgs args)
                 {
                     errors.Add(args.ErrorContext.Path + " - " + args.ErrorContext.Member + " - " + args.ErrorContext.Error.Message);
                     args.ErrorContext.Handled = true;
@@ -470,7 +470,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             try
             {
                 JsonSerializer serializer = new JsonSerializer();
-                serializer.Error += delegate(object sender, ErrorEventArgs args)
+                serializer.Error += delegate (object sender, ErrorEventArgs args)
                 {
                     // only log an error once
                     if (args.CurrentObject == args.ErrorContext.OriginalObject)
@@ -499,7 +499,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             List<string> errors = new List<string>();
             JsonSerializer serializer = new JsonSerializer();
             serializer.MetadataPropertyHandling = MetadataPropertyHandling.Default;
-            serializer.Error += delegate(object sender, ErrorEventArgs args)
+            serializer.Error += delegate (object sender, ErrorEventArgs args)
             {
                 errors.Add(args.ErrorContext.Path + " - " + args.ErrorContext.Member + " - " + args.ErrorContext.Error.Message);
                 args.ErrorContext.Handled = true;
@@ -519,7 +519,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             List<string> errors = new List<string>();
 
             JsonSerializer serializer = new JsonSerializer();
-            serializer.Error += delegate(object sender, ErrorEventArgs args)
+            serializer.Error += delegate (object sender, ErrorEventArgs args)
             {
                 errors.Add(args.ErrorContext.Path + " - " + args.ErrorContext.Member + " - " + args.ErrorContext.Error.Message);
                 args.ErrorContext.Handled = true;
@@ -540,7 +540,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             List<string> errors = new List<string>();
 
             JsonSerializer serializer = new JsonSerializer();
-            serializer.Error += delegate(object sender, ErrorEventArgs args)
+            serializer.Error += delegate (object sender, ErrorEventArgs args)
             {
                 errors.Add(args.ErrorContext.Path + " - " + args.ErrorContext.Member + " - " + args.ErrorContext.Error.Message);
                 args.ErrorContext.Handled = true;
@@ -1149,7 +1149,7 @@ namespace Newtonsoft.Json.Tests.Serialization
         {
         }
     }
-    
+
     /// <summary>
     /// A dictionary that ignores deserialization errors and excludes bad items
     /// </summary>

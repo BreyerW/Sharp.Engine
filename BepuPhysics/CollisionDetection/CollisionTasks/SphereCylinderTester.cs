@@ -17,7 +17,7 @@ namespace BepuPhysics.CollisionDetection.CollisionTasks
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ComputeSphereToClosest(in CylinderWide b, in Vector3Wide offsetB, in Matrix3x3Wide orientationMatrixB,
-            out Vector3Wide cylinderLocalOffsetA, out Vector<int> horizontalClampRequired, out Vector<float> horizontalOffsetLength, out Vector<float> inverseHorizontalOffsetLength, 
+            out Vector3Wide cylinderLocalOffsetA, out Vector<int> horizontalClampRequired, out Vector<float> horizontalOffsetLength, out Vector<float> inverseHorizontalOffsetLength,
             out Vector3Wide sphereToClosestLocalB, out Vector3Wide sphereToClosest)
         {
             //Clamp the sphere position to the cylinder's volume.
@@ -40,8 +40,8 @@ namespace BepuPhysics.CollisionDetection.CollisionTasks
         public void Test(ref SphereWide a, ref CylinderWide b, ref Vector<float> speculativeMargin, ref Vector3Wide offsetB, ref QuaternionWide orientationB, int pairCount, out Convex1ContactManifoldWide manifold)
         {
             Matrix3x3Wide.CreateFromQuaternion(orientationB, out var orientationMatrixB);
-            ComputeSphereToClosest(b, offsetB, orientationMatrixB, 
-                out var cylinderLocalOffsetA, out var horizontalClampRequired, out var horizontalOffsetLength, out var inverseHorizontalOffsetLength, 
+            ComputeSphereToClosest(b, offsetB, orientationMatrixB,
+                out var cylinderLocalOffsetA, out var horizontalClampRequired, out var horizontalOffsetLength, out var inverseHorizontalOffsetLength,
                 out var sphereToContactLocalB, out manifold.OffsetA);
 
             //If the sphere center is inside the cylinder, then we must compute the fastest way out of the cylinder.

@@ -1,17 +1,14 @@
 ﻿//MIT, 2014-present, WinterDev
 
+using LayoutFarm.WebDom;
+using PixelFarm.CpuBlit;
+using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
 
-using PixelFarm.Drawing;
-using PixelFarm.CpuBlit;
-using PixelFarm.CpuBlit.VertexProcessing;
-using LayoutFarm.WebDom;
-
 namespace PaintLab.Svg
 {
-
-
     /// <summary>
     /// vector graphics (vg) document builder
     /// </summary>
@@ -861,8 +858,8 @@ namespace PaintLab.Svg
                         ConvertToPx(rectSpec.CornerRadiusX, ref a),
                         ConvertToPx(rectSpec.CornerRadiusY, ref a));
 
-                    rect.VxsPath = roundRect.MakeVxs(v1).CreateTrim(); 
-                } 
+                    rect.VxsPath = roundRect.MakeVxs(v1).CreateTrim();
+                }
             }
             else
             {

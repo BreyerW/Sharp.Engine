@@ -257,7 +257,7 @@ namespace System.Text.Json.Serialization.Tests
             // Check that we write all.
             Assert.Equal(@"{""myInt"":1,""myInt"":2}", json);
         }
-        
+
         [Fact]
         public static void CamelCaseSerialize_ApplyDictionaryKeyPolicy()
         {
@@ -266,7 +266,7 @@ namespace System.Text.Json.Serialization.Tests
             {
                 DictionaryKeyPolicy = JsonNamingPolicy.CamelCase
             };
-            
+
             var obj = new Dictionary<string, object>();
             obj["KeyDict"] = new Dictionary<string, object>()
             {
@@ -275,15 +275,15 @@ namespace System.Text.Json.Serialization.Tests
                 { "KeyBool", true }
             };
             obj["KeyList"] = new List<int>() { 1, 2, 3 };
-            
+
             var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions()
             {
                 DictionaryKeyPolicy = JsonNamingPolicy.CamelCase
             });
-            
+
             Assert.Equal(JsonCamel, json);
         }
-        
+
         [Fact]
         public static void SerializationWithJsonExtensionDataAttribute_IgoneDictionaryKeyPolicy()
         {
@@ -307,10 +307,10 @@ namespace System.Text.Json.Serialization.Tests
 
         private class ClassWithExtensionDataProperty
         {
-           [JsonExtensionData]
+            [JsonExtensionData]
             public Dictionary<string, object> Data { get; set; }
         }
-        
+
         [Fact]
         public static void CamelCaseSerialize_ForTypedDictionary_ApplyDictionaryKeyPolicy()
         {
@@ -334,7 +334,7 @@ namespace System.Text.Json.Serialization.Tests
             public bool isValid { get; set; }
             public List<int> Values { get; set; }
         }
-        
+
         private static CustomClass CreateCustomObject()
         {
             return new CustomClass { Name = "text", Number = 1000, isValid = true, Values = new List<int>() { 1, 2, 3 } };
@@ -362,8 +362,8 @@ namespace System.Text.Json.Serialization.Tests
 
         private class TestClassWithDictionary
         {
-           public Dictionary<string, CustomClass> Data { get; set; }
-		}
+            public Dictionary<string, CustomClass> Data { get; set; }
+        }
 
         [Fact]
         public static void CamelCaseSerialize_ForClassWithDictionaryProperty_ApplyDictionaryKeyPolicy()

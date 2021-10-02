@@ -1,4 +1,5 @@
-﻿namespace Test_WinForm_TessGlyph
+﻿
+namespace Test_WinForm_TessGlyph
 {
     partial class FormTess
     {

@@ -37,7 +37,7 @@ namespace BepuPhysics.Constraints
         }
 
         public Type TypeProcessorType => typeof(AngularAxisMotorTypeProcessor);
-        
+
         public void ApplyDescription(ref TypeBatch batch, int bundleIndex, int innerIndex)
         {
             ConstraintChecker.AssertUnitLength(LocalAxisA, nameof(AngularAxisMotor), nameof(LocalAxisA));

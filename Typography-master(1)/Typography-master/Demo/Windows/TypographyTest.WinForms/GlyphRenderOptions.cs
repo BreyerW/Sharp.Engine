@@ -1,9 +1,9 @@
 ﻿//MIT, 2017-present, WinterDev
 using System;
 using Typography.Contours;
+
 namespace TypographyTest
 {
-
     public class GlyphRenderOptions
     {
         public event EventHandler UpdateRenderOutput;

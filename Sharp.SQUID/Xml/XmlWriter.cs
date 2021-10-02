@@ -31,8 +31,8 @@ namespace Squid.Xml
 
         public void Flush()
         {
-            foreach(Element element in current.elements)
-                Write(element, 0);           
+            foreach (Element element in current.elements)
+                Write(element, 0);
         }
 
         private void Write(Element element, int level)
@@ -41,7 +41,7 @@ namespace Squid.Xml
                 builder.Append(new string(' ', level * 4));
 
             builder.Append("<" + element.name);
-            
+
             if (element.attributes.Count > 0)
             {
                 builder.Append(" ");
@@ -50,7 +50,7 @@ namespace Squid.Xml
                 foreach (KeyValuePair<string, string> pair in element.attributes)
                 {
                     i++;
-                    if(i == element.attributes.Count)
+                    if (i == element.attributes.Count)
                         builder.Append(pair.Key + "='" + pair.Value + "'");
                     else
                         builder.Append(pair.Key + "='" + pair.Value + "' ");
@@ -69,16 +69,16 @@ namespace Squid.Xml
                 }
                 else
                 {
-                    if(indention)
+                    if (indention)
                         builder.Append("\r\n");
-                    
+
                     foreach (Element child in element.elements)
                         Write(child, level + 1);
                 }
 
                 if (string.IsNullOrEmpty(element.value) && level > 0 && indention)
-                    builder.Append(new string(' ', level * 4)); 
-                
+                    builder.Append(new string(' ', level * 4));
+
                 builder.Append("</" + element.name + ">\r\n");
             }
             else
@@ -92,7 +92,7 @@ namespace Squid.Xml
             Element e = new Element();
             e.name = name;
             e.parent = current;
-         
+
             current.elements.Add(e);
             current = e;
         }

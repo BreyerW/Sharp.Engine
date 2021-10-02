@@ -22,8 +22,9 @@
 // 
 //----------------------------------------------------------------------------
 
-using System;
 using PixelFarm.Drawing;
+using System;
+
 namespace PixelFarm.CpuBlit.FragmentProcessing
 {
     //=======================================================span_gouraud_rgba
@@ -94,10 +95,10 @@ namespace PixelFarm.CpuBlit.FragmentProcessing
         public RGBAGouraudSpanGen() { }
 
 
-       
+
         public void SetColorAndCoords(
-            GouraudVerticeBuilder.CoordAndColor c0, 
-            GouraudVerticeBuilder.CoordAndColor c1, 
+            GouraudVerticeBuilder.CoordAndColor c0,
+            GouraudVerticeBuilder.CoordAndColor c1,
             GouraudVerticeBuilder.CoordAndColor c2)
         {
             _c0 = c0;

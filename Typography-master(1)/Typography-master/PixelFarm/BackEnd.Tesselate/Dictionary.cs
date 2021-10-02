@@ -40,6 +40,7 @@
 */
 
 using DictKey = Tesselate.ActiveRegion;
+
 namespace Tesselate
 {
     class Dictionary

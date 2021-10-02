@@ -29,14 +29,14 @@ using System.Xml.Serialization;
 namespace Newtonsoft.Json.Tests
 {
     #region Contexts
-    
+
     /// <summary>
     /// No Metadata Documentation available.
     /// </summary>
     public partial class DataServicesTestDatabaseEntities : ObjectContext
     {
         #region Constructors
-    
+
         /// <summary>
         /// Initializes a new DataServicesTestDatabaseEntities object using the connection string found in the 'DataServicesTestDatabaseEntities' section of the application configuration file.
         /// </summary>
@@ -44,7 +44,7 @@ namespace Newtonsoft.Json.Tests
         {
             OnContextCreated();
         }
-    
+
         /// <summary>
         /// Initialize a new DataServicesTestDatabaseEntities object.
         /// </summary>
@@ -52,7 +52,7 @@ namespace Newtonsoft.Json.Tests
         {
             OnContextCreated();
         }
-    
+
         /// <summary>
         /// Initialize a new DataServicesTestDatabaseEntities object.
         /// </summary>
@@ -60,17 +60,17 @@ namespace Newtonsoft.Json.Tests
         {
             OnContextCreated();
         }
-    
+
         #endregion
-    
+
         #region Partial Methods
-    
+
         partial void OnContextCreated();
-    
+
         #endregion
-    
+
         #region ObjectSet Properties
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
@@ -86,7 +86,7 @@ namespace Newtonsoft.Json.Tests
             }
         }
         private ObjectSet<File> _File;
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
@@ -106,7 +106,7 @@ namespace Newtonsoft.Json.Tests
         #endregion
 
         #region AddTo Methods
-    
+
         /// <summary>
         /// Deprecated Method for adding a new object to the File EntitySet. Consider using the .Add method of the associated ObjectSet&lt;T&gt; property instead.
         /// </summary>
@@ -114,7 +114,7 @@ namespace Newtonsoft.Json.Tests
         {
             base.AddObject("File", file);
         }
-    
+
         /// <summary>
         /// Deprecated Method for adding a new object to the Folder EntitySet. Consider using the .Add method of the associated ObjectSet&lt;T&gt; property instead.
         /// </summary>
@@ -130,17 +130,17 @@ namespace Newtonsoft.Json.Tests
     #endregion
 
     #region Entities
-    
+
     /// <summary>
     /// No Metadata Documentation available.
     /// </summary>
-    [EdmEntityTypeAttribute(NamespaceName="DataServicesTestDatabaseModel", Name="File")]
+    [EdmEntityTypeAttribute(NamespaceName = "DataServicesTestDatabaseModel", Name = "File")]
     [Serializable()]
-    [DataContractAttribute(IsReference=true)]
+    [DataContractAttribute(IsReference = true)]
     public partial class File : EntityObject
     {
         #region Factory Method
-    
+
         /// <summary>
         /// Create a new File object.
         /// </summary>
@@ -161,11 +161,11 @@ namespace Newtonsoft.Json.Tests
         #endregion
 
         #region Primitive Properties
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty = true, IsNullable = false)]
         [DataMemberAttribute()]
         public global::System.Guid FileId
         {
@@ -188,11 +188,11 @@ namespace Newtonsoft.Json.Tests
         private global::System.Guid _FileId;
         partial void OnFileIdChanging(global::System.Guid value);
         partial void OnFileIdChanged();
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty = false, IsNullable = false)]
         [DataMemberAttribute()]
         public global::System.String Name
         {
@@ -212,11 +212,11 @@ namespace Newtonsoft.Json.Tests
         private global::System.String _Name;
         partial void OnNameChanging(global::System.String value);
         partial void OnNameChanged();
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty = false, IsNullable = false)]
         [DataMemberAttribute()]
         public global::System.String Description
         {
@@ -236,11 +236,11 @@ namespace Newtonsoft.Json.Tests
         private global::System.String _Description;
         partial void OnDescriptionChanging(global::System.String value);
         partial void OnDescriptionChanged();
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty = false, IsNullable = false)]
         [DataMemberAttribute()]
         public global::System.DateTime CreatedDate
         {
@@ -263,9 +263,9 @@ namespace Newtonsoft.Json.Tests
 
         #endregion
 
-    
+
         #region Navigation Properties
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
@@ -307,17 +307,17 @@ namespace Newtonsoft.Json.Tests
         #endregion
 
     }
-    
+
     /// <summary>
     /// No Metadata Documentation available.
     /// </summary>
-    [EdmEntityTypeAttribute(NamespaceName="DataServicesTestDatabaseModel", Name="Folder")]
+    [EdmEntityTypeAttribute(NamespaceName = "DataServicesTestDatabaseModel", Name = "Folder")]
     [Serializable()]
-    [DataContractAttribute(IsReference=true)]
+    [DataContractAttribute(IsReference = true)]
     public partial class Folder : EntityObject
     {
         #region Factory Method
-    
+
         /// <summary>
         /// Create a new Folder object.
         /// </summary>
@@ -338,11 +338,11 @@ namespace Newtonsoft.Json.Tests
         #endregion
 
         #region Primitive Properties
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty = true, IsNullable = false)]
         [DataMemberAttribute()]
         public global::System.Guid FolderId
         {
@@ -365,11 +365,11 @@ namespace Newtonsoft.Json.Tests
         private global::System.Guid _FolderId;
         partial void OnFolderIdChanging(global::System.Guid value);
         partial void OnFolderIdChanged();
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty = false, IsNullable = false)]
         [DataMemberAttribute()]
         public global::System.String Name
         {
@@ -389,11 +389,11 @@ namespace Newtonsoft.Json.Tests
         private global::System.String _Name;
         partial void OnNameChanging(global::System.String value);
         partial void OnNameChanged();
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty = false, IsNullable = false)]
         [DataMemberAttribute()]
         public global::System.String Description
         {
@@ -413,11 +413,11 @@ namespace Newtonsoft.Json.Tests
         private global::System.String _Description;
         partial void OnDescriptionChanging(global::System.String value);
         partial void OnDescriptionChanged();
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty = false, IsNullable = false)]
         [DataMemberAttribute()]
         public global::System.DateTime CreatedDate
         {
@@ -440,9 +440,9 @@ namespace Newtonsoft.Json.Tests
 
         #endregion
 
-    
+
         #region Navigation Properties
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
@@ -464,7 +464,7 @@ namespace Newtonsoft.Json.Tests
                 }
             }
         }
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
@@ -486,7 +486,7 @@ namespace Newtonsoft.Json.Tests
                 }
             }
         }
-    
+
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
@@ -531,7 +531,7 @@ namespace Newtonsoft.Json.Tests
 
     #endregion
 
-    
+
 }
 
 #endif

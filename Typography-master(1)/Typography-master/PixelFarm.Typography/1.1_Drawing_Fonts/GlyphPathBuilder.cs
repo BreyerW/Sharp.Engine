@@ -1,9 +1,8 @@
 ﻿//MIT, 2016-present, WinterDev
 
+using PixelFarm.Contours;
 using System;
 using System.Collections.Generic;
-using PixelFarm.Contours;
-
 using Typography.OpenFont;
 
 namespace Typography.Contours

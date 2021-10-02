@@ -519,8 +519,8 @@ undefined
 
             List<object> parameterValues =
                 (from p in o.Properties()
-                    where p.Value is JValue
-                    select ((JValue)p.Value).Value).ToList();
+                 where p.Value is JValue
+                 select ((JValue)p.Value).Value).ToList();
 
             Assert.AreEqual(1, parameterValues.Count);
             Assert.AreEqual("Intel", parameterValues[0]);

@@ -23,8 +23,8 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-using System;
 using Newtonsoft.Json.Serialization;
+using System;
 
 namespace Newtonsoft.Json
 {

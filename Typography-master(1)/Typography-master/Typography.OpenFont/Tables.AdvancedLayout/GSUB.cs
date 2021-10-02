@@ -43,9 +43,9 @@ namespace Typography.OpenFont.Tables
             LookupTable lookupTable = new LookupTable(lookupType, lookupFlags, markFilteringSet);
             foreach (long subTableOffset in subTableOffsets)
             {
-                LookupSubTable subTable = lookupTable.ReadSubTable(reader, lookupTablePos + subTableOffset); 
+                LookupSubTable subTable = lookupTable.ReadSubTable(reader, lookupTablePos + subTableOffset);
                 subTable.OwnerGSub = this;
-                lookupTable.SubTables.Add(subTable); 
+                lookupTable.SubTables.Add(subTable);
             }
             LookupList.Add(lookupTable);
         }
@@ -424,7 +424,7 @@ namespace Typography.OpenFont.Tables
                 ushort format = reader.ReadUInt16();
                 switch (format)
                 {
-                    default: 
+                    default:
                         throw new NotSupportedException();
                     case 1:
                         {

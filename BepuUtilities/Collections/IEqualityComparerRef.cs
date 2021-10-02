@@ -1,4 +1,5 @@
-﻿namespace BepuUtilities.Collections
+﻿
+namespace BepuUtilities.Collections
 {
     /// <summary>
     /// Defines a type capable of performing the hashing and equality comparisons necessary for hash based collections.

@@ -8,7 +8,7 @@ namespace System.Text.Json.Serialization.Tests
 {
     public static partial class CustomConverterTests
     {
-        private class FailConverter<TException> : JsonConverter<int> where TException: Exception, new()
+        private class FailConverter<TException> : JsonConverter<int> where TException : Exception, new()
         {
             public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {

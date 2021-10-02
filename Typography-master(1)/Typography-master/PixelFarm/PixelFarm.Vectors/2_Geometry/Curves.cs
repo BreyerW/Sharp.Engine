@@ -16,6 +16,7 @@
 //----------------------------------------------------------------------------
 
 using System;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
     public static class Curves
@@ -115,7 +116,7 @@ namespace PixelFarm.CpuBlit.VertexProcessing
             this.x3 = x3; this.y3 = y3;
         }
     }
- 
+
 
     public interface ICurveFlattenerOutput
     {
@@ -637,7 +638,7 @@ namespace PixelFarm.CpuBlit.VertexProcessing
             double dy = y2 - y0;
 
             double d = Math.Abs(((x1 - x2) * dy - (y1 - y2) * dx));
-           
+
             if (d > Curves.CURVE_COLLINEARITY_EPSILON)
             {
                 // Regular case

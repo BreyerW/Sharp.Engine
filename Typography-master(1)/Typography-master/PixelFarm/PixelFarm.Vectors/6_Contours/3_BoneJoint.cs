@@ -4,7 +4,6 @@ using PixelFarm.VectorMath;
 
 namespace PixelFarm.Contours
 {
-
     public class Joint
     {
 
@@ -138,7 +137,7 @@ namespace PixelFarm.Contours
                 MyMath.FitToHalfGrid(jointPos.Y, gridH));//use half?
         }
         public void GetCentroidBoneCenters(out float cx0, out float cy0, out float cx1, out float cy1)
-        {   
+        {
             this.P_Tri.CalculateCentroid(out cx0, out cy0);
             this.Q_Tri.CalculateCentroid(out cx1, out cy1);
         }

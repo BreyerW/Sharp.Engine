@@ -3,7 +3,6 @@ using System.IO;
 
 namespace Typography.OpenFont.Tables
 {
-
     //https://www.microsoft.com/typography/otspec/os2.htm
     /// <summary>
     /// OS2 and Windows metrics, 

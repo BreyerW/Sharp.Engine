@@ -1,9 +1,9 @@
 ﻿//MIT, 2015-2016, Michael Popoloski, WinterDev
 
 using System.IO;
+
 namespace Typography.OpenFont.Tables
 {
-
     class CvtTable : TableEntry
     {
         public const string _N = "cvt ";//need 4 chars//***

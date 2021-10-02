@@ -25,10 +25,10 @@
 //
 #endregion
 
-using System;
-using System.Diagnostics;
 using OpenTK.Graphics;
 using OpenTK.Input;
+using System;
+using System.Diagnostics;
 
 namespace OpenTK.Platform.X11
 {

@@ -22,6 +22,7 @@
 using System;
 using System.Globalization;
 using System.Text;
+
 #if SYSTEM_WINDOWS_VECTOR
 using VECTOR = System.Windows.Vector;
 using FLOAT = System.Double;
@@ -60,10 +61,10 @@ namespace burningmime.curves
             this.p0 = p0;
             this.p1 = p1;
             this.p2 = p2;
-            this.p3 = p3; 
+            this.p3 = p3;
         }
 
-        public bool HasSomeNanComponent 
+        public bool HasSomeNanComponent
         {
             get
             {

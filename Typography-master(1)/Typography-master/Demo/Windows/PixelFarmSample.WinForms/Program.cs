@@ -1,6 +1,7 @@
 ﻿//MIT, 2016-2017, WinterDev
 using System;
 using System.Windows.Forms;
+
 namespace SampleWinForms
 {
     static class Program

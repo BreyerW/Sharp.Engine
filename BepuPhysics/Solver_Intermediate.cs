@@ -28,7 +28,7 @@
 //            }
 
 //            InterstageSync(ref syncStage);
-            
+
 //            for (int batchIndex = 0; batchIndex < activeSet.Batches.Count; ++batchIndex)
 //            {
 //                endIndex = context.BatchBoundaries[batchIndex];

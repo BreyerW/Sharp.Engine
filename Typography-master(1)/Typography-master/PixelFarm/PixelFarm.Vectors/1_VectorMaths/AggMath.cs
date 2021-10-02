@@ -23,6 +23,7 @@
 //----------------------------------------------------------------------------
 
 using System;
+
 namespace PixelFarm.CpuBlit
 {
     public static partial class AggMath
@@ -31,7 +32,7 @@ namespace PixelFarm.CpuBlit
         {
             return Math.Abs(v1 - v2) <= (epsilon);
         }
-       
+
         public static double deg2rad(double degree)
         {
             return degree * (Math.PI / 180d);
@@ -78,7 +79,7 @@ namespace PixelFarm.CpuBlit
         {
             return (int)(uint)(Math.Ceiling(v));
         }
-        
+
         //------------------------------------------------------vertex_dist_epsilon
         // Coinciding points maximal distance (Epsilon)
         public const double VERTEX_DISTANCE_EPSILON = 1e-14;
@@ -551,6 +552,6 @@ namespace PixelFarm.CpuBlit
             }
         }
 
-       
+
     }
 }

@@ -18,8 +18,8 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
-using System;
 using PixelFarm.Drawing;
+using System;
 
 namespace PixelFarm.CpuBlit.Imaging
 {
@@ -91,9 +91,6 @@ namespace PixelFarm.CpuBlit.Imaging
 }
 namespace PixelFarm.CpuBlit
 {
-
-
-
 #if DEBUG
 
     static class dbugMemBitmapMonitor
@@ -476,12 +473,12 @@ namespace PixelFarm.CpuBlit
                   (byte)(pixelValue >> 16),
                   (byte)(pixelValue >> 8),
                   (byte)(pixelValue));
-            } 
-        } 
+            }
+        }
         public static MemBitmap LoadBitmap(string filename)
         {
             return MemBitmapExtensions.DefaultMemBitmapIO.LoadImage(filename);
-        } 
+        }
         public static MemBitmap LoadBitmap(System.IO.Stream input)
         {
             return MemBitmapExtensions.LoadImage(input);

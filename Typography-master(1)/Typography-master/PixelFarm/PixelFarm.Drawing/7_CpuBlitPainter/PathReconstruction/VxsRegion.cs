@@ -1,14 +1,13 @@
 ﻿//MIT, 2019-present, WinterDev
 
-using System;
-using System.Collections.Generic;
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit;
 using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
+using System;
+using System.Collections.Generic;
 
 namespace PixelFarm.PathReconstruction
 {
-
     public class VxsRegion : CpuBlitRegion
     {
         VertexStore _vxs;//vector path for the data

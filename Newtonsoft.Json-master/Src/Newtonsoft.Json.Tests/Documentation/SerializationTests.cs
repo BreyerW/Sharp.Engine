@@ -248,7 +248,7 @@ namespace Newtonsoft.Json.Tests.Documentation
                 ]",
                 new JsonSerializerSettings
                 {
-                    Error = delegate(object sender, ErrorEventArgs args)
+                    Error = delegate (object sender, ErrorEventArgs args)
                     {
                         errors.Add(args.ErrorContext.Error.Message);
                         args.ErrorContext.Handled = true;
@@ -275,7 +275,7 @@ namespace Newtonsoft.Json.Tests.Documentation
             List<string> errors = new List<string>();
 
             JsonSerializer serializer = new JsonSerializer();
-            serializer.Error += delegate(object sender, ErrorEventArgs args)
+            serializer.Error += delegate (object sender, ErrorEventArgs args)
             {
                 // only log an error once
                 if (args.CurrentObject == args.ErrorContext.OriginalObject)

@@ -25,16 +25,14 @@
 //
 #endregion
 
+using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-using OpenTK.Audio.OpenAL;
-
 namespace OpenTK.Audio
 {
-
     /// <summary>
     /// Provides methods to instantiate, use and destroy an audio device for recording.
     /// Static methods are provided to list available devices known by the driver.
@@ -51,8 +49,8 @@ namespace OpenTK.Audio
 
         ALFormat sample_format;
         int sample_frequency;
-        
-        #endregion 
+
+        #endregion
 
         #region Constructors
 

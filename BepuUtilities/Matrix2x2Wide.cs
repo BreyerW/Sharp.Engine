@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace BepuUtilities
 {
-
     public struct Matrix2x2Wide
     {
         /// <summary>

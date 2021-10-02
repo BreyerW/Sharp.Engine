@@ -23,6 +23,7 @@
 //----------------------------------------------------------------------------
 
 using System;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
     //=====================================================================arc
@@ -161,7 +162,7 @@ namespace PixelFarm.CpuBlit.VertexProcessing
         }
     }
 
-   
-   
+
+
 
 }

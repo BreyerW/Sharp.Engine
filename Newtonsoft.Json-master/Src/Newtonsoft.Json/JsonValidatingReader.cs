@@ -36,6 +36,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;
+
 #else
 using System.Linq;
 

@@ -4,7 +4,6 @@ using System.IO;
 
 namespace Typography.OpenFont.Tables
 {
-
     class HorizontalDeviceMetrics : TableEntry
     {
         public const string _N = "hdmx";

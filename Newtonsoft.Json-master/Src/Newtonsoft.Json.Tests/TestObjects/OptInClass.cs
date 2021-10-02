@@ -30,6 +30,7 @@ using System.Runtime.Serialization;
 using System.Text;
 #if !(DNXCORE50 || NET20)
 using System.ComponentModel.DataAnnotations;
+
 #endif
 
 namespace Newtonsoft.Json.Tests.TestObjects

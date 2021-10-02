@@ -2,8 +2,8 @@
 
 namespace Sharp
 {
-	public struct Script
-	{
-	}
+    public struct Script
+    {
+    }
 }
 

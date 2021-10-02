@@ -230,7 +230,7 @@ namespace OpenTK.Audio.OpenAL
         /// The A phoneme of the vocal morpher.
         /// </summary>
         VocalMorpherPhonemeA = 0,
-        
+
         /// <summary>
         /// The E phoneme of the vocal morpher.
         /// </summary>

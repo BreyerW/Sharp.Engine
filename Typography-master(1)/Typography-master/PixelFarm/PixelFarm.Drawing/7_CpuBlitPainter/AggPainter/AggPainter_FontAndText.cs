@@ -1,11 +1,10 @@
 ﻿//MIT, 2016-present, WinterDev
 
-using System;
 using PixelFarm.Drawing;
+using System;
 
 namespace PixelFarm.CpuBlit
 {
-
     partial class AggPainter
     {
         //font

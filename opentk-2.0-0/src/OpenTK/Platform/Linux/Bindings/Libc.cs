@@ -64,7 +64,7 @@ namespace OpenTK.Platform.Linux
         public static extern int ioctl(int d, KeyboardIoctlCode request, int data);
 
         [DllImport(lib)]
-        public static extern int open([MarshalAs(UnmanagedType.LPStr)]string pathname, OpenFlags flags);
+        public static extern int open([MarshalAs(UnmanagedType.LPStr)] string pathname, OpenFlags flags);
 
         [DllImport(lib)]
         public static extern int open(IntPtr pathname, OpenFlags flags);

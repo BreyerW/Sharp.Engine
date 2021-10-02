@@ -25,11 +25,10 @@
 //
 #endregion
 
+using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.Generic;
 using System.Text;
-
-using OpenTK.Audio.OpenAL;
 
 namespace OpenTK.Audio
 {
@@ -63,16 +62,16 @@ namespace OpenTK.Audio
             {
                 case AlcError.OutOfMemory:
                     throw new OutOfMemoryException(String.Format(ErrorString, Device, err));
-                
+
                 case AlcError.InvalidValue:
                     throw new AudioValueException(String.Format(ErrorString, Device, err));
-                
+
                 case AlcError.InvalidDevice:
                     throw new AudioDeviceException(String.Format(ErrorString, Device, err));
-                
+
                 case AlcError.InvalidContext:
                     throw new AudioContextException(String.Format(ErrorString, Device, err));
-                
+
                 case AlcError.NoError:
                 default:
                     // everything went fine, do nothing

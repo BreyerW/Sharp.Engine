@@ -1,7 +1,8 @@
 ﻿//BSD, 2014-present, WinterDev
 
-using System.IO;
 using PixelFarm.Drawing;
+using System.IO;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
 #if DEBUG

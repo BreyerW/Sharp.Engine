@@ -307,7 +307,7 @@ namespace BepuUtilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteSlot(in Vector3 source, int slotIndex, ref Vector3Wide target)
         {
-            WriteFirst(source, ref GatherScatter.GetOffsetInstance(ref target, slotIndex)); 
+            WriteFirst(source, ref GatherScatter.GetOffsetInstance(ref target, slotIndex));
         }
 
         /// <summary>

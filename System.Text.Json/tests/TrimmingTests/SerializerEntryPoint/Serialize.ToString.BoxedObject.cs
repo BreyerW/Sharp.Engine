@@ -15,7 +15,7 @@ namespace SerializerTrimmingTest
     {
         static int Main(string[] args)
         {
-            int[] arr = new [] { 1 };
+            int[] arr = new[] { 1 };
             if (JsonSerializer.Serialize(arr, typeof(int[])) != "[1]")
             {
                 return -1;

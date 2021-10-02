@@ -19,6 +19,7 @@
 //----------------------------------------------------------------------------
 
 using System;
+
 namespace PixelFarm.CpuBlit.FragmentProcessing
 {
     public class GammaLookUpTable

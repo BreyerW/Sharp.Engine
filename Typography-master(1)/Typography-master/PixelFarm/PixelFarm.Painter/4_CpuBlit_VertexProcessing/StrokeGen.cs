@@ -18,13 +18,12 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
+using PixelFarm.Drawing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit.VertexProcessing
 {
-
-
     public enum StrokeSideForOpenShape : byte
     {
         Both,

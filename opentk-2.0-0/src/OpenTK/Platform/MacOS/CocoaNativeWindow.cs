@@ -479,18 +479,18 @@ namespace OpenTK.Platform.MacOS
             return false;
         }
 
-        private bool AcceptsFirstResponder(IntPtr self, IntPtr cmd) 
-        { 
-            return true; 
-        }
-
-        private bool CanBecomeKeyWindow(IntPtr self, IntPtr cmd) 
-        { 
+        private bool AcceptsFirstResponder(IntPtr self, IntPtr cmd)
+        {
             return true;
         }
 
-        private bool CanBecomeMainWindow(IntPtr self, IntPtr cmd) 
-        { 
+        private bool CanBecomeKeyWindow(IntPtr self, IntPtr cmd)
+        {
+            return true;
+        }
+
+        private bool CanBecomeMainWindow(IntPtr self, IntPtr cmd)
+        {
             return true;
         }
 
@@ -938,8 +938,8 @@ namespace OpenTK.Platform.MacOS
 
         public override WindowBorder WindowBorder
         {
-            get 
-            { 
+            get
+            {
                 return windowBorder;
             }
             set
@@ -1014,15 +1014,15 @@ namespace OpenTK.Platform.MacOS
 
         public override Size ClientSize
         {
-            get 
+            get
             {
                 var contentViewBounds = Cocoa.SendRect(windowInfo.ViewHandle, selBounds);
                 var bounds = Cocoa.SendRect(windowInfo.Handle, selConvertRectToBacking, contentViewBounds);
-                return new Size((int)bounds.Width, (int)bounds.Height); 
+                return new Size((int)bounds.Width, (int)bounds.Height);
             }
             set
             {
-                var r_scaled = Cocoa.SendRect(windowInfo.Handle, selConvertRectFromBacking, new RectangleF(PointF.Empty, new SizeF (value.Width, value.Height)));
+                var r_scaled = Cocoa.SendRect(windowInfo.Handle, selConvertRectFromBacking, new RectangleF(PointF.Empty, new SizeF(value.Width, value.Height)));
                 var r = Cocoa.SendRect(windowInfo.Handle, selFrameRectForContentRect, r_scaled);
                 Size = new Size((int)r.Width, (int)r.Height);
             }
@@ -1092,7 +1092,7 @@ namespace OpenTK.Platform.MacOS
             }
 
             // Construct the actual NSImage
-            IntPtr img = 
+            IntPtr img =
                 Cocoa.SendIntPtr(
                     Cocoa.SendIntPtr(NSImage, Selector.Alloc),
                     selInitWithSize,

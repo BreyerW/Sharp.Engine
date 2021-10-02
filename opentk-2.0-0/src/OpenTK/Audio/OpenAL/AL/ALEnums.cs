@@ -11,7 +11,6 @@ using System;
 
 namespace OpenTK.Audio.OpenAL
 {
-
     ///<summary>A list of valid Enable/Disable/IsEnabled parameters</summary>
     public enum ALCapability : int
     {

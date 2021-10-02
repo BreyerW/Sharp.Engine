@@ -1,9 +1,11 @@
-﻿using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
 
         private static readonly uint[] kInsBase = {
             0, 1, 2, 3, 4, 5, 6, 8, 10, 14, 18, 26, 34, 50,
@@ -26,7 +28,8 @@ namespace BrotliSharpLib {
         };
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct Command {
+        internal struct Command
+        {
             public uint insert_len_;
 
             /* Stores copy_len in low 24 bits and copy_len XOR copy_code in high 8 bit. */
@@ -46,7 +49,7 @@ namespace BrotliSharpLib {
             else if (insertlen < 130)
             {
                 uint nbits = Log2FloorNonZero(insertlen - 2) - 1u;
-                return (ushort)((nbits << 1) + ((insertlen - 2) >> (int) nbits) + 2);
+                return (ushort)((nbits << 1) + ((insertlen - 2) >> (int)nbits) + 2);
             }
             else if (insertlen < 2114)
             {
@@ -75,7 +78,7 @@ namespace BrotliSharpLib {
             else if (copylen < 134)
             {
                 uint nbits = Log2FloorNonZero(copylen - 6) - 1u;
-                return (ushort)((nbits << 1) + ((copylen - 6) >> (int) nbits) + 4);
+                return (ushort)((nbits << 1) + ((copylen - 6) >> (int)nbits) + 4);
             }
             else if (copylen < 2118)
             {
@@ -94,7 +97,7 @@ namespace BrotliSharpLib {
                 (ushort)((copycode & 0x7u) | ((inscode & 0x7u) << 3));
             if (use_last_distance && inscode < 8 && copycode < 16)
             {
-                return (ushort) ((copycode < 8) ? bits64 : (bits64 | 64));
+                return (ushort)((copycode < 8) ? bits64 : (bits64 | 64));
             }
             else
             {
@@ -108,7 +111,7 @@ namespace BrotliSharpLib {
                    All values in D require only 2 bits to encode.
                    Magic ant is shifted 6 bits left, to avoid final multiplication. */
                 offset = (offset << 5) + 0x40 + ((0x520D40 >> offset) & 0xC0);
-                return (ushort) ((ushort)offset | bits64);
+                return (ushort)((ushort)offset | bits64);
             }
         }
 
@@ -155,7 +158,7 @@ namespace BrotliSharpLib {
                     self->dist_prefix_ + 4u - BROTLI_NUM_DISTANCE_SHORT_CODES - 2u * nbits;
                 /* Subtract 4 for offset (Chapter 4.) and
                    increase by BROTLI_NUM_DISTANCE_SHORT_CODES - 1  */
-                return (prefix << (int) nbits) + extra + BROTLI_NUM_DISTANCE_SHORT_CODES - 4u;
+                return (prefix << (int)nbits) + extra + BROTLI_NUM_DISTANCE_SHORT_CODES - 4u;
             }
         }
 
@@ -175,8 +178,8 @@ namespace BrotliSharpLib {
 
         private static unsafe uint CommandDistanceContext(Command* self)
         {
-            uint r = (uint) (self->cmd_prefix_ >> 6);
-            uint c = (uint) (self->cmd_prefix_ & 7);
+            uint r = (uint)(self->cmd_prefix_ >> 6);
+            uint c = (uint)(self->cmd_prefix_ & 7);
             if ((r == 0 || r == 2 || r == 4 || r == 7) && (c <= 2))
             {
                 return c;
@@ -184,15 +187,18 @@ namespace BrotliSharpLib {
             return 3;
         }
 
-        private static unsafe uint CommandCopyLen(Command* self) {
+        private static unsafe uint CommandCopyLen(Command* self)
+        {
             return self->copy_len_ & 0xFFFFFF;
         }
 
-        private static uint GetInsertExtra(ushort inscode) {
+        private static uint GetInsertExtra(ushort inscode)
+        {
             return kInsExtra[inscode];
         }
 
-        private static uint GetCopyExtra(ushort copycode) {
+        private static uint GetCopyExtra(ushort copycode)
+        {
             return kCopyExtra[copycode];
         }
 

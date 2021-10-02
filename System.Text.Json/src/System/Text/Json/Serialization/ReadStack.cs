@@ -207,7 +207,7 @@ namespace System.Text.Json
 
             if (_count > 1)
             {
-                Current = _previous[--_count -1];
+                Current = _previous[--_count - 1];
             }
 
             SetConstrutorArgumentState();
@@ -261,7 +261,7 @@ namespace System.Text.Json
                 }
             }
 
-           static int GetCount(IEnumerable enumerable)
+            static int GetCount(IEnumerable enumerable)
             {
                 if (enumerable is ICollection collection)
                 {

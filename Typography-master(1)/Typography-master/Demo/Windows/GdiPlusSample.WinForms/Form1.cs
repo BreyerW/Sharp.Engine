@@ -1,14 +1,15 @@
 ﻿//MIT, 2016-present, WinterDev
-using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
-// 
-using Typography.TextLayout;
 using Typography.Contours;
-using Typography.TextServices;
 using Typography.OpenFont;
 using Typography.OpenFont.Extensions;
+// 
+using Typography.TextLayout;
+using Typography.TextServices;
+
 namespace SampleWinForms
 {
     public partial class Form1 : Form
@@ -180,7 +181,7 @@ namespace SampleWinForms
         {
             bool flipY = chkFlipY.Checked;
 
-           
+
 
             //set some Gdi+ props... 
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
@@ -188,11 +189,11 @@ namespace SampleWinForms
 
             Typography.OpenFont.Typeface typeface = _currentTextPrinter.Typeface;
             Typography.OpenFont.TypefaceExtension2.UpdateAllCffGlyphBounds(typeface);
-            
 
-            float pxscale = typeface.CalculateScaleToPixelFromPointSize(_currentTextPrinter.FontSizeInPoints); 
+
+            float pxscale = typeface.CalculateScaleToPixelFromPointSize(_currentTextPrinter.FontSizeInPoints);
             int lineSpacing = (int)System.Math.Ceiling((double)typeface.CalculateLineSpacing(LineSpacingChoice.TypoMetric) * pxscale);
-            
+
 
             if (flipY)
             {
@@ -211,7 +212,7 @@ namespace SampleWinForms
             _currentTextPrinter.UpdateGlyphLayoutSettings();
 
             //render at specific pos
-            float x_pos = 0, y_pos = lineSpacing * 2; 
+            float x_pos = 0, y_pos = lineSpacing * 2;
 
             char[] textBuffer = txtInputChar.Text.ToCharArray();
 

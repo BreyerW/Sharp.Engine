@@ -7,8 +7,6 @@ using Typography.Rendering;
 
 namespace PixelFarm.Drawing.Fonts
 {
-
-
     public class FontAtlasFile
     {
         //Typography's custom font atlas file        

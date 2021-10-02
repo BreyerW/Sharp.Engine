@@ -20,7 +20,7 @@ namespace Squid
     {
         public Control Left { get; private set; }
         public Control Right { get; private set; }
-     
+
         public Control Top { get; private set; }
         public Control TopLeft { get; private set; }
         public Control TopRight { get; private set; }
@@ -187,11 +187,11 @@ namespace Squid
             Point position = Parent.Position;
             Point size = Parent.Size;
 
-            AnchorStyles anchor = (AnchorStyles) sender.Tag;
+            AnchorStyles anchor = (AnchorStyles)sender.Tag;
 
             if ((anchor & AnchorStyles.Left) == AnchorStyles.Left)
                 p.x = ClickedPos.x - UI.MousePosition.x;
-            
+
             if ((anchor & AnchorStyles.Top) == AnchorStyles.Top)
                 p.y = ClickedPos.y - UI.MousePosition.y;
 

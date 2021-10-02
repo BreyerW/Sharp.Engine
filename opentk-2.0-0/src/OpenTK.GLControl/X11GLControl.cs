@@ -6,14 +6,13 @@
  */
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using System.Runtime.InteropServices;
-
 using OpenTK.Graphics;
 using OpenTK.Platform;
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Forms;
 
 namespace OpenTK
 {
@@ -109,7 +108,7 @@ namespace OpenTK
 
         public IGraphicsContext CreateContext(int major, int minor, GraphicsContextFlags flags)
         {
-            GraphicsContext context =  new GraphicsContext(mode, this.WindowInfo, major, minor, flags);
+            GraphicsContext context = new GraphicsContext(mode, this.WindowInfo, major, minor, flags);
             mode = context.GraphicsMode;
 
             // get the XVisualInfo for this GraphicsMode
@@ -150,7 +149,7 @@ namespace OpenTK
             return type.GetField(fieldName,
                 System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).GetValue(null);
         }
-        
+
         static void SetStaticFieldValue(Type type, string fieldName, object value)
         {
             type.GetField(fieldName,

@@ -1,17 +1,15 @@
 ﻿//MIT, 2016-present, WinterDev, Sam Hocevar
-using System;
-using System.Collections.Generic;
-
 using PixelFarm.CpuBlit;
 using PixelFarm.CpuBlit.PixelProcessing;
+using System;
+using System.Collections.Generic;
+using Typography.Contours;
 using Typography.OpenFont;
 using Typography.Rendering;
 using Typography.TextLayout;
-using Typography.Contours;
 
 namespace PixelFarm.Drawing.Fonts
 {
-
     public enum AntialiasTechnique
     {
         LcdStencil,

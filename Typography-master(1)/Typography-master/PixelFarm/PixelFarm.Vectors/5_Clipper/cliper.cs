@@ -55,16 +55,17 @@
 
 using System;
 using System.Collections.Generic;
-namespace ClipperLib
-{
 #if use_int32
    using cInt = Int32;
 #else
-    using cInt = Int64;
+using cInt = Int64;
 #endif
 
-    using Path = IntPolygon;
-    using Paths = List<IntPolygon>;
+using Path = ClipperLib.IntPolygon;
+using Paths = List<ClipperLib.IntPolygon>;
+
+namespace ClipperLib
+{
     public struct DoublePoint
     {
         public readonly double X;

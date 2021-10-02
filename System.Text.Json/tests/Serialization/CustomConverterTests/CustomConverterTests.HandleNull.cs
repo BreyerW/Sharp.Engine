@@ -468,7 +468,7 @@ namespace System.Text.Json.Serialization.Tests
             var options = new JsonSerializerOptions();
             options.Converters.Add(new ObjectConverter());
 
-            List<object> list = new List<object> {  null };
+            List<object> list = new List<object> { null };
             Assert.Equal(@"[""NullObject""]", JsonSerializer.Serialize(list, options));
 
             list = JsonSerializer.Deserialize<List<object>>("[null]", options);

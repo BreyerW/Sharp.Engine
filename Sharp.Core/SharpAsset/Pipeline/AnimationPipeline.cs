@@ -2,11 +2,11 @@
 
 namespace Sharp
 {
-	public class AnimationPipeline
-	{
-		public AnimationPipeline ()
-		{
-		}
-	}
+    public class AnimationPipeline
+    {
+        public AnimationPipeline()
+        {
+        }
+    }
 }
 

@@ -1,6 +1,7 @@
 ﻿//MIT, 2009, 2010, 2013-2016 by the Brotli Authors.
 //MIT, 2017, brezza92 (C# port from original code, by hand)
 
+
 namespace CSharpBrotli.Decode
 {
     public enum WordTransformType
@@ -36,7 +37,7 @@ namespace CSharpBrotli.Decode
     {
         public static int GetOmitFirst(WordTransformType type)
         {
-            if(type>=WordTransformType.OMIT_FIRST_1 && type<= WordTransformType.OMIT_FIRST_9)
+            if (type >= WordTransformType.OMIT_FIRST_1 && type <= WordTransformType.OMIT_FIRST_9)
             {
                 return (type - WordTransformType.OMIT_FIRST_1) + 1;
             }
@@ -45,7 +46,7 @@ namespace CSharpBrotli.Decode
 
         public static int GetOmitLast(WordTransformType type)
         {
-            if(type >= WordTransformType.OMIT_LAST_1 && type<= WordTransformType.OMIT_LAST_9)
+            if (type >= WordTransformType.OMIT_LAST_1 && type <= WordTransformType.OMIT_LAST_9)
             {
                 return (type - WordTransformType.OMIT_LAST_1) + 1;
             }

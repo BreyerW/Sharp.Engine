@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+
 namespace Typography.OpenFont.Tables
 {
     class Glyf : TableEntry

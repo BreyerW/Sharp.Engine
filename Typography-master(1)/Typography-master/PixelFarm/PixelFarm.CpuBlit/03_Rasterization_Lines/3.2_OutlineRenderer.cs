@@ -14,10 +14,10 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
+using PixelFarm.CpuBlit.FragmentProcessing;
+using PixelFarm.CpuBlit.PrimitiveProcessing;
 using System;
 using System.Collections.Generic;
-using PixelFarm.CpuBlit.PrimitiveProcessing;
-using PixelFarm.CpuBlit.FragmentProcessing;
 
 namespace PixelFarm.CpuBlit.Rasterization.Lines
 {

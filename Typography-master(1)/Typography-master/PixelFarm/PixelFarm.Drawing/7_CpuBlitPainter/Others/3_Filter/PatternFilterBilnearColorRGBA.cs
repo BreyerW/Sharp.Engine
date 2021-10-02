@@ -18,8 +18,9 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit.PixelProcessing;
+using PixelFarm.Drawing;
+
 namespace PixelFarm.CpuBlit.Rasterization.Lines
 {
     public struct PatternFilterBilnearColorRGBA : IPatternFilter

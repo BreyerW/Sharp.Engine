@@ -7,43 +7,40 @@
  */
 #endregion
 
+using Android.Content;
+using Android.Runtime;
+using Android.Util;
+using Android.Views;
+using Java.Util;
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Input;
+using OpenTK.Platform;
+using OpenTK.Platform.Android;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Timers;
 
-using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Platform;
-using OpenTK.Platform.Android;
-
-using Android.Content;
-using Android.Util;
-using Android.Views;
-using Android.Runtime;
-
-using Java.Util;
-using OpenTK.Input;
-
 namespace OpenTK
 {
-    [Register ("opentk_1_1/GameViewBase")]
+    [Register("opentk_1_1/GameViewBase")]
     public abstract class GameViewBase : SurfaceView, IGameWindow
     {
         private IGraphicsContext graphicsContext;
 
-        [Register (".ctor", "(Landroid/content/Context;)V", "")]
-        public GameViewBase (Context context) : base (context)
+        [Register(".ctor", "(Landroid/content/Context;)V", "")]
+        public GameViewBase(Context context) : base(context)
         {
         }
 
-        [Register (".ctor", "(Landroid/content/Context;Landroid/util/AttributeSet;)V", "")]
-        public GameViewBase (Context context, IAttributeSet attrs) : base (context, attrs)
+        [Register(".ctor", "(Landroid/content/Context;Landroid/util/AttributeSet;)V", "")]
+        public GameViewBase(Context context, IAttributeSet attrs) : base(context, attrs)
         {
         }
 
-        public GameViewBase (IntPtr handle, global::Android.Runtime.JniHandleOwnership transfer)
-            : base (handle, transfer)
+        public GameViewBase(IntPtr handle, global::Android.Runtime.JniHandleOwnership transfer)
+            : base(handle, transfer)
         {
         }
 
@@ -57,13 +54,16 @@ namespace OpenTK
         ///   to this <see cref="T:OpenTK.Platform.Android.AndroidGameView" />
         ///   instance.
         /// </value>
-        public IGraphicsContext GraphicsContext {
-            get {
+        public IGraphicsContext GraphicsContext
+        {
+            get
+            {
                 return graphicsContext;
             }
-            protected set {
+            protected set
+            {
                 graphicsContext = value;
-                OnContextSet (null);
+                OnContextSet(null);
             }
         }
 
@@ -75,16 +75,16 @@ namespace OpenTK
         /// </remarks>
         public bool AutoResize { get; set; }
 
-        protected virtual void CreateFrameBuffer ()
+        protected virtual void CreateFrameBuffer()
         {
         }
 
-        Point INativeWindow.PointToClient (Point point)
+        Point INativeWindow.PointToClient(Point point)
         {
             return point;
         }
 
-        Point INativeWindow.PointToScreen (Point point)
+        Point INativeWindow.PointToScreen(Point point)
         {
             return point;
         }
@@ -149,10 +149,10 @@ namespace OpenTK
         ///   <see cref="E:OpenTK.Platform.Android.AndroidGameView.Load" />
         ///   event.
         /// </summary>
-        protected virtual void OnLoad (EventArgs e)
+        protected virtual void OnLoad(EventArgs e)
         {
             if (Load != null)
-                Load (this, e);
+                Load(this, e);
         }
 
         /// <summary>
@@ -225,10 +225,10 @@ namespace OpenTK
         ///     delegates receive the event.
         ///   </block>
         /// </remarks>
-        protected virtual void OnUnload (EventArgs e)
+        protected virtual void OnUnload(EventArgs e)
         {
             if (Unload != null)
-                Unload (this, e);
+                Unload(this, e);
         }
 
         /// <summary>
@@ -301,10 +301,10 @@ namespace OpenTK
         ///     delegates receive the event.
         ///   </block>
         /// </remarks>
-        protected virtual void OnUpdateFrame (FrameEventArgs e)
+        protected virtual void OnUpdateFrame(FrameEventArgs e)
         {
             if (UpdateFrame != null)
-                UpdateFrame (this, e);
+                UpdateFrame(this, e);
         }
 
         /// <summary>
@@ -377,10 +377,10 @@ namespace OpenTK
         ///     delegates receive the event.
         ///   </block>
         /// </remarks>
-        protected virtual void OnRenderFrame (FrameEventArgs e)
+        protected virtual void OnRenderFrame(FrameEventArgs e)
         {
             if (RenderFrame != null)
-                RenderFrame (this, e);
+                RenderFrame(this, e);
         }
 
         /// <summary>
@@ -401,7 +401,7 @@ namespace OpenTK
         ///   <see cref="M:OpenTK.Platform.Android.AndroidGameView.Dispose" />
         ///   invoked on it.
         /// </exception>
-        public abstract void Run ();
+        public abstract void Run();
 
         /// <param name="updateRate">
         ///   A <see cref="T:System.Double" /> containing the number of frames per
@@ -416,7 +416,7 @@ namespace OpenTK
         ///   <see cref="M:OpenTK.Platform.Android.AndroidGameView.Dispose" />
         ///   invoked on it.
         /// </exception>
-        public abstract void Run (double updateRate);
+        public abstract void Run(double updateRate);
 
         /// <summary>
         ///   Makes the
@@ -434,7 +434,7 @@ namespace OpenTK
         ///   <see cref="M:OpenTK.Platform.Android.AndroidGameView.Dispose" />
         ///   invoked on it.
         /// </exception>
-        public abstract void MakeCurrent ();
+        public abstract void MakeCurrent();
 
         /// <summary>
         ///   Swaps the front and back buffers of the current GraphicsContext,
@@ -453,7 +453,7 @@ namespace OpenTK
         ///   <see cref="M:OpenTK.Platform.Android.AndroidGameView.Dispose" />
         ///   invoked on it.
         /// </exception>
-        public abstract void SwapBuffers ();
+        public abstract void SwapBuffers();
         #endregion
 
         #region INativeWindow implementation
@@ -496,10 +496,10 @@ namespace OpenTK
         ///     delegates receive the event.
         ///   </block>
         /// </remarks>
-        protected virtual void OnResize (EventArgs e)
+        protected virtual void OnResize(EventArgs e)
         {
             if (Resize != null)
-                Resize (this, e);
+                Resize(this, e);
         }
 
         /// <summary>This member is not supported.</summary>
@@ -538,10 +538,10 @@ namespace OpenTK
         ///     delegates receive the event.
         ///   </block>
         /// </remarks>
-        protected virtual void OnClosed (EventArgs e)
+        protected virtual void OnClosed(EventArgs e)
         {
             if (Closed != null)
-                Closed (this, e);
+                Closed(this, e);
         }
 
         /// <summary>
@@ -571,10 +571,10 @@ namespace OpenTK
         ///     delegates receive the event.
         ///   </block>
         /// </remarks>
-        protected virtual void OnDisposed (EventArgs e)
+        protected virtual void OnDisposed(EventArgs e)
         {
             if (Disposed != null)
-                Disposed (this, e);
+                Disposed(this, e);
         }
 
         /// <summary>
@@ -606,10 +606,10 @@ namespace OpenTK
         ///     delegates receive the event.
         ///   </block>
         /// </remarks>
-        protected virtual void OnContextLost (EventArgs e)
+        protected virtual void OnContextLost(EventArgs e)
         {
             if (ContextLost != null)
-                ContextLost (this, e);
+                ContextLost(this, e);
         }
 
         /// <summary>
@@ -644,10 +644,10 @@ namespace OpenTK
         ///   It is convenient place to create context related data, ie. load textures.
         ///   </block>
         /// </remarks>
-        protected virtual void OnContextSet (EventArgs e)
+        protected virtual void OnContextSet(EventArgs e)
         {
             if (ContextSet != null)
-                ContextSet (this, e);
+                ContextSet(this, e);
         }
 
         /// <summary>
@@ -680,10 +680,10 @@ namespace OpenTK
         ///   It is convenient place to handle errors.
         ///   </block>
         /// </remarks>
-        protected virtual void OnRenderThreadExited (EventArgs e)
+        protected virtual void OnRenderThreadExited(EventArgs e)
         {
             if (RenderThreadExited != null)
-                RenderThreadExited (this, e);
+                RenderThreadExited(this, e);
         }
 
         /// <summary>
@@ -715,10 +715,10 @@ namespace OpenTK
         ///     delegates receive the event.
         ///   </block>
         /// </remarks>
-        protected virtual void OnTitleChanged (EventArgs e)
+        protected virtual void OnTitleChanged(EventArgs e)
         {
             if (TitleChanged != null)
-                TitleChanged (this, EventArgs.Empty);
+                TitleChanged(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -750,10 +750,10 @@ namespace OpenTK
         ///     delegates receive the event.
         ///   </block>
         /// </remarks>
-        protected virtual void OnVisibleChanged (EventArgs e)
+        protected virtual void OnVisibleChanged(EventArgs e)
         {
             if (VisibleChanged != null)
-                VisibleChanged (this, EventArgs.Empty);
+                VisibleChanged(this, EventArgs.Empty);
         }
 
         /// <summary>This member is not supported.</summary>
@@ -803,10 +803,10 @@ namespace OpenTK
         ///     delegates receive the event.
         ///   </block>
         /// </remarks>
-        protected virtual void OnWindowStateChanged (EventArgs e)
+        protected virtual void OnWindowStateChanged(EventArgs e)
         {
             if (WindowStateChanged != null)
-                WindowStateChanged (this, EventArgs.Empty);
+                WindowStateChanged(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -824,9 +824,9 @@ namespace OpenTK
         ///   <see cref="M:OpenTK.Platform.Android.AndroidGameView.Dispose" />
         ///   invoked on it.
         /// </exception>
-        public virtual void Close ()
+        public virtual void Close()
         {
-            OnClosed (EventArgs.Empty);
+            OnClosed(EventArgs.Empty);
         }
 
         /// <summary>This member is not supported.</summary>
@@ -835,16 +835,19 @@ namespace OpenTK
         ///     Throws a <see cref="T:System.NotSupportedException" />.
         ///   </para>
         /// </remarks>
-        event EventHandler<KeyPressEventArgs> INativeWindow.KeyPress {
-            add { throw new NotSupportedException ();}
-            remove { throw new NotSupportedException ();}
+        event EventHandler<KeyPressEventArgs> INativeWindow.KeyPress
+        {
+            add { throw new NotSupportedException(); }
+            remove { throw new NotSupportedException(); }
         }
 
-        public virtual int Width {
+        public virtual int Width
+        {
             get; set;
         }
 
-        public virtual int Height {
+        public virtual int Height
+        {
             get;
             set;
         }
@@ -855,9 +858,10 @@ namespace OpenTK
         ///     Throws a <see cref="T:System.NotSupportedException" />.
         ///   </para>
         /// </remarks>
-        public event EventHandler<EventArgs> MouseEnter {
-            add { throw new NotSupportedException (); }
-            remove { throw new NotSupportedException (); }
+        public event EventHandler<EventArgs> MouseEnter
+        {
+            add { throw new NotSupportedException(); }
+            remove { throw new NotSupportedException(); }
         }
 
         /// <summary>This member is not supported.</summary>
@@ -866,9 +870,10 @@ namespace OpenTK
         ///     Throws a <see cref="T:System.NotSupportedException" />.
         ///   </para>
         /// </remarks>
-        public event EventHandler<EventArgs> MouseLeave {
-            add { throw new NotSupportedException (); }
-            remove { throw new NotSupportedException (); }
+        public event EventHandler<EventArgs> MouseLeave
+        {
+            add { throw new NotSupportedException(); }
+            remove { throw new NotSupportedException(); }
         }
 
         /// <summary>This member is not supported.</summary>
@@ -877,27 +882,30 @@ namespace OpenTK
         ///     Throws a <see cref="T:System.NotSupportedException" />.
         ///   </para>
         /// </remarks>
-        public void ProcessEvents ()
+        public void ProcessEvents()
         {
-            throw new NotImplementedException ();
+            throw new NotImplementedException();
         }
 
-        public Point PointToClient (Point point)
+        public Point PointToClient(Point point)
         {
-            throw new NotImplementedException ();
+            throw new NotImplementedException();
         }
 
-        public Point PointToScreen (Point point)
+        public Point PointToScreen(Point point)
         {
-            throw new NotImplementedException ();
+            throw new NotImplementedException();
         }
 
-        public string Title {
-            get {
-                throw new NotImplementedException ();
+        public string Title
+        {
+            get
+            {
+                throw new NotImplementedException();
             }
-            set {
-                throw new NotImplementedException ();
+            set
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -908,9 +916,11 @@ namespace OpenTK
         ///     Throws a <see cref="T:System.NotSupportedException" />.
         ///   </para>
         /// </remarks>
-        public bool Focused {
-            get {
-                throw new NotSupportedException ();
+        public bool Focused
+        {
+            get
+            {
+                throw new NotSupportedException();
             }
         }
 
@@ -928,12 +938,15 @@ namespace OpenTK
         ///   <see cref="M:OpenTK.Platform.Android.AndroidGameView.Dispose" />
         ///   invoked on it.
         /// </exception>
-        public bool Visible {
-            get {
-                throw new NotImplementedException ();
+        public bool Visible
+        {
+            get
+            {
+                throw new NotImplementedException();
             }
-            set {
-                throw new NotImplementedException ();
+            set
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -944,9 +957,11 @@ namespace OpenTK
         ///     Throws a <see cref="T:System.NotImplementedException" />.
         ///   </para>
         /// </remarks>
-        public bool Exists {
-            get {
-                throw new NotImplementedException ();
+        public bool Exists
+        {
+            get
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -962,9 +977,11 @@ namespace OpenTK
         ///   <see cref="M:OpenTK.Platform.Android.AndroidGameView.Dispose" />
         ///   invoked on it.
         /// </exception>
-        public virtual IWindowInfo WindowInfo {
-            get {
-                throw new NotImplementedException ();
+        public virtual IWindowInfo WindowInfo
+        {
+            get
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -982,12 +999,15 @@ namespace OpenTK
         /// </remarks>
         /// <exception cref="T:System.NotImplementedException">
         /// </exception>
-        public virtual WindowState WindowState {
-            get {
-                throw new NotImplementedException ();
+        public virtual WindowState WindowState
+        {
+            get
+            {
+                throw new NotImplementedException();
             }
-            set {
-                throw new NotImplementedException ();
+            set
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -1008,28 +1028,15 @@ namespace OpenTK
         /// </remarks>
         /// <exception cref="T:System.NotImplementedException">
         /// </exception>
-        public virtual WindowBorder WindowBorder {
-            get {
-                throw new NotImplementedException ();
+        public virtual WindowBorder WindowBorder
+        {
+            get
+            {
+                throw new NotImplementedException();
             }
-            set {
-                throw new NotImplementedException ();
-            }
-        }
-
-        /// <summary>This member is not supported.</summary>
-        /// <value>To be added.</value>
-        /// <remarks>
-        ///   <para>
-        ///     Throws a <see cref="T:System.NotImplementedException" />.
-        ///   </para>
-        /// </remarks>
-        public virtual Rectangle Bounds {
-            get {
-                throw new NotImplementedException ();
-            }
-            set {
-                throw new NotImplementedException ();
+            set
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -1040,12 +1047,34 @@ namespace OpenTK
         ///     Throws a <see cref="T:System.NotImplementedException" />.
         ///   </para>
         /// </remarks>
-        public virtual Point Location {
-            get {
-                throw new NotImplementedException ();
+        public virtual Rectangle Bounds
+        {
+            get
+            {
+                throw new NotImplementedException();
             }
-            set {
-                throw new NotImplementedException ();
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>This member is not supported.</summary>
+        /// <value>To be added.</value>
+        /// <remarks>
+        ///   <para>
+        ///     Throws a <see cref="T:System.NotImplementedException" />.
+        ///   </para>
+        /// </remarks>
+        public virtual Point Location
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -1058,27 +1087,15 @@ namespace OpenTK
         /// </value>
         /// <exception cref="T:System.NotImplementedException">
         /// </exception>
-        public virtual Size Size {
-            get {
-                throw new NotImplementedException ();
+        public virtual Size Size
+        {
+            get
+            {
+                throw new NotImplementedException();
             }
-            set {
-                throw new NotImplementedException ();
-            }
-        }
-
-        /// <summary>This member is not supported.</summary>
-        /// <remarks>
-        ///   <para>
-        ///     Throws a <see cref="T:System.NotSupportedException" />.
-        ///   </para>
-        /// </remarks>
-        public int X {
-            get {
-                throw new NotSupportedException ();
-            }
-            set {
-                throw new NotSupportedException ();
+            set
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -1088,12 +1105,15 @@ namespace OpenTK
         ///     Throws a <see cref="T:System.NotSupportedException" />.
         ///   </para>
         /// </remarks>
-        public int Y {
-            get {
-                throw new NotSupportedException ();
+        public int X
+        {
+            get
+            {
+                throw new NotSupportedException();
             }
-            set {
-                throw new NotSupportedException ();
+            set
+            {
+                throw new NotSupportedException();
             }
         }
 
@@ -1103,12 +1123,33 @@ namespace OpenTK
         ///     Throws a <see cref="T:System.NotSupportedException" />.
         ///   </para>
         /// </remarks>
-        public Rectangle ClientRectangle {
-            get {
-                throw new NotSupportedException ();
+        public int Y
+        {
+            get
+            {
+                throw new NotSupportedException();
             }
-            set {
-                throw new NotSupportedException ();
+            set
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        /// <summary>This member is not supported.</summary>
+        /// <remarks>
+        ///   <para>
+        ///     Throws a <see cref="T:System.NotSupportedException" />.
+        ///   </para>
+        /// </remarks>
+        public Rectangle ClientRectangle
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+            set
+            {
+                throw new NotSupportedException();
             }
         }
 
@@ -1119,18 +1160,23 @@ namespace OpenTK
         ///     Throws a <see cref="T:System.NotSupportedException" />.
         ///   </para>
         /// </remarks>
-        public Size ClientSize {
-            get {
-                throw new NotSupportedException ();
+        public Size ClientSize
+        {
+            get
+            {
+                throw new NotSupportedException();
             }
-            set {
-                throw new NotSupportedException ();
+            set
+            {
+                throw new NotSupportedException();
             }
         }
 
-        public OpenTK.Input.IInputDriver InputDriver {
-            get {
-                throw new NotSupportedException ();
+        public OpenTK.Input.IInputDriver InputDriver
+        {
+            get
+            {
+                throw new NotSupportedException();
             }
         }
 

@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using size_t = BrotliSharpLib.Brotli.SizeT;
 using score_t = BrotliSharpLib.Brotli.SizeT;
+using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
         private static readonly Dictionary<int, Hasher> kHashers =
             new Dictionary<int, Hasher> {
                 {10, new HashToBinaryTreeH10()},
@@ -20,7 +22,8 @@ namespace BrotliSharpLib {
             };
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct HasherCommon {
+        private struct HasherCommon
+        {
             public BrotliHasherParams params_;
 
             /* False if hasher needs to be "prepared" before use. */
@@ -31,13 +34,15 @@ namespace BrotliSharpLib {
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct BackwardMatch {
+        private struct BackwardMatch
+        {
             public uint distance;
             public uint length_and_code;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct HasherSearchResult {
+        private struct HasherSearchResult
+        {
             public size_t len;
             public size_t len_x_code; /* == len ^ len_code */
             public size_t distance;
@@ -134,8 +139,8 @@ namespace BrotliSharpLib {
             }
 
             fixed (byte* dict = kBrotliDictionary)
-            matchlen =
-                FindMatchLengthWithLimit(data, &dict[offset], len);
+                matchlen =
+                    FindMatchLengthWithLimit(data, &dict[offset], len);
             if (matchlen + kCutoffTransformsCount <= len || matchlen == 0)
             {
                 return false;
@@ -143,12 +148,13 @@ namespace BrotliSharpLib {
             {
                 size_t cut = len - matchlen;
                 size_t transform_id =
-                    (cut << 2) + (size_t)((kCutoffTransforms >> (int) (cut * 6)) & 0x3F);
+                    (cut << 2) + (size_t)((kCutoffTransforms >> (int)(cut * 6)) & 0x3F);
                 backward = max_backward + dist + 1 +
                            (transform_id << kBrotliDictionarySizeBitsByLength[len]);
             }
             score = BackwardReferenceScore(matchlen, backward);
-            if (score < out_->score) {
+            if (score < out_->score)
+            {
                 return false;
             }
             out_->len = matchlen;
@@ -193,7 +199,7 @@ namespace BrotliSharpLib {
         private static score_t BackwardReferencePenaltyUsingLastDistance(
             size_t distance_short_code)
         {
-            return (score_t)39 + ((0x1CA10 >> (int) (distance_short_code & 0xE)) & 0xE);
+            return (score_t)39 + ((0x1CA10 >> (int)(distance_short_code & 0xE)) & 0xE);
         }
 
         private static unsafe size_t BackwardMatchLength(BackwardMatch* self)
@@ -208,9 +214,10 @@ namespace BrotliSharpLib {
         }
 
         private static unsafe void InitBackwardMatch(BackwardMatch* self,
-            size_t dist, size_t len) {
-            self->distance = (uint) dist;
-            self->length_and_code = (uint) (len << 5);
+            size_t dist, size_t len)
+        {
+            self->distance = (uint)dist;
+            self->length_and_code = (uint)(len << 5);
         }
 
         private static unsafe void InitDictionaryBackwardMatch(BackwardMatch* self,
@@ -221,17 +228,20 @@ namespace BrotliSharpLib {
                 (uint)((len << 5) | (len == len_code ? 0 : len_code));
         }
 
-        private static unsafe HasherCommon* GetHasherCommon(HasherHandle handle) {
-            return (HasherCommon*) handle;
+        private static unsafe HasherCommon* GetHasherCommon(HasherHandle handle)
+        {
+            return (HasherCommon*)handle;
         }
 
-        private static unsafe void HasherReset(HasherHandle handle) {
-            if ((void*) handle == null) return;
+        private static unsafe void HasherReset(HasherHandle handle)
+        {
+            if ((void*)handle == null) return;
             GetHasherCommon(handle)->is_prepared_ = false;
         }
 
         private static unsafe size_t HasherSize(BrotliEncoderParams* params_,
-            bool one_shot, size_t input_size) {
+            bool one_shot, size_t input_size)
+        {
             size_t result = sizeof(HasherCommon);
             Hasher h;
             if (kHashers.TryGetValue(params_->hasher.type, out h))
@@ -241,11 +251,13 @@ namespace BrotliSharpLib {
 
         private static unsafe void HasherSetup(ref MemoryManager m, HasherHandle* handle,
             BrotliEncoderParams* params_, byte* data, size_t position,
-            size_t input_size, bool is_last) {
+            size_t input_size, bool is_last)
+        {
             HasherHandle self = null;
             HasherCommon* common = null;
             bool one_shot = (position == 0 && is_last);
-            if ((byte*) (*handle) == null) {
+            if ((byte*)(*handle) == null)
+            {
                 size_t alloc_size;
                 ChooseHasher(params_, &params_->hasher);
                 alloc_size = HasherSize(params_, one_shot, input_size);
@@ -261,11 +273,13 @@ namespace BrotliSharpLib {
 
             self = *handle;
             common = GetHasherCommon(self);
-            if (!common->is_prepared_) {
+            if (!common->is_prepared_)
+            {
                 Hasher h;
                 if (kHashers.TryGetValue(params_->hasher.type, out h))
                     h.Prepare(self, one_shot, input_size, data);
-                if (position == 0) {
+                if (position == 0)
+                {
                     common->dict_num_lookups = 0;
                     common->dict_num_matches = 0;
                 }
@@ -276,17 +290,19 @@ namespace BrotliSharpLib {
         /* Custom LZ77 window. */
         private static unsafe void HasherPrependCustomDictionary(
             ref MemoryManager m, HasherHandle* handle, BrotliEncoderParams* params_,
-            size_t size, byte* dict) {
+            size_t size, byte* dict)
+        {
             size_t overlap;
             size_t i;
             HasherHandle self;
             HasherSetup(ref m, handle, params_, dict, 0, size, false);
             self = *handle;
             Hasher h;
-            if (kHashers.TryGetValue(GetHasherCommon(self)->params_.type, out h)) {
+            if (kHashers.TryGetValue(GetHasherCommon(self)->params_.type, out h))
+            {
                 overlap = h.StoreLookahead() - 1;
                 for (i = 0; i + overlap < size; i++)
-                    h.Store(self, dict, ~(size_t) 0, i);
+                    h.Store(self, dict, ~(size_t)0, i);
             }
         }
 

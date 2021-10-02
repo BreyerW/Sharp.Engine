@@ -19,6 +19,7 @@
 //----------------------------------------------------------------------------
 
 
+
 namespace PixelFarm.CpuBlit.FragmentProcessing
 {
     public interface IGammaFunction

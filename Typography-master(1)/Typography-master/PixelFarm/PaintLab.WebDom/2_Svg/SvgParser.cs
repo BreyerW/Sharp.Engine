@@ -17,15 +17,13 @@
 // SVG parser.
 //
 //----------------------------------------------------------------------------
+using LayoutFarm.WebDom.Parser;
+using LayoutFarm.WebLexer;
 using System;
 using System.Collections.Generic;
 
-using LayoutFarm.WebDom.Parser;
-using LayoutFarm.WebLexer;
-
 namespace PaintLab.Svg
 {
-
     public abstract class XmlParserBase
     {
         int _parseState = 0;
@@ -356,14 +354,14 @@ namespace PaintLab.Svg
         {
             ParseDocument(new TextSnapshot(svgBuffer));
         }
-       
+
         protected override void OnVisitNewElement(TextSpan ns, TextSpan localName)
         {
             throw new NotSupportedException();
         }
         protected override void OnVisitNewElement(TextSpan localName)
         {
-            _currentElemName = _textSnapshot.Substring(localName.startIndex, localName.len); 
+            _currentElemName = _textSnapshot.Substring(localName.startIndex, localName.len);
             _svgDocBuilder.OnVisitNewElement(_currentElemName);
         }
 

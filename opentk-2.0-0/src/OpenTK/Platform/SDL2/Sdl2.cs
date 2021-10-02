@@ -28,25 +28,24 @@
 
 using System;
 using System.Diagnostics;
-using System.Security;
 using System.Runtime.InteropServices;
+using System.Security;
+using Cursor = IntPtr;
+using Surface = IntPtr;
 
 #pragma warning disable 0169
 
 namespace OpenTK.Platform.SDL2
 {
-    using Surface = IntPtr;
-    using Cursor = IntPtr;
-
     partial class SDL
     {
-        #if ANDROID
+#if ANDROID
         const string lib = "libSDL2.so";
-        #elif IPHONE
+#elif IPHONE
         const string lib = "__Internal";
-        #else
+#else
         const string lib = "SDL2.dll";
-        #endif
+#endif
 
         public readonly static object Sync = new object();
         static Nullable<Version> version;
@@ -410,7 +409,7 @@ namespace OpenTK.Platform.SDL2
 
             unsafe
             {
-                fixed (Event *pe = e)
+                fixed (Event* pe = e)
                 {
                     return PeepEvents(pe, count, action, min, max);
                 }
@@ -424,7 +423,7 @@ namespace OpenTK.Platform.SDL2
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(lib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "SDL_PixelFormatEnumToMasks", ExactSpelling = true)]
-        public static extern bool PixelFormatEnumToMasks(uint format, out int bpp, 
+        public static extern bool PixelFormatEnumToMasks(uint format, out int bpp,
             out uint rmask, out uint gmask, out uint bmask, out uint amask);
 
         [SuppressUnmanagedCodeSecurity]
@@ -1550,7 +1549,7 @@ namespace OpenTK.Platform.SDL2
             {
                 fixed (JoystickGuid* pdata = &this)
                 {
-                    Marshal.Copy(new IntPtr(pdata), data, 0, data.Length); 
+                    Marshal.Copy(new IntPtr(pdata), data, 0, data.Length);
                 }
             }
 
@@ -1628,12 +1627,12 @@ namespace OpenTK.Platform.SDL2
         public enum EventType : uint
         {
             /* Touch events */
-            FingerDown      = 0x700,
+            FingerDown = 0x700,
             FingerUp,
             FingerMotion,
 
             /* Gesture events */
-            DollarGesture   = 0x800,
+            DollarGesture = 0x800,
             DollarRecord,
             MultiGesture,
         }

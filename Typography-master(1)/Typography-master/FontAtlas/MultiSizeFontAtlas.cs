@@ -2,12 +2,12 @@
 //----------------------------------- 
 
 using System;
-using System.Collections.Generic; 
+using System.Collections.Generic;
 
 namespace PixelFarm.Drawing.Fonts
-{ 
+{
     public class MultiSizeFontAtlas
     {
-        List<SimpleFontAtlas> _fontAtlas = new List<SimpleFontAtlas>(); 
+        List<SimpleFontAtlas> _fontAtlas = new List<SimpleFontAtlas>();
     }
 }

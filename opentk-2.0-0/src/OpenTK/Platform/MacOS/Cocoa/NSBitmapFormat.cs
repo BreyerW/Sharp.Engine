@@ -36,7 +36,7 @@ namespace OpenTK.Platform.MacOS
     {
         AlphaFirst = 1 << 0,
         AlphaNonpremultiplied = 1 << 1,
-        FloatingPointSamples  = 1 << 2
+        FloatingPointSamples = 1 << 2
     }
 }
 

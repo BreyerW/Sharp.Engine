@@ -19,6 +19,7 @@
 //----------------------------------------------------------------------------
 
 
+
 namespace PixelFarm.CpuBlit.FragmentProcessing
 {
     //================================================span_interpolator_linear

@@ -16,5 +16,5 @@ namespace PixelFarmTextBox.WinForms
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
         }
-    } 
+    }
 }

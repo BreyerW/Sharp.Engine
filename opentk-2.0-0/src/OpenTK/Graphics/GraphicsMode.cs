@@ -8,8 +8,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
+using System.Text;
 
 namespace OpenTK.Graphics
 {
@@ -200,7 +200,7 @@ namespace OpenTK.Graphics
         /// </summary>
         public ColorFormat AccumulatorFormat
         {
-            get 
+            get
             {
                 return accumulator_format;
             }

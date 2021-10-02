@@ -14,6 +14,7 @@
 // "The Art of War"
 
 using System;
+
 namespace LayoutFarm.WebDom.Parser
 {
     /// <summary>
@@ -47,7 +48,7 @@ namespace LayoutFarm.WebDom.Parser
                 ParseStyleSheet(cssData, stylesheet);
             }
             return cssData;
-        } 
+        }
 
         /// <summary>
         /// Parse the given stylesheet source to CSS blocks dictionary.<br/>
@@ -78,7 +79,7 @@ namespace LayoutFarm.WebDom.Parser
                 }
             }
         }
-        
+
     }
 
 }

@@ -1,9 +1,9 @@
 ﻿//MIT, 2014-present, WinterDev
 
 
+
 namespace Typography.TextLayout
 {
-
     public class TextBuffer
     {
         internal char[] _buffer;

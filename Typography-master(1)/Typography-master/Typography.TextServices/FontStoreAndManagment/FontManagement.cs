@@ -7,7 +7,6 @@ using Typography.OpenFont;
 
 namespace Typography.FontManagement
 {
-
     public class InstalledTypeface
     {
         internal InstalledTypeface(string fontName,
@@ -552,9 +551,9 @@ namespace Typography.FontManagement
             {
                 CustomSystemFontListLoader(fontCollection);
                 return;
-            } 
+            }
             // Windows system fonts
-            LoadFontsFromFolder(fontCollection, "c:\\Windows\\Fonts"); 
+            LoadFontsFromFolder(fontCollection, "c:\\Windows\\Fonts");
             // These are reasonable places to look for fonts on Linux
             LoadFontsFromFolder(fontCollection, "/usr/share/fonts", true);
             LoadFontsFromFolder(fontCollection, "/usr/share/wine/fonts", true);

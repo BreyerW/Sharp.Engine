@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Sharp
@@ -157,31 +157,32 @@ namespace Sharp
             Yellow = new Color(0xff00ffff);
             YellowGreen = new Color(0xff32cd9a);
         }
-		public float r;
-		public float g;
-		public float b;
-		public float a;
-		public byte R {
-			get => (byte)(r * 255);
-			set => r = (value / 255.0f);
-		}
-		public byte G
-		{
-			get => (byte)(g * 255);
-			set => g= (value / 255.0f);
-		}
-		public byte B
-		{
-			get => (byte)(b * 255);
-			set => b= (value / 255.0f);
-		}
-		public byte A
-		{
-			get => (byte)(a * 255);
-			set => a = (value / 255.0f);
-		}
+        public float r;
+        public float g;
+        public float b;
+        public float a;
+        public byte R
+        {
+            get => (byte)(r * 255);
+            set => r = (value / 255.0f);
+        }
+        public byte G
+        {
+            get => (byte)(g * 255);
+            set => g = (value / 255.0f);
+        }
+        public byte B
+        {
+            get => (byte)(b * 255);
+            set => b = (value / 255.0f);
+        }
+        public byte A
+        {
+            get => (byte)(a * 255);
+            set => a = (value / 255.0f);
+        }
 
-		public uint PackedValue
+        public uint PackedValue
         {
             get
             {
@@ -196,11 +197,11 @@ namespace Sharp
         /// <param name="packedValue">The packed value.</param>
         public Color(uint packedValue)
         {
-			r = 0;
-			g = 0;
-			b = 0;
-			a = 0;
-			unchecked
+            r = 0;
+            g = 0;
+            b = 0;
+            a = 0;
+            unchecked
             {
                 R = (byte)(packedValue >> 00);
                 G = (byte)(packedValue >> 08);
@@ -217,12 +218,12 @@ namespace Sharp
         /// <param name="b">Blue component value from 0.0f to 1.0f.</param>
         /// <param name="alpha">Alpha component value from 0.0f to 1.0f.</param>
         public Color(float r, float g, float b, float a)
-            //: this((byte)(r * 255), (byte)(g * 255), (byte)(b * 255), (byte)(alpha * 255))
+        //: this((byte)(r * 255), (byte)(g * 255), (byte)(b * 255), (byte)(alpha * 255))
         {
-			this.r = r;
-			this.g = g;
-			this.b = b;
-			this.a=a;
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
         }
 
         /// <summary>
@@ -237,11 +238,11 @@ namespace Sharp
         /// <param name="alpha"></param>
         public Color(byte r, byte g, byte b, byte a)
         {
-			this.r = 0;
-			this.g = 0;
-			this.b = 0;
-			this.a = 0;
-			R = r;
+            this.r = 0;
+            this.g = 0;
+            this.b = 0;
+            this.a = 0;
+            R = r;
             G = g;
             B = b;
             A = a;

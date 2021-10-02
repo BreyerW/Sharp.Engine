@@ -17,14 +17,12 @@
 
 
 
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit;
+using PixelFarm.Drawing;
 
 
 namespace PixelFarm.PathReconstruction
 {
-
-
     public abstract class Bmp32PixelEvaluator : IPixelEvaluator
     {
         /// <summary>

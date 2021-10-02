@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 
 namespace System.Text.Json.Serialization.Tests.Schemas.OrderPayload
-{ 
+{
     public class Order
     {
         public long OrderNumber { get; set; }
@@ -27,7 +27,7 @@ namespace System.Text.Json.Serialization.Tests.Schemas.OrderPayload
         public IEnumerable<Order> RelatedOrder { get; set; }
         public User ReviewedBy { get; set; }
     }
-    
+
     public class Product
     {
         public Guid ProductId { get; set; }
@@ -39,7 +39,7 @@ namespace System.Text.Json.Serialization.Tests.Schemas.OrderPayload
         public string Title { get; set; }
         public Price Price { get; set; }
         public bool BestChoice { get; set; }
-        public float AverageStars { get; set; }  
+        public float AverageStars { get; set; }
         public bool Featured { get; set; }
         public TestClassWithInitializedProperties ProductRestrictions { get; set; }
         public SimpleTestClassWithGenericCollectionWrappers SalesInfo { get; set; }
@@ -70,7 +70,7 @@ namespace System.Text.Json.Serialization.Tests.Schemas.OrderPayload
 
     public class Review
     {
-        public long ReviewId { get; set; } 
+        public long ReviewId { get; set; }
         public User Customer { get; set; }
         public string ProductSku { get; set; }
         public string CustomerName { get; set; }

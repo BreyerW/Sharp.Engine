@@ -25,14 +25,13 @@
 //
 #endregion
 
+using OpenTK.Input;
 using System;
 using System.Collections.Generic;
-using OpenTK.Input;
+using Code = Scancode;
 
 namespace OpenTK.Platform.SDL2
 {
-    using Code = Scancode;
-
     class Sdl2KeyMap
     {
         public static Key GetKey(Code code)

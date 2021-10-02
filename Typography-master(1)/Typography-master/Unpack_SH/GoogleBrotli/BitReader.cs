@@ -3,6 +3,7 @@
 Distributed under MIT license.
 See file LICENSE for detail or copy at https://opensource.org/licenses/MIT
 */
+
 namespace Org.Brotli.Dec
 {
     /// <summary>Bit reading helpers.</summary>
@@ -260,7 +261,7 @@ namespace Org.Brotli.Dec
                     }
                     else if (len == 0)
                     {
-                        
+
                     }
                     offset += len;
                     length -= len;

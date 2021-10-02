@@ -31,17 +31,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Carbon;
+using Graphics;
+using AGLContext = IntPtr;
+using AGLPbuffer = IntPtr;
+using AGLPixelFormat = IntPtr;
+using AGLRendererInfo = IntPtr;
 
 namespace OpenTK.Platform.MacOS
 {
-    using Carbon;
-    using Graphics;
-
-    using AGLRendererInfo = IntPtr;
-    using AGLPixelFormat = IntPtr;
-    using AGLContext = IntPtr;
-    using AGLPbuffer = IntPtr;
-
     /// <summary>
     /// AGL context implementation for WinForms compatibility.
     /// </summary>
@@ -134,7 +132,7 @@ namespace OpenTK.Platform.MacOS
 
             dummyContext = new GraphicsContext(Handle,
                 GetAddress,
-                delegate()
+                delegate ()
                 {
                     return new ContextHandle(Agl.aglGetCurrentContext());
                 });

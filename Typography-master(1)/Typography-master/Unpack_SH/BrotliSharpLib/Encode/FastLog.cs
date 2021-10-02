@@ -2,8 +2,10 @@
 using System.Runtime.CompilerServices;
 using size_t = BrotliSharpLib.Brotli.SizeT;
 
-namespace BrotliSharpLib {
-    public static partial class Brotli {
+namespace BrotliSharpLib
+{
+    public static partial class Brotli
+    {
         /* A lookup table for small values of log2(int) to be used in entropy
            computation.
 
@@ -99,9 +101,11 @@ namespace BrotliSharpLib {
 
         private const double LOG_2_INV = 1.4426950408889634;
 
-        private static double FastLog2(size_t v) {
+        private static double FastLog2(size_t v)
+        {
             /* Faster logarithm for small integers, with the property of log2(0) == 0. */
-            if (v < kLog2Table.Length) {
+            if (v < kLog2Table.Length)
+            {
                 return kLog2Table[v];
             }
             return Math.Log(v) * LOG_2_INV;
@@ -110,7 +114,8 @@ namespace BrotliSharpLib {
 #if AGGRESSIVE_INLINING
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        private static uint Log2FloorNonZero(size_t n) {
+        private static uint Log2FloorNonZero(size_t n)
+        {
 #if NETCOREAPP3_0
             if (System.Runtime.Intrinsics.X86.Lzcnt.IsSupported) {
                 return 31u ^ (uint)System.Runtime.Intrinsics.X86.Lzcnt.LeadingZeroCount((uint)n | 1);

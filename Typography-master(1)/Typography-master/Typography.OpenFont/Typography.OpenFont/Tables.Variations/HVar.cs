@@ -4,7 +4,6 @@ using System.IO;
 
 namespace Typography.OpenFont.Tables
 {
-
     //https://docs.microsoft.com/en-us/typography/opentype/spec/hvar
 
     /// <summary>

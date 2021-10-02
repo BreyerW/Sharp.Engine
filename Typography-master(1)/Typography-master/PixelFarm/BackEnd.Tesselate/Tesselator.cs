@@ -43,6 +43,7 @@
 //MIT, 2014-present, WinterDev
 
 using System;
+
 namespace Tesselate
 {
     public struct TessVertex2d
@@ -893,7 +894,7 @@ namespace Tesselate
         /************************ Quick-and-dirty decomposition ******************/
 
         const int SIGN_INCONSISTENT = 2;
-        int ComputeNormal(ref double nx, ref double ny, ref double nz)       
+        int ComputeNormal(ref double nx, ref double ny, ref double nz)
         {
 
             /*

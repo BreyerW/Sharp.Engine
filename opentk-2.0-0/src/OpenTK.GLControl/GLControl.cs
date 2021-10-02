@@ -25,18 +25,17 @@
 //
 #endregion
 
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL;
+using OpenTK.Platform;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.Data;
 using System.Text;
 using System.Windows.Forms;
-
-using OpenTK.Platform;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
 
 namespace OpenTK
 {
@@ -104,7 +103,7 @@ namespace OpenTK
             {
                 Backend = PlatformBackend.PreferNative
             });
-            
+
             SetStyle(ControlStyles.Opaque, true);
             SetStyle(ControlStyles.UserPaint, true);
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
@@ -273,13 +272,13 @@ namespace OpenTK
                 return;
             }
 
-            if (Configuration.RunningOnMacOS) 
+            if (Configuration.RunningOnMacOS)
             {
                 DelayUpdate delay = PerformContextUpdate;
                 BeginInvoke(delay); //Need the native window to resize first otherwise our control will be in the wrong place.
             }
             else if (context != null)
-                context.Update (Implementation.WindowInfo);
+                context.Update(Implementation.WindowInfo);
 
             base.OnResize(e);
         }
@@ -294,7 +293,7 @@ namespace OpenTK
         public void PerformContextUpdate()
         {
             if (context != null)
-                context.Update (Implementation.WindowInfo);
+                context.Update(Implementation.WindowInfo);
         }
 
         /// <summary>
@@ -480,7 +479,7 @@ namespace OpenTK
         {
             get { return implementation.WindowInfo; }
         }
-        
+
         #endregion
 
         #region public Bitmap GrabScreenshot()
@@ -510,7 +509,7 @@ namespace OpenTK
                           data.Scan0);
             bmp.UnlockBits(data);
             bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
-			return bmp;
+            return bmp;
         }
 
         #endregion

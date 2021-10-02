@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 
 namespace BepuPhysics.Constraints
 {
- 
     public struct TwoBody1DOFJacobians
     {
         public Vector3Wide LinearA;
@@ -275,7 +274,7 @@ namespace BepuPhysics.Constraints
 
             SpringSettingsWide.ComputeSpringiness(springSettings, dt, out var positionErrorToVelocity, out var effectiveMassCFMScale, out projection.SoftnessImpulseScale);
             var softenedEffectiveMass = effectiveMass * effectiveMassCFMScale;
-            
+
             //Note that we use a bit of a hack when computing the bias velocity- even if our damping ratio/natural frequency implies a strongly springy response
             //that could cause a significant velocity overshoot, we apply an arbitrary clamping value to keep it reasonable.
             //This is useful for a variety of inequality constraints (like contacts) because you don't always want them behaving as true springs.

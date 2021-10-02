@@ -2,6 +2,7 @@
 
 
 using System.IO;
+
 namespace Typography.OpenFont
 {
     static class MacPostFormat1

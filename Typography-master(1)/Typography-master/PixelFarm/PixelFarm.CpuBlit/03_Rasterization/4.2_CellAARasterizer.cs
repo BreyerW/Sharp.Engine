@@ -34,9 +34,9 @@
 
 
 using poly_subpix = PixelFarm.CpuBlit.Rasterization.PolySubPix;
+
 namespace PixelFarm.CpuBlit.Rasterization
 {
-    
     partial class ScanlineRasterizer
     {
 
@@ -444,9 +444,9 @@ namespace PixelFarm.CpuBlit.Rasterization
                      _cCell_x, _cCell_y,
                      _cCell_cover, _cCell_area));
 #else
-                     _cells.SetData(_num_used_cells, CellAA.Create(
-                     _cCell_x, _cCell_y,
-                     _cCell_cover, _cCell_area));
+                    _cells.SetData(_num_used_cells, CellAA.Create(
+                    _cCell_x, _cCell_y,
+                    _cCell_cover, _cCell_area));
 #endif
                     _num_used_cells++;
                 }

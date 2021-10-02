@@ -1,17 +1,16 @@
 ﻿//MIT, 2017-present, WinterDev
+//
+using DrawingGL;
+using DrawingGL.Text;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-
-//
-using Typography.OpenFont;
-//
-using DrawingGL;
-using DrawingGL.Text;
 //
 using Tesselate;
+//
+using Typography.OpenFont;
 
 namespace Test_WinForm_TessGlyph
 {

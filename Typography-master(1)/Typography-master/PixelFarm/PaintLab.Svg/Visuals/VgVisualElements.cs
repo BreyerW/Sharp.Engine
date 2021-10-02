@@ -1,17 +1,14 @@
 ﻿//MIT, 2014-present, WinterDev
 
-using System;
-using System.Collections.Generic;
-
-using PixelFarm.Drawing;
 using PixelFarm.CpuBlit;
 using PixelFarm.CpuBlit.VertexProcessing;
+using PixelFarm.Drawing;
+using System;
+using System.Collections.Generic;
 
 
 namespace PaintLab.Svg
 {
-
-
     /// <summary>
     /// Base class of vg element that draw on rendering surface with painter. 
     /// </summary>

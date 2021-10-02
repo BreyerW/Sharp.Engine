@@ -36,7 +36,7 @@ namespace System.Text.Json.Serialization.Tests
                 JsonSerializer.Serialize(writer, value);
 
                 Debug.Assert(writer.BytesPending == 0);
-                long payloadLength =  writer.BytesCommitted - bytesWrittenSoFar;
+                long payloadLength = writer.BytesCommitted - bytesWrittenSoFar;
                 writer.WriteNumberValue(payloadLength);
                 writer.WriteEndArray();
             }

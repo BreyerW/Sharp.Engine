@@ -25,11 +25,11 @@
 //
 #endregion
 
+using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using OpenTK.Graphics;
 
 namespace OpenTK.Platform.MacOS
 {
@@ -157,7 +157,7 @@ namespace OpenTK.Platform.MacOS
             List<int> attribs = new List<int>();
 
             Debug.Print("Bits per pixel: {0}", color.BitsPerPixel);
-            
+
             if (color.BitsPerPixel > 0)
             {
                 if (!color.IsIndexed)
