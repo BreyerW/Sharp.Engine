@@ -13,6 +13,8 @@ namespace SharpSL.BackendRenderers.OpenGL
 {
     public class OpenGLRenderer : IBackendRenderer, IPlugin
     {
+
+
         #region IBackendRenderer implementation
 
         public Func<IntPtr, IntPtr, int> MakeCurrent { get; set; }
@@ -244,6 +246,7 @@ namespace SharpSL.BackendRenderers.OpenGL
             {
                 GL.GetActiveAttrib(Program, i, stringBuilder.Capacity, out _, out var size, out attribType, out var name);
                 Console.WriteLine(name + " " + attribType + " : " + size);
+			
                 if (!attribArray.ContainsKey(name))
                     attribArray.Add(name, (GL.GetAttribLocation(Program, name), size)); //TODO: change to bindAttrib via parsing all vertex formats and binding all fields?
             }

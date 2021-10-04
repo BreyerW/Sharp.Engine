@@ -16,8 +16,7 @@ namespace SharpAsset.AssetPipeline
             if (Unsafe.IsNullRef(ref asset) is false) return ref asset;
 
             var texture = new Texture();
-            texture.TBO = -1;
-            texture.FBO = -1;
+            
             texture.format = TextureFormat.RGBA;
             texture.FullPath = pathToFile;
             //var format=ImageInfo.(pathToFile); 
@@ -25,8 +24,10 @@ namespace SharpAsset.AssetPipeline
 
             texture.width = data.width;
             texture.height = data.height;
-            texture.bitmap = GC.AllocateUninitializedArray<byte>(data.bitmap.Length);
-            Unsafe.CopyBlockUnaligned(ref texture.bitmap[0], ref data.bitmap[0], (uint)data.bitmap.Length);
+            texture.data = GC.AllocateUninitializedArray<byte>(data.bitmap.Length+ Unsafe.SizeOf<int>(), true);
+            Unsafe.CopyBlockUnaligned(ref texture.data[0], ref data.bitmap[0], (uint)data.bitmap.Length);
+			texture.TBO = -1;
+            texture.FBO = -1;
 			Console.WriteLine (BitOperations.IsPow2(texture.width) +" : "+ BitOperations.IsPow2(texture.height));
             
             return ref this[Register(texture)];

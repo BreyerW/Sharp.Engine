@@ -193,7 +193,7 @@ namespace Sharp
                 PluginManager.backendRenderer.GenerateBuffers(Target.Texture, id);
                 tex.TBO = id[0];
                 PluginManager.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
-                PluginManager.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
+                PluginManager.backendRenderer.Allocate(ref tex.data is null ? ref Unsafe.NullRef<byte>() : ref tex.data[0], tex.width, tex.height, tex.format);
                 if (tex.FBO is -2)
                 {
                     PluginManager.backendRenderer.GenerateBuffers(Target.Frame, id);

@@ -10,6 +10,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 /*[StructLayout(LayoutKind.Explicit, Pack = 2)]
 public struct Matrix4X4
@@ -41,39 +42,37 @@ namespace SharpAsset
     [Serializable]
     public class Material : IDisposable, IEngineObject//IAsset
     {//TODO: load locations lazily LoadLocation on IBackendRenderer when binding property? and when constructing material for global props  
-
-
-        private const byte FLOAT = 0;
-        private const byte VECTOR2 = 1;
-        private const byte VECTOR3 = 2;
-        private const byte MATRIX4X4 = 3;
-        private const byte TEXTURE = 4;
-        private const byte MESH = 5;
-        private const byte COLOR4 = 6;
-        private const byte UVECTOR2 = 7;
+		private const byte INVALID = 0;
+        private const byte FLOAT = 1;
+        private const byte VECTOR2 = 2;
+        private const byte VECTOR3 = 3;
+        private const byte MATRIX4X4 = 4;
+        private const byte TEXTURE = 5;
+        private const byte MESH = 6;
+        private const byte COLOR4 = 7;
+        private const byte UVECTOR2 = 8;
         private const byte MATRIX4X4PTR = byte.MaxValue;
         private const byte COLOR4PTR = byte.MaxValue - 1;
 
         private static int lastShaderUsed = -1;
         private static Dictionary<Type, int> sizeTable = new Dictionary<Type, int>()
         {
-            [typeof(Vector2)] = Marshal.SizeOf<Vector2>(),
-            [typeof(Vector3)] = Marshal.SizeOf<Vector3>(),
-            [typeof(Vector4)] = Marshal.SizeOf<Vector4>(),
-            [typeof(Matrix4x4)] = Marshal.SizeOf<Matrix4x4>(),
-            [typeof(Texture)] = Marshal.SizeOf<int>(),
-            [typeof(Mesh)] = Marshal.SizeOf<int>(),
-            [typeof(Color)] = Marshal.SizeOf<Color>(),
-            [typeof(IntPtr)] = Marshal.SizeOf<IntPtr>(),
-            [typeof(float)] = Marshal.SizeOf<float>(),
-            [typeof(uint)] = Marshal.SizeOf<uint>(),
+            [typeof(Vector2)] = Unsafe.SizeOf<Vector2>(),
+            [typeof(Vector3)] = Unsafe.SizeOf<Vector3>(),
+            [typeof(Vector4)] = Unsafe.SizeOf<Vector4>(),
+            [typeof(Matrix4x4)] = Unsafe.SizeOf<Matrix4x4>(),
+            [typeof(Texture)] = Unsafe.SizeOf<IntPtr>(),
+            [typeof(Mesh)] = Unsafe.SizeOf<int>(),
+            [typeof(Color)] = Unsafe.SizeOf<Color>(),
+            [typeof(IntPtr)] = Unsafe.SizeOf<IntPtr>(),
+            [typeof(float)] = Unsafe.SizeOf<float>(),
+            [typeof(uint)] = Unsafe.SizeOf<uint>(),
         };
         [JsonInclude]
         //[JsonProperty]
         private int[] shadersId = Array.Empty<int>();
         private static Dictionary<(uint winId, string property), byte[]> globalParams = new Dictionary<(uint winId, string property), byte[]>();
-
-        [JsonInclude]//[JsonProperty]
+		[JsonInclude]//[JsonProperty]
         private Dictionary<string, byte[]> localParams;
 
         public bool IsBlendRequiredForPass(int pass)
@@ -81,6 +80,7 @@ namespace SharpAsset
             ref var shader = ref Pipeline.Get<Shader>().GetAsset(shadersId[pass]);
             return shader.dstColor is not BlendEquation.None;
         }
+		//convert all binds to async binds so that they can await until tbo, ebo etc is filled
         public void BindShader(int pass, in Shader shader)
         {
             if (pass >= shadersId.Length)
@@ -109,20 +109,31 @@ namespace SharpAsset
 				Unsafe.WriteUnaligned(ref prop[1],ptr);
 			}
         }
+		//change texture to use POH and include TBO in it along with bitmap 
         public void BindProperty(string propName, in Texture data)
         {
-            var i = TexturePipeline.nameToKey.IndexOf(data.Name.ToString());
 			ref var prop = ref CollectionsMarshal.GetValueRefOrAddDefault(localParams, propName, out var exists);
 			if (exists is false)
 			{
 				prop = new byte[sizeTable[data.GetType()] + 1];
 				prop[0] = TEXTURE;
 			}
-			Unsafe.WriteUnaligned(ref prop[1], i);
-        }
+			ref var t = ref Pipeline.Get<Texture>().GetAsset(data.Name.ToString());
+			Unsafe.WriteUnaligned(ref prop[1], t.DataAddr);
+
+		}
         public void BindProperty(string propName, in Color data)
         {
 			ref var prop = ref CollectionsMarshal.GetValueRefOrAddDefault(localParams, propName, out var exists);
+			//move these parts to shader attachment, remove constants like COLOR and sizeTable
+			//and instead rely on what info shader compiler produces
+			//then OrAddDefault change to OrNullRef
+			
+			
+			//create dictionary that will hold IntPtr with items that use them probably only Materials
+			//when mesh or texture gets destroyed scan dictionary and invalidate properties
+			//in other words replace with default values eg point texture to white texture
+			//do the same when resising pinned arrays except dont invalidate
 			if (exists is false)
 			{
 				prop = new byte[sizeTable[data.GetType()] + 1];
@@ -212,6 +223,10 @@ namespace SharpAsset
             }
             return ref Unsafe.NullRef<Mesh>();
         }
+		//TODO: now bugged since TBO is stored not id of texture
+		//either resort to GPU fetching texture if possible
+		//or store both id and tbo for textures
+		//do the same for mesh?
         public bool TryGetProperty(string prop, out Texture data)
         {
 
@@ -379,7 +394,7 @@ namespace SharpAsset
         }
         private void SendToGPU(in Shader shader, string prop, byte[] data)
         {
-            if (prop is not "mesh" && shader.uniformArray.ContainsKey(prop))
+            if (shader.uniformArray.ContainsKey(prop))
                 switch (data[0])
                 {
                     case FLOAT: PluginManager.backendRenderer.SendUniform1(shader.uniformArray[prop], ref data[1]); break;
@@ -390,11 +405,16 @@ namespace SharpAsset
                     case COLOR4: PluginManager.backendRenderer.SendUniform4(shader.uniformArray[prop], ref data[1]); break;
                     case MATRIX4X4: PluginManager.backendRenderer.SendMatrix4(shader.uniformArray[prop], ref data[1]); break;
                     case TEXTURE:
-                        TryGetProperty(prop, out Texture tex);
-                        PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop], ref Unsafe.As<int, byte>(ref tex.TBO)/*, Slot*/);
-                        break;
+						//Console.WriteLine("TBO: "+Unsafe.As<byte,int>(ref data[1]));
+                        //TryGetProperty(prop, out Texture tex);
+						unsafe
+						{
+							PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop],ref Unsafe.AsRef<byte>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer())/*, Slot*/);
+						}
+							break;
                     case MATRIX4X4PTR: /*unsafe { PluginManager.backendRenderer.SendMatrix4(Shader.uniformArray[prop], ref Unsafe.AsRef<Matrix4x4>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer()).M11); }*/ break;
-                }
+					case MESH: break;    
+			}
         }
         #region IDisposable Support
 

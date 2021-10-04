@@ -5,6 +5,7 @@ using Sharp.Physic;
 using SharpAsset;
 using SharpAsset.AssetPipeline;
 using SharpSL;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
@@ -61,7 +62,7 @@ namespace Sharp.Engine.Components
                 tex.width = cam.Width;
                 tex.height = cam.Height;
                 PluginManager.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
-                PluginManager.backendRenderer.Allocate(ref tex.bitmap is null ? ref Unsafe.NullRef<byte>() : ref tex.bitmap[0], tex.width, tex.height, tex.format);
+                PluginManager.backendRenderer.Allocate(ref tex.data is null ? ref Unsafe.NullRef<byte>() : ref tex.data[0], tex.width, tex.height, tex.format);
             }
         }
         protected void CreateNewTemporaryTexture(string name, TextureRole role, int width, int height, TextureFormat pixFormat)
@@ -71,7 +72,7 @@ namespace Sharp.Engine.Components
                 width = width,
                 height = height,
                 format = pixFormat,
-                bitmap = null,
+                data =GC.AllocateUninitializedArray<byte>(Unsafe.SizeOf<int>(),true),
                 FullPath = $"{name}.generated",
                 TBO = -1,
             };

@@ -96,7 +96,17 @@ namespace PluginAbstraction
     }
     public interface IBackendRenderer
     {
-        uint currentWindow { get; set; }
+		public const byte FLOAT = 0;
+		public const byte VECTOR2 = 1;
+		public const byte VECTOR3 = 2;
+		public const byte MATRIX4X4 = 3;
+		public const byte TEXTURE = 4;
+		public const byte MESH = 5;
+		public const byte COLOR4 = 6;
+		public const byte UVECTOR2 = 7;
+		public const byte MATRIX4X4PTR = byte.MaxValue;
+		public const byte COLOR4PTR = byte.MaxValue - 1;
+		uint currentWindow { get; set; }
         IntPtr CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext);
 
         Func<IntPtr, IntPtr, int> MakeCurrent { get; set; }

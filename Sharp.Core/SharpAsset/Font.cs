@@ -30,14 +30,14 @@ namespace SharpAsset
                     var newTex = new Texture()
                     {
                         FullPath = c + "_" + Name.ToString() + ".generated",
-                        TBO = -1,
-                        FBO = -1,
                         format = TextureFormat.A,
                         width = tex.width,
                         height = tex.height,
-                        bitmap = tex.bitmap
+                        data = tex.bitmap,
+						TBO = -1,
+                        FBO = -1,
                     };
-                    AssetPipeline.Pipeline.Get<Texture>().Register(newTex);
+                    Pipeline.Get<Texture>().Register(newTex);
                     data = new CharData() { metrics = mets, texture = newTex };
                     charDictionary.Add(c, data);
                     return data;
