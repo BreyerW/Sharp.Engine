@@ -37,7 +37,7 @@ namespace SharpAsset
 
         internal byte[] Indices;
         internal byte[] verts;
-        internal (int start,int end)[] subMeshesDescriptor;
+        internal int[] subMeshesDescriptor;
         public BoundingBox bounds;
 
         internal static Dictionary<string, byte[]> sharedMeshes = new Dictionary<string, byte[]>();
@@ -134,13 +134,13 @@ namespace SharpAsset
                 Array.Resize(ref subMeshesDescriptor, subMeshesDescriptor.Length + 1);
             else if (merge is false)
             {
-                subMeshesDescriptor = new (int,int)[2];
-                subMeshesDescriptor[0] = (Indices.Length / indexStride, verts.Length / vertStride);
+                subMeshesDescriptor = new int[2];
+                subMeshesDescriptor[0] = Indices.Length / indexStride/*, verts.Length / vertStride)*/;
                 //subMeshesDescriptor[0].end = verts.Length / vertStride;
             }
             if (merge is false)
             {
-                subMeshesDescriptor[^1] = ((Indices.Length + mesh.Indices.Length) / indexStride,(verts.Length + mesh.verts.Length) / mesh.vertStride);
+                subMeshesDescriptor[^1] = (Indices.Length + mesh.Indices.Length) / indexStride/*,(verts.Length + mesh.verts.Length) / mesh.vertStride)*/;
                 //subMeshesDescriptor[^1]= ;
             }
             Array.Resize(ref verts, verts.Length + mesh.verts.Length);

@@ -381,10 +381,10 @@ namespace SharpAsset
             else //if (mesh.subMeshesDescriptor is not null)
             {
 				//TODO: eliminate null descriptor
-                var start = startIndex is 0 ? 0 : mesh.subMeshesDescriptor[startIndex-1].start;
+                var start = startIndex is 0 ? 0 : mesh.subMeshesDescriptor[startIndex-1];
 				var end = endIndex is 0 ? mesh.subMeshesDescriptor.Length : endIndex;
                 
-                PluginManager.backendRenderer.Draw(mesh.indexStride, start, mesh.subMeshesDescriptor[end-1].start - start);
+                PluginManager.backendRenderer.Draw(mesh.indexStride, start, mesh.subMeshesDescriptor[end-1]- start);
             }
             //var tbo = 0;
             //PluginManager.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));//TODO: generalize this

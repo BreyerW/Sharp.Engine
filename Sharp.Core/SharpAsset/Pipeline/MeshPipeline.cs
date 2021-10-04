@@ -67,13 +67,13 @@ namespace SharpAsset.AssetPipeline
             byte[] finalVertices = new byte[0];
             int id = 0;
             (Vector3 Min, Vector3 Max) largestBound = default;
-            List<(int,int)> subMeshesDescription = new();
+            List<int> subMeshesDescription = new();
 
             foreach (var data in PluginManager.meshLoader.Import(pathToFile))
             {
                 if (id is 1)
                 {
-                    subMeshesDescription.Add((finalIndices.Length / indexStride,finalVertices.Length));
+                    subMeshesDescription.Add(finalIndices.Length / indexStride/*,finalVertices.Length)*/);
                     //subMeshesDescription.Add();
                 }
                 Array.Resize(ref finalIndices, finalIndices.Length + data.indices.Length);
@@ -95,7 +95,7 @@ namespace SharpAsset.AssetPipeline
 
                 if (id is not 0)
                 {
-                    subMeshesDescription.Add((finalIndices.Length / indexStride,finalVertices.Length));
+                    subMeshesDescription.Add(finalIndices.Length / indexStride/*,finalVertices.Length)*/);
                     //subMeshesDescription.Add();
                 }
 
