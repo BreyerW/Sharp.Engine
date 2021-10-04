@@ -37,7 +37,7 @@ namespace SharpAsset
 
         internal byte[] Indices;
         internal byte[] verts;
-        internal int[] subMeshesDescriptor;
+        internal (int start,int end)[] subMeshesDescriptor;
         public BoundingBox bounds;
 
         internal static Dictionary<string, byte[]> sharedMeshes = new Dictionary<string, byte[]>();
@@ -109,24 +109,20 @@ namespace SharpAsset
         public void LoadVertices(byte[] vertices)
         {
             verts = vertices;
-            // = true;
         }
         public void LoadIndices(byte[] indices)
         {
             Indices = indices;
-            //needUpdate = true;
         }
         public void LoadVertices<T>(Span<T> vertices) where T : struct, IVertex
         {
             VertType = typeof(T);
             verts = MemoryMarshal.AsBytes(vertices).ToArray();
-            //needUpdate = true;
         }
         public void LoadIndices<T>(Span<T> indices) where T : struct
         {
             indexStride = Marshal.SizeOf<T>();
             Indices = MemoryMarshal.AsBytes(indices).ToArray();
-            //needUpdate = true;
         }
         public void AddSubMesh(ref Mesh mesh, bool merge = false)
         {
@@ -135,17 +131,17 @@ namespace SharpAsset
             var oldVertsLength = verts.Length;
             var oldIndicesLength = Indices.Length;
             if (subMeshesDescriptor is not null && merge is false)
-                Array.Resize(ref subMeshesDescriptor, subMeshesDescriptor.Length + 2);
+                Array.Resize(ref subMeshesDescriptor, subMeshesDescriptor.Length + 1);
             else if (merge is false)
             {
-                subMeshesDescriptor = new int[4];
-                subMeshesDescriptor[0] = Indices.Length / indexStride;
-                subMeshesDescriptor[1] = verts.Length / vertStride;
+                subMeshesDescriptor = new (int,int)[2];
+                subMeshesDescriptor[0] = (Indices.Length / indexStride, verts.Length / vertStride);
+                //subMeshesDescriptor[0].end = verts.Length / vertStride;
             }
             if (merge is false)
             {
-                subMeshesDescriptor[^2] = (Indices.Length + mesh.Indices.Length) / indexStride;
-                subMeshesDescriptor[^1] = (verts.Length + mesh.verts.Length) / mesh.vertStride;
+                subMeshesDescriptor[^1] = ((Indices.Length + mesh.Indices.Length) / indexStride,(verts.Length + mesh.verts.Length) / mesh.vertStride);
+                //subMeshesDescriptor[^1]= ;
             }
             Array.Resize(ref verts, verts.Length + mesh.verts.Length);
             var slice = verts.AsSpan()[oldVertsLength..];

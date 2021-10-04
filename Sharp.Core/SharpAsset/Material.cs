@@ -378,11 +378,13 @@ namespace SharpAsset
 
             if (mesh.subMeshesDescriptor is null || (startIndex is 0 && endIndex is 0))
                 PluginManager.backendRenderer.Draw(mesh.indexStride, 0, mesh.Indices.Length);
-            else if (mesh.subMeshesDescriptor is not null)
+            else //if (mesh.subMeshesDescriptor is not null)
             {
-                endIndex = endIndex is 0 ? mesh.subMeshesDescriptor.Length / 2 : endIndex;
-                var start = startIndex is 0 ? 0 : mesh.subMeshesDescriptor[startIndex * 2 - 2];
-                PluginManager.backendRenderer.Draw(mesh.indexStride, start, mesh.subMeshesDescriptor[endIndex * 2 - 2] - start);
+				//TODO: eliminate null descriptor
+                var start = startIndex is 0 ? 0 : mesh.subMeshesDescriptor[startIndex-1].start;
+				var end = endIndex is 0 ? mesh.subMeshesDescriptor.Length : endIndex;
+                
+                PluginManager.backendRenderer.Draw(mesh.indexStride, start, mesh.subMeshesDescriptor[end-1].start - start);
             }
             //var tbo = 0;
             //PluginManager.backendRenderer.SendTexture2D(0, ref Unsafe.As<int, byte>(ref tbo));//TODO: generalize this
@@ -394,6 +396,7 @@ namespace SharpAsset
         }
         private void SendToGPU(in Shader shader, string prop, byte[] data)
         {
+			//TODO inline shader locations into data so that dict lookup is no longer needed on hot path
             if (shader.uniformArray.ContainsKey(prop))
                 switch (data[0])
                 {
