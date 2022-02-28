@@ -34,10 +34,10 @@ namespace SharpAsset
                         width = tex.width,
                         height = tex.height,
                         data = tex.bitmap,
-						TBO = -1,
+                        TBO = -1,
                         FBO = -1,
                     };
-                    Pipeline.Get<Texture>().Register(newTex);
+                    TexturePipeline.Register(newTex);
                     data = new CharData() { metrics = mets, texture = newTex };
                     charDictionary.Add(c, data);
                     return data;

@@ -189,7 +189,7 @@ namespace Sharp
             Span<int> id = stackalloc int[1];
             while (TexturePipeline.recentlyLoadedAssets.TryDequeue(out var i))
             {
-                ref var tex = ref Pipeline.Get<Texture>().GetAsset(i);
+                ref var tex = ref TexturePipeline.GetAsset(i);
                 PluginManager.backendRenderer.GenerateBuffers(Target.Texture, id);
                 tex.TBO = id[0];
                 PluginManager.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
@@ -209,7 +209,7 @@ namespace Sharp
             while (ShaderPipeline.recentlyLoadedAssets.TryDequeue(out var i))
             {
                 Console.WriteLine("shader allocation");
-                ref var shader = ref Pipeline.Get<Shader>().GetAsset(i);
+                ref var shader = ref ShaderPipeline.GetAsset(i);
                 PluginManager.backendRenderer.GenerateBuffers(Target.Shader, id);
                 shader.Program = id[0];
                 PluginManager.backendRenderer.GenerateBuffers(Target.VertexShader, id);
@@ -220,7 +220,7 @@ namespace Sharp
             }
             while (MeshPipeline.recentlyLoadedAssets.TryDequeue(out var i))
             {
-                ref var mesh = ref Pipeline.Get<Mesh>().GetAsset(i);
+                ref var mesh = ref MeshPipeline.GetAsset(i);
                 PluginManager.backendRenderer.GenerateBuffers(Target.Mesh, id);
                 mesh.VBO = id[0];
                 PluginManager.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
@@ -245,7 +245,7 @@ namespace Sharp
                     PluginManager.backendRenderer.BindBuffers(Target.Frame, cb.FBO);
                     foreach (var t in cb.targetTextures)
                     {
-                        ref var tex = ref Pipeline.Get<Texture>().GetAsset(t.texId);
+                        ref var tex = ref TexturePipeline.GetAsset(t.texId);
                         PluginManager.backendRenderer.BindRenderTexture(tex.TBO, t.role);
                     }
                     PluginManager.backendRenderer.BindBuffers(Target.Frame, 0);
