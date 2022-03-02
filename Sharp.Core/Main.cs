@@ -18,7 +18,7 @@ namespace Sharp
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
 
 			Pipeline.Initialize();
-
+			
 			var rotationX = Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, NumericsExtensions.Deg2Rad * 90);
 			var rotationY = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, NumericsExtensions.Deg2Rad * 90);
 			var rotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, -NumericsExtensions.Deg2Rad * 90);
@@ -46,8 +46,6 @@ namespace Sharp
 			MeshPipeline.Register(dSquare);
 			FontPipeline.Import(@"C:\Windows\Fonts\Arial.ttf");
 
-
-
 			// OpenTK.Graphics.GraphicsContext.ShareContexts = false;
 			SDL.SDL_SetHint(SDL.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 			SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
@@ -57,9 +55,11 @@ namespace Sharp
 			PluginManager.backendRenderer.Start();
 
 			var dummy = SDL.SDL_CreateWindow("", 0, 0, 1, 1, SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN | SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL); //convert dummy to splash screen?
-																																			 //
+																																			 //context creation need to be at the start to avoid accidental crash when rendering related object is created before context																														 //
 			SDL.SDL_GL_CreateContext(dummy);
 			var id = PluginManager.backendRenderer.CreateContext(SDL.SDL_GL_GetProcAddress, SDL.SDL_GL_GetCurrentContext);
+
+
 			MainWindow.contexts.Add(id);
 
 			PluginManager.backendRenderer.MakeCurrent += SDL.SDL_GL_MakeCurrent;

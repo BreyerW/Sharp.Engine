@@ -119,8 +119,8 @@ namespace SharpAsset
 				prop[0] = TEXTURE;
 			}
 			ref var t = ref TexturePipeline.GetAsset(data.Name.ToString());
-			//Unsafe.WriteUnaligned(ref prop[1], t.DataAddr);
-			Unsafe.WriteUnaligned(ref prop[1], t.TBO);
+			Unsafe.WriteUnaligned(ref prop[1], t.DataAddr);
+			//Unsafe.WriteUnaligned(ref prop[1], t.TBO);
 		}
 		public void BindProperty(string propName, in Color data)
 		{
@@ -410,11 +410,11 @@ namespace SharpAsset
 					case TEXTURE:
 						//Console.WriteLine("TBO: "+Unsafe.As<byte,int>(ref data[1]));
 						//TryGetProperty(prop, out Texture tex);
-						/*unsafe
+						unsafe
 						{
-							PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop], ref Unsafe.AsRef<byte>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer())/*, Slot/);
-						}*/
-				PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop],ref data[1]/*, Slot*/);
+							PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop], ref Unsafe.AsRef<byte>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer())/*, Slot*/);
+						}
+				//PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop],ref data[1]/*, Slot*/);
 			break;
 					case MATRIX4X4PTR: /*unsafe { PluginManager.backendRenderer.SendMatrix4(Shader.uniformArray[prop], ref Unsafe.AsRef<Matrix4x4>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer()).M11); }*/ break;
 					case MESH: break;

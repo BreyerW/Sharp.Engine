@@ -137,6 +137,7 @@ namespace Sharp.Editor
                             prevStates.Remove(comp);
                 if (historyMoved is false && !InputHandler.isKeyboardPressed && !InputHandler.isMouseDragging)//TODO: change to on mouse up/keyboard up?
                 {
+					//if()
                     foreach (var (comp, state) in prevStates)
                     {
                         var token = PluginManager.serializer.Serialize(comp, comp.GetType());
@@ -164,6 +165,8 @@ namespace Sharp.Editor
                             prevStates.GetOrAddValueRef(comp) = token;
                         }
                     }
+			
+
                 }
                 if (saveState is not null && historyMoved is false)
                 {

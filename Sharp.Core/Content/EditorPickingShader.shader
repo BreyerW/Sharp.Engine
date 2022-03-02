@@ -1,4 +1,5 @@
-﻿uniform vec4 colorId;
+﻿
+uniform vec4 colorId;
 uniform float enablePicking;
 uniform float alphaThreshold;
 uniform vec2 mousePos;

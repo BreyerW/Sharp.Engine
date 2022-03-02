@@ -140,12 +140,13 @@ namespace Sharp
 
                 Coroutine.AdvanceInstructions<WaitForStartOfFrame>(Coroutine.startOfFrameInstructions);
                 Coroutine.AdvanceInstructions<IEnumerator>(Coroutine.customInstructions);
-                while (SDL.SDL_PollEvent(out sdlEvent) != 0)
+                
+				while (SDL.SDL_PollEvent(out sdlEvent) != 0)
                 {
                     if (windows.ContainsKey(sdlEvent.window.windowID))
                         windows[sdlEvent.window.windowID].OnEvent(sdlEvent);
                 }
-                GenerateNewBuffers();
+                
                 PluginManager.backendRenderer.EnableState(RenderState.ScissorTest);
 
                 //Selection.IsSelectionDirty(System.Threading.CancellationToken.None);
@@ -172,7 +173,7 @@ namespace Sharp
                     Selection.OnSelectionDirty?.Invoke(Selection.Asset);
                     UI.isDirty = false;
                 }
-                Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
+				Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
                 //foreach(var pipeline in Pipeline.allPipelines.Values)
                 //	while(pipeline.recentlyLoadedAssets.TryDequeue(out var i)) //TODO
 
@@ -180,6 +181,7 @@ namespace Sharp
                 Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
                 //IdReferenceResolver._objectsToId.Clear();
                 //IdReferenceResolver._idToObjects.Clear();
+
                 Root.removedEntities.Clear();
                 Root.addedEntities.Clear();
             }
@@ -202,8 +204,8 @@ namespace Sharp
 
                     PluginManager.backendRenderer.BindRenderTexture(tex.TBO, TextureRole.Color0);
 
-                    PluginManager.backendRenderer.BindBuffers(Target.Frame, 0);
-                    PluginManager.backendRenderer.BindBuffers(Target.Texture, 0);
+                    //PluginManager.backendRenderer.BindBuffers(Target.Frame, 0);
+                    //PluginManager.backendRenderer.BindBuffers(Target.Texture, 0);
                 }
             }
             while (ShaderPipeline.recentlyLoadedAssets.TryDequeue(out var i))
@@ -248,8 +250,8 @@ namespace Sharp
                         ref var tex = ref TexturePipeline.GetAsset(t.texId);
                         PluginManager.backendRenderer.BindRenderTexture(tex.TBO, t.role);
                     }
-                    PluginManager.backendRenderer.BindBuffers(Target.Frame, 0);
-                    PluginManager.backendRenderer.BindBuffers(Target.Texture, 0);
+                    //PluginManager.backendRenderer.BindBuffers(Target.Frame, 0);
+                    //PluginManager.backendRenderer.BindBuffers(Target.Texture, 0);
                 }
             }
         }
@@ -257,8 +259,8 @@ namespace Sharp
         {
             PluginManager.backendRenderer.currentWindow = windowId;
             PluginManager.backendRenderer.MakeCurrent(handle, contexts[0]);
-
-            OnRenderFrame();
+			GenerateNewBuffers();
+			OnRenderFrame();
 
             var mainView = MainEditorView.mainViews[windowId];
             if (mainView.desktop is null) return;
@@ -349,7 +351,6 @@ namespace Sharp
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE: if (evt.windowID == MainWindowId) quit = true; else windows[evt.windowID].Close(); break;
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
                 case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
-                    GenerateNewBuffers();
                     MainEditorView.mainViews.TryGetValue(evt.windowID, out var mainView);
                     mainView.OnResize(evt.data1, evt.data2);
                     foreach (var (_, mainV) in MainEditorView.mainViews)
