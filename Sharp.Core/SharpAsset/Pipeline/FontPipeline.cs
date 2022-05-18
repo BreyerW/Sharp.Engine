@@ -8,6 +8,15 @@ namespace SharpAsset.AssetPipeline
 	[SupportedFiles(".ttf", ".otf")]
 	internal class FontPipeline : Pipeline<Font>
 	{
+		[ModuleInitializer]
+		internal static void LoadPipeline()
+		{
+			allPipelines.Add(typeof(FontPipeline).BaseType, instance);
+			extensionToTypeMapping.Add(".ttf", typeof(FontPipeline).BaseType);
+			extensionToTypeMapping.Add(".otf", typeof(FontPipeline).BaseType);
+		}
+
+		public static readonly FontPipeline instance = new();
 		public static float size = 18;
 
 		public override void ApplyAsset(in Font asset, object context)
@@ -19,6 +28,7 @@ namespace SharpAsset.AssetPipeline
 		{
 			throw new NotImplementedException();
 		}
+
 
 		protected override ref Font ImportInternal(string pathToFileOrSystemFont)
 		{

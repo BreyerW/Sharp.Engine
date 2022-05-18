@@ -76,14 +76,14 @@ namespace Sharp.Engine.Components
 				FullPath = $"{name}.generated",
 				TBO = -1,
 			};
-			var texId = TexturePipeline.Register(tex);
+			var texId = TexturePipeline.instance.Register(tex);
 			targetTextures.Add((texId, role));
 		}
 
 		protected void ReuseTemporaryTexture(string texName, TextureRole role)
 		{
 			ref var tex = ref TexturePipeline.GetAsset(texName);
-			var texId = TexturePipeline.Register(tex);
+			var texId = TexturePipeline.instance.Register(tex);
 			targetTextures.Add((texId, role));
 		}
 		protected void BindFrame()

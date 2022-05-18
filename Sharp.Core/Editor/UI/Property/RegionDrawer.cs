@@ -46,12 +46,12 @@ namespace Sharp.Editor.UI.Property
 			var mesh = new Mesh();
 			mesh.UsageHint = UsageHint.DynamicDraw;
 			mesh.FullPath = "dynamic_curve";
-			MeshPipeline.Register(mesh);
+			MeshPipeline.instance.Register(mesh);
 
 			var polyfill = new Mesh();
 			polyfill.UsageHint = UsageHint.DynamicDraw;
 			polyfill.FullPath = "dynamic_polyfill";
-			MeshPipeline.Register(polyfill);
+			MeshPipeline.instance.Register(polyfill);
 
 			polyfill2dMat = new Material();
 			polyfill2dMat.BindShader(0, (Shader)ShaderPipeline.Import(Application.projectPath + @"\Content\Polyfill2dEditorShader.shader"));

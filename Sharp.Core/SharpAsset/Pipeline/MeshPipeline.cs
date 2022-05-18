@@ -4,6 +4,7 @@ using Sharp.Core;
 using Sharp.Editor.Views;
 using Sharp.Physic;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
@@ -15,12 +16,22 @@ namespace SharpAsset.AssetPipeline
 	[SupportedFiles(".fbx", ".dae", ".obj")]
 	public class MeshPipeline : Pipeline<Mesh>
 	{
+		public static readonly MeshPipeline instance = new();
 		private static readonly VertexAttribute[] supportedAttribs = (VertexAttribute[])Enum.GetValues(typeof(VertexAttribute));
 		private static Type vertType;
 		private static int vertStride;
 		private static int indexStride;
 		private static int vec3Stride = Marshal.SizeOf<Vector3>();
 		private static int color4Stride = Marshal.SizeOf<Color>();
+
+		[ModuleInitializer]
+		internal static void LoadPipeline()
+		{
+			allPipelines.Add(typeof(MeshPipeline).BaseType, instance);
+			extensionToTypeMapping.Add(".fbx", typeof(MeshPipeline).BaseType);
+			extensionToTypeMapping.Add(".dae", typeof(MeshPipeline).BaseType);
+			extensionToTypeMapping.Add(".obj", typeof(MeshPipeline).BaseType);
+		}
 
 		static MeshPipeline()
 		{
@@ -140,6 +151,28 @@ namespace SharpAsset.AssetPipeline
 		public override void Export(string pathToExport, string format)
 		{
 			throw new NotImplementedException();
+		}
+		protected override void GenerateGraphicDeviceId()
+		{
+			Span<int> id = stackalloc int[1];
+			while (recentlyLoadedAssets.TryDequeue(out var i))
+			{
+				ref var mesh = ref GetAsset(i);
+				PluginManager.backendRenderer.GenerateBuffers(Target.Mesh, id);
+				mesh.VBO = id[0];
+				PluginManager.backendRenderer.BindBuffers(Target.Mesh, mesh.VBO);
+				//foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].Values)
+				//	PluginManager.backendRenderer.BindVertexAttrib(vertAttrib.type, Shader.attribArray[vertAttrib.shaderLocation], vertAttrib.dimension, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
+
+				PluginManager.backendRenderer.GenerateBuffers(Target.Indices, id);
+				mesh.EBO = id[0];
+				PluginManager.backendRenderer.BindBuffers(Target.Indices, mesh.EBO);
+				if (mesh.Indices is not null && mesh.Indices.Length > 0)
+				{
+					PluginManager.backendRenderer.Allocate(Target.Mesh, mesh.UsageHint, ref mesh.SpanToMesh[0], mesh.SpanToMesh.Length);
+					PluginManager.backendRenderer.Allocate(Target.Indices, mesh.UsageHint, ref mesh.Indices[0], mesh.Indices.Length);
+				}
+			}
 		}
 		private static int count = 0;
 		public override void ApplyAsset(in Mesh asset, object context)

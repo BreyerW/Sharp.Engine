@@ -105,7 +105,7 @@ namespace Sharp.Editor
 			var disc = CreatePrimitiveMesh.GenerateEditorDisc(Vector3.UnitY, Vector3.UnitX);
 
 			disc.UsageHint = UsageHint.DynamicDraw;
-			MeshPipeline.Register(disc);
+			MeshPipeline.instance.Register(disc);
 			discMaterial.BindProperty("mesh", disc);
 			discMaterial.BindProperty("len", new Vector2(17.5f));
 		}

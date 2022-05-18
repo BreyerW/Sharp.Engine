@@ -1,7 +1,9 @@
 ﻿using PluginAbstraction;
 using Sharp;
+using Sharp.Core;
 using SharpSL;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -11,6 +13,15 @@ namespace SharpAsset.AssetPipeline
 	[SupportedFiles(".shader", ".glsl")]
 	public class ShaderPipeline : Pipeline<Shader>
 	{
+		[ModuleInitializer]
+		internal static void LoadPipeline()
+		{
+			allPipelines.Add(typeof(ShaderPipeline).BaseType, instance);
+			extensionToTypeMapping.Add(".shader", typeof(ShaderPipeline).BaseType);
+			extensionToTypeMapping.Add(".glsl", typeof(ShaderPipeline).BaseType);
+		}
+
+		public static readonly ShaderPipeline instance = new();
 		protected override ref Shader ImportInternal(string pathToFile) //Change IAsset to INT
 		{
 			//var format = Path.GetExtension (pathToFile);
@@ -150,6 +161,23 @@ namespace SharpAsset.AssetPipeline
 		public override void ApplyAsset(in Shader asset, object context)
 		{
 			//throw new NotImplementedException();
+		}
+
+		protected override void GenerateGraphicDeviceId()
+		{
+			Span<int> id = stackalloc int[1];
+			while (recentlyLoadedAssets.TryDequeue(out var i))
+			{
+				Console.WriteLine("shader allocation");
+				ref var shader = ref GetAsset(i);
+				PluginManager.backendRenderer.GenerateBuffers(Target.Shader, id);
+				shader.Program = id[0];
+				PluginManager.backendRenderer.GenerateBuffers(Target.VertexShader, id);
+				shader.VertexID = id[0];
+				PluginManager.backendRenderer.GenerateBuffers(Target.FragmentShader, id);
+				shader.FragmentID = id[0];
+				PluginManager.backendRenderer.Allocate(shader.Program, shader.VertexID, shader.FragmentID, shader.VertexSource, shader.FragmentSource, shader.uniformArray, shader.attribArray);
+			}
 		}
 	}
 }

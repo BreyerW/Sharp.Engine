@@ -1,5 +1,6 @@
 ﻿using Sharp;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,12 +10,13 @@ namespace SharpAsset.AssetPipeline
 {
 	public abstract class Pipeline<T> : Pipeline where T : IAsset
 	{
+
 		private static T[] assets = new T[2];
 		internal static List<string> nameToKey = new List<string>();
 		public static Queue<int> recentlyLoadedAssets = new Queue<int>();
 		private protected Pipeline()
 		{
-			assetToPipelineMapping.Add(typeof(T), this);
+			assetToPipelineMapping.TryAdd(typeof(T), this);
 		}
 		protected ref T this[int index]
 		{
@@ -33,20 +35,28 @@ namespace SharpAsset.AssetPipeline
 		{
 			return ref GetAsset(nameToKey.IndexOf(name));
 		}
-		public static int Register(in T asset)
+		public int Register(in T asset)
 		{
 			var name = asset.Name.ToString();
 			if (nameToKey.Contains(name) is false)
 				nameToKey.Add(name);
 			var i = nameToKey.IndexOf(name);
-			if (i> assets.Length-1)
+			if (i > assets.Length - 1)
 				Array.Resize(ref assets, assets.Length * 2);
 			assets[i] = asset;
+			if (recentlyLoadedAssets.Count is 0)
+				Coroutine.Start(GenerateId());
 			recentlyLoadedAssets.Enqueue(i);
+
 			return i;
 		}
 		public abstract void ApplyAsset(in T asset, object context);
-
+		private IEnumerator GenerateId()
+		{
+			yield return new WaitForMakeCurrent();
+			GenerateGraphicDeviceId();
+		}
+		protected virtual void GenerateGraphicDeviceId() { }
 
 		protected virtual ref T ImportInternal(string pathToFile)
 		{
@@ -74,24 +84,6 @@ namespace SharpAsset.AssetPipeline
 		internal static Dictionary<Type, Pipeline> allPipelines = new Dictionary<Type, Pipeline>();
 		internal static Dictionary<string, Type> extensionToTypeMapping = new Dictionary<string, Type>();
 		internal static Dictionary<Type, Pipeline> assetToPipelineMapping = new Dictionary<Type, Pipeline>();
-
-		public static void Initialize()
-		{
-			if (allPipelines.Any()) return;
-			var type = typeof(Pipeline);
-			var subclasses = type.Assembly.GetTypes().Where(t => t.IsSubclassOf(type));
-			foreach (var subclass in subclasses)
-			{
-				if (subclass.GetCustomAttributes(typeof(SupportedFilesAttribute), false).FirstOrDefault() is not SupportedFilesAttribute attr)
-					continue;
-				var importer = Activator.CreateInstance(subclass) as Pipeline;
-				allPipelines.Add(importer.GetType().BaseType, importer);
-				foreach (var format in attr.supportedFileFormats)
-				{
-					extensionToTypeMapping.Add(format, importer.GetType().BaseType);
-				}
-			}
-		}
 
 		public static Pipeline Get(string extension)
 		{

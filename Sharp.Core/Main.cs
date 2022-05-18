@@ -17,8 +17,6 @@ namespace Sharp
 		{
 			Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
 
-			Pipeline.Initialize();
-			
 			var rotationX = Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, NumericsExtensions.Deg2Rad * 90);
 			var rotationY = Matrix4x4.CreateFromAxisAngle(Vector3.UnitZ, NumericsExtensions.Deg2Rad * 90);
 			var rotationZ = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, -NumericsExtensions.Deg2Rad * 90);
@@ -30,20 +28,20 @@ namespace Sharp
 			GenerateCubes(ref gizmo, rotationX, rotationY, rotationZ);
 			var screenRotate = CreatePrimitiveMesh.GenerateTorus(Matrix4x4.CreateScale(25) * Matrix4x4.Identity, "screen_circle", 0.015f, vertexColor: Manipulators.screenRotColor);
 
-			MeshPipeline.Register(gizmo);
-			MeshPipeline.Register(screenRotate);
-			MeshPipeline.Register(CreatePrimitiveMesh.GenerateCube(Matrix4x4.Identity));
-			MeshPipeline.Register(CreatePrimitiveMesh.GenerateCube(Matrix4x4.Identity, "cubeBB", addBarycentric: true));
-			MeshPipeline.Register(CreatePrimitiveMesh.GenerateCylinder(Matrix4x4.Identity));
-			MeshPipeline.Register(CreatePrimitiveMesh.GenerateCone(Matrix4x4.Identity));
-			MeshPipeline.Register(CreatePrimitiveMesh.GenerateTorus(Matrix4x4.Identity));
-			MeshPipeline.Register(CreatePrimitiveMesh.GenerateSquare(Matrix4x4.Identity));
-			MeshPipeline.Register(CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(2) * Matrix4x4.CreateTranslation(-1, -1, 0), "screen_space_square"));
-			MeshPipeline.Register(CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateTranslation(-0.5f, -0.5f, 0), "negative_square"));
-			MeshPipeline.Register(CreatePrimitiveMesh.GenerateLine());
+			MeshPipeline.instance.Register(gizmo);
+			MeshPipeline.instance.Register(screenRotate);
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateCube(Matrix4x4.Identity));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateCube(Matrix4x4.Identity, "cubeBB", addBarycentric: true));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateCylinder(Matrix4x4.Identity));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateCone(Matrix4x4.Identity));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateTorus(Matrix4x4.Identity));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateSquare(Matrix4x4.Identity));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(2) * Matrix4x4.CreateTranslation(-1, -1, 0), "screen_space_square"));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateTranslation(-0.5f, -0.5f, 0), "negative_square"));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateLine());
 			var dSquare = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.Identity, "dynamic_square");
 			dSquare.UsageHint = UsageHint.DynamicDraw;
-			MeshPipeline.Register(dSquare);
+			MeshPipeline.instance.Register(dSquare);
 			FontPipeline.Import(@"C:\Windows\Fonts\Arial.ttf");
 
 			// OpenTK.Graphics.GraphicsContext.ShareContexts = false;
