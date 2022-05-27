@@ -10,6 +10,8 @@ namespace SharpAsset.AssetPipeline
 	[SupportedFiles(".bmp", ".jpg", ".png", ".dds")]
 	public class TexturePipeline : Pipeline<Texture>
 	{
+		//private Dictionary<int, TextureRole> renderTextures = new();
+
 		[ModuleInitializer]
 		internal static void LoadPipeline()
 		{
@@ -37,23 +39,26 @@ namespace SharpAsset.AssetPipeline
 			texture.data = GC.AllocateUninitializedArray<byte>(data.bitmap.Length + Unsafe.SizeOf<int>(), true);
 			Unsafe.CopyBlockUnaligned(ref texture.data[0], ref data.bitmap[0], (uint)data.bitmap.Length);
 			texture.TBO = -1;
-			texture.FBO = -1;
 			Console.WriteLine(BitOperations.IsPow2(texture.width) + " : " + BitOperations.IsPow2(texture.height));
 
 			return ref this[Register(texture)];
 		}
-
 		public override void Export(string pathToExport, string format)
 		{
 			throw new NotImplementedException();
 		}
-
+		/*public int RegisterRenderTexture(in Texture asset, TextureRole role)
+		{
+			var id = Register(asset);
+			//renderTextures.Add(id, role);
+			return id;
+		}*/
 		public override void ApplyAsset(in Texture asset, object context)
 		{
 			throw new NotImplementedException();
 		}
 
-		protected override void GenerateGraphicDeviceId()
+		public override void GenerateGraphicDeviceId()
 		{
 			Span<int> id = stackalloc int[1];
 			while (recentlyLoadedAssets.TryDequeue(out var i))
@@ -63,14 +68,7 @@ namespace SharpAsset.AssetPipeline
 				tex.TBO = id[0];
 				PluginManager.backendRenderer.BindBuffers(Target.Texture, tex.TBO);
 				PluginManager.backendRenderer.Allocate(ref tex.data is null ? ref Unsafe.NullRef<byte>() : ref tex.data[0], tex.width, tex.height, tex.format);
-				if (tex.FBO is -2)
-				{
-					PluginManager.backendRenderer.GenerateBuffers(Target.Frame, id);
-					tex.FBO = id[0];
-					PluginManager.backendRenderer.BindBuffers(Target.Frame, tex.FBO);
 
-					PluginManager.backendRenderer.BindRenderTexture(tex.TBO, TextureRole.Color0);
-				}
 			}
 		}
 	}

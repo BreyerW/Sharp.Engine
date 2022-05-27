@@ -35,7 +35,6 @@ namespace SharpAsset
 						height = tex.height,
 						data = tex.bitmap,
 						TBO = -1,
-						FBO = -1,
 					};
 					TexturePipeline.instance.Register(newTex);
 					data = new CharData() { metrics = mets, texture = newTex };

@@ -186,32 +186,17 @@ namespace Sharp
 				Root.addedEntities.Clear();
 			}
 		}
-		private static void GenerateNewBuffers()
-		{
-			Span<int> id = stackalloc int[1];
-
-			//TODO: make virtual pipeline for framebuffer with unsupported export?
-			foreach (var added in Root.addedEntities)
-			{
-				if (added is CommandBufferComponent cb)
-				{
-					PluginManager.backendRenderer.GenerateBuffers(Target.Frame, id);
-					cb.FBO = id[0];
-					PluginManager.backendRenderer.BindBuffers(Target.Frame, cb.FBO);
-					foreach (var t in cb.targetTextures)
-					{
-						ref var tex = ref TexturePipeline.GetAsset(t.texId);
-						PluginManager.backendRenderer.BindRenderTexture(tex.TBO, t.role);
-					}
-				}
-			}
-		}
 		private void OnInternalRenderFrame()
 		{
 			PluginManager.backendRenderer.currentWindow = windowId;
 			PluginManager.backendRenderer.MakeCurrent(handle, contexts[0]);
+
+			TexturePipeline.instance.GenerateGraphicDeviceId();
+			MeshPipeline.instance.GenerateGraphicDeviceId();
+			ShaderPipeline.instance.GenerateGraphicDeviceId();
+
 			Coroutine.AdvanceInstructions<WaitForMakeCurrent>(Coroutine.makeCurrentInstructions);
-			GenerateNewBuffers();
+
 			OnRenderFrame();
 
 			var mainView = MainEditorView.mainViews[windowId];

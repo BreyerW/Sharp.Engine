@@ -10,10 +10,10 @@ namespace SharpAsset.AssetPipeline
 {
 	public abstract class Pipeline<T> : Pipeline where T : IAsset
 	{
-
 		private static T[] assets = new T[2];
 		internal static List<string> nameToKey = new List<string>();
 		public static Queue<int> recentlyLoadedAssets = new Queue<int>();
+
 		private protected Pipeline()
 		{
 			assetToPipelineMapping.TryAdd(typeof(T), this);
@@ -44,19 +44,14 @@ namespace SharpAsset.AssetPipeline
 			if (i > assets.Length - 1)
 				Array.Resize(ref assets, assets.Length * 2);
 			assets[i] = asset;
-			if (recentlyLoadedAssets.Count is 0)
-				Coroutine.Start(GenerateId());
+			//if (recentlyLoadedAssets.Count is 0)
+			//	Coroutine.Start(GenerateId());
 			recentlyLoadedAssets.Enqueue(i);
 
 			return i;
 		}
 		public abstract void ApplyAsset(in T asset, object context);
-		private IEnumerator GenerateId()
-		{
-			yield return new WaitForMakeCurrent();
-			GenerateGraphicDeviceId();
-		}
-		protected virtual void GenerateGraphicDeviceId() { }
+		public virtual void GenerateGraphicDeviceId() { }
 
 		protected virtual ref T ImportInternal(string pathToFile)
 		{

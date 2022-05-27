@@ -6,6 +6,7 @@ using SharpAsset;
 using SharpAsset.AssetPipeline;
 using SharpSL;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
@@ -15,6 +16,7 @@ namespace Sharp.Engine.Components
 	//TODO: requires CameraComponent
 	public abstract class CommandBufferComponent : Component//Renderer?
 	{
+		public static Queue<CommandBufferComponent> recentlyLoadedCommandBuffers = new();
 		protected Camera cam;
 		private CommandBufferComponent prevPass = null;
 		[JsonInclude]
@@ -52,8 +54,31 @@ namespace Sharp.Engine.Components
 		{
 			rendererMask = Extension.GetBitMaskFor<Renderer>();
 			cam = Parent.GetComponent<Camera>();
+			if (recentlyLoadedCommandBuffers.Count is 0)
+				Coroutine.Start(GenerateGraphicDeviceId());
+			recentlyLoadedCommandBuffers.Enqueue(this);
 		}
+		private IEnumerator GenerateGraphicDeviceId()
+		{
+			yield return new WaitForMakeCurrent();
+			GenerateIds();
+		}
+		public static void GenerateIds()
+		{
+			Span<int> id = stackalloc int[1];
 
+			while (recentlyLoadedCommandBuffers.TryDequeue(out var added))
+			{
+				PluginManager.backendRenderer.GenerateBuffers(Target.Frame, id);
+				added.FBO = id[0];
+				PluginManager.backendRenderer.BindBuffers(Target.Frame, added.FBO);
+				foreach (var (t, role) in added.targetTextures)
+				{
+					ref var tex = ref TexturePipeline.GetAsset(t);
+					PluginManager.backendRenderer.BindRenderTexture(tex.TBO, role);
+				}
+			}
+		}
 		private void OnCameraSizeChange(Camera cam)
 		{
 			foreach (var t in targetTextures)
@@ -83,6 +108,8 @@ namespace Sharp.Engine.Components
 		protected void ReuseTemporaryTexture(string texName, TextureRole role)
 		{
 			ref var tex = ref TexturePipeline.GetAsset(texName);
+			//tex.FBO = FBO;
+			//var texId = TexturePipeline.instance.Register(tex);
 			var texId = TexturePipeline.instance.Register(tex);
 			targetTextures.Add((texId, role));
 		}

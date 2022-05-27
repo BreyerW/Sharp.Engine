@@ -163,7 +163,7 @@ namespace SharpAsset.AssetPipeline
 			//throw new NotImplementedException();
 		}
 
-		protected override void GenerateGraphicDeviceId()
+		public override void GenerateGraphicDeviceId()
 		{
 			Span<int> id = stackalloc int[1];
 			while (recentlyLoadedAssets.TryDequeue(out var i))
