@@ -414,8 +414,8 @@ namespace SharpAsset
 						{
 							PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop], ref Unsafe.AsRef<byte>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer())/*, Slot*/);
 						}
-				//PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop],ref data[1]/*, Slot*/);
-			break;
+						//PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop],ref data[1]/*, Slot*/);
+						break;
 					case MATRIX4X4PTR: /*unsafe { PluginManager.backendRenderer.SendMatrix4(Shader.uniformArray[prop], ref Unsafe.AsRef<Matrix4x4>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer()).M11); }*/ break;
 					case MESH: break;
 				}

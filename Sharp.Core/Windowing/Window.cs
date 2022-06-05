@@ -181,7 +181,10 @@ namespace Sharp
 				Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
 				//IdReferenceResolver._objectsToId.Clear();
 				//IdReferenceResolver._idToObjects.Clear();
-
+				/*foreach (var removed in Root.removedEntities)
+				{
+					PluginManager.serializer.objToIdMapping.Remove(removed);
+				}*/
 				Root.removedEntities.Clear();
 				Root.addedEntities.Clear();
 			}

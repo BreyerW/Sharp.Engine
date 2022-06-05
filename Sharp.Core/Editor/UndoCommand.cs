@@ -85,6 +85,9 @@ namespace Sharp.Editor
 					var obj = index.GetInstanceObject<IEngineObject>();
 					ref var patched = ref prevStates.GetOrAddValueRef(obj);
 					patched = Delta.Apply(patched, undo);
+					//var str = Encoding.Unicode.GetString(patched);
+					//new JsonPopulator().PopulateObject(obj, str, obj.GetType());
+
 					PluginManager.serializer.Deserialize(patched, obj.GetType());
 					if (obj is IStartableComponent startable)//TODO: change to OnDeserialized callaback when System.Text.Json will support it
 						startable.Start();
