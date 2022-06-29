@@ -16,7 +16,7 @@ namespace Sharp
 		All,
 		Cull
 	}
-	public sealed class Entity : IEngineObject
+	public sealed class Entity : IEngineObject, IJsonOnDeserialized
 	{
 
 		internal static MultiValueDictionary<(BitMask components, BitMask tags), Entity> tagsMapping = new();//key is bit position also make it for system parts where mask defines what components entity has at least once
@@ -213,12 +213,17 @@ namespace Sharp
 				child.Dispose();
 			tagsMapping.Remove((componentsMask, tagsMask), this);
 			Extension.entities.RemoveEngineObject(this);
-
+			//PluginManager.serializer.objToIdMapping.Remove(this);
 		}
 
 		public override string ToString()
 		{
 			return name;
+		}
+
+		public void OnDeserialized()
+		{
+			throw new NotImplementedException();
 		}
 	}
 

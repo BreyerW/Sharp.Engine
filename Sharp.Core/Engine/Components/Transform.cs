@@ -8,6 +8,7 @@ namespace Sharp.Engine.Components
 	public class Transform : Component
 	{
 		private readonly static int mat4x4Stride = Marshal.SizeOf<Matrix4x4>();
+
 		[JsonInclude]
 		private Matrix4x4 modelMatrix = Matrix4x4.Identity;
 		[JsonInclude]
@@ -28,7 +29,7 @@ namespace Sharp.Engine.Components
 				return ref modelMatrix;
 			}
 		}
-		[JsonInclude]
+		[field: JsonInclude]
 		public Action onTransformChanged { get; set; }
 
 		public Vector3 Position

@@ -15,6 +15,7 @@ namespace Sharp
 {
 	public static class Extension
 	{
+
 		private static Dictionary<string, int> flagToBitPositionMapping = new()//TODO: replace with generated enum?
 		{
 		};
@@ -51,6 +52,10 @@ namespace Sharp
 					abstractCompToBitMaskMapping[typeof(Behaviour)].SetFlag(index);
 				}
 			}
+		}
+		public static void DisposeAttachedObject(in this Guid id)
+		{
+
 		}
 		public static BitMask GetBitMaskFor<T>() where T : Component
 		{

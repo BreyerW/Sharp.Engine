@@ -53,8 +53,9 @@ namespace Sharp.Editor.Views
 				{
 					if (removed is Entity)
 					{
-						tree.Nodes.Remove(flattenedTree[removed.GetInstanceID()]);
-						flattenedTree.Remove(removed.GetInstanceID());
+						var id = removed.GetInstanceID();
+						tree.Nodes.Remove(flattenedTree[id]);
+						flattenedTree.Remove(id);
 					}
 				}
 			if (Root.addedEntities.Count > 0)

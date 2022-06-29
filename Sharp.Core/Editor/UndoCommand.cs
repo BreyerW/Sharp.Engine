@@ -85,9 +85,6 @@ namespace Sharp.Editor
 					var obj = index.GetInstanceObject<IEngineObject>();
 					ref var patched = ref prevStates.GetOrAddValueRef(obj);
 					patched = Delta.Apply(patched, undo);
-					//var str = Encoding.Unicode.GetString(patched);
-					//new JsonPopulator().PopulateObject(obj, str, obj.GetType());
-
 					PluginManager.serializer.Deserialize(patched, obj.GetType());
 					if (obj is IStartableComponent startable)//TODO: change to OnDeserialized callaback when System.Text.Json will support it
 						startable.Start();
@@ -138,6 +135,9 @@ namespace Sharp.Editor
 					foreach (var removed in Root.removedEntities)
 						if (removed is IEngineObject comp)
 							prevStates.Remove(comp);
+				if (InputHandler.isKeyboardPressed || InputHandler.isMouseDragging)
+					yield return new WaitForEndOfFrame();
+				Console.WriteLine(InputHandler.isKeyboardPressed || InputHandler.isMouseDragging);
 				if (historyMoved is false && !InputHandler.isKeyboardPressed && !InputHandler.isMouseDragging)//TODO: change to on mouse up/keyboard up?
 				{
 					//if(Editor.isObjectsDirty is DirtyState.All)

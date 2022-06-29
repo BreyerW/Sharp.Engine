@@ -6,6 +6,7 @@ using Newtonsoft.Json.Serialization;
 using Sharp;
 using Sharp.Core;
 using Sharp.Engine.Components;
+using Sharp.Serializer;
 using SharpAsset;
 using System;
 using System.Collections;
@@ -16,90 +17,210 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json.Serialization;
 
-public class JsonPopulator
+public static class JsonPopulator
 {
-	public
-	   void PopulateObject<T>(T target, string jsonSource) where T : class =>
-   PopulateObject(target, jsonSource, typeof(T));
 
-	void OverwriteProperty<T>(T target, JToken updatedProperty) where T : class =>
-		   OverwriteProperty(target, updatedProperty, typeof(T));
-
-	public void PopulateObject(object target, string jsonSource, Type type)
+	public static object PopulateObject(this JsonSerializer serializer, object target, string jsonSource, Type type)
 	{
-		var json = JObject.Parse(jsonSource);
 
-		foreach (var property in json.Properties())
+		JsonTextReader reader = new JsonTextReader(new StringReader(jsonSource));
+		reader.Read();
+		if (reader.TokenType is JsonToken.StartObject)
+			reader.Read();
+		if (reader.Value is string and "$id" or "$ref")
 		{
-			OverwriteProperty(target, property, type);
+			reader.Read();
+			reader.Read();
 		}
+		if (reader.Value is string and "$type")
+		{
+			reader.Read();
+			reader.Read();
+		}
+		//if (reader.Value is string and "$ref")
+		//just use resolvereference since $ref contains no data
+		//	else
+		while (reader.TokenType is not JsonToken.EndObject)
+		{
+			OverwriteProperty(serializer, target, reader, type);
+		}
+		reader.Read();
+		(target as IJsonOnDeserialized)?.OnDeserialized();
+		return target;
 	}
-	private void PopulateObject(object target, JProperty property, Type type)
+	public static object PopulateObject(this JsonSerializer serializer, string jsonSource, Type type)
 	{
-		OverwriteProperty(target, property, type);
+		JsonTextReader reader = new JsonTextReader(new StringReader(jsonSource));
+		var target = serializer.PopulateObject(reader, type);
+		(target as IJsonOnDeserialized)?.OnDeserialized();
+		return target;
 	}
-	void OverwriteProperty(object target, JToken updatedProperty, Type type)
+	public static object PopulateObject(this JsonSerializer serializer, JsonReader reader, Type type)
 	{
-		var propName = "";
-		if (updatedProperty is JProperty prop)
-			propName = prop.Name;
-		else return;
-		object parsedValue;
+		object target = null;
+		if (type.IsPrimitive || type == typeof(DateTime) || type == typeof(decimal) || type == typeof(string))
+		{
+			var t = reader.Value;
+			if (type == typeof(float))
+				t = (float)(double)t;
+			else if (type == typeof(int))
+				t = (int)(long)t;
+			else if (type == typeof(byte))
+				t = (byte)(long)t;
+			else if (type == typeof(uint))
+				t = (uint)(long)t;
+			reader.Read();
+			return t;
+		}
+		else if (type.IsArray)
+		{
+			var arrConverter = FindCustomConverter(serializer, type);
+			target = arrConverter.ReadJson(reader, type, null, serializer);
+			reader.Read();
+			return target;
+		}
+		reader.Read();
+		if (reader.TokenType is JsonToken.StartObject)
+			reader.Read();
+		var id = string.Empty;
+		var valueId = string.Empty;
+		if (reader.Value is string and "$id" or "$ref")
+		{
+			id = reader.Value as string;
+			reader.Read();
+			valueId = reader.Value as string;
+			reader.Read();
+		}
+		if (reader.Value is string and "$type")
+		{
+			reader.Read();
+			reader.Read();
+		}
+		if (valueId is not null)
+			target = serializer.ReferenceResolver.ResolveReference(serializer, valueId) ?? RuntimeHelpers.GetUninitializedObject(type);
+		else
+			target = RuntimeHelpers.GetUninitializedObject(type);
+		//if (reader.Value is string and "$ref")
+		//just use resolvereference since $ref contains no data
+		//	else
+		while (reader.TokenType is not JsonToken.EndObject)
+		{
+			OverwriteProperty(serializer, target, reader, type);
+		}
+		reader.Read();
+		(target as IJsonOnDeserialized)?.OnDeserialized();
+		return target;
+	}
+	private static Newtonsoft.Json.JsonConverter FindCustomConverter(JsonSerializer serializer, Type propertyType)
+	{
+		foreach (var conv in serializer.Converters)
+			if (conv.CanConvert(propertyType))
+				return conv;
+		return null;
+	}
+	static void OverwriteProperty(JsonSerializer serializer, object target, JsonReader reader, Type type)
+	{
+
+		var propName = (string)reader.Value;
+		reader.Read();
+		object parsedValue = null;
 		/*if (propName is "$ref")
 		{
 			parsedValue= updatedProperty.Value<Guid>()z.GetInstanceObject();
 		}
 		else*/
-		//var posfield = type.GetField("position", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-		var propertyInfo = type.GetField(propName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);//
-		{
-
-
-			if (propertyInfo == null)
+		var tmpType = type;
+		var propertyInfo = tmpType.GetField(propName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+		if (propertyInfo is null)
+			while (tmpType.BaseType is not null && propertyInfo is null)
 			{
-				return;
+				tmpType = tmpType.BaseType;
+				propertyInfo = tmpType.GetField(propName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
 			}
 
-			var propertyType = propertyInfo.FieldType;
+		if (propertyInfo == null)
+		{
+			reader.Skip();
+			reader.Read();
+			return;
+		}
+		var contract = serializer.ContractResolver.ResolveContract(target.GetType()) as JsonObjectContract;
+		var p = contract.Properties.GetClosestMatchProperty(propName);
 
+		if (p.Ignored)
+		{
+			reader.Skip();
+			reader.Read();
+			return;
+		}
+		//we ignore InternalConverter because all of them have wrong deserialize support for reference handling. 
+		var converter = contract.Converter;//contract.Converter is null ? contract.InternalConverter : 
+		var propertyType = propertyInfo.FieldType;
 
-			if (propertyType.IsPrimitive || propertyType == typeof(decimal) || propertyType == typeof(string) || propertyType == typeof(DateTime) || propertyType == typeof(DateTimeOffset) || propertyType == typeof(Guid) || propertyType == typeof(TimeSpan) || propertyType == typeof(Vector3))//|| propertyType == typeof(Matrix4x4)
+		if (propertyType.IsPrimitive || propertyType == typeof(DateTime) || propertyType == typeof(decimal) || propertyType == typeof(string))
+		{
+			parsedValue = reader.Value;
+			if (propertyType == typeof(float))
+				parsedValue = (float)(double)parsedValue;
+
+			reader.Read();
+		}
+		else if (propertyType.IsArray)
+		{
+			var arrConverter = FindCustomConverter(serializer, propertyType);
+			parsedValue = arrConverter.ReadJson(reader, propertyType, null, serializer);
+			reader.Read();
+		}
+		else
+		{
+			var customConverter = FindCustomConverter(serializer, propertyType) ?? converter;
+			if (customConverter is null)
 			{
-				parsedValue =
-					(updatedProperty as JProperty).Value.ToObject(propertyType);
+				if (reader.TokenType is JsonToken.StartObject)
+					reader.Read();
+				var id = string.Empty;
+				var valueId = string.Empty;
+				if (reader.Value is string and "$id" or "$ref")
+				{
+					id = reader.Value as string;
+					reader.Read();
+					valueId = reader.Value as string;
+					reader.Read();
+				}
+				if (reader.Value is string and "$type")
+				{
+					reader.Read();
+					reader.Read();
+				}
+				if (propertyType.IsClass)
+				{
+					if (id is "$id")
+					{
+						var o = RuntimeHelpers.GetUninitializedObject(propertyType);
+						serializer.ReferenceResolver.AddReference(null, valueId, o);
+						parsedValue = o;
+					}
+					else
+						parsedValue = serializer.ReferenceResolver.ResolveReference(null, valueId);
+				}
+				else
+					parsedValue = RuntimeHelpers.GetUninitializedObject(propertyType);
+
+				while (reader.TokenType is not JsonToken.EndObject)
+				{
+					OverwriteProperty(serializer, parsedValue, reader, propertyType);
+				}
+				(parsedValue as IJsonOnDeserialized)?.OnDeserialized();
+				reader.Read();
 			}
 			else
 			{
-
-				parsedValue = propertyInfo.GetValue(target);
-				var obj = ((JProperty)updatedProperty).Value as JObject;
-				foreach (var item in obj.Properties())
-				{
-					PopulateObject(
-						parsedValue,
-						 item,
-						propertyType);
-				}
+				parsedValue = customConverter.ReadJson(reader, propertyType, null, serializer);
 			}
 		}
-		if (target.GetType().IsValueType)
-		{
-			var serializer = new JsonSerializer();
-			var contract = serializer.ContractResolver.ResolveContract(target.GetType()) as JsonObjectContract;
-			var p = contract.Properties.GetClosestMatchProperty(propName);
-			p.ValueProvider.SetValue(target, parsedValue);
-		}
-		else
-			propertyInfo.SetValue(target, parsedValue);
-	}
-	[StructLayout(LayoutKind.Explicit)]
-	private sealed class RawObjectData
-	{
-		[FieldOffset(0)]
-#pragma warning disable SA1401 // Fields should be private
-		public byte Data;
-#pragma warning restore SA1401
+		p.ValueProvider.SetValue(target, parsedValue);
 	}
 	/*public virtual void PopulateObject(object obj, string jsonData)
 	{

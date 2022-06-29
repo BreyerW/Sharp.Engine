@@ -138,8 +138,8 @@ namespace Sharp
 			while (!quit)
 			{
 
-				Coroutine.AdvanceInstructions<WaitForStartOfFrame>(Coroutine.startOfFrameInstructions);
-				Coroutine.AdvanceInstructions<IEnumerator>(Coroutine.customInstructions);
+				Coroutine.AdvanceInstructions<WaitForStartOfFrame>();
+				Coroutine.AdvanceInstructions<IEnumerator>();
 
 				while (SDL.SDL_PollEvent(out sdlEvent) != 0)
 				{
@@ -173,12 +173,12 @@ namespace Sharp
 					Selection.OnSelectionDirty?.Invoke(Selection.Asset);
 					UI.isDirty = false;
 				}
-				Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
+				Coroutine.AdvanceInstructions<WaitForEndOfFrame>();
 				//foreach(var pipeline in Pipeline.allPipelines.Values)
 				//	while(pipeline.recentlyLoadedAssets.TryDequeue(out var i)) //TODO
 
 				Time.SetTime();
-				Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
+				Coroutine.AdvanceInstructions<WaitForSeconds>();
 				//IdReferenceResolver._objectsToId.Clear();
 				//IdReferenceResolver._idToObjects.Clear();
 				/*foreach (var removed in Root.removedEntities)
@@ -198,7 +198,7 @@ namespace Sharp
 			MeshPipeline.instance.GenerateGraphicDeviceId();
 			ShaderPipeline.instance.GenerateGraphicDeviceId();
 
-			Coroutine.AdvanceInstructions<WaitForMakeCurrent>(Coroutine.makeCurrentInstructions);
+			Coroutine.AdvanceInstructions<WaitForMakeCurrent>();
 
 			OnRenderFrame();
 
@@ -295,10 +295,10 @@ namespace Sharp
 					mainView.OnResize(evt.data1, evt.data2);
 					foreach (var (_, mainV) in MainEditorView.mainViews)
 						mainV.desktop.Update();
-					Coroutine.AdvanceInstructions<WaitForEndOfFrame>(Coroutine.endOfFrameInstructions);
+					Coroutine.AdvanceInstructions<WaitForEndOfFrame>();
 
 					Time.SetTime();
-					Coroutine.AdvanceInstructions<WaitForSeconds>(Coroutine.timeInstructions);
+					Coroutine.AdvanceInstructions<WaitForSeconds>();
 
 					Root.removedEntities.Clear();
 					Root.addedEntities.Clear();

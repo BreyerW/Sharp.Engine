@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sharp
 {
+	// TODO: maybe AdvanceInstructions shouldnt rely on generic instead rely on type queue allowing insterting custom instructions without dedicated slot for them. it would require calling AdvanceInstruction per new entry in queue
 	public static class Coroutine
 	{
 		internal static Queue<IEnumerator> customInstructions = new Queue<IEnumerator>();
@@ -16,8 +17,34 @@ namespace Sharp
 		internal static Queue<IEnumerator> makeCurrentInstructions = new Queue<IEnumerator>();
 
 		//TODO: optimize this
-		internal static void AdvanceInstructions<T>(Queue<IEnumerator> instructions) where T : IEnumerator
+		internal static void AdvanceInstructions<T>() where T : IEnumerator
 		{
+			Queue<IEnumerator> instructions;
+			if (typeof(T) == typeof(WaitForEndOfFrame))
+			{
+				instructions = endOfFrameInstructions;
+				//endOfFrameInstructions.Clear();
+			}
+			else if (typeof(T) == typeof(WaitForStartOfFrame))
+			{
+				instructions = startOfFrameInstructions;
+				//startOfFrameInstructions.Clear();
+			}
+			else if (typeof(T) == typeof(WaitForSeconds) || typeof(T) == typeof(WaitForSecondsScaled))
+			{
+				instructions = timeInstructions;
+				//timeInstructions.Clear();
+			}
+			else if (typeof(T) == typeof(WaitForMakeCurrent))
+			{
+				instructions = makeCurrentInstructions;
+				//makeCurrentInstructions.Clear();
+			}
+			else
+			{
+				instructions = customInstructions;
+				//customInstructions.Clear();
+			}
 			var len = instructions.Count;
 			var i = 0;
 			while (i < len)

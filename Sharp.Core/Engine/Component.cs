@@ -65,6 +65,7 @@ namespace Sharp
 		{
 			active = false;
 			Extension.entities.RemoveEngineObject(this);
+			//Extension.objectToIdMapping.Remove(this);
 			PluginManager.serializer.objToIdMapping.Remove(this);
 		}
 

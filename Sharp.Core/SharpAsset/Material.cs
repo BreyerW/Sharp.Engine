@@ -69,10 +69,9 @@ namespace SharpAsset
 			[typeof(uint)] = Unsafe.SizeOf<uint>(),
 		};
 		[JsonInclude]
-		//[JsonProperty]
 		private int[] shadersId = Array.Empty<int>();
 		private static Dictionary<(uint winId, string property), byte[]> globalParams = new Dictionary<(uint winId, string property), byte[]>();
-		[JsonInclude]//[JsonProperty]
+		[JsonInclude]
 		private Dictionary<string, byte[]> localParams;
 
 		public bool IsBlendRequiredForPass(int pass)
