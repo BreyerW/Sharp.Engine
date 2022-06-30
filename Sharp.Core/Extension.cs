@@ -13,6 +13,7 @@ using System.Threading;
 
 namespace Sharp
 {
+	//TODO: ArrayComponent<T> as workaround for lack of support for multiple components of same type 
 	public static class Extension
 	{
 

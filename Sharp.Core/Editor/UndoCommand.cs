@@ -1,5 +1,5 @@
 ﻿using Fossil;
-using Microsoft.Collections.Extensions;
+//using Microsoft.Collections.Extensions;
 using Sharp.Core;
 using Sharp.Engine.Components;
 using System;
@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Sharp.Editor
@@ -22,7 +23,7 @@ namespace Sharp.Editor
 	public class UndoCommand : IMenuCommand
 	{
 		private static Dictionary<Guid, (string label, byte[] undo, byte[] redo)> saveState = new Dictionary<Guid, (string label, byte[] undo, byte[] redo)>();
-		internal static DictionarySlim<IEngineObject, byte[]> prevStates = new();
+		internal static Dictionary<IEngineObject, byte[]> prevStates = new();
 		internal static LinkedList<History> snapshots = new LinkedList<History>();
 
 		internal static LinkedListNode<History> currentHistory;
@@ -83,7 +84,7 @@ namespace Sharp.Editor
 				else if (label is "changed")
 				{
 					var obj = index.GetInstanceObject<IEngineObject>();
-					ref var patched = ref prevStates.GetOrAddValueRef(obj);
+					ref var patched = ref CollectionsMarshal.GetValueRefOrNullRef(prevStates, obj);
 					patched = Delta.Apply(patched, undo);
 					PluginManager.serializer.Deserialize(patched, obj.GetType());
 					if (obj is IStartableComponent startable)//TODO: change to OnDeserialized callaback when System.Text.Json will support it
@@ -119,25 +120,26 @@ namespace Sharp.Editor
 
 						if (added is Entity ent)
 						{
-							prevStates.GetOrAddValueRef(ent) = PluginManager.serializer.Serialize(ent, ent.GetType());
-							saveState[ent.GetInstanceID()] = ("addedEntity", null, prevStates.GetOrAddValueRef(ent));
+							var bytes = PluginManager.serializer.Serialize(ent, ent.GetType());
+							CollectionsMarshal.GetValueRefOrAddDefault(prevStates, ent, out _) = bytes;
+							saveState[ent.GetInstanceID()] = ("addedEntity", null, bytes);
 						}
 						else if (added is Component comp)
 						{
-							if (prevStates.TryGetValue(comp, out _)) throw new InvalidOperationException("unexpected add to already existing key");
+							//if (prevStates.TryGetValue(comp, out _)) throw new InvalidOperationException("unexpected add to already existing key");
+							var bytes = PluginManager.serializer.Serialize(comp, comp.GetType());
+							CollectionsMarshal.GetValueRefOrAddDefault(prevStates, comp, out _) = bytes;
 
-							prevStates.GetOrAddValueRef(comp) = PluginManager.serializer.Serialize(comp, comp.GetType());
-
-							saveState[comp.GetInstanceID()] = ("addedComponent", null, prevStates.GetOrAddValueRef(comp));
+							saveState[comp.GetInstanceID()] = ("addedComponent", null, bytes);
 						}
 					};
 				if (Root.removedEntities.Count > 0)
 					foreach (var removed in Root.removedEntities)
 						if (removed is IEngineObject comp)
 							prevStates.Remove(comp);
-				if (InputHandler.isKeyboardPressed || InputHandler.isMouseDragging)
-					yield return new WaitForEndOfFrame();
-				Console.WriteLine(InputHandler.isKeyboardPressed || InputHandler.isMouseDragging);
+				//if (InputHandler.isKeyboardPressed || InputHandler.isMouseDragging)
+				//yield return new WaitForEndOfFrame();
+				//Console.WriteLine(InputHandler.isKeyboardPressed || InputHandler.isMouseDragging);
 				if (historyMoved is false && !InputHandler.isKeyboardPressed && !InputHandler.isMouseDragging)//TODO: change to on mouse up/keyboard up?
 				{
 					//if(Editor.isObjectsDirty is DirtyState.All)
@@ -165,7 +167,7 @@ namespace Sharp.Editor
 								var delta1 = Delta.Create(prevObjInBytes, currObjInBytes);
 								saveState[comp.GetInstanceID()] = ("changed", delta2, delta1);
 							}
-							prevStates.GetOrAddValueRef(comp) = token;
+							CollectionsMarshal.GetValueRefOrAddDefault(prevStates, comp, out _) = token;
 						}
 					}
 					/*else if(Editor.isObjectsDirty is DirtyState.OneOrMore)

@@ -1,5 +1,4 @@
-﻿using Microsoft.Collections.Extensions;
-using PluginAbstraction;
+﻿using PluginAbstraction;
 using SDL2;
 using Sharp.Core;
 using Sharp.Editor.Views;
@@ -19,9 +18,12 @@ using System.Text;
 
 namespace Sharp
 {
-	[Guid("316B205A-2313-4317-80A1-B0FF49D865D5")]
 	public abstract class Window//investigate GetWindowData
 	{
+		private static Window mainWindow;
+		private static Window tooltipWindow;
+		private static Window previewWindow;
+
 		private static bool quit = false;
 		private static SDL.SDL_EventFilter filter = OnResize;
 
@@ -29,34 +31,30 @@ namespace Sharp
 		public static Action onBeforeNextFrame;
 		public static List<IntPtr> contexts = new List<IntPtr>();
 
-		public static OrderedDictionary<uint, Window> windows = new OrderedDictionary<uint, Window>();
+		public static Dictionary<uint, Window> windows = new();
 
 		public static uint MainWindowId
 		{
-			get
-			{
-				int id = 0;
-				return windows[id].windowId;
-			}
+			get => mainWindow.windowId;
 		}
 
 		public static uint TooltipWindowId
 		{
-			get { int id = 1; return windows[id].windowId; }
+			get => tooltipWindow.windowId;
 		}
 
 		public static uint PreviewWindowId
 		{
-			get { int id = 2; return windows[id].windowId; }
+			get => previewWindow.windowId;
 		}
 
 		//public static uint WhereDragStartedWindowId {
 		//  get { return }
 		//}
-		public static uint LastCreatedWindowId
+		/*public static uint LastCreatedWindowId
 		{
 			get { return windows[windows.Count - 1].windowId; }
-		}
+		}*/
 
 		public static uint FocusedWindowId
 		{
@@ -127,7 +125,12 @@ namespace Sharp
 				handle = SDL.SDL_CreateWindowFrom(existingWin);
 			windowId = SDL.SDL_GetWindowID(handle);
 			windows.Add(windowId, this);
-
+			if (windows.Count is 1)
+				mainWindow = this;
+			else if (windows.Count is 2)
+				tooltipWindow = this;
+			else if (windows.Count is 3)
+				previewWindow = this;
 			new MainEditorView(windowId);
 			onRenderFrame += OnInternalRenderFrame;
 		}

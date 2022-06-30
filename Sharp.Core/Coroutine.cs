@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace Sharp
 {
+	//use linkedlist for appropiate order of coroutines
+	/// </summary>
 	// TODO: maybe AdvanceInstructions shouldnt rely on generic instead rely on type queue allowing insterting custom instructions without dedicated slot for them. it would require calling AdvanceInstruction per new entry in queue
 	public static class Coroutine
 	{
@@ -15,7 +17,12 @@ namespace Sharp
 		internal static Queue<IEnumerator> startOfFrameInstructions = new Queue<IEnumerator>();
 		internal static Queue<IEnumerator> timeInstructions = new Queue<IEnumerator>();
 		internal static Queue<IEnumerator> makeCurrentInstructions = new Queue<IEnumerator>();
+		private static LinkedList<Queue<IEnumerable>> instructionList;
 
+		internal static void InitializeCoroutineQueue(params Type[] types)
+		{
+
+		}
 		//TODO: optimize this
 		internal static void AdvanceInstructions<T>() where T : IEnumerator
 		{

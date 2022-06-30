@@ -1,5 +1,4 @@
-﻿using Microsoft.Collections.Extensions;
-using Sharp.Core;
+﻿using Sharp.Core;
 using Sharp.Engine.Components;
 using System;
 using System.Collections.Generic;
@@ -18,8 +17,8 @@ namespace Sharp
 	}
 	public sealed class Entity : IEngineObject, IJsonOnDeserialized
 	{
-
-		internal static MultiValueDictionary<(BitMask components, BitMask tags), Entity> tagsMapping = new();//key is bit position also make it for system parts where mask defines what components entity has at least once
+		//TODO: consider doing custom structure specifically designed for bitmasks eg. bit trie or avl/red-black tree or other, max depth to the highest bit set (after that everything is implicitly 0), and maybe try to optimize for repeating patterns of 1 and 0
+		internal static Dictionary<(BitMask components, BitMask tags), HashSet<Entity>> tagsMapping = new();//key is bit position also make it for system parts where mask defines what components entity has at least once
 		[JsonIgnore]
 		public Entity parent;
 		//public bool visible;//TODO: mark all objects as not visible every frame then when frustrum culling in bepuphysic or physx mark them as visible
@@ -38,8 +37,14 @@ namespace Sharp
 			get => componentsMask;
 			private set
 			{
-				tagsMapping.Remove((componentsMask, tagsMask), this);
-				tagsMapping.Add((value, tagsMask), this);
+				if (tagsMapping.TryGetValue((componentsMask, tagsMask), out var set))
+					set.Remove(this);
+				if (tagsMapping.TryGetValue((value, tagsMask), out set) is false)
+				{
+					set = new HashSet<Entity>();
+					tagsMapping.Add((value, tagsMask), set);
+				}
+				set.Add(this);
 				componentsMask = value;
 			}
 		}
@@ -49,8 +54,14 @@ namespace Sharp
 			get => tagsMask;
 			set
 			{
-				tagsMapping.Remove((componentsMask, tagsMask), this);
-				tagsMapping.Add((componentsMask, value), this);
+				if (tagsMapping.TryGetValue((componentsMask, tagsMask), out var set))
+					set.Remove(this);
+				if (tagsMapping.TryGetValue((componentsMask, value), out set) is false)
+				{
+					set = new HashSet<Entity>();
+					tagsMapping.Add((value, tagsMask), set);
+				}
+				set.Add(this);
 				tagsMask = value;
 			}
 		}
@@ -211,7 +222,7 @@ namespace Sharp
 				component.Dispose();
 			foreach (var child in childs)
 				child.Dispose();
-			tagsMapping.Remove((componentsMask, tagsMask), this);
+			tagsMapping[(componentsMask, tagsMask)].Remove(this);
 			Extension.entities.RemoveEngineObject(this);
 			//PluginManager.serializer.objToIdMapping.Remove(this);
 		}

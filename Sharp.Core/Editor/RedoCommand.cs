@@ -4,6 +4,7 @@ using Sharp.Engine.Components;
 using Sharp.Serializer;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Sharp.Editor
 {
@@ -31,7 +32,7 @@ namespace Sharp.Editor
 
 					entity.components = new List<Component>();
 					entity.childs = new List<Entity>();
-					UndoCommand.prevStates.GetOrAddValueRef(entity) = redo;
+					CollectionsMarshal.GetValueRefOrAddDefault(UndoCommand.prevStates, entity, out _) = redo;
 					Extension.entities.AddRestoredEngineObject(entity, index);
 				}
 				else if (label is "addedComponent")
@@ -44,7 +45,7 @@ namespace Sharp.Editor
 				}
 				else if (label is "changed")
 				{
-					ref var patched = ref UndoCommand.prevStates.GetOrAddValueRef(index.GetInstanceObject<IEngineObject>());
+					ref var patched = ref CollectionsMarshal.GetValueRefOrNullRef(UndoCommand.prevStates, index.GetInstanceObject<IEngineObject>());
 					patched = Delta.Apply(patched, redo);
 					var obj = index.GetInstanceObject<IEngineObject>();
 					PluginManager.serializer.Deserialize(patched, obj.GetType());
@@ -61,7 +62,7 @@ namespace Sharp.Editor
 			foreach (var (id, list) in componentsToBeAdded)
 			{
 				var component = PluginManager.serializer.Deserialize(list.redo, IdReferenceResolver.guidToTypeMapping[id]) as Component;
-				UndoCommand.prevStates.GetOrAddValueRef(component) = list.redo;
+				CollectionsMarshal.GetValueRefOrAddDefault(UndoCommand.prevStates, component, out _) = list.redo;
 			}
 			//TODO: add pointer type with IntPtr and size and PointerConverter where serializer will regenerate unmanaged memory automatcally or abuse properties with internal set or prepend unmanaged memory with size then IntPtr can be used as is
 			Squid.UI.isDirty = true;
