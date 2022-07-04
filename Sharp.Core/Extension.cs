@@ -119,7 +119,18 @@ namespace Sharp
 			}
 			return id;
 		}
-
+		public static TCollection GetOrAdd<TKey, TCollection>(
+	this Dictionary<TKey, TCollection> dictionary, TKey key)
+	where TCollection : new()
+		{
+			TCollection collection;
+			if (!dictionary.TryGetValue(key, out collection))
+			{
+				collection = new TCollection();
+				dictionary.Add(key, collection);
+			}
+			return collection;
+		}
 		public static void OrthoNormalize(in this Matrix4x4 mat)
 		{
 			ref var matref = ref Unsafe.AsRef(mat);

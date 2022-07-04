@@ -110,20 +110,18 @@ namespace Sharp.Editor.Views
 		protected override void OnLateUpdate()
 		{
 			base.OnLateUpdate();
-			if (Root.addedEntities.Count > 0)
-				foreach (var added in Root.addedEntities)
-					RegisterEngineObject(added);
-			if (Root.removedEntities.Count > 0)
-			{
-				foreach (var removal in Root.removedEntities)
-					if (removal is Entity ent)
-					{
-						idToViewMapping.Remove(ent);
-					}
-					else if (removal is Component component)
-						if (idToViewMapping.TryGetValue(component.Parent, out var tree))
-							tree.Nodes.Remove(idToViewMapping[component.Parent].Nodes.Find((node) => node.UserData == component));
-			}
+			foreach (var added in Root.addedEntities)
+				RegisterEngineObject(added);
+
+			foreach (var removal in Root.removedEntities)
+				if (removal is Entity ent)
+				{
+					idToViewMapping.Remove(ent);
+				}
+				else if (removal is Component component)
+					if (idToViewMapping.TryGetValue(component.Parent, out var tree))
+						tree.Nodes.Remove(idToViewMapping[component.Parent].Nodes.Find((node) => node.UserData == component));
+
 		}
 		private void RegisterEngineObject(IEngineObject obj)
 		{

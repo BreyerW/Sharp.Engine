@@ -71,7 +71,6 @@ namespace Sharp
 			//var mWin2 = new MainWindow("test2");
 			//mWin2.Initialize(new AssetsView(mWin2.windowId));
 			SDL.SDL_DestroyWindow(dummy);
-
 			Window.PollWindows();
 			SDL.SDL_Quit();
 		}

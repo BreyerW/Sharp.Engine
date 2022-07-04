@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,76 +13,54 @@ namespace Sharp
 	// TODO: maybe AdvanceInstructions shouldnt rely on generic instead rely on type queue allowing insterting custom instructions without dedicated slot for them. it would require calling AdvanceInstruction per new entry in queue
 	public static class Coroutine
 	{
-		internal static Queue<IEnumerator> customInstructions = new Queue<IEnumerator>();
-		internal static Queue<IEnumerator> endOfFrameInstructions = new Queue<IEnumerator>();
-		internal static Queue<IEnumerator> startOfFrameInstructions = new Queue<IEnumerator>();
-		internal static Queue<IEnumerator> timeInstructions = new Queue<IEnumerator>();
-		internal static Queue<IEnumerator> makeCurrentInstructions = new Queue<IEnumerator>();
-		private static LinkedList<Queue<IEnumerable>> instructionList;
+		//TODO: maybe add Ienumertor slot where unknown ienumerators go and make AdvanceInstructions<Ienumerator> call somewhere
+		private static Dictionary<Type, Queue<IEnumerator>> typeToInstructionsMapping = new();
+		//private static LinkedListNode<Queue<IEnumerator>> currentIteration;
 
-		internal static void InitializeCoroutineQueue(params Type[] types)
+		[ModuleInitializer]
+		internal static void RegisterWaitFors()
 		{
-
+			Coroutine.RegisterEnumerator<WaitForStartOfFrame>();
+			Coroutine.RegisterEnumerator<WaitForSeconds>();
+			Coroutine.RegisterEnumerator<WaitForSecondsScaled>();
+			Coroutine.RegisterEnumerator<WaitForEndOfFrame>();
+			Coroutine.RegisterEnumerator<WaitForMakeCurrent>();
+			Coroutine.RegisterEnumerator<WaitForUndoRedo>();
 		}
-		//TODO: optimize this
+
+		public static void RegisterEnumerator<T>() where T : IEnumerator
+		{
+			typeToInstructionsMapping.Add(typeof(T), new Queue<IEnumerator>());
+		}
 		internal static void AdvanceInstructions<T>() where T : IEnumerator
 		{
-			Queue<IEnumerator> instructions;
-			if (typeof(T) == typeof(WaitForEndOfFrame))
-			{
-				instructions = endOfFrameInstructions;
-				//endOfFrameInstructions.Clear();
-			}
-			else if (typeof(T) == typeof(WaitForStartOfFrame))
-			{
-				instructions = startOfFrameInstructions;
-				//startOfFrameInstructions.Clear();
-			}
-			else if (typeof(T) == typeof(WaitForSeconds) || typeof(T) == typeof(WaitForSecondsScaled))
-			{
-				instructions = timeInstructions;
-				//timeInstructions.Clear();
-			}
-			else if (typeof(T) == typeof(WaitForMakeCurrent))
-			{
-				instructions = makeCurrentInstructions;
-				//makeCurrentInstructions.Clear();
-			}
-			else
-			{
-				instructions = customInstructions;
-				//customInstructions.Clear();
-			}
+			Queue<IEnumerator> instructions = typeToInstructionsMapping[typeof(T)];
 			var len = instructions.Count;
 			var i = 0;
 			while (i < len)
 			{
-				var coroutine = instructions.Dequeue();
-				if (coroutine.MoveNext() is false)
-				{
-					i++;
-					continue;
-				}
-				if (coroutine.Current is WaitForStartOfFrame)
-					startOfFrameInstructions.Enqueue(coroutine);
-				else if (coroutine.Current is WaitForEndOfFrame)
-					endOfFrameInstructions.Enqueue(coroutine);
-				else if (coroutine.Current is WaitForSeconds)
-					timeInstructions.Enqueue(coroutine);
-				else if (coroutine.Current is WaitForMakeCurrent)
-					makeCurrentInstructions.Enqueue(coroutine);
-				else
-					customInstructions.Enqueue(coroutine);
 				i++;
+				var coroutine = instructions.Dequeue();
+
+				if (coroutine.MoveNext() is false) continue;
+
+				typeToInstructionsMapping[coroutine.Current.GetType()].Enqueue(coroutine);
 			}
 		}
 
-		public static void Start(IEnumerator instruction)
+		public static void Start<T>(T instruction) where T : IEnumerator
 		{
-			customInstructions.Enqueue(instruction);
+			if (instruction.MoveNext() is false)
+				return;
+			typeToInstructionsMapping[instruction.Current.GetType()].Enqueue(instruction);
 		}
 
 	}
+	/*public interface IWaitFor : IEnumerator
+	{
+
+	}*/
+	//TODO: maybe add WaitForMeshLoading, WaitForShaderLoading etc.
 	public class WaitForEndOfFrame : IEnumerator
 	{
 		public object Current => null;
@@ -108,6 +87,20 @@ namespace Sharp
 		{
 		}
 	}
+	public class WaitForUndoRedo : IEnumerator
+	{
+		public object Current => null;
+
+		public bool MoveNext()
+		{
+			return true;
+		}
+
+		public void Reset()
+		{
+		}
+	}
+
 	public class WaitForStartOfFrame : IEnumerator
 	{
 		public object Current => null;

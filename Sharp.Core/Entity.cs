@@ -17,7 +17,12 @@ namespace Sharp
 	}
 	public sealed class Entity : IEngineObject, IJsonOnDeserialized
 	{
-		//TODO: consider doing custom structure specifically designed for bitmasks eg. bit trie or avl/red-black tree or other, max depth to the highest bit set (after that everything is implicitly 0), and maybe try to optimize for repeating patterns of 1 and 0
+		//TODO: consider doing custom structure specifically designed for bitmasks eg. bit trie or avl/red-black tree or other, max depth to the highest bit set (after that everything is implicitly 0),
+		//and maybe try to optimize for repeating patterns of 0&1 by adding int skipbytes or resignate and implicitly treat right as 1 and left as 0
+		//also use Unsafe.Add to branchlessly choose left or right and dont use array to avoid allocating 2 length arrays
+
+
+		//or use specialized renderer and special behaviour lists?
 		internal static Dictionary<(BitMask components, BitMask tags), HashSet<Entity>> tagsMapping = new();//key is bit position also make it for system parts where mask defines what components entity has at least once
 		[JsonIgnore]
 		public Entity parent;

@@ -123,7 +123,7 @@
     <PackageReference Include="JsonDiffPatch.Net" Version="2.1.0" />
     <PackageReference Include="Lidgren.Network.Portable" Version="1.0.1" />
     <PackageReference Include="McMaster.NETCore.Plugins" Version="1.4.0" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0-rc.1.20451.14" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="6.0.0" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.2.2" />
     <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.0.0-preview2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
@@ -134,7 +134,6 @@
     <PackageReference Include="SharpAvi" Version="2.1.2" />
     <PackageReference Include="SharpCompress" Version="0.26.0" />
     <PackageReference Include="SmallBlockMemoryStream" Version="1.0.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0-preview.1.21102.12" />
     <PackageReference Include="System.Text.Json" Version="4.7.0" />
   </ItemGroup>
 

@@ -142,7 +142,6 @@ namespace Sharp
 			{
 
 				Coroutine.AdvanceInstructions<WaitForStartOfFrame>();
-				Coroutine.AdvanceInstructions<IEnumerator>();
 
 				while (SDL.SDL_PollEvent(out sdlEvent) != 0)
 				{

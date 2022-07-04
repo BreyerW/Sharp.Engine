@@ -48,20 +48,18 @@ namespace Sharp.Editor.Views
 		protected override void OnLateUpdate()
 		{
 			base.OnLateUpdate();
-			if (Root.removedEntities.Count > 0)
-				foreach (var removed in Root.removedEntities)
+			foreach (var removed in Root.removedEntities)
+			{
+				if (removed is Entity)
 				{
-					if (removed is Entity)
-					{
-						var id = removed.GetInstanceID();
-						tree.Nodes.Remove(flattenedTree[id]);
-						flattenedTree.Remove(id);
-					}
+					var id = removed.GetInstanceID();
+					tree.Nodes.Remove(flattenedTree[id]);
+					flattenedTree.Remove(id);
 				}
-			if (Root.addedEntities.Count > 0)
-				foreach (var added in Root.addedEntities)
-					if (added is Entity e)
-						RegisterEntity(e, false);
+			}
+			foreach (var added in Root.addedEntities)
+				if (added is Entity e)
+					RegisterEntity(e, false);
 		}
 		private static void RegisterEntity(Entity ent, bool selected)
 		{
