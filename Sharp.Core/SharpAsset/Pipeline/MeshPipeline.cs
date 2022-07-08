@@ -194,7 +194,7 @@ namespace SharpAsset.AssetPipeline
 
 				mat.BindShader(0, shader);
 				ref var texture = ref TexturePipeline.Import(Application.projectPath + @"\Content\duckCM.bmp");
-				mat.BindProperty("mesh", asset);
+				mat.BindProperty(Material.MESHSLOT, asset);
 				mat.BindProperty("MyTexture", texture);
 				renderer.material = mat;
 				renderer.SaveMeshChanges();

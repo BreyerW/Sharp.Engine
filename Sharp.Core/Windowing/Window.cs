@@ -172,7 +172,7 @@ namespace Sharp
 				onRenderFrame?.Invoke();
 				if (UI.isDirty)
 				{
-					Selection.OnSelectionDirty?.Invoke(Selection.Asset);
+					//Selection.OnSelectionDirty?.Invoke(Selection.Asset);
 					UI.isDirty = false;
 				}
 				Coroutine.AdvanceInstructions<WaitForEndOfFrame>();

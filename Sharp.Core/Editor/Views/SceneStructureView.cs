@@ -17,11 +17,18 @@ namespace Sharp.Editor.Views
 			tree.Dock = DockStyle.Fill;
 			tree.SelectedNodeChanged += Tree_SelectedNodeChanged;
 
-			Selection.OnSelectionChange += (old, n) =>
+			ListWrapper.OnListChange += (n) =>
 			{
 				//SceneStructureView.tree.SelectedNode = SceneStructureView.flattenedTree[entity.GetInstanceID()];
+
 				tree.SelectedNodeChanged -= Tree_SelectedNodeChanged;
-				tree.SelectedNode = n is null ? null : flattenedTree[n.GetInstanceID()];
+				if (n.Count is 0)
+					tree.SelectedNode = null;
+				else
+					foreach (var o in n)
+					{
+						flattenedTree[o.GetInstanceID()].IsSelected = true;
+					}
 				tree.SelectedNodeChanged += Tree_SelectedNodeChanged;
 			};
 			Button.Text = "Scene Structure";
@@ -29,7 +36,7 @@ namespace Sharp.Editor.Views
 
 		private void Tree_SelectedNodeChanged(Control sender, TreeNode value)
 		{
-			if (value is null || Selection.Asset == value.UserData) return;
+			if (value is null || Selection.selectedAssets.Contains(value.UserData)) return;
 
 			/*
 			 if (value is null)
@@ -40,8 +47,8 @@ namespace Sharp.Editor.Views
 			}
 			if (Selection.Asset == value.UserData) return;
 			 */
-			Selection.Asset = value.UserData;
-
+			Selection.selectedAssets.ReplaceWithOne(value.UserData);
+			//Selection.selectedAssets.RaiseEvent();
 			// var node = sender as TreeNode; if (Selection.Asset == node.Content) tree.UnselectAll();
 			// else
 		}

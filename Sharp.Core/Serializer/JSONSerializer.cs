@@ -12,7 +12,7 @@ namespace Sharp.Serializer
 		internal static JsonSerializerSettings serializerSettings = new JsonSerializerSettings()
 		{
 			ContractResolver = new UninitializedResolver() { IgnoreSerializableAttribute = false },
-			Converters = new List<JsonConverter>() { new DictionaryConverter(),/* new EntityConverter(),*/  new DelegateConverter(), new ArrayReferenceConverter(), new ListReferenceConverter(), new ReferenceConverter()/* new IAssetConverter(), new IEngineConverter(), */ },
+			Converters = new List<JsonConverter>() { new DictionaryConverter(),/* new EntityConverter(),*/  new DelegateConverter(), new ArrayReferenceConverter(),/* new ListReferenceConverter(),*/ new ReferenceConverter()/* new IAssetConverter(), new IEngineConverter(), */ },
 			PreserveReferencesHandling = PreserveReferencesHandling.All,
 			ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
 			TypeNameHandling = TypeNameHandling.All,

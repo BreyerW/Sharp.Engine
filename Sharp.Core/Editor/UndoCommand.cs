@@ -21,13 +21,13 @@ namespace Sharp.Editor
 		RemovedComponent,
 		AddedSystem,
 		RemovedSystem,
-		Changed,
-		Selected
+		Changed
 	}
 	public struct History
 	{
-		//TODO: switch guid to ulong or int124 if it will be supported in Interlocked, ulong is big enough 
-		//also mesh slot in material should be _ _mesh_ _ just in case
+		public static bool isUndo = false;
+		public static LinkedListNode<History> current;
+		//TODO: switch guid to ulong if it will be supported in Interlocked, ulong is big enough 
 		public Dictionary<DeltaKind, HashSet<(Guid id, byte[] undo, byte[] redo)>> propertyMapping;
 	}
 
@@ -35,10 +35,9 @@ namespace Sharp.Editor
 	{
 		private static Dictionary<DeltaKind, HashSet<(Guid id, byte[] undo, byte[] redo)>> saveState = new();
 		internal static Dictionary<IEngineObject, byte[]> prevStates = new();
-		internal static LinkedList<History> snapshots = new LinkedList<History>();
+		//internal static LinkedList<History> snapshots = new LinkedList<History>();
 
-		internal static LinkedListNode<History> currentHistory;
-		internal static bool isUndo = false;
+		//internal static LinkedListNode<History> currentHistory;
 		public string menuPath => "Undo";
 		internal static bool historyMoved = false;
 		public string[] keyCombination => new[] { "CTRL", "z" };//combine into menuPath+(combination)
@@ -48,49 +47,38 @@ namespace Sharp.Editor
 		//public static Stack<ICommand> done = new Stack<ICommand>();
 		static UndoCommand()
 		{
-			Selection.OnSelectionChange += (old, s) =>
-			{
-				if (s is IEngineObject o && historyMoved is false)
-				{
-					if (saveState is null)
-						saveState = new();
-					saveState.GetOrAdd(DeltaKind.Selected).Add((o.GetInstanceID(), old?.GetInstanceID().ToByteArray(), s?.GetInstanceID().ToByteArray()));
-				}
-			};
 			Coroutine.Start(SaveChangesBeforeNextFrame());
 		}
 		public void Execute(bool reverse = true)
 		{
-			if (UndoCommand.currentHistory.Previous is null)
+			if (History.current.Previous is null)
 				return;
+			History.isUndo = true;
 			historyMoved = true;
-			isUndo = true;
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.AddedEntity, out var deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.AddedEntity, out var deltas))
 				HandleAddedEntities(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.RemovedEntity, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.RemovedEntity, out deltas))
 				HandleRemovedEntities(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.AddedComponent, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.AddedComponent, out deltas))
 				HandleAddedComponents(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.RemovedComponent, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.RemovedComponent, out deltas))
 				HandleRemovedComponents(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.AddedSystem, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.AddedSystem, out deltas))
 				HandleAddedSystems(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.RemovedComponent, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.RemovedComponent, out deltas))
 				HandleRemovedSystems(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.Changed, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.Changed, out deltas))
 				HandleChanges(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.Selected, out deltas))
-				HandleSelection(deltas);
-
-			currentHistory = UndoCommand.currentHistory.Previous;
+			Coroutine.AdvanceInstructions<WaitForUndoRedo>();
+			History.current = History.current.Previous;
 			Squid.UI.isDirty = true;
 		}
 		private static void HandleAddedEntities(HashSet<(Guid, byte[], byte[])> deltas)
@@ -143,37 +131,29 @@ namespace Sharp.Editor
 					startable.Start();
 			}
 		}
-		private static void HandleSelection(HashSet<(Guid, byte[], byte[])> deltas)
-		{
-			foreach (var (index, undo, _) in deltas)
-			{
-				var obj = undo is null ? null : new Guid(undo).GetInstanceObject();
-				Selection.Asset = obj;
-			}
-		}
+		//TODO: move to history struct?
 		private static IEnumerator SaveChangesBeforeNextFrame()
 		{
 			while (true)
 			{
 				yield return new WaitForEndOfFrame();
+				if (Selection.selectedAssets.changed)
+					Selection.selectedAssets.RaiseEvent();
 				if (historyMoved is false)
 					foreach (var added in Root.addedEntities)
 					{
 						if (saveState is null)
 							saveState = new();
-
+						var bytes = PluginManager.serializer.Serialize(added, added.GetType());
+						CollectionsMarshal.GetValueRefOrAddDefault(prevStates, added, out _) = bytes;
 						if (added is Entity ent)
 						{
-							var bytes = PluginManager.serializer.Serialize(ent, ent.GetType());
-							CollectionsMarshal.GetValueRefOrAddDefault(prevStates, ent, out _) = bytes;
+
 							saveState.GetOrAdd(DeltaKind.AddedEntity).Add((ent.GetInstanceID(), null, bytes));
 						}
 						else if (added is Component comp)
 						{
 							//if (prevStates.TryGetValue(comp, out _)) throw new InvalidOperationException("unexpected add to already existing key");
-							var bytes = PluginManager.serializer.Serialize(comp, comp.GetType());
-							CollectionsMarshal.GetValueRefOrAddDefault(prevStates, comp, out _) = bytes;
-
 							saveState.GetOrAdd(DeltaKind.AddedComponent).Add((comp.GetInstanceID(), null, bytes));
 						}
 					};
@@ -276,18 +256,13 @@ namespace Sharp.Editor
 		private static void SaveChanges(Dictionary<DeltaKind, HashSet<(Guid id, byte[] undo, byte[] redo)>> toBeSaved)
 		{
 			if (toBeSaved is null) return;
-			if (UndoCommand.currentHistory is not null && UndoCommand.currentHistory.Next is not null) //TODO: this is bugged state on split is doubled for some reason
+			if (History.current is { Next: not null }) //TODO: this is bugged state on split is doubled for some reason
 			{
-				UndoCommand.currentHistory.RemoveAllAfter();
+				History.current.RemoveAllAfter();
 				Console.WriteLine("clear trailing history");
 			}
-			/*var finalSave = new Dictionary<DeltaKind, HashSet<(Guid id, byte[] undo, byte[] redo)>>();
-			foreach (var (index, val) in toBeSaved)
-			{
-				finalSave.Add(index, val);
-			}*/
-			UndoCommand.snapshots.AddLast(new History() { propertyMapping = toBeSaved });
-			UndoCommand.currentHistory = UndoCommand.snapshots.Last;
+			History.current = (History.current?.List ?? new LinkedList<History>()).AddLast(new History() { propertyMapping = toBeSaved });
+
 			saveState = null;
 		}
 	}

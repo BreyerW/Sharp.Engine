@@ -40,7 +40,7 @@ namespace Sharp.Editor
 		{
 			mat = new Material();
 			mat.BindShader(0, s);
-			mat.BindProperty("mesh", m);
+			mat.BindProperty(Material.MESHSLOT, m);
 			mat.BindProperty("color", c);
 		}
 		public static void DrawGrid(Vector3 pos)

@@ -73,7 +73,7 @@ namespace Sharp.Editor.Views
 			boundingBoxMat.BindShader(0, sh);
 			boundingBoxMat.BindProperty("removeDiagonalEdges", 1f);
 			var c = MeshPipeline.GetAsset("cubeBB");
-			boundingBoxMat.BindProperty("mesh", c);
+			boundingBoxMat.BindProperty(Material.MESHSLOT, c);
 
 			ref var shader = ref ShaderPipeline.Import(Application.projectPath + @"\Content\ViewCubeShader.shader");
 			ref var viewCubeMesh = ref MeshPipeline.Import(Application.projectPath + @"\Content\viewcube_submeshed.dae");
@@ -92,7 +92,7 @@ namespace Sharp.Editor.Views
 			viewCubeMat.BindProperty("xColor", new Color(255, 75, 75, 255));//Manipulators.xColor
 			viewCubeMat.BindProperty("yColor", new Color(100, 255, 100, 255));//Manipulators.yColor
 			viewCubeMat.BindProperty("zColor", new Color(80, 150, 255, 255));//Manipulators.zColor
-			viewCubeMat.BindProperty("mesh", viewCubeMesh);
+			viewCubeMat.BindProperty(Material.MESHSLOT, viewCubeMesh);
 			HighlightPassComponent.viewCubeMat = viewCubeMat;
 			shader = ref ShaderPipeline.Import(Application.projectPath + @"\Content\HighlightShader.shader");
 			ref var screenMesh = ref MeshPipeline.GetAsset("screen_space_square");
@@ -107,7 +107,7 @@ namespace Sharp.Editor.Views
 			ref var sceneDepthTexture = ref TexturePipeline.GetAsset("depthTarget");
 			highlight.BindProperty("SceneDepthTex", sceneDepthTexture);
 			highlight.BindProperty("outline_color", Manipulators.selectedColor);
-			highlight.BindProperty("mesh", screenMesh);
+			highlight.BindProperty(Material.MESHSLOT, screenMesh);
 
 		}
 		public SceneView(uint attachToWindow) : base(attachToWindow)
@@ -505,19 +505,22 @@ namespace Sharp.Editor.Views
 					else if (opaqueObjPicked)
 					{
 						Camera.main.pivot = renderables[index].Parent;
-						Selection.Asset = renderables[index].Parent;
+						Selection.selectedAssets.ReplaceWithOne(renderables[index].Parent);
+						//Selection.selectedAssets.RaiseEvent();
 					}
 					else
 					{
 						Camera.main.pivot = transparentRenderables[index].Parent;
-						Selection.Asset = transparentRenderables[index].Parent;
+						Selection.selectedAssets.ReplaceWithOne(transparentRenderables[index].Parent);
+						//Selection.selectedAssets.RaiseEvent();
 					}
 					if (editorObjPicked && index > (int)Gizmo.TranslateX - 1)
 						mouseLocked = true;
 				}
 				else
 				{
-					Selection.Asset = null;
+					Selection.selectedAssets.Clear();
+					//Selection.selectedAssets.RaiseEvent();
 					Camera.main.pivot = null;
 				}
 				locPos = null;

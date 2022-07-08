@@ -12,8 +12,8 @@ namespace Sharp
         {
             var prev = material;
             material = mat;
-            prev.TryGetProperty("mesh", out Mesh Mesh);
-            material.BindProperty("mesh", Mesh);
+            prev.TryGetProperty(Material.MESHSLOT, out Mesh Mesh);
+            material.BindProperty(Material.MESHSLOT, Mesh);
             return prev;
         }
         protected Renderer(Entity parent) : base(parent)

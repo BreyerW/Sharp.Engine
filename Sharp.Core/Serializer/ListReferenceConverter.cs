@@ -52,7 +52,6 @@ namespace Sharp.Serializer
 			if (reference is not null)
 				foreach (var i in ..tmp.Count)
 					eValue.Add(tmp[i]);
-
 			return eValue;
 		}
 

@@ -5,6 +5,7 @@ using Sharp.Serializer;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Sharp.Editor
 {
@@ -18,36 +19,34 @@ namespace Sharp.Editor
 
 		public void Execute(bool reverse = false)//TODO: add object context parameter with anything under mouse?
 		{
-			if (UndoCommand.currentHistory.Next is null)
+			if (History.current.Next is null)
 				return;
 			UndoCommand.historyMoved = true;
-			UndoCommand.isUndo = false;
-			var componentsToBeAdded = new Dictionary<Guid, (byte[] undo, byte[] redo)>();
-			UndoCommand.currentHistory = UndoCommand.currentHistory.Next;
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.AddedEntity, out var deltas))
+			History.isUndo = false;
+
+			History.current = History.current.Next;
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.AddedEntity, out var deltas))
 				HandleAddedEntities(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.RemovedEntity, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.RemovedEntity, out deltas))
 				HandleRemovedEntities(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.AddedComponent, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.AddedComponent, out deltas))
 				HandleAddedComponents(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.RemovedComponent, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.RemovedComponent, out deltas))
 				HandleRemovedComponents(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.AddedSystem, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.AddedSystem, out deltas))
 				HandleAddedSystems(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.RemovedComponent, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.RemovedComponent, out deltas))
 				HandleRemovedSystems(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.Changed, out deltas))
+			if (History.current.Value.propertyMapping.TryGetValue(DeltaKind.Changed, out deltas))
 				HandleChanges(deltas);
 
-			if (UndoCommand.currentHistory.Value.propertyMapping.TryGetValue(DeltaKind.Selected, out deltas))
-				HandleSelection(deltas);
-
+			Coroutine.AdvanceInstructions<WaitForUndoRedo>();
 			//TODO: add pointer type with IntPtr and size and PointerConverter where serializer will regenerate unmanaged memory automatcally or abuse properties with internal set or prepend unmanaged memory with size then IntPtr can be used as is
 			Squid.UI.isDirty = true;
 		}
@@ -110,14 +109,6 @@ namespace Sharp.Editor
 				if (obj is IStartableComponent startable)//TODO: change to OnDeserialized callaback when System.Text.Json will support it
 					startable.Start();
 				//Console.WriteLine(object.ReferenceEquals(index.GetInstanceObject(),UndoCommand.prevStates.FirstOrDefault((obj) => obj.Key.GetInstanceID() == index).Key));
-			}
-		}
-		private static void HandleSelection(HashSet<(Guid, byte[], byte[])> deltas)
-		{
-			foreach (var (index, _, redo) in deltas)
-			{
-				var obj = redo is null ? null : new Guid(redo).GetInstanceObject();
-				Selection.Asset = obj;
 			}
 		}
 	}

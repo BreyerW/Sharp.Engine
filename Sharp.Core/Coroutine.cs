@@ -8,14 +8,12 @@ using System.Threading.Tasks;
 
 namespace Sharp
 {
-	//use linkedlist for appropiate order of coroutines
 	/// </summary>
 	// TODO: maybe AdvanceInstructions shouldnt rely on generic instead rely on type queue allowing insterting custom instructions without dedicated slot for them. it would require calling AdvanceInstruction per new entry in queue
 	public static class Coroutine
 	{
 		//TODO: maybe add Ienumertor slot where unknown ienumerators go and make AdvanceInstructions<Ienumerator> call somewhere
 		private static Dictionary<Type, Queue<IEnumerator>> typeToInstructionsMapping = new();
-		//private static LinkedListNode<Queue<IEnumerator>> currentIteration;
 
 		[ModuleInitializer]
 		internal static void RegisterWaitFors()

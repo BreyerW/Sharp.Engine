@@ -42,6 +42,7 @@ namespace SharpAsset
 	[Serializable]
 	public class Material : IDisposable, IEngineObject//IAsset
 	{//TODO: load locations lazily LoadLocation on IBackendRenderer when binding property? and when constructing material for global props  
+		internal const string MESHSLOT = "__mesh__";
 		private const byte INVALID = 0;
 		private const byte FLOAT = 1;
 		private const byte VECTOR2 = 2;
@@ -325,7 +326,7 @@ namespace SharpAsset
 		{
 			ref var shader = ref ShaderPipeline.GetAsset(shadersId[pass]);
 			if (shader.IsAllocated is false) return;
-			if (TryGetProperty("mesh", out Mesh mesh) is false || mesh.VBO is -1)
+			if (TryGetProperty(Material.MESHSLOT, out Mesh mesh) is false || mesh.VBO is -1)
 				return;
 			if (Material.lastShaderUsed != shader.Program)
 			{

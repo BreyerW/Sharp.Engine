@@ -14,7 +14,7 @@ namespace Sharp.Editor.Views
 	public class InspectorView : View
 	{
 		//private TreeView ptree = new TreeView();
-		internal object currentlyDrawedObject;
+		internal List<object> currentlyDrawedObjects;
 
 		//private ListBox tagStrip = new ListBox();
 		private DropDownButton tagStrip = new DropDownButton();
@@ -78,25 +78,26 @@ namespace Sharp.Editor.Views
 			button.TextAlign = Alignment.MiddleLeft;*/ //make it as component
 
 
-			Selection.OnSelectionChange += (old, @new) =>
+			ListWrapper.OnListChange += (n) =>
 			{
-				Console.WriteLine("SelectionChange" + @new);
-				if (@new is Entity obj)
+				if (currentlyDrawedObjects is not null)
+					foreach (var o in currentlyDrawedObjects)
+						if (idToViewMapping.TryGetValue(o as Entity, out var oldSelected))
+						{
+							oldSelected.IsVisible = false;
+						}
+
+				currentlyDrawedObjects = n;
+				if (n is null or { Count: 0 })
+					return;
+
+				foreach (var o in n)
 				{
-					if (currentlyDrawedObject is not null && idToViewMapping.TryGetValue(currentlyDrawedObject as Entity, out var oldSelected))
+					if (o is Entity obj)
 					{
-						oldSelected.IsVisible = false;
+						Console.WriteLine("SelectionChange" + o);
+						idToViewMapping[obj].IsVisible = true;
 					}
-					currentlyDrawedObject = @new;
-					idToViewMapping[currentlyDrawedObject as Entity].IsVisible = true;
-				}
-				else if (@new is null)
-				{
-					if (idToViewMapping.TryGetValue(currentlyDrawedObject as Entity, out var oldSelected))
-					{
-						oldSelected.IsVisible = false;
-					}
-					currentlyDrawedObject = default;
 				}
 				Squid.UI.isDirty = true;
 			};

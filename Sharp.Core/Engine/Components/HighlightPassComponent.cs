@@ -52,7 +52,7 @@ namespace Sharp.Engine.Components
 					hovered.Add(renderer);
 			}
 
-			foreach (var asset in Selection.Assets)
+			foreach (var asset in Selection.selectedAssets)
 				if (asset is Entity ent && ent.name is not "Main Camera" && ent.ComponentsMask.HasAnyFlags(rendererMask))
 				{
 					var renderer = ent.GetComponent<Renderer>();
