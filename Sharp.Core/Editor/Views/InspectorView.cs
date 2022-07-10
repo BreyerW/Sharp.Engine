@@ -124,25 +124,34 @@ namespace Sharp.Editor.Views
 						tree.Nodes.Remove(idToViewMapping[component.Parent].Nodes.Find((node) => node.UserData == component));
 
 		}
+		//obj is Component { Parent : var ent} or Entity ent
 		private void RegisterEngineObject(IEngineObject obj)
 		{
 			if (obj is Entity ent)
 			{
-				//if (idToViewMapping.ContainsKey(ent.GetInstanceID())) return;
-				var ptree = new TreeView();
-				ptree.Dock = DockStyle.Fill;
-				ptree.Margin = new Margin(0, 25, 0, 0);
-				ptree.Parent = this;
-				ptree.Scrollbar.Size = new Point(0, 0);
-				ptree.Scissor = false;
-				ptree.IsVisible = false;
-				idToViewMapping.TryAdd(ent, ptree);
+				if (idToViewMapping.TryGetValue(ent, out _) is false)
+					CreateNewTreeView(ent);
 			}
 			else if (obj is Component component)
 			{
+				if (idToViewMapping.TryGetValue(component.Parent, out _) is false)
+				{
+					CreateNewTreeView(component.Parent);
+				}
 				idToViewMapping[component.Parent].Nodes.Add(RenderComponent(component));
 			}
 			//else if(obj is System sys)//TODO: rewrite EC to ECS
+		}
+		private void CreateNewTreeView(Entity e)
+		{
+			var ptree = new TreeView();
+			ptree.Dock = DockStyle.Fill;
+			ptree.Margin = new Margin(0, 25, 0, 0);
+			ptree.Parent = this;
+			ptree.Scrollbar.Size = new Point(0, 0);
+			ptree.Scissor = false;
+			ptree.IsVisible = false;
+			idToViewMapping.TryAdd(e, ptree);
 		}
 		private ComponentNode RenderComponent(Component component)
 		{

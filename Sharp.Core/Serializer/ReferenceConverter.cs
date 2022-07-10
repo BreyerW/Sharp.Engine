@@ -42,7 +42,6 @@ namespace Sharp.Serializer
 			var target = serializer.ReferenceResolver.ResolveReference(null, valueId) ?? RuntimeHelpers.GetUninitializedObject(objectType);
 			if (id is "$ref")
 			{
-				reader.Read();
 				return target;
 			}
 			else
@@ -63,7 +62,6 @@ namespace Sharp.Serializer
 					else
 					{
 						p.ValueProvider.SetValue(target, serializer.Deserialize(reader, p.PropertyType));
-						//while (depth != reader.Depth && reader.TokenType is not JsonToken.PropertyName)
 						if (reader.TokenType is not JsonToken.PropertyName)
 							reader.Read();
 					}
@@ -81,12 +79,10 @@ namespace Sharp.Serializer
 							list.Add(serializer.Deserialize(reader, arrayContract.CollectionItemType));
 							reader.Read();
 							if (reader.TokenType is JsonToken.EndArray) { reader.Read(); break; }
-							while (!arrayContract.CollectionItemType.IsPrimitive && reader.TokenType is not JsonToken.StartObject) reader.Read();
+							//while (!arrayContract.CollectionItemType.IsPrimitive && reader.TokenType is not JsonToken.StartObject) reader.Read();
 						}
 					else
 						reader.Read();
-					//if (list is ListWrapper wrapper)
-					//wrapper.RaiseEvent();
 				}
 				else
 				{

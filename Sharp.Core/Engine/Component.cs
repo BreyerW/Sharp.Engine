@@ -9,10 +9,10 @@ using System.Text.Json.Serialization;
 namespace Sharp
 {
 	[Serializable]
-	public abstract class Component : IEngineObject, IEquatable<Component>
+	public abstract class Component : IEngineObject/*, IEquatable<Component>*/
 	{
 		private bool enabled;
-
+		[JsonInclude]
 		public bool active
 		{
 			get { return enabled; }
@@ -39,9 +39,10 @@ namespace Sharp
 		//    set;
 		//  } = { { { 80, 45 }, { 80, 45 }, { 80, 45 } } };
 		//[CurveRange()]
-		private Entity parent;
 		[JsonInclude]
-		[NonSerializable]//, JsonProperty
+		private Entity parent;
+
+		//[NonSerializable]//, JsonProperty
 		public Entity Parent
 		{
 			get => parent;
@@ -69,10 +70,10 @@ namespace Sharp
 			PluginManager.serializer.objToIdMapping.Remove(this);
 		}
 
-		public bool Equals(Component other)
+		/*public bool Equals(Component other)
 		{
 			return ReferenceEquals(this, other);
-		}
+		}*/
 
 		public Component(Entity parent)
 		{
@@ -80,9 +81,9 @@ namespace Sharp
 			Extension.entities.AddEngineObject(this);
 		}
 
-		public override bool Equals(object obj)
+		/*public override bool Equals(object obj)
 		{
 			return Equals(obj as Component);
-		}
+		}*/
 	}
 }

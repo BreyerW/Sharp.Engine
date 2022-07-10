@@ -19,7 +19,6 @@ namespace Sharp.Engine.Components
 		public static Queue<CommandBufferComponent> recentlyLoadedCommandBuffers = new();
 		protected Camera cam;
 
-		[JsonInclude]
 		private CommandBufferComponent prevPass = null;
 
 		//[JsonProperty]

@@ -87,7 +87,7 @@ namespace Sharp
 		{
 			((ICollection)List).CopyTo(array, index);
 		}
-		public void RaiseEvent()
+		public void RaiseEventAndReset()
 		{
 			changed = false;
 			OnListChange?.Invoke(List);

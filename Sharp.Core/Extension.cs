@@ -1,4 +1,5 @@
 ﻿using Sharp.Core;
+using Sharp.Editor;
 using Sharp.Editor.Views;
 using Sharp.Engine.Components;
 using System;
@@ -231,6 +232,29 @@ namespace Sharp
 			}
 			return -1;
 		}
+		public static Vector3 ToEulerAngles(in this Quaternion q)
+		{
+			Vector3 angles = new Vector3();
+
+			// roll (x-axis rotation)
+			float sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
+			float cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
+			angles.X = MathF.Atan2(sinr_cosp, cosr_cosp);
+
+			// pitch (y-axis rotation)
+			float sinp = 2 * (q.W * q.Y - q.Z * q.X);
+			if (MathF.Abs(sinp) >= 1)
+				angles.Y = MathF.CopySign(MathF.PI / 2, sinp); // use 90 degrees if out of range
+			else
+				angles.Z = MathF.Asin(sinp);
+
+			// yaw (z-axis rotation)
+			float siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
+			float cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
+			angles.Z = MathF.Atan2(siny_cosp, cosy_cosp);
+
+			return angles;
+		}
 	}
 
 	public static class Utils
@@ -251,11 +275,13 @@ namespace Sharp
 		internal void AddEngineObject(IEngineObject obj)
 		{
 			addedEntities.Add(obj);
-			if (obj is Entity e && e.parent is null)
+			if (obj is Entity { parent: null } e)
 			{
 				root.Add(e);
-				return;
+				//return;
 			}
+			CollectionsMarshal.GetValueRefOrAddDefault(History.prevStates, obj, out _) = null;
+
 			if (obj is IStartableComponent start)
 				SceneView.startables.Enqueue(start);
 		}
