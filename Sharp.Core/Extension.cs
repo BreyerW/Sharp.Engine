@@ -14,47 +14,27 @@ using System.Threading;
 
 namespace Sharp
 {
-	//TODO: ArrayComponent<T> as workaround for lack of support for multiple components of same type 
+	//TODO: ArrayComponent<T> as workaround for lack of support for multiple components of same type?
 	public static class Extension
 	{
 
 		private static Dictionary<string, int> flagToBitPositionMapping = new()//TODO: replace with generated enum?
 		{
 		};
-		private static Dictionary<Type, int> compFlagToBitPositionMapping = new()
+		/*private static Dictionary<Type, int> compFlagToBitPositionMapping = new()
 		{
-		};
-		private static Dictionary<Type, BitMask> abstractCompToBitMaskMapping = new()
+		};*/
+		internal static int typeCount = 0;
+
+		public static int RegisterComponent<T>() where T : Component
 		{
-			[typeof(Renderer)] = new BitMask(0),
-			[typeof(Behaviour)] = new BitMask(0),
-			[typeof(CommandBufferComponent)] = new BitMask(0)
-		};
-		[ModuleInitializer]
-		internal static void LoadAbstractComponents()
-		{
-			var baseType = typeof(Component);
-			var types = baseType.Assembly.GetTypes().Where(t => t != baseType && !t.IsAbstract &&
-											baseType.IsAssignableFrom(t));
-			var index = 0;
-			foreach (var t in types)
-			{
-				compFlagToBitPositionMapping.Add(t, index = compFlagToBitPositionMapping.Count);
-				//TODO: use source generators to populate dictionary instead
-				if (typeof(Renderer).IsAssignableFrom(t))
-				{
-					abstractCompToBitMaskMapping[typeof(Renderer)].SetFlag(index);
-				}
-				else if (typeof(CommandBufferComponent).IsAssignableFrom(t))
-				{
-					abstractCompToBitMaskMapping[typeof(CommandBufferComponent)].SetFlag(index);
-				}
-				else if (typeof(Behaviour).IsAssignableFrom(t))
-				{
-					abstractCompToBitMaskMapping[typeof(Behaviour)].SetFlag(index);
-				}
-			}
+
+			var index = Interlocked.Increment(ref typeCount) - 1;
+			StaticDictionary<T>.Get<int>() = index;
+
+			return index;
 		}
+
 		public static void DisposeAttachedObject(in this Guid id)
 		{
 
@@ -70,7 +50,7 @@ namespace Sharp
 		}
 		public static BitMask GetBitMaskFor<T>() where T : Component
 		{
-			return abstractCompToBitMaskMapping[typeof(T)];
+			return StaticDictionary<T>.Get<BitMask>();//abstractCompToBitMaskMapping[typeof(T)];
 		}
 		public static ref readonly BitMask SetTag(this in BitMask mask, string tag)
 		{
@@ -106,16 +86,16 @@ namespace Sharp
 
 			return ref bitmask;
 		}
-		public static ref readonly BitMask SetTag(this in BitMask mask, Component tag)
+		public static ref readonly BitMask SetTag<T>(this in BitMask mask) where T : Component
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
-			bitmask.SetFlag(compFlagToBitPositionMapping[tag.GetType()]);
+			bitmask.SetFlag(StaticDictionary<T>.Get<int>());
 			return ref bitmask;
 		}
-		public static ref readonly BitMask ClearTag(this in BitMask mask, Component tag)
+		public static ref readonly BitMask ClearTagg<T>(this in BitMask mask) where T : Component
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
-			bitmask.ClearFlag(compFlagToBitPositionMapping[tag.GetType()]);
+			bitmask.ClearFlag(StaticDictionary<T>.Get<int>());
 			return ref bitmask;
 		}
 		internal static Root entities = new Root();

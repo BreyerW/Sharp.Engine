@@ -125,7 +125,7 @@ namespace Sharp.Editor.Views
 
 			Padding = new Margin(32, 33, 32, 32);
 			badge.BringToFront();
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
 			Color c = new Color(drawer.curveColor.R, drawer.curveColor.G, drawer.curveColor.B, (byte)(drawer.curveColor.A * 0.75f));
 			foreach (var j in ..curves.Length)
 			{
@@ -152,7 +152,7 @@ namespace Sharp.Editor.Views
 				return;
 			}
 
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
 
 			Color c = new Color(drawer.curveColor.R, drawer.curveColor.G, drawer.curveColor.B, (byte)(drawer.curveColor.A * 0.75f));
 			foreach (var j in ..curves.Length)
@@ -203,9 +203,10 @@ namespace Sharp.Editor.Views
 			var pos = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);
 			var rightClick = args.Button is 1;
 			if (rightClick) return;
-			var checkMousePos = new bool[drawer.Value.Length];
-			var checkIfOutsideRegion = new bool[drawer.Value.Length / 2];
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
+			var checkMousePos = new bool[curves.Length];
+			var checkIfOutsideRegion = new bool[curves.Length / 2];
+
 			foreach (var (id, curve) in curves.Indexed())
 			{
 				checkMousePos[id] = Math.Abs(curve.Evaluate(pos.X) - pos.Y) < 1f;
@@ -287,7 +288,7 @@ namespace Sharp.Editor.Views
 			var mousePosCS = RegionDrawer.ViewToCurveSpace(new Vector2(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y), scale, translation);
 			var (time, l, outTan, inTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)selectedControl.UserData;
 			var key = FindKeyframe(time, l);
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
 			var value = curves[l].keys[key];
 			var keyframePos = new Vector2(value.time, value.value);
 			if (sender.Name is "inTan")
@@ -356,7 +357,7 @@ namespace Sharp.Editor.Views
 		{
 			var (time, l, sentOutTan, sentInTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)sender.UserData;
 			var key = FindKeyframe(time, l);
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
 			var value = curves[l].keys[key];
 
 			if (args.Button is 1)
@@ -393,21 +394,21 @@ namespace Sharp.Editor.Views
 
 		private bool IsOutTanVisible(int curveId, int key)
 		{
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
 			var tanMode = CurveUtility.GetKeyTangentMode(ref curves[curveId].keys[key], 1);
 			return key < curves[curveId].keys.Length - 1 && (tanMode is TangentMode.Editable or TangentMode.Smooth);
 		}
 
 		private bool IsInTanVisible(int curveId, int key)
 		{
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
 			var tanMode = CurveUtility.GetKeyTangentMode(ref curves[curveId].keys[key], 0);
 			return key > 0 && (tanMode is TangentMode.Editable or TangentMode.Smooth);
 		}
 
 		private int FindKeyframe(float time, int curveId)
 		{
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
 			return Array.FindIndex(curves[curveId].keys, keyframe => time == keyframe.time);
 		}
 
@@ -421,7 +422,7 @@ namespace Sharp.Editor.Views
 			scale = new Vector2(swatchArea.width / (drawer.curvesRange.width), -swatchArea.height / (drawer.curvesRange.height));//max-drawer.curvesRange.y
 			translation = new Vector2(-drawer.curvesRange.x * scale.X + swatchArea.x, swatchArea.height - drawer.curvesRange.y * scale.Y + swatchArea.y);
 			mainView.camera.SetOrthoMatrix(size.width, size.height);
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
 			foreach (var child in Childs)
 			{
 				if (child.Name != "inTan" && child.Name != "outTan" && child is DraggableButton button)
@@ -450,7 +451,7 @@ namespace Sharp.Editor.Views
 		{
 			var (time, l, outTan, inTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)sender.UserData;
 			var key = FindKeyframe(time, l);
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
 			var value = curves[l].keys[key];
 			var newPos = draggingCurveId is -1 ? RegionDrawer.ViewToCurveSpace(new Vector2(sender.Position.x + 10, sender.Position.y + Location.y + 6), scale, translation) :
 					 new Vector2(value.time, RegionDrawer.ViewToCurveSpace(new Vector2(sender.Position.x + 10, sender.Position.y + Location.y + 6), scale, translation).Y);
@@ -526,7 +527,7 @@ namespace Sharp.Editor.Views
 			if (tracking > -1)
 			{
 				var x = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation).X;
-				ref var curve = ref drawer.Value[tracking];
+				ref var curve = ref (drawer.Value as Curve[])[tracking];
 				var keyInCV = new Vector2(x, curve.Evaluate(x));
 				CheckIfOutsideArea(ref keyInCV);
 				var keyInVS = RegionDrawer.CurveToViewSpace(keyInCV, scale, translation);
@@ -564,7 +565,7 @@ namespace Sharp.Editor.Views
 			int curveId = (int)data[0];
 			float time = (float)data[1];
 			var startAngle = EvaluateCurveDeltaSlow(time, curveId);
-			ref var curve = ref drawer.Value[curveId];
+			ref var curve = ref (drawer.Value as Curve[])[tracking];
 			var newPoint = new Vector2(time, curve.Evaluate(time));
 			CheckIfOutsideArea(ref newPoint);
 			var newkeyfr = new Keyframe(newPoint.X, newPoint.Y, startAngle, startAngle);
@@ -580,7 +581,7 @@ namespace Sharp.Editor.Views
 		private void DelButton_MouseClick(Control sender, MouseEventArgs args)
 		{
 			var data = sender.UserData as Control[];
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
 			foreach (var toDelete in data)
 			{
 				var (time, l, outTan, inTan) = (ValueTuple<float, int, DraggableButton, DraggableButton>)toDelete.UserData;
@@ -603,8 +604,9 @@ namespace Sharp.Editor.Views
 			var mousePos = new Vector2(Squid.UI.MousePosition.x, Squid.UI.MousePosition.y);
 			var pos = RegionDrawer.ViewToCurveSpace(mousePos, scale, translation);
 			var rightClick = args.Button is 1;
-			var checkMousePos = new bool[drawer.Value.Length];
-			ref var curves = ref drawer.Value;
+			var curves = drawer.Value as Curve[];
+			var checkMousePos = new bool[curves.Length];
+
 			foreach (var (id, curve) in curves.Indexed())
 			{
 				checkMousePos[id] = Math.Abs(curve.Evaluate(pos.X) - pos.Y) < 1f;
@@ -1016,19 +1018,20 @@ namespace Sharp.Editor.Views
 		public float EvaluateCurveDeltaSlow(float time, int curveId)
 		{
 			float num = 0.0001f;
-			ref var curve = ref drawer.Value[curveId];
+			ref var curve = ref (drawer.Value as Curve[])[curveId];
 			return (curve.Evaluate(time + num) - curve.Evaluate(time - num)) / (num * 2f);
 		}
 
 		private Vector2 GetAxisUiScalars(Curve[] curvesWithSameParameterSpace)
 		{
 			Vector2 result = new Vector2(-1, -1);
-			if (drawer.Value.Length > 1)
+			var curves = drawer.Value as Curve[];
+			if (curves.Length > 1)
 			{
 				bool flag = true;
 				bool flag2 = true;
 				Vector2 vector = Vector2.One;
-				for (int i = 0; i < drawer.Value.Length; i++)
+				for (int i = 0; i < curves.Length; i++)
 				{
 					//Curve curveWrapper = drawer.Value[i].ToObject<Curve>();
 					Vector2 vector2 = Vector2.One;

@@ -56,7 +56,8 @@ namespace SharpAsset
 		private const byte COLOR4PTR = byte.MaxValue - 1;
 
 		private static int lastShaderUsed = -1;
-		private static Dictionary<Type, int> sizeTable = new Dictionary<Type, int>()
+		//TODO maybe change this to StaticDictionary and  turn BindProperty to generic otherwise change to const/readonly declarations
+		private static Dictionary<Type, int> sizeTable = new()
 		{
 			[typeof(Vector2)] = Unsafe.SizeOf<Vector2>(),
 			[typeof(Vector3)] = Unsafe.SizeOf<Vector3>(),
@@ -133,7 +134,7 @@ namespace SharpAsset
 			//create dictionary that will hold IntPtr with items that use them probably only Materials
 			//when mesh or texture gets destroyed scan dictionary and invalidate properties
 			//in other words replace with default values eg point texture to white texture
-			//do the same when resising pinned arrays except dont invalidate
+			//do the same when resizing pinned arrays except dont invalidate
 			if (exists is false)
 			{
 				prop = new byte[sizeTable[data.GetType()] + 1];

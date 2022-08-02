@@ -8,59 +8,36 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Sharp.Editor.Views
 {
 	public class InspectorView : View
 	{
 		//private TreeView ptree = new TreeView();
-		internal List<object> currentlyDrawedObjects;
+		internal List<object> currentlyDrawedObjects = new();
 
 		//private ListBox tagStrip = new ListBox();
 		private DropDownButton tagStrip = new DropDownButton();
 		private Dictionary<Entity, TreeView> idToViewMapping = new Dictionary<Entity, TreeView>();
-		internal static Dictionary<Type, SortedSet<Type>> mappedPropertyDrawers = new Dictionary<Type, SortedSet<Type>>();
-		internal static Dictionary<Type, SortedSet<Type>> mappedComponentDrawers = new Dictionary<Type, SortedSet<Type>>();
-
-		static InspectorView()
+		internal static Dictionary<Type, Func<PropertyDrawer>> mappedPropertyDrawers = new();
+		internal static Dictionary<Type, Func<ComponentDrawer>> mappedComponentDrawers = new();
+		public static void RegisterDrawerFor<T>(Func<PropertyDrawer> factory)
 		{
-			var result = Assembly.GetExecutingAssembly().GetTypes()
-			 .Where(t => t.IsSubclassOfOpenGeneric(typeof(PropertyDrawer<>)));
-
-			Type[] genericArgs;
-			var priComparer = new PriorityComparer();
-			foreach (var type in result)
-			{
-				genericArgs = type.BaseType.GetGenericArguments();
-				if (!mappedPropertyDrawers.TryGetValue(genericArgs[0], out var set))
-					mappedPropertyDrawers.Add(genericArgs[0], new SortedSet<Type>(priComparer) { type });
-				else
-					set.Add(type);
-			}
-			result = Assembly.GetExecutingAssembly().GetTypes()
-			 .Where(t => t.IsSubclassOfOpenGeneric(typeof(ComponentDrawer<>)));
-
-
-			foreach (var type in result)
-			{
-				genericArgs = type.BaseType.GetGenericArguments();
-				if (!mappedComponentDrawers.TryGetValue(genericArgs[0], out var set))
-					mappedComponentDrawers.Add(genericArgs[0], new SortedSet<Type>(priComparer) { type });
-				else
-					set.Add(type);
-			}
+			//if (mappedPropertyDrawers.TryGetValue(typeof(T), out var f) is false)
+			//	f = factory;
+			ref var loc = ref CollectionsMarshal.GetValueRefOrAddDefault(mappedPropertyDrawers, typeof(T), out var exist);
+			if (exist is false)
+				loc = factory;
 		}
-		private class PriorityComparer : IComparer<Type>
+		public static void RegisterDrawerFor<T>(Func<ComponentDrawer> factory) where T : Component
 		{
-			public int Compare(Type x, Type y)
-			{
-				var xPri = x.GetCustomAttribute<PriorityAttribute>();
-				var yPri = y.GetCustomAttribute<PriorityAttribute>();
-				if (xPri is null && yPri is null) return 0;
-				if (xPri is null && yPri is not null) return -1;
-				if (xPri is not null && yPri is null) return 1;
-				return xPri.priority < yPri.priority ? 1 : -1;
-			}
+			//if (mappedComponentDrawers.TryGetValue(typeof(T), out var f) is false)
+			//	f = factory;
+			ref var loc = ref CollectionsMarshal.GetValueRefOrAddDefault(mappedComponentDrawers, typeof(T), out var exist);
+			if (exist is false)
+				loc = factory;
 		}
 		public InspectorView(uint attachToWindow) : base(attachToWindow)
 		{
@@ -79,28 +56,27 @@ namespace Sharp.Editor.Views
 
 
 			ListWrapper.OnListChange += (n) =>
-			{
-				if (currentlyDrawedObjects is not null)
-					foreach (var o in currentlyDrawedObjects)
-						if (idToViewMapping.TryGetValue(o as Entity, out var oldSelected))
-						{
-							oldSelected.IsVisible = false;
-						}
+			 {
+				 foreach (var o in currentlyDrawedObjects)
+					 if (idToViewMapping.TryGetValue(o as Entity, out var oldSelected))
+					 {
+						 oldSelected.IsVisible = false;
+					 }
+				 currentlyDrawedObjects.Clear();
+				 currentlyDrawedObjects.InsertRange(0, n);
+				 if (n is null or { Count: 0 })
+					 return;
 
-				currentlyDrawedObjects = n;
-				if (n is null or { Count: 0 })
-					return;
-
-				foreach (var o in n)
-				{
-					if (o is Entity obj)
-					{
-						Console.WriteLine("SelectionChange" + o);
-						idToViewMapping[obj].IsVisible = true;
-					}
-				}
-				Squid.UI.isDirty = true;
-			};
+				 foreach (var o in n)
+				 {
+					 if (o is Entity obj)
+					 {
+						 Console.WriteLine("SelectionChange" + o);
+						 idToViewMapping[obj].IsVisible = true;
+					 }
+				 }
+				 Squid.UI.isDirty = true;
+			 };
 			AllowFocus = true;
 			/*Selection.OnSelectionDirty += (sender) =>
 			{
@@ -157,22 +133,16 @@ namespace Sharp.Editor.Views
 		{
 			ComponentDrawer draw = null;                                                                 // if (attrib is null)
 
-			if (mappedComponentDrawers.TryGetValue(component.GetType(), out var set) || mappedComponentDrawers.TryGetValue(typeof(Component), out set))
+			if (mappedComponentDrawers.TryGetValue(component.GetType(), out var factory) || mappedComponentDrawers.TryGetValue(typeof(Component), out factory))
 			{
-				foreach (var drawer in set)
-				{
-					draw = Activator.CreateInstance(drawer) as ComponentDrawer;
-					if (draw.CanApply(component.GetType()))
-					{
-						draw.Target = component;
-						draw.OnInitializeGUI();
-						break;
-					}
-				}
+				draw = factory();
+				draw.Target = component;
+				draw.OnInitializeGUI();
+
+				draw.Label.Text = component.GetType().Name;
+				draw.Name = component.GetType().Name;
+				draw.Label.TextAlign = Alignment.MiddleLeft;
 			}
-			draw.Label.Text = component.GetType().Name;
-			draw.Name = component.GetType().Name;
-			draw.Label.TextAlign = Alignment.MiddleLeft;
 			return draw;
 		}
 		/* tagStrip = new MenuStrip(panel);
@@ -193,30 +163,25 @@ namespace Sharp.Editor.Views
 
              base.Initialize();*/
 
-		public static PropertyDrawer Add(MemberInfo propertyInfo)
+		/*public static PropertyDrawer Add(MemberInfo propertyInfo)
 		{
-			PropertyDrawer prop = null;                                                                 // if (attrib is null)
-
-			if (mappedPropertyDrawers.TryGetValue(propertyInfo.GetUnderlyingType(), out var set))
+			//TODO: add support for attributes
+			PropertyDrawer prop = null;
+			if (mappedPropertyDrawers.TryGetValue(propertyInfo.GetUnderlyingType(), out var factory))
 			{
-				foreach (var drawer in set)
-				{
-					prop = Activator.CreateInstance(drawer, propertyInfo) as PropertyDrawer;
-					if (prop.CanApply(propertyInfo))
-						break;
-				}
+				prop = factory();
 			}
-			else if (propertyInfo.GetUnderlyingType().GetInterfaces()
-.Any(i => i == typeof(IList)))//isassignablefrom?
+			else if (propertyInfo.GetUnderlyingType().IsAssignableTo(typeof(IList))/*.GetInterfaces()
+.Any(i => i == typeof(IList))*)//isassignablefrom?
 			{
-				prop = new ArrayDrawer(propertyInfo);
+				prop = new ArrayDrawer();
 			}
 			else return null; //prop = Activator.CreateInstance(typeof(InvisibleSentinel<>).MakeGenericType(propertyInfo.GetUnderlyingType().IsByRef ? propertyInfo.GetUnderlyingType().GetElementType() : propertyInfo.GetUnderlyingType()), propertyInfo) as PropertyDrawer;
 
 			//prop.attributes = attribs.ToArray();
 			prop.AutoSize = AutoSize.Horizontal;
 			return prop;
-		}
+		}*/
 
 
 	}

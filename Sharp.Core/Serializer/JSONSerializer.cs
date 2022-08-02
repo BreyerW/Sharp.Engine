@@ -20,7 +20,7 @@ namespace Sharp.Serializer
 			ObjectCreationHandling = ObjectCreationHandling.Reuse,
 			ReferenceResolverProvider = () => new IdReferenceResolver(),
 			NullValueHandling = NullValueHandling.Ignore,
-			DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+			//DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
 		};
 		internal static Dictionary<object, Guid> mapping = new();
 		internal static Func<object, bool> isEngineObject;

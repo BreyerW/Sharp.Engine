@@ -17,7 +17,8 @@ namespace Sharp.Core
 		[JsonInclude]
 		//[JsonProperty(IsReference = false)]
 		private uint[] bits;
-
+		//TODO: remove this after UnscopedRefAttribute introduction and turn bitmask into unmanaged struct with SIMD acceleration
+		public bool IsDefault => bits is null;
 		public BitMask(int startValue)
 		{
 			bits = new uint[1];

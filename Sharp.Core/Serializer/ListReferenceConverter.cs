@@ -24,7 +24,8 @@ namespace Sharp.Serializer
 			var elementType = objectType.IsArray ? objectType.GetElementType() : objectType.GetGenericArguments()[0];
 			var refId =/* reader.Path is refProperty or idProperty ?*/ reader.ReadAsString() /*: null*/;
 
-			while (reader.TokenType is not JsonToken.StartArray) reader.Read();
+			while (reader.TokenType is not JsonToken.StartArray)
+				reader.Read();
 			reader.Read();
 			IList tmp = new List<object>();
 			IList reference = null;
@@ -33,10 +34,11 @@ namespace Sharp.Serializer
 			{
 				while (true)
 				{
-					tmp.Add(serializer.PopulateObject(reader, elementType));
+					tmp.Add(serializer.Deserialize(reader, elementType));
 					reader.Read();
 					if (reader.TokenType is JsonToken.EndArray) { reader.Read(); break; }
-					while (!elementType.IsPrimitive && reader.TokenType is not JsonToken.StartObject) reader.Read();
+					while (!elementType.IsPrimitive && reader.TokenType is not JsonToken.StartObject)
+						reader.Read();
 				}
 				reference = eValue ?? serializer.ReferenceResolver.ResolveReference(serializer, refId) as IList;
 				if (reference is not null)

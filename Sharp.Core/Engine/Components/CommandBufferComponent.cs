@@ -13,9 +13,17 @@ using System.Text.Json.Serialization;
 
 namespace Sharp.Engine.Components
 {
+
 	//TODO: requires CameraComponent
 	public abstract class CommandBufferComponent : Component//Renderer?
 	{
+		[ModuleInitializer]
+		public static void Register()
+		{
+			ref var mask = ref StaticDictionary<CommandBufferComponent>.Get<BitMask>();
+			if (mask.IsDefault)
+				mask = new BitMask(0);
+		}
 		public static Queue<CommandBufferComponent> recentlyLoadedCommandBuffers = new();
 		protected Camera cam;
 
@@ -51,8 +59,11 @@ namespace Sharp.Engine.Components
 		internal int FBO = -1;
 		internal List<(int texId, TextureRole role)> targetTextures = new();
 		public Material swapMaterial;
-		protected CommandBufferComponent(Entity parent) : base(parent)
+
+
+		protected override void Initialize()
 		{
+
 			rendererMask = Extension.GetBitMaskFor<Renderer>();
 			cam = Parent.GetComponent<Camera>();
 			if (recentlyLoadedCommandBuffers.Count is 0)

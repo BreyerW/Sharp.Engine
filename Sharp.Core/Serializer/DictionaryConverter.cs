@@ -38,10 +38,10 @@ namespace Sharp.Serializer
 				while (reader.Value as string is not "key") reader.Read();
 				reader.Read();
 				var generics = objectType.GetGenericArguments();
-				var key = serializer.PopulateObject(reader, generics[0]);
+				var key = serializer.Deserialize(reader, generics[0]);
 				while (reader.Value as string is not "value") reader.Read();
 				reader.Read();
-				var value = serializer.PopulateObject(reader, generics[1]);
+				var value = serializer.Deserialize(reader, generics[1]);
 				existingValue.Add(key, value);
 				reader.Read();
 			}

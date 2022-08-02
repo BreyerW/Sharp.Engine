@@ -1,4 +1,5 @@
-﻿using Sharp.Engine.Components;
+﻿using Sharp.Core;
+using Sharp.Engine.Components;
 using Sharp.Physic;
 using SharpAsset;
 using SharpAsset.AssetPipeline;
@@ -10,6 +11,14 @@ namespace Sharp
 {
 	public partial class MeshRenderer : Renderer, IStartableComponent //where VertexFormat : struct, IVertex
 	{
+		[ModuleInitializer]
+		public static void Register()
+		{
+			ref var mask = ref StaticDictionary<Renderer>.Get<BitMask>();
+			if (mask.IsDefault)
+				mask = new BitMask(0);
+			mask.SetFlag(Extension.RegisterComponent<MeshRenderer>());
+		}
 		[JsonInclude]
 		private int physicIndex = -1;
 
@@ -17,12 +26,10 @@ namespace Sharp
 			new Curve() { keys = new Keyframe[] { new Keyframe() { time = 0.1f, value = -10f }, new Keyframe() { time = 120f, value = 10f } } },
 			new Curve() { keys = new Keyframe[] { new Keyframe() { time = 0.4f, value = 0f }, new Keyframe() { time = 60f, value = 1f } } }
 		};
-
-		public MeshRenderer(Entity parent) : base(parent)
+		protected override void Initialize()
 		{
-			parent.transform.onTransformChanged += OnTransformChange;
+			Parent.transform.onTransformChanged += OnTransformChange;
 		}
-
 		public override void Render()
 		{
 			material.BindProperty("model", Parent.transform.ModelMatrix);

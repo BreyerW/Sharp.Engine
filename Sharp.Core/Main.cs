@@ -5,8 +5,11 @@ using Sharp.Editor;
 using Sharp.Editor.Views;
 using SharpAsset;
 using SharpAsset.AssetPipeline;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Sharp
@@ -71,6 +74,7 @@ namespace Sharp
 			//var mWin2 = new MainWindow("test2");
 			//mWin2.Initialize(new AssetsView(mWin2.windowId));
 			SDL.SDL_DestroyWindow(dummy);
+
 			Window.PollWindows();
 			SDL.SDL_Quit();
 		}

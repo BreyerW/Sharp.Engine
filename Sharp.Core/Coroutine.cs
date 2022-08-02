@@ -8,10 +8,9 @@ using System.Threading.Tasks;
 
 namespace Sharp
 {
-	/// </summary>
-	// TODO: maybe AdvanceInstructions shouldnt rely on generic instead rely on type queue allowing insterting custom instructions without dedicated slot for them. it would require calling AdvanceInstruction per new entry in queue
 	public static class Coroutine
 	{
+		//TODO: maybe forgo custom advanceinstructions points feature and turn access to staticdictionary
 		//TODO: maybe add Ienumertor slot where unknown ienumerators go and make AdvanceInstructions<Ienumerator> call somewhere
 		private static Dictionary<Type, Queue<IEnumerator>> typeToInstructionsMapping = new();
 
@@ -54,10 +53,6 @@ namespace Sharp
 		}
 
 	}
-	/*public interface IWaitFor : IEnumerator
-	{
-
-	}*/
 	//TODO: maybe add WaitForMeshLoading, WaitForShaderLoading etc.
 	public class WaitForEndOfFrame : IEnumerator
 	{

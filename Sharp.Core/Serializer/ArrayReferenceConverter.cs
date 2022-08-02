@@ -32,7 +32,8 @@ namespace Sharp.Serializer
 				reader.Read();
 				return serializer.ReferenceResolver.ResolveReference(serializer, refId) as Array;
 			}
-			while (reader.TokenType is not JsonToken.StartArray) reader.Read();
+			while (reader.TokenType is not JsonToken.StartArray)
+				reader.Read();
 			reader.Read();
 			IList tmp = new List<object>();
 			Array reference = null;
@@ -41,8 +42,8 @@ namespace Sharp.Serializer
 			{
 				while (true)
 				{
-					tmp.Add(serializer.PopulateObject(reader, elementType));
-					//reader.Read();
+					tmp.Add(serializer.Deserialize(reader, elementType));
+					reader.Read();
 					if (reader.TokenType is JsonToken.EndArray) { reader.Read(); break; }
 					//while (!elementType.IsPrimitive && reader.TokenType is not JsonToken.StartObject) reader.Read();
 				}
@@ -53,8 +54,6 @@ namespace Sharp.Serializer
 					Array.Resize(ref objArr, tmp.Count);
 					foreach (var i in ..reference.Length)
 						reference.SetValue(tmp[i], i);
-
-
 					return reference;
 				}
 				else

@@ -76,9 +76,9 @@ namespace SharpAsset.AssetPipeline
 
 	public abstract class Pipeline
 	{
-		internal static Dictionary<Type, Pipeline> allPipelines = new Dictionary<Type, Pipeline>();
-		internal static Dictionary<string, Type> extensionToTypeMapping = new Dictionary<string, Type>();
-		internal static Dictionary<Type, Pipeline> assetToPipelineMapping = new Dictionary<Type, Pipeline>();
+		internal static Dictionary<Type, Pipeline> allPipelines = new();
+		internal static Dictionary<string, Type> extensionToTypeMapping = new();
+		internal static Dictionary<Type, Pipeline> assetToPipelineMapping = new();
 
 		public static Pipeline Get(string extension)
 		{

@@ -207,17 +207,14 @@ namespace Sharp
 		}
 		public T AddComponent<T>() where T : Component
 		{
-			return AddComponent(typeof(T)) as T;
-		}
-
-		public Component AddComponent(Type type)
-		{
-			var comp = Activator.CreateInstance(type, this) as Component;
+			var comp = Activator.CreateInstance<T>(); //RuntimeHelpers.GetUninitializedObject(typeof(T)) as T;
+			comp.Parent = this;
 			comp.active = true;
+			comp.InternalInitialize();
+			ComponentsMask = ComponentsMask.SetTag<T>();
 			//if (comp is Transform t)
 			//transform = t;
-			ComponentsMask = ComponentsMask.SetTag(comp);
-			//components.Add(comp);
+
 			return comp;
 		}
 

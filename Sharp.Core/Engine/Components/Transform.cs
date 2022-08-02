@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace Sharp.Engine.Components
 {
 	public class Transform : Component
 	{
+		[ModuleInitializer]
+		internal static void Register()
+		{
+			Extension.RegisterComponent<Transform>();
+		}
 		private readonly static int mat4x4Stride = Marshal.SizeOf<Matrix4x4>();
 
 		[JsonInclude]
@@ -82,8 +89,5 @@ namespace Sharp.Engine.Components
 			}
 		}
 		//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
-		public Transform(Entity p) : base(p)
-		{
-		}
 	}
 }

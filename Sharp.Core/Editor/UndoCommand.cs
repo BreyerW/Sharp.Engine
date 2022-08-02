@@ -25,12 +25,13 @@ namespace Sharp.Editor
 
 			foreach (var (index, undo, redo) in History.current.Value.propertyMapping)
 			{
-				var str = Encoding.Unicode.GetString(redo);
+
 				var obj = index.GetInstanceObject<IEngineObject>();
 				if (undo is not null)
 				{
 					ref var patched = ref CollectionsMarshal.GetValueRefOrNullRef(History.prevStates, obj);
 					patched = Delta.Apply(patched, undo);
+					var str = Encoding.Unicode.GetString(patched);
 					PluginManager.serializer.Deserialize(patched, obj.GetType());
 					if (obj is IStartableComponent startable)//TODO: change to OnDeserialized callaback when System.Text.Json will support it
 						startable.Start();

@@ -8,12 +8,14 @@ namespace Sharp.Editor.UI.Property
 {
 	public abstract class PropertyDrawer : Control
 	{
+		internal Label label = new();
+		internal Action<object, object> setter;
+		internal Func<object, object> getter;
 		public abstract Component Target
 		{
 			set;
 			get;
 		}
-		public virtual bool CanApply(MemberInfo memInfo) => true;//var attribs = propertyInfo.GetCustomAttributes<CustomPropertyDrawerAttribute>(true);
 	}
 
 	/// <summary>
@@ -21,10 +23,11 @@ namespace Sharp.Editor.UI.Property
 	/// </summary>
 	public abstract class PropertyDrawer<T> : PropertyDrawer
 	{
-		public MemberInfo memberInfo;
+
+		//public MemberInfo memberInfo;
 		private Component target;
-		protected Label label = new Label();
-		protected Type propertyType;
+
+		//protected Type propertyType;
 		private IntPtr offset;
 		public override Component Target
 		{
@@ -35,7 +38,11 @@ namespace Sharp.Editor.UI.Property
 			}
 			get => target;
 		}
-		public ref T Value => ref target.DangerousGetObjectDataReferenceAt<T>(offset);
+		public object Value
+		{
+			set => setter(target, value);
+			get => getter(target);
+		} //ref target.DangerousGetObjectDataReferenceAt<T>(offset);
 		/*public ref T Value
 		{
 			get
@@ -47,17 +54,8 @@ namespace Sharp.Editor.UI.Property
 		}*/
 
 
-		public PropertyDrawer(MemberInfo memInfo)
+		public PropertyDrawer()
 		{
-			memberInfo = memInfo;
-			offset = (memberInfo as FieldInfo).GetFieldOffset();
-			//Scissor = true;
-			//Size = new Point(0, 20);
-			Name = memberInfo.Name;
-			propertyType = memberInfo.GetUnderlyingType();
-
-			propertyType = propertyType.IsByRef ? propertyType.GetElementType() : propertyType;
-			label.Text = memberInfo.Name + ": ";
 			label.Size = new Point(75, Size.y);
 			label.AutoEllipsis = false;
 			Childs.Add(label);

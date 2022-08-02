@@ -1,12 +1,21 @@
-﻿using Sharp.Editor.Views;
+﻿using Sharp.Core;
+using Sharp.Editor.Views;
 using SharpAsset;
 using System;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
 namespace Sharp
 {
 	public abstract class Renderer : Component
 	{
+		[ModuleInitializer]
+		internal static void Register()
+		{
+			ref var mask = ref StaticDictionary<Renderer>.Get<BitMask>();
+			if (mask.IsDefault)
+				mask = new BitMask(0);
+		}
 		[JsonInclude]
 		public Material material;
 
@@ -18,9 +27,7 @@ namespace Sharp
 			material.BindProperty(Material.MESHSLOT, Mesh);
 			return prev;
 		}
-		protected Renderer(Entity parent) : base(parent)
-		{
-		}
+
 
 		public abstract void Render();
 

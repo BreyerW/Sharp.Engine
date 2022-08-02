@@ -5,14 +5,16 @@ using Sharp.Editor.Attribs;
 using Sharp.Engine.Components;
 using System;
 using System.Text.Json.Serialization;
+using JsonIgnoreAttribute = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Sharp
 {
 	[Serializable]
 	public abstract class Component : IEngineObject/*, IEquatable<Component>*/
 	{
+		//[JsonInclude]
 		private bool enabled;
-		[JsonInclude]
+		//[JsonIgnore]
 		public bool active
 		{
 			get { return enabled; }
@@ -41,12 +43,12 @@ namespace Sharp
 		//[CurveRange()]
 		[JsonInclude]
 		private Entity parent;
-
+		[JsonIgnore]
 		//[NonSerializable]//, JsonProperty
 		public Entity Parent
 		{
 			get => parent;
-			private set
+			set
 			{
 				if (this is Transform t)
 					value.transform = t;
@@ -56,10 +58,17 @@ namespace Sharp
 				parent = value;
 			}
 		}
-
 		internal virtual void OnActiveChanged()
 		{
 
+		}
+		protected virtual void Initialize()
+		{
+		}
+		internal void InternalInitialize()
+		{
+			Extension.entities.AddEngineObject(this);
+			Initialize();
 		}
 
 		public virtual void Dispose()
@@ -75,11 +84,6 @@ namespace Sharp
 			return ReferenceEquals(this, other);
 		}*/
 
-		public Component(Entity parent)
-		{
-			Parent = parent;
-			Extension.entities.AddEngineObject(this);
-		}
 
 		/*public override bool Equals(object obj)
 		{
