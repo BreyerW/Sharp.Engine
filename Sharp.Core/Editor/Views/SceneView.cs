@@ -15,7 +15,7 @@ namespace Sharp.Editor.Views
 {
 	public class SceneView : View
 	{
-		private static SimpleThreadDispatcher dispatcher = new(4);
+		private static BepuUtilities.ThreadDispatcher dispatcher = new(4);
 		private static BitMask rendererMask = new(0);
 		private int cell_size = 32;
 		private int grid_size = 4096;

@@ -139,8 +139,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AssimpPlugin\AssimpPlugin.csproj" />
-    <ProjectReference Include="..\BepuPhysics\BepuPhysics.csproj" />
-    <ProjectReference Include="..\BepuUtilities\BepuUtilities.csproj" />
+    <ProjectReference Include="..\bepuphysics2-master\BepuPhysics\BepuPhysics.csproj" />
     <ProjectReference Include="..\ImageSharpPlugin\ImageSharpPlugin.csproj" />
     <ProjectReference Include="..\OpenGLPlugin\OpenGLPlugin.csproj" />
     <ProjectReference Include="..\PluginAbstraction\PluginAbstraction.csproj" />

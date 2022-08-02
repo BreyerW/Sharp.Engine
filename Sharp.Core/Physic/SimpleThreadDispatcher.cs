@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Sharp.Physic
 {
-    public class SimpleThreadDispatcher : IThreadDispatcher, IDisposable
+	/*public class SimpleThreadDispatcher : IThreadDispatcher, IDisposable
     {
         int threadCount;
         public int ThreadCount => threadCount;
@@ -111,6 +111,6 @@ namespace Sharp.Physic
         {
             return bufferPools[workerIndex];
         }
-    }
+    }*/
 
 }

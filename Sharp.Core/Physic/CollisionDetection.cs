@@ -30,7 +30,7 @@ namespace Sharp.Physic
 		static CollisionDetection()
 		{
 			bufferPool = new BufferPool();
-			simulation = Simulation.Create(bufferPool, new NarrowPhaseCallbacks(), new PoseIntegratorCallbacks(new Vector3(0, -10, 0)), new PositionLastTimestepper());
+			simulation = Simulation.Create(bufferPool, new NarrowPhaseCallbacks(), new PoseIntegratorCallbacks(new Vector3(0, -10, 0)), new SolveDescription(8, 1));
 		}
 		public static int AddFrozenBody(in Guid id, Vector3 pos, Vector3 min, Vector3 max, int existingId = -1)
 		{
@@ -141,7 +141,7 @@ namespace Sharp.Physic
 		/// <param name="b">Reference to the second collidable in the pair.</param>
 		/// <returns>True if collision detection should proceed, false otherwise.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool AllowContactGeneration(int workerIndex, CollidableReference a, CollidableReference b)
+		public bool AllowContactGeneration(int workerIndex, CollidableReference a, CollidableReference b, ref float speculativeMargin)
 		{
 			//Before creating a narrow phase pair, the broad phase asks this callback whether to bother with a given pair of objects.
 			//This can be used to implement arbitrary forms of collision filtering. See the RagdollDemo or NewtDemo for examples.
@@ -181,7 +181,7 @@ namespace Sharp.Physic
 		/// <param name="pairMaterial">Material properties of the manifold.</param>
 		/// <returns>True if a constraint should be created for the manifold, false otherwise.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public unsafe bool ConfigureContactManifold<TManifold>(int workerIndex, CollidablePair pair, ref TManifold manifold, out PairMaterialProperties pairMaterial) where TManifold : struct, IContactManifold<TManifold>
+		public unsafe bool ConfigureContactManifold<TManifold>(int workerIndex, CollidablePair pair, ref TManifold manifold, out PairMaterialProperties pairMaterial) where TManifold : unmanaged, IContactManifold<TManifold>
 		{
 			//The IContactManifold parameter includes functions for accessing contact data regardless of what the underlying type of the manifold is.
 			//If you want to have direct access to the underlying type, you can use the manifold.Convex property and a cast like Unsafe.As<TManifold, ConvexContactManifold or NonconvexContactManifold>(ref manifold).
@@ -231,9 +231,6 @@ namespace Sharp.Physic
 	//Note that the engine does not require any particular form of gravity- it, like all the contact callbacks, is managed by a callback.
 	public struct PoseIntegratorCallbacks : IPoseIntegratorCallbacks
 	{
-		public Vector3 Gravity;
-		Vector3 gravityDt;
-
 		/// <summary>
 		/// Performs any required initialization logic after the Simulation instance has been constructed.
 		/// </summary>
@@ -247,39 +244,69 @@ namespace Sharp.Physic
 		/// <summary>
 		/// Gets how the pose integrator should handle angular velocity integration.
 		/// </summary>
-		public AngularIntegrationMode AngularIntegrationMode => AngularIntegrationMode.Nonconserving; //Don't care about fidelity in this demo!
+		public readonly AngularIntegrationMode AngularIntegrationMode => AngularIntegrationMode.Nonconserving;
+
+		/// <summary>
+		/// Gets whether the integrator should use substepping for unconstrained bodies when using a substepping solver.
+		/// If true, unconstrained bodies will be integrated with the same number of substeps as the constrained bodies in the solver.
+		/// If false, unconstrained bodies use a single step of length equal to the dt provided to Simulation.Timestep. 
+		/// </summary>
+		public readonly bool AllowSubstepsForUnconstrainedBodies => false;
+
+		/// <summary>
+		/// Gets whether the velocity integration callback should be called for kinematic bodies.
+		/// If true, IntegrateVelocity will be called for bundles including kinematic bodies.
+		/// If false, kinematic bodies will just continue using whatever velocity they have set.
+		/// Most use cases should set this to false.
+		/// </summary>
+		public readonly bool IntegrateVelocityForKinematics => false;
+
+		public Vector3 Gravity;
 
 		public PoseIntegratorCallbacks(Vector3 gravity) : this()
 		{
 			Gravity = gravity;
 		}
 
+		//Note that velocity integration uses "wide" types. These are array-of-struct-of-arrays types that use SIMD accelerated types underneath.
+		//Rather than handling a single body at a time, the callback handles up to Vector<float>.Count bodies simultaneously.
+		Vector3Wide gravityWideDt;
+
 		/// <summary>
-		/// Called prior to integrating the simulation's active bodies. When used with a substepping timestepper, this could be called multiple times per frame with different time step values.
+		/// Callback invoked ahead of dispatches that may call into <see cref="IntegrateVelocity"/>.
+		/// It may be called more than once with different values over a frame. For example, when performing bounding box prediction, velocity is integrated with a full frame time step duration.
+		/// During substepped solves, integration is split into substepCount steps, each with fullFrameDuration / substepCount duration.
+		/// The final integration pass for unconstrained bodies may be either fullFrameDuration or fullFrameDuration / substepCount, depending on the value of AllowSubstepsForUnconstrainedBodies. 
 		/// </summary>
-		/// <param name="dt">Current time step duration.</param>
+		/// <param name="dt">Current integration time step duration.</param>
+		/// <remarks>This is typically used for precomputing anything expensive that will be used across velocity integration.</remarks>
 		public void PrepareForIntegration(float dt)
 		{
-			gravityDt = Gravity * dt;
+			//No reason to recalculate gravity * dt for every body; just cache it ahead of time.
+			gravityWideDt = Vector3Wide.Broadcast(Gravity * dt);
 		}
 
 		/// <summary>
-		/// Callback called for each active body within the simulation during body integration.
+		/// Callback for a bundle of bodies being integrated.
 		/// </summary>
-		/// <param name="bodyIndex">Index of the body being visited.</param>
-		/// <param name="pose">Body's current pose.</param>
+		/// <param name="bodyIndices">Indices of the bodies being integrated in this bundle.</param>
+		/// <param name="position">Current body positions.</param>
+		/// <param name="orientation">Current body orientations.</param>
 		/// <param name="localInertia">Body's current local inertia.</param>
-		/// <param name="workerIndex">Index of the worker thread processing this body.</param>
-		/// <param name="velocity">Reference to the body's current velocity to integrate.</param>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void IntegrateVelocity(int bodyIndex, in RigidPose pose, in BodyInertia localInertia, int workerIndex, ref BodyVelocity velocity)
+		/// <param name="integrationMask">Mask indicating which lanes are active in the bundle. Active lanes will contain 0xFFFFFFFF, inactive lanes will contain 0.</param>
+		/// <param name="workerIndex">Index of the worker thread processing this bundle.</param>
+		/// <param name="dt">Durations to integrate the velocity over. Can vary over lanes.</param>
+		/// <param name="velocity">Velocity of bodies in the bundle. Any changes to lanes which are not active by the integrationMask will be discarded.</param>
+		public void IntegrateVelocity(Vector<int> bodyIndices, Vector3Wide position, QuaternionWide orientation, BodyInertiaWide localInertia, Vector<int> integrationMask, int workerIndex, Vector<float> dt, ref BodyVelocityWide velocity)
 		{
-			//Note that we avoid accelerating kinematics. Kinematics are any body with an inverse mass of zero (so a mass of ~infinity). No force can move them.
-			if (localInertia.InverseMass > 0)
-			{
-				velocity.Linear = velocity.Linear + gravityDt;
-			}
+			//This also is a handy spot to implement things like position dependent gravity or per-body damping.
+			//We don't have to check for kinematics; IntegrateVelocityForKinematics returns false in this type, so we'll never see them in this callback.
+			//Note that these are SIMD operations and "Wide" types. There are Vector<float>.Count lanes of execution being evaluated simultaneously.
+			//The types are laid out in array-of-structures-of-arrays (AOSOA) format. That's because this function is frequently called from vectorized contexts within the solver.
+			//Transforming to "array of structures" (AOS) format for the callback and then back to AOSOA would involve a lot of overhead, so instead the callback works on the AOSOA representation directly.
+			velocity.Linear += gravityWideDt;
 		}
 
 	}
+
 }
