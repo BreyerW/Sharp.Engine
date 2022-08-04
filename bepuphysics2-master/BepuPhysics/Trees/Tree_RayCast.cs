@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text;
 using System.Threading;
 
@@ -153,7 +154,7 @@ namespace BepuPhysics.Trees
 			if (leafCount == 1)
 			{
 				//If the first node isn't filled, we have to use a special case.
-				if ((IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData, Nodes[0].A.Index) & (1 << 6)) != 0)
+				if (IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData, Nodes[0].A.Index).IsBitSetAt(6))
 				{
 					leafTester.TestLeaf(0, frustumData);
 				}
@@ -175,7 +176,7 @@ namespace BepuPhysics.Trees
 			if (leafCount == 1)
 			{
 				//If the first node isn't filled, we have to use a special case.
-				if ((IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData, Nodes[0].A.Index) & (1 << 6)) != 0)
+				if (IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData, Nodes[0].A.Index).IsBitSetAt(6))
 				{
 					leafTester.TestLeaf(0, frustumData);
 				}
@@ -241,8 +242,9 @@ namespace BepuPhysics.Trees
 					var aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index, planeBitmask);
 					var bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index, planeBitmask);
 
-					var aIntersected = (aBitmask & (1 << 6)) != 0;
-					var bIntersected = (bBitmask & (1 << 6)) != 0;
+					var aIntersected = aBitmask.IsBitSetAt(6);
+					var bIntersected = bBitmask.IsBitSetAt(6);
+
 					if (aIntersected && !bIntersected)
 					{
 						nodeIndex = node.A.Index;
@@ -338,7 +340,7 @@ namespace BepuPhysics.Trees
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < nodeCount) || (Encode(nodeIndex) >= 0 && Encode(nodeIndex) < leafCount));
 			Debug.Assert(leafCount >= 2, "This implementation assumes all nodes are filled.");
 			globalRemainingLeavesToVisit = leafCount;
-			ref uint planeBitmask = ref Unsafe.AsRef(uint.MaxValue);
+			uint planeBitmask = uint.MaxValue;
 			ref int leafIndex = ref Unsafe.AsRef(-1);
 			ref int stackEnd = ref Unsafe.AsRef(0);
 			ref int fullyContainedStack = ref Unsafe.AsRef(-1);
@@ -361,7 +363,7 @@ namespace BepuPhysics.Trees
 			var remainingLeavesToVisit = 0;
 			var takenLeavesCount = 0;
 			ref int nodeIndex = ref Unsafe.AsRef(0);
-			ref uint planeBitmask = ref Unsafe.AsRef(uint.MaxValue);
+			uint planeBitmask = uint.MaxValue;
 			ref int leafIndex = ref Unsafe.AsRef(-1);
 			ref int stackEnd = ref Unsafe.AsRef(0);
 			ref int fullyContainedStack = ref Unsafe.AsRef(-1);
@@ -463,7 +465,7 @@ namespace BepuPhysics.Trees
 			else
 			{
 				//we met leaf very early. we might as well test it since this is very rare
-				if ((IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index) & (1 << 6)) != 0)
+				if (IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index).IsBitSetAt(6))
 					leavesToTest[0].AddUnsafely(Encode(node.A.Index));
 				globalRemainingLeavesToVisit--;
 			}
@@ -482,11 +484,13 @@ namespace BepuPhysics.Trees
 			else
 			{
 				//we met leaf very early. we might as well test it since this is very rare
-				if ((IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index) & (1 << 6)) != 0)
+				if (IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index).IsBitSetAt(6))
 					leavesToTest[0].AddUnsafely(Encode(node.B.Index));
 				globalRemainingLeavesToVisit--;
 			}
 		}
+		//TODO: drop far plane, that gives us 15 floats meaning only 16th float is dead
+		//or keep far plane and simply flip near plane after computation
 		public unsafe static uint IntersectsOrInside(in Vector3 min, in Vector3 max, FrustumData* frustumData, int nodeIndex, uint planeBitmask = uint.MaxValue)
 		{
 			var shouldRenumberPlanes = failedPlane.TryGetValue(nodeIndex, out var planeId);
@@ -506,7 +510,6 @@ namespace BepuPhysics.Trees
 				center = max + min, // Compute AABB center
 				extents = max - min // Compute positive extents
 			};
-
 			ref var planeAddr = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
 			ref var plane = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
 
@@ -518,7 +521,7 @@ namespace BepuPhysics.Trees
 
 			do
 			{
-				if (((planeBitmask >> start) & 1) == 0)
+				if (!planeBitmask.IsBitSetAt(start))
 				{
 					start = shouldRenumberPlanes && start == 5 ? 0 : start + 1;
 					continue;
@@ -542,6 +545,7 @@ namespace BepuPhysics.Trees
 					var multi = bbData * planeData;
 					m = multi[0] + multi[1] + multi[2];
 					r = multi[4] + multi[5] + multi[6];
+					//var condition = Vector.GreaterThanOrEqual(plane.Normal, Vector<float>.Zero);
 				}
 				else
 				{
@@ -551,7 +555,7 @@ namespace BepuPhysics.Trees
 				}
 				if (m + r < d)//outside
 				{
-					planeBitmask &= unchecked((uint)(~(1 << 6)));
+					planeBitmask = planeBitmask.UnsetBitAt(6);
 					//no need to renumber planes when id is 0
 					if (!shouldRenumberPlanes && start != 0 && start != planeId)
 						failedPlane.TryAdd(nodeIndex, start);
@@ -561,7 +565,7 @@ namespace BepuPhysics.Trees
 				}
 				if (m - r >= d)//inside
 				{
-					planeBitmask &= ~(uint)(1 << start);
+					planeBitmask = planeBitmask.UnsetBitAt(start);
 				}
 				/*else//intersect
 				{
@@ -576,4 +580,23 @@ namespace BepuPhysics.Trees
 			return planeBitmask;
 		}
 	}
+	static class BitExtensions
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool IsBitSetAt(this uint mask, int index)
+		{
+			return ((mask >> index) & 1) == 1;
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint SetBitAt(this uint mask, int index)
+		{
+			return mask | ((uint)1 << index);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint UnsetBitAt(this uint mask, int index)
+		{
+			return mask & ~((uint)1 << index);
+		}
+	}
+
 }
