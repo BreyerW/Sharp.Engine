@@ -146,6 +146,39 @@ namespace BepuPhysics.Trees
 		private static int globalRemainingLeavesToVisit;
 		private unsafe static FrustumData* frustumData;
 
+		//TODO: add [UnscopedAttribute] Once Bepu moves to net 7+ so that this struct can be directly treated as fixed array of items
+		[StructLayout(LayoutKind.Sequential)]
+		record struct FixedArrayOfItems<T> where T : struct
+		{
+			public T Item0;
+			public T Item1;
+			public T Item2;
+			public T Item3;
+			public T Item4;
+			public T Item5;
+			public T Item6;
+
+			public FixedArrayOfItems(T item1, T item2, T item3, T item4, T item5, T item6)
+			{
+				Item1 = item1;
+				Item2 = item2;
+				Item3 = item3;
+				Item4 = item4;
+				Item5 = item5;
+				Item6 = item6;
+				Item0 = default;
+			}
+		}
+		//TODO: Convert to records of ints
+		private static FixedArrayOfItems<FixedArrayOfItems<int>> lookUpTable = new(
+			new(0, 1, 2, 3, 4, 5),
+			new(1, 2, 3, 4, 5, 0),
+			new(2, 3, 4, 5, 0, 1),
+			new(3, 4, 5, 0, 1, 2),
+			new(4, 5, 0, 1, 2, 3),
+			new(5, 0, 1, 2, 3, 4)
+		);
+
 		public unsafe void FrustumSweep<TLeafTester>(FrustumData* frustumData, BufferPool pool, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
 		{
 			if (leafCount == 0)
@@ -381,6 +414,7 @@ namespace BepuPhysics.Trees
 				{
 					Interlocked.Add(ref globalRemainingLeavesToVisit, -takenLeavesCount);
 					nodeIndex = 0;
+					//TODO: see if this can be simplified with CompareExchange
 					//we no longer have work on this thread. We try to steal some from other threads
 					if (currentIndex < startingIndexesLength)
 					{
@@ -491,16 +525,10 @@ namespace BepuPhysics.Trees
 		}
 		//TODO: drop far plane, that gives us 15 floats meaning only 16th float is dead
 		//or keep far plane and simply flip near plane after computation
+		//TODO: make version with A and B nodes as parameters to fuse their testing instead of min/max vectors and index 
 		public unsafe static uint IntersectsOrInside(in Vector3 min, in Vector3 max, FrustumData* frustumData, int nodeIndex, uint planeBitmask = uint.MaxValue)
 		{
 			var shouldRenumberPlanes = failedPlane.TryGetValue(nodeIndex, out var planeId);
-
-			var start = 0;
-			//far plane test can be eliminated by setting end=5
-			//and changing all occurences of start==5 to start==4 instead.
-			//This results in frustum with "infinite" length
-
-			var end = 6;
 
 			//Convert AABB to center-extents representation
 			//On NET 5+ can skip conversion and instead use Vector.ConditionalSelect & Vector.GreaterThan with Vector128
@@ -513,25 +541,22 @@ namespace BepuPhysics.Trees
 			ref var planeAddr = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
 			ref var plane = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
 
-			if (shouldRenumberPlanes)
+			//far plane test can be eliminated by modyfying lookuptable
+			//from 6x6 to 5x5 and deleting every occurance of 5 in table
+			//This results in frustum with "infinite" length
+			//Note that lookuptable is actually 7x7 but Item0 serves only as padding for pointer shenanigans
+			//Also lookuptable could be converted to stackalloc with skipped localsinit making table extremely cheap
+			//but algorithm already uses quite large stackalloc for traversing tree so i decided against it
+			ref var indexesToVisit = ref Unsafe.Add(ref lookUpTable.Item1, planeId);
+			ref var end = ref Unsafe.Add(ref indexesToVisit.Item6, 1);
+			ref var i = ref indexesToVisit.Item0;
+			while (Unsafe.IsAddressLessThan(ref i, ref end))
 			{
-				start = planeId;
-				end = start;
-			}
-
-			do
-			{
-				if (!planeBitmask.IsBitSetAt(start))
-				{
-					start = shouldRenumberPlanes && start == 5 ? 0 : start + 1;
+				i = ref Unsafe.Add(ref i, 1);
+				if (!planeBitmask.IsBitSetAt(i))
 					continue;
-				}
-				plane = ref Unsafe.Add(ref planeAddr, start * 2);
-				/*var eRep = new ExtentsRepresentation()
-				{
-					center = new Vector3(), // Compute AABB center
-					extents = new Vector3() // Compute positive extents
-				};*/
+				plane = ref Unsafe.Add(ref planeAddr, i * 2);
+
 				var d = plane.D;
 				float m, r;
 				//Vector<float>.Count == 4 is not worth it since built-in VectorX and Plane are already vectorized
@@ -557,22 +582,22 @@ namespace BepuPhysics.Trees
 				{
 					planeBitmask = planeBitmask.UnsetBitAt(6);
 					//no need to renumber planes when id is 0
-					if (!shouldRenumberPlanes && start != 0 && start != planeId)
-						failedPlane.TryAdd(nodeIndex, start);
-					else if (start != 0 && start != planeId)
-						failedPlane.TryUpdate(nodeIndex, start, start);
+					//here, i != planeId test is pointless since planeId is always 0 for this case
+					if (!shouldRenumberPlanes && i != 0)
+						failedPlane.TryAdd(nodeIndex, i);
+					else if (i != 0 && i != planeId)
+						failedPlane.TryUpdate(nodeIndex, i, i);
 					return planeBitmask;
 				}
 				if (m - r >= d)//inside
 				{
-					planeBitmask = planeBitmask.UnsetBitAt(start);
+					planeBitmask = planeBitmask.UnsetBitAt(i);
 				}
 				/*else//intersect
 				{
 
 				}*/
-				start = shouldRenumberPlanes && start == 5 ? 0 : start + 1;
-			} while (start != end);
+			}
 
 			if (shouldRenumberPlanes)
 				failedPlane.TryRemove(nodeIndex, out _);
