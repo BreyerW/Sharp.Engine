@@ -102,11 +102,11 @@ namespace Sharp.Physic
 			var z = (dim.Z / 2f) * e.transform.ModelMatrix.Forward();
 			var max = Vector3.Abs(x) + Vector3.Abs(y) + Vector3.Abs(z);
 			var min = -max;
-			var midpoint = Vector3.Lerp(Mesh.bounds.Min, Mesh.bounds.Max, 0.5f);
+			var midpoint = (Mesh.bounds.Min + Mesh.bounds.Max) * 0.5f;
 			midpoint = Vector3.Transform(midpoint, e.transform.ModelMatrix);
 			var physicId = frozenMapping[id];
 			simulation.BroadPhase.UpdateFrozenBounds(physicId.handle, midpoint + min, midpoint + max);
-			physicId.mat = Matrix4x4.CreateScale(MathF.Abs(max.X - min.X), MathF.Abs(max.Y - min.Y), MathF.Abs(max.Z - min.Z)) * Matrix4x4.CreateTranslation(midpoint + min);
+			physicId.mat = Matrix4x4.CreateScale(Vector3.Abs(max - min)) * Matrix4x4.CreateTranslation(midpoint + min);
 			//TODO: change to CollectionsMarshal.GetValueRef on .NET 6
 			frozenMapping[id] = physicId;
 		}

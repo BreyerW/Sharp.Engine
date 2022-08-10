@@ -51,33 +51,35 @@ namespace BepuPhysics.CollisionDetection
 			{
 				Id = id
 			};
-			var planeSpan = new Span<Plane>(&frustumData.nearPlane, 18);
-
+			var planeSpan = new Span<Plane>(&frustumData.nearPlane, 6);
+			//var conditionSpan = new Span<Vector<float>>(&frustumData.conditionNearPlane.X, 16 / Vector<int>.Count);
+			var vectors = new Span<Vector3>(&frustumData.conditionNearPlane, 6);
 			if (columnMajor)
 			{
 				ref var refMat = ref Unsafe.AsRef(matrix);
+
 				ref var lastColumn = ref Unsafe.As<float, Vector4>(ref refMat.M41);
 				ref var firstColumn = ref Unsafe.As<float, Vector4>(ref refMat.M11);
 				ref var secondColumn = ref Unsafe.As<float, Vector4>(ref refMat.M21);
 				ref var thirdColumn = ref Unsafe.As<float, Vector4>(ref refMat.M31);
 
 				// Near clipping plane
-				planeSpan[0] = Plane.Normalize(new Plane(lastColumn + thirdColumn));
+				planeSpan[0] = (new Plane(lastColumn + thirdColumn));
 
 				// Top clipping plane
-				planeSpan[2] = Plane.Normalize(new Plane(lastColumn - secondColumn));
+				planeSpan[1] = (new Plane(lastColumn - secondColumn));
 
 				// Bottom clipping plane
-				planeSpan[4] = Plane.Normalize(new Plane(lastColumn + secondColumn));
+				planeSpan[2] = (new Plane(lastColumn + secondColumn));
 
 				// Left clipping plane
-				planeSpan[6] = Plane.Normalize(new Plane(lastColumn + firstColumn));
+				planeSpan[3] = (new Plane(lastColumn + firstColumn));
 
 				// Right clipping plane
-				planeSpan[8] = Plane.Normalize(new Plane(lastColumn - firstColumn));
+				planeSpan[4] = (new Plane(lastColumn - firstColumn));
 
 				// Far clipping plane
-				planeSpan[10] = Plane.Normalize(new Plane(lastColumn - thirdColumn));
+				planeSpan[5] = (new Plane(lastColumn - thirdColumn));
 
 			}
 			else
@@ -88,42 +90,41 @@ namespace BepuPhysics.CollisionDetection
 				var thirdColumn = new Vector4(matrix.M13, matrix.M23, matrix.M33, matrix.M43);
 
 				// Near clipping plane
-				planeSpan[0] = Plane.Normalize(new Plane(matrix.M13, matrix.M23, matrix.M33, matrix.M43));
+				planeSpan[0] = (new Plane(thirdColumn));
 
 				// Top clipping plane
-				planeSpan[2] = Plane.Normalize(new Plane(lastColumn - secondColumn));
+				planeSpan[1] = (new Plane(lastColumn - secondColumn));
 
 				// Bottom clipping plane
-				planeSpan[4] = Plane.Normalize(new Plane(lastColumn + secondColumn));
+				planeSpan[2] = (new Plane(lastColumn + secondColumn));
 
 				// Left clipping plane
-				planeSpan[6] = Plane.Normalize(new Plane(lastColumn + firstColumn));
+				planeSpan[3] = (new Plane(lastColumn + firstColumn));
 
 				// Right clipping plane
-				planeSpan[8] = Plane.Normalize(new Plane(lastColumn - firstColumn));
+				planeSpan[4] = (new Plane(lastColumn - firstColumn));
 
 				// Far clipping plane
-				planeSpan[10] = Plane.Normalize(new Plane(lastColumn - thirdColumn));
+				planeSpan[5] = (new Plane(lastColumn - thirdColumn));
+
 			}
+			/*conditionSpan[0] = Vector.GreaterThanOrEqual(Unsafe.As<float, Vector<float>>(ref vectors[0].X), Vector<float>.Zero);
+			if (Vector<int>.Count is 8)
+				conditionSpan[1] = Vector.GreaterThanOrEqual(Unsafe.As<float, Vector<float>>(ref vectors[2].Z), Vector<float>.Zero);
 
-			planeSpan[1].Normal = Vector3.Abs(planeSpan[0].Normal);
-
-			planeSpan[3].Normal = Vector3.Abs(planeSpan[2].Normal);
-
-			planeSpan[5].Normal = Vector3.Abs(planeSpan[4].Normal);
-
-			planeSpan[7].Normal = Vector3.Abs(planeSpan[6].Normal);
-
-			planeSpan[9].Normal = Vector3.Abs(planeSpan[8].Normal);
-
-			planeSpan[11].Normal = Vector3.Abs(planeSpan[10].Normal);
-
-			planeSpan[0].D *= -2;
-			planeSpan[2].D *= -2;
-			planeSpan[4].D *= -2;
-			planeSpan[6].D *= -2;
-			planeSpan[8].D *= -2;
-			planeSpan[10].D *= -2;
+			else if (Vector<int>.Count is 4)
+			{
+				conditionSpan[1] = Vector.GreaterThanOrEqual(Unsafe.As<float, Vector<float>>(ref vectors[1].Y), Vector<float>.Zero);
+				conditionSpan[2] = Vector.GreaterThanOrEqual(Unsafe.As<float, Vector<float>>(ref vectors[2].Z), Vector<float>.Zero);
+				conditionSpan[3] = Vector.GreaterThanOrEqual(Unsafe.As<float, Vector<float>>(ref vectors[4].X), Vector<float>.Zero);
+			}*/
+			int c = 0;
+			while (c < 6)
+			{
+				var normal = planeSpan[c].Normal;
+				vectors[c] = new Vector3(normal.X > 0 ? 1f : 0, normal.Y > 0 ? 1f : 0, normal.Z > 0 ? 1f : 0);
+				c++;
+			}
 
 			/*ref Vector<float> n = ref Unsafe.As<Plane, Vector<float>>(ref planeSpan[0]);
 			var mask = Vector.GreaterThan<float>(Vector<float>.Zero, n);
@@ -144,6 +145,7 @@ namespace BepuPhysics.CollisionDetection
 			mask = Vector.GreaterThanOrEqual<float>(Vector<float>.Zero, n);
 			planeSpan[17].Normal = new Vector3(mask[0], mask[1], mask[2]);
 			*/
+
 
 			FrustumLeafTester<TFrustumTester> tester;
 			tester.LeafTester = frustumTester;

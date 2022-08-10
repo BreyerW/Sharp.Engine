@@ -187,7 +187,7 @@ namespace BepuPhysics.Trees
 			if (leafCount == 1)
 			{
 				//If the first node isn't filled, we have to use a special case.
-				if (IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData, Nodes[0].A.Index).IsBitSetAt(6))
+				if (IntersectsOrInside(ref Nodes[0].A, frustumData).IsBitSetAt(6))
 				{
 					leafTester.TestLeaf(0, frustumData);
 				}
@@ -209,7 +209,7 @@ namespace BepuPhysics.Trees
 			if (leafCount == 1)
 			{
 				//If the first node isn't filled, we have to use a special case.
-				if (IntersectsOrInside(Nodes[0].A.Min, Nodes[0].A.Max, frustumData, Nodes[0].A.Index).IsBitSetAt(6))
+				if (IntersectsOrInside(ref Nodes[0].A, frustumData).IsBitSetAt(6))
 				{
 					leafTester.TestLeaf(0, frustumData);
 				}
@@ -272,8 +272,8 @@ namespace BepuPhysics.Trees
 				}
 				else
 				{
-					var aBitmask = IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index, planeBitmask);
-					var bBitmask = IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index, planeBitmask);
+					var aBitmask = IntersectsOrInside(ref node.A, frustumData, planeBitmask);
+					var bBitmask = IntersectsOrInside(ref node.B, frustumData, planeBitmask);
 
 					var aIntersected = aBitmask.IsBitSetAt(6);
 					var bIntersected = bBitmask.IsBitSetAt(6);
@@ -414,7 +414,6 @@ namespace BepuPhysics.Trees
 				{
 					Interlocked.Add(ref globalRemainingLeavesToVisit, -takenLeavesCount);
 					nodeIndex = 0;
-					//TODO: see if this can be simplified with CompareExchange
 					//we no longer have work on this thread. We try to steal some from other threads
 					if (currentIndex < startingIndexesLength)
 					{
@@ -499,7 +498,7 @@ namespace BepuPhysics.Trees
 			else
 			{
 				//we met leaf very early. we might as well test it since this is very rare
-				if (IntersectsOrInside(node.A.Min, node.A.Max, frustumData, node.A.Index).IsBitSetAt(6))
+				if (IntersectsOrInside(ref node.A, frustumData).IsBitSetAt(6))
 					leavesToTest[0].AddUnsafely(Encode(node.A.Index));
 				globalRemainingLeavesToVisit--;
 			}
@@ -518,7 +517,7 @@ namespace BepuPhysics.Trees
 			else
 			{
 				//we met leaf very early. we might as well test it since this is very rare
-				if (IntersectsOrInside(node.B.Min, node.B.Max, frustumData, node.B.Index).IsBitSetAt(6))
+				if (IntersectsOrInside(ref node.B, frustumData).IsBitSetAt(6))
 					leavesToTest[0].AddUnsafely(Encode(node.B.Index));
 				globalRemainingLeavesToVisit--;
 			}
@@ -526,81 +525,86 @@ namespace BepuPhysics.Trees
 		//TODO: drop far plane, that gives us 15 floats meaning only 16th float is dead
 		//or keep far plane and simply flip near plane after computation
 		//TODO: make version with A and B nodes as parameters to fuse their testing instead of min/max vectors and index 
-		public unsafe static uint IntersectsOrInside(in Vector3 min, in Vector3 max, FrustumData* frustumData, int nodeIndex, uint planeBitmask = uint.MaxValue)
+		public unsafe static uint IntersectsOrInside(ref NodeChild node, FrustumData* frustumData, uint planeBitmask = uint.MaxValue)
 		{
-			var shouldRenumberPlanes = failedPlane.TryGetValue(nodeIndex, out var planeId);
+			var shouldRenumberPlanes = failedPlane.TryGetValue(node.Index, out var planeId);
 
 			//Convert AABB to center-extents representation
 			//On NET 5+ can skip conversion and instead use Vector.ConditionalSelect & Vector.GreaterThan with Vector128
 			//and use p, n-vertex optimization
-			var eRep = new ExtentsRepresentation()
+			/*var eRep = new ExtentsRepresentation()
 			{
 				center = max + min, // Compute AABB center
 				extents = max - min // Compute positive extents
-			};
-			ref var planeAddr = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
-			ref var plane = ref Unsafe.As<float, Plane>(ref frustumData->nearPlane.Normal.X);
-
+			};*/
+			ref var planeAddr = ref frustumData->nearPlane;
+			ref var plane = ref frustumData->nearPlane;
+			ref var conditionAddr = ref frustumData->conditionNearPlane;
 			//far plane test can be eliminated by modyfying lookuptable
 			//from 6x6 to 5x5 and deleting every occurance of 5 in table
 			//This results in frustum with "infinite" length
 			//Note that lookuptable is actually 7x7 but Item0 serves only as padding for pointer shenanigans
 			//Also lookuptable could be converted to stackalloc with skipped localsinit making table extremely cheap
 			//but algorithm already uses quite large stackalloc for traversing tree so i decided against it
+			//especially since table is created once for lifetime of application and is entirely struct-based
 			ref var indexesToVisit = ref Unsafe.Add(ref lookUpTable.Item1, planeId);
-			ref var end = ref Unsafe.Add(ref indexesToVisit.Item6, 1);
-			ref var i = ref indexesToVisit.Item0;
-			while (Unsafe.IsAddressLessThan(ref i, ref end))
+			ref var end = ref indexesToVisit.Item6;
+			ref var id = ref indexesToVisit.Item0;
+			while (Unsafe.IsAddressLessThan(ref id, ref end))
 			{
-				i = ref Unsafe.Add(ref i, 1);
-				if (!planeBitmask.IsBitSetAt(i))
+				id = ref Unsafe.Add(ref id, 1);
+				if (!planeBitmask.IsBitSetAt(id))
 					continue;
-				plane = ref Unsafe.Add(ref planeAddr, i * 2);
-
+				plane = ref Unsafe.Add(ref planeAddr, id);
+				var condition = Unsafe.Add(ref conditionAddr, id);
+				var reverseCondition = Vector3.One - condition;
 				var d = plane.D;
 				float m, r;
 				//Vector<float>.Count == 4 is not worth it since built-in VectorX and Plane are already vectorized
 				//and for Vector<float>.Count == 16 we should fuse A & B into one test
 				//and that will require sperate method with different signature and NET 5+ since Vector512 is required
-				if (Vector.IsHardwareAccelerated && Vector<float>.Count == 8)
+				/*if (Vector.IsHardwareAccelerated && Vector<float>.Count == 8)
 				{
 					//Vector.ConditionalSelect<float>();
 					ref Vector<float> planeData = ref Unsafe.As<Plane, Vector<float>>(ref plane);
-					ref Vector<float> bbData = ref Unsafe.As<ExtentsRepresentation, Vector<float>>(ref eRep);
+					//ref Vector<float> bbData = ref Unsafe.As<ExtentsRepresentation, Vector<float>>(ref eRep);
 					var multi = bbData * planeData;
 					m = multi[0] + multi[1] + multi[2];
 					r = multi[4] + multi[5] + multi[6];
 					//var condition = Vector.GreaterThanOrEqual(plane.Normal, Vector<float>.Zero);
 				}
-				else
+				else*/
 				{
-					m = Vector3.Dot(plane.Normal, eRep.center);
-					plane = ref Unsafe.Add(ref plane, 1);//absolute normal
-					r = Vector3.Dot(plane.Normal, eRep.extents);
+					var n = node.Min * condition + node.Max * reverseCondition;
+					var p = node.Max * condition + node.Min * reverseCondition;
+
+					m = Vector3.Dot(n, plane.Normal);
+					//plane = ref Unsafe.Add(ref plane, 1);//absolute normal
+					r = Vector3.Dot(p, plane.Normal);
 				}
-				if (m + r < d)//outside
+				if (r < -d)//outside
 				{
 					planeBitmask = planeBitmask.UnsetBitAt(6);
 					//no need to renumber planes when id is 0
 					//here, i != planeId test is pointless since planeId is always 0 for this case
-					if (!shouldRenumberPlanes && i != 0)
-						failedPlane.TryAdd(nodeIndex, i);
-					else if (i != 0 && i != planeId)
-						failedPlane.TryUpdate(nodeIndex, i, i);
+					if (!shouldRenumberPlanes && id != 0)
+						failedPlane.TryAdd(node.Index, id);
+					else if (id != 0 && id != planeId)
+						failedPlane.TryUpdate(node.Index, id, id);
 					return planeBitmask;
 				}
-				if (m - r >= d)//inside
-				{
-					planeBitmask = planeBitmask.UnsetBitAt(i);
-				}
-				/*else//intersect
+				if (m < -d)//intersect
 				{
 
-				}*/
+				}
+				else//inside
+				{
+					planeBitmask = planeBitmask.UnsetBitAt(id);
+				}
 			}
 
 			if (shouldRenumberPlanes)
-				failedPlane.TryRemove(nodeIndex, out _);
+				failedPlane.TryRemove(node.Index, out _);
 
 			return planeBitmask;
 		}

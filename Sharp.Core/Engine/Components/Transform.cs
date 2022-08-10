@@ -21,7 +21,7 @@ namespace Sharp.Engine.Components
 		[JsonInclude]
 		private Vector3 position = Vector3.Zero;
 		[JsonInclude]
-		private Vector3 eulerAngles = Vector3.One;
+		private Vector3 eulerAngles = Vector3.Zero;
 		[JsonInclude]
 		private Vector3 scale = Vector3.One;
 		//[JsonProperty]
