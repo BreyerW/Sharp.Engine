@@ -13,13 +13,38 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using BepuFrustumCulling;
 
 namespace Sharp.Physic
 {
+	public struct testSweepDataGetter : ISweepDataGetter
+	{
+		public ref Tree GetTree(int index)
+		{
+			if (index is 0)
+				return ref FrustumCuller.FrozenTree;
+			else if (index is 2)
+				return ref CollisionDetection.simulation.BroadPhase.ActiveTree;
+			else
+				return ref Unsafe.NullRef<Tree>();
+		}
+
+		public ref Buffer<CollidableReference> GetLeaves(int index)
+		{
+			if (index is 0)
+				return ref FrustumCuller.FrozenLeaves;
+			else if (index is 2)
+				return ref CollisionDetection.simulation.BroadPhase.ActiveLeaves;
+			else
+				return ref Unsafe.NullRef<Buffer<CollidableReference>>();
+		}
+		public int TotalLeafCount => FrustumCuller.FrozenTree.LeafCount + CollisionDetection.simulation.BroadPhase.ActiveTree.LeafCount;
+	}
 	public static class CollisionDetection
 	{
 		public static BufferPool bufferPool;
 		public static Simulation simulation;
+		public static FrustumCuller<testSweepDataGetter> frustumCuller;
 		internal static Dictionary<Guid, (int index, int handle)> activeMapping = new();
 		internal static Dictionary<Guid, (int index, int handle)> staticMapping = new();
 		internal static Dictionary<Guid, (int index, int handle, Matrix4x4 mat)> frozenMapping = new();
@@ -31,7 +56,10 @@ namespace Sharp.Physic
 		{
 			bufferPool = new BufferPool();
 			simulation = Simulation.Create(bufferPool, new NarrowPhaseCallbacks(), new PoseIntegratorCallbacks(new Vector3(0, -10, 0)), new SolveDescription(8, 1));
+			frustumCuller = FrustumCuller.Create<testSweepDataGetter>(bufferPool);
+			//TODO: reverse the situation by defining ref returning func in broadPhase which will pull in custom struct-implemented interfaces ?
 		}
+
 		public static int AddFrozenBody(in Guid id, Vector3 pos, Vector3 min, Vector3 max, int existingId = -1)
 		{
 			var e = id.GetInstanceObject<Entity>();
@@ -45,10 +73,10 @@ namespace Sharp.Physic
 				existingId = index;
 				index++;
 			}
-			var handle = simulation.BroadPhase.AddFrozen(new CollidableReference(new StaticHandle(existingId)), ref box);
+			var handle = FrustumCuller.AddFrozen(new CollidableReference(new StaticHandle(existingId)), ref box);
 			unsafe
 			{
-				simulation.BroadPhase.GetFrozenBoundsPointers(existingId, out var minp, out var maxp);
+				FrustumCuller.FrozenTree.GetBoundsPointers(existingId, out var minp, out var maxp);
 				frozenMapping.Add(id, (existingId, handle, Matrix4x4.CreateScale(MathF.Abs(maxp->X - minp->X), MathF.Abs(maxp->Y - minp->Y), MathF.Abs(maxp->Z - minp->Z)) * Matrix4x4.CreateTranslation(min) * e.transform.ModelMatrix));
 				frozenIndexMapping.Add(existingId, id);
 			}
@@ -105,7 +133,7 @@ namespace Sharp.Physic
 			var midpoint = (Mesh.bounds.Min + Mesh.bounds.Max) * 0.5f;
 			midpoint = Vector3.Transform(midpoint, e.transform.ModelMatrix);
 			var physicId = frozenMapping[id];
-			simulation.BroadPhase.UpdateFrozenBounds(physicId.handle, midpoint + min, midpoint + max);
+			FrustumCuller.FrozenTree.UpdateBounds(physicId.handle, midpoint + min, midpoint + max);
 			physicId.mat = Matrix4x4.CreateScale(Vector3.Abs(max - min)) * Matrix4x4.CreateTranslation(midpoint + min);
 			//TODO: change to CollectionsMarshal.GetValueRef on .NET 6
 			frozenMapping[id] = physicId;
@@ -114,12 +142,14 @@ namespace Sharp.Physic
 		{
 			if (frozenMapping.TryGetValue(id, out var physicId))
 			{
-				simulation.BroadPhase.RemoveFrozenAt(physicId.handle, out _);
+				FrustumCuller.FrozenTree.RemoveAt(physicId.handle);
+				//simulation.BroadPhase.RemoveFrozenAt(physicId.handle, out _);
 				frozenIndexMapping.Remove(physicId.index);
 				frozenMapping.Remove(id);
 			}
 		}
 	}
+
 
 	unsafe struct NarrowPhaseCallbacks : INarrowPhaseCallbacks
 	{

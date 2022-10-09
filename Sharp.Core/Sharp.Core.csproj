@@ -115,6 +115,8 @@
 
   <ItemGroup>
     <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
+    <PackageReference Include="BepuPhysics" Version="2.5.0-beta.8" />
+    <PackageReference Include="BepuUtilities" Version="2.5.0-beta.8" />
     <PackageReference Include="ColorSharp" Version="0.11.0.32448" />
     <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
     <PackageReference Include="EditableStream" Version="0.3.0" />
@@ -139,7 +141,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AssimpPlugin\AssimpPlugin.csproj" />
-    <ProjectReference Include="..\bepuphysics2-master\BepuPhysics\BepuPhysics.csproj" />
+    <ProjectReference Include="..\BepuFrustumCulling\BepuFrustumCulling.csproj" />
     <ProjectReference Include="..\ImageSharpPlugin\ImageSharpPlugin.csproj" />
     <ProjectReference Include="..\OpenGLPlugin\OpenGLPlugin.csproj" />
     <ProjectReference Include="..\PluginAbstraction\PluginAbstraction.csproj" />

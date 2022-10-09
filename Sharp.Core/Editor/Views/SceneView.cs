@@ -1,4 +1,5 @@
-﻿using BepuPhysics.Collidables;
+﻿using BepuFrustumCulling;
+using BepuPhysics.Collidables;
 using PluginAbstraction;
 using Sharp.Core;
 using Sharp.Engine.Components;
@@ -283,7 +284,7 @@ namespace Sharp.Editor.Views
 			var renderables = new List<Renderer>();
 			var transparentRenderables = new List<Renderer>();
 			var tester = new BroadPhaseCallback();
-			CollisionDetection.simulation.BroadPhase.FrustumSweep(Camera.main.Parent.transform.ModelMatrix * Camera.main.ProjectionMatrix, ref tester, dispatcher: dispatcher);
+			CollisionDetection.frustumCuller.FrustumSweep(Camera.main.Parent.transform.ModelMatrix * Camera.main.ProjectionMatrix, ref tester, dispatcher: dispatcher);
 
 			foreach (var i in ..CollisionDetection.inFrustumLength)
 			{
