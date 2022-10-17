@@ -15,7 +15,6 @@ namespace BepuFrustumCulling
 
 	public struct DefaultSweepDataGetter : ISweepDataGetter
 	{
-
 		public ref Tree GetTree(int index)
 		{
 			if (index is 0)
@@ -31,6 +30,12 @@ namespace BepuFrustumCulling
 			else
 				return ref Unsafe.NullRef<Buffer<CollidableReference>>();
 		}
+
+		public ref int GetInsertionIndex(int index)
+		{
+			if (index is 0) return ref FrustumCuller.FrozenInsertIndex;
+			return ref Unsafe.NullRef<int>();
+		}
 	}
 	public interface ISweepDataGetter
 	{
@@ -38,10 +43,12 @@ namespace BepuFrustumCulling
 		public ref Tree GetTree(int index);
 		public ref Buffer<CollidableReference> GetLeaves(int index);
 
-		public int IncrementAndGetIndex(int index);
+		//public ref int GetInsertionIndex(int index);
+		//public void DeconstructIndexToNodeAndTreeId(int index,out Node node, out int treeId);
 	}
 	public static class FrustumCuller
 	{
+		public static int FrozenInsertIndex = -1;
 		// internal static int lockfreeGuard = 1;
 		internal static BufferPool Pool;
 		//representation of 0b1111_1111_1111_1111_1111_1111_1100_0000 on little endian that also works on big endian
@@ -56,7 +63,7 @@ namespace BepuFrustumCulling
 		internal static int[] startingIndexes = new int[4];
 		internal static int startingIndexesLength;
 		internal static int currentIndex;
-		internal static int currentDataIndex;
+		internal static int currentTreeId;
 		internal static int interThreadExchange;
 		internal static int interThreadExchangeTreeIndex;
 		internal static IThreadDispatcher threadDispatcher;
@@ -192,16 +199,14 @@ namespace BepuFrustumCulling
 		private static T dataGetter;
 		private static T DataGetter
 		{
-			get { return dataGetter; }
+			//get { return dataGetter; }
 			set
 			{
-				ref Tree tree = ref value.GetTree(0);
-				treeCount++;
+				ref Tree tree = ref value.GetTree(treeCount);
 				while (Unsafe.IsNullRef(ref tree) is false)
 				{
-					tree = value.GetTree(treeCount);
 					FrustumCuller.totalLeafCount += tree.LeafCount;
-					treeCount++;
+					tree = ref value.GetTree(++treeCount);
 				}
 			}
 		}
@@ -481,9 +486,16 @@ namespace BepuFrustumCulling
 		}
 		private static unsafe void FrustumSweepMultithreaded<TLeafTester>(int nodeIndex, BufferPool pool, ref TLeafTester leafTester, IThreadDispatcher dispatcher) where TLeafTester : IFrustumLeafTester
 		{
-			FrustumCuller.currentDataIndex = 0;
-			ref var tree = ref dataGetter.GetTree(0);
+			FrustumCuller.currentTreeId = 0;
+			FrustumCuller.totalLeafCount = 0;
+			ref var tree = ref Unsafe.NullRef<Tree>();
 			var i = 0;
+			while (i < treeCount)
+			{
+				tree = ref dataGetter.GetTree(i++);
+				//FrustumCuller.largestTreeIndex = tree.LeafCount > dataGetter.GetTree(FrustumCuller.largestTreeIndex).LeafCount ? i : FrustumCuller.largestTreeIndex;
+				FrustumCuller.totalLeafCount += tree.LeafCount;
+			}
 
 			if (dispatcher is null || FrustumCuller.totalLeafCount < dispatcher.ThreadCount * 4)
 			{
@@ -491,24 +503,18 @@ namespace BepuFrustumCulling
 				//While it's exceptionally rare that any tree would have more than 256 levels, the worst case of stomping stack memory is not acceptable in the long run.
 
 				var stack = stackalloc int[FrustumCuller.TraversalStackCapacity];
-				while (FrustumCuller.currentDataIndex < treeCount && tree.LeafCount > 0)
+				while (FrustumCuller.currentTreeId < treeCount && tree.LeafCount > 0)
 				{
-					tree = ref dataGetter.GetTree(i);
-					leafTester.Leaves = dataGetter.GetLeaves(i);
+					tree = ref dataGetter.GetTree(FrustumCuller.currentTreeId);
+					leafTester.Leaves = dataGetter.GetLeaves(FrustumCuller.currentTreeId);
 					//Unsafe.InitBlockUnaligned(stack,0,);
 					FrustumSweep(0, stack, ref leafTester);
-					FrustumCuller.currentDataIndex++;
+					FrustumCuller.currentTreeId++;
 				}
 				return;
 			}
 			//FrustumCuller.largestTreeIndex = 0;
-			while (i < treeCount)
-			{
-				tree = dataGetter.GetTree(i);
-				//FrustumCuller.largestTreeIndex = tree.LeafCount > dataGetter.GetTree(FrustumCuller.largestTreeIndex).LeafCount ? i : FrustumCuller.largestTreeIndex;
-				FrustumCuller.totalLeafCount += tree.LeafCount;
-				i++;
-			}
+
 			FrustumCuller.threadDispatcher = dispatcher;
 			FrustumCuller.globalRemainingLeavesToVisit = tree.LeafCount;
 			FrustumCuller.currentIndex = -1;
@@ -526,8 +532,9 @@ namespace BepuFrustumCulling
 
 			CollectNodesForMultithreadedCulling(ref tree.Nodes, 0, multithreadingLeafCountThreshold);
 			FrustumCuller.threadDispatcher.DispatchWorkers(FrustumSweepThreaded);
-			for (i = 0; i < FrustumCuller.threadDispatcher.ThreadCount; i++)
+			for (i = 0; i < treeCount; i++)
 			{
+				leafTester.Leaves = dataGetter.GetLeaves(i);
 				foreach (var leafIndex in FrustumCuller.leavesToTest[i])
 					leafTester.TestLeaf(leafIndex, FrustumCuller.frustumData);
 			}
@@ -535,9 +542,20 @@ namespace BepuFrustumCulling
 		}
 		private static unsafe void FrustumSweep<TLeafTester>(int nodeIndex, int* stack, ref TLeafTester leafTester) where TLeafTester : IFrustumLeafTester
 		{
-			ref var tree = ref dataGetter.GetTree(FrustumCuller.currentDataIndex);
+			ref var tree = ref dataGetter.GetTree(FrustumCuller.currentTreeId);
+			if (tree.LeafCount == 0)
+				return;
+			if (tree.LeafCount == 1)
+			{
+				//If the first node isn't filled, we have to use a special case.
+				if (IntersectsOrInside(ref tree.Nodes[0].A, FrustumCuller.frustumData).IsBitSetAt(6))
+				{
+					leafTester.TestLeaf(0, FrustumCuller.frustumData);
+				}
+			}
+
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < tree.NodeCount) || (Tree.Encode(nodeIndex) >= 0 && Tree.Encode(nodeIndex) < tree.LeafCount));
-			Debug.Assert(tree.LeafCount >= 2, "This implementation assumes all nodes are filled.");
+			//Debug.Assert(tree.LeafCount >= 2, "This implementation assumes all nodes are filled.");
 			FrustumCuller.globalRemainingLeavesToVisit = tree.LeafCount;
 			uint planeBitmask = uint.MaxValue;
 			ref int leafIndex = ref Unsafe.AsRef(-1);
@@ -545,7 +563,7 @@ namespace BepuFrustumCulling
 			ref int fullyContainedStack = ref Unsafe.AsRef(-1);
 			while (true)
 			{
-				TestAABBs(FrustumCuller.currentDataIndex, ref FrustumCuller.globalRemainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
+				TestAABBs(FrustumCuller.currentTreeId, ref FrustumCuller.globalRemainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
 				if (leafIndex > -1)
 				{
 					leafTester.TestLeaf(leafIndex, FrustumCuller.frustumData);
@@ -557,9 +575,8 @@ namespace BepuFrustumCulling
 		}
 		private static unsafe void FrustumSweepThreaded(int workerIndex)
 		{
-			var dataIndex = FrustumCuller.currentDataIndex;
-			var currentLeafIndex = 0;
-			ref var tree = ref dataGetter.GetTree(dataIndex);
+			var treeId = 0;
+			ref var tree = ref dataGetter.GetTree(treeId);
 			var stack = stackalloc int[FrustumCuller.TraversalStackCapacity];
 			FrustumCuller.threadDispatcher.GetThreadMemoryPool(workerIndex);
 			ref var node = ref tree.Nodes[0];
@@ -575,24 +592,28 @@ namespace BepuFrustumCulling
 			{
 				if (leafIndex > -1)
 				{
-					Debug.Assert(FrustumCuller.leavesToTest[workerIndex].Contains(leafIndex) is false, "Duplicates are unacceptable");
+					if (leafIndex is not 0)
+						Debug.Assert(FrustumCuller.leavesToTest[treeId].Contains(leafIndex) is false, "Duplicates are unacceptable");
 					//FrustumCuller.leavesToTest[workerIndex].AddUnsafely(leafIndex);
-					FrustumCuller.leavesToTest[dataIndex][currentLeafIndex++] = leafIndex;
+					var i = Interlocked.Increment(ref FrustumCuller.leavesToTest[treeId].Count);
+					FrustumCuller.leavesToTest[treeId][i - 1] = leafIndex;
 					leafIndex = -1;
 				}
-
+				//TODO remove reliance on globalremainingleavestovisit it should be possible to work with just currentTreeId<treecount or just isnullref
 				if (remainingLeavesToVisit is 0)
 				{
 					nodeIndex = 0;
+					leafIndex = -1;
 					var newVal = Interlocked.Add(ref FrustumCuller.globalRemainingLeavesToVisit, -takenLeavesCount);
-					if (newVal < 1 && FrustumCuller.currentDataIndex < treeCount)
-						FrustumCuller.globalRemainingLeavesToVisit = dataGetter.GetTree(++FrustumCuller.currentDataIndex).LeafCount;
-					if (dataIndex != FrustumCuller.currentDataIndex)
+					if (newVal < 1 && Interlocked.Increment(ref FrustumCuller.currentTreeId) < treeCount)
+						Interlocked.Add(ref FrustumCuller.globalRemainingLeavesToVisit, dataGetter.GetTree(FrustumCuller.currentTreeId).LeafCount);
+					if (treeId != FrustumCuller.currentTreeId)
 					{
-						tree = ref dataGetter.GetTree(dataIndex);
+						treeId = FrustumCuller.currentTreeId;
+						tree = ref dataGetter.GetTree(treeId);
+						if (Unsafe.IsNullRef(ref tree)) return;
 						node = ref tree.Nodes[0];
-						dataIndex = FrustumCuller.currentDataIndex;
-						currentLeafIndex = 0;
+						nodeIndex = node.A.Index;
 					}
 					//we no longer have work on this thread. We try to steal some from other threads
 					{
@@ -606,7 +627,7 @@ namespace BepuFrustumCulling
 								nodeIndex = FrustumCuller.startingIndexes[nextExtraStartingIndex];
 						}
 
-						while (nodeIndex is 0 && FrustumCuller.currentDataIndex < treeCount)
+						while (nodeIndex is 0 && FrustumCuller.currentTreeId < treeCount)
 							nodeIndex = Interlocked.Exchange(ref FrustumCuller.interThreadExchange, 0);
 						if (nodeIndex is not 0)
 						{
@@ -619,8 +640,8 @@ namespace BepuFrustumCulling
 							}
 							else
 								planeBitmask = uint.MaxValue;
-							dataIndex = FrustumCuller.interThreadExchangeTreeIndex;
-							tree = ref dataGetter.GetTree(dataIndex);
+							treeId = FrustumCuller.interThreadExchangeTreeIndex;
+							tree = ref dataGetter.GetTree(treeId);
 							node = ref tree.Nodes[nodeIndex];
 							remainingLeavesToVisit = node.A.LeafCount + node.B.LeafCount;
 							takenLeavesCount = remainingLeavesToVisit;
@@ -644,7 +665,7 @@ namespace BepuFrustumCulling
 
 					if (oldVal is 0)
 					{
-						FrustumCuller.interThreadExchangeTreeIndex = dataIndex;
+						FrustumCuller.interThreadExchangeTreeIndex = treeId;
 						stackEnd--;
 						node = ref tree.Nodes[index];
 						remainingLeavesToVisit -= (node.A.LeafCount + node.B.LeafCount);
@@ -663,7 +684,7 @@ namespace BepuFrustumCulling
 						}
 					}
 				}
-				TestAABBs(dataIndex, ref remainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
+				TestAABBs(treeId, ref remainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
 			}
 		}
 		static unsafe void CollectNodesForMultithreadedCulling(ref Buffer<Node> Nodes, int nodeIndex, int leafCountThreshold)
@@ -705,6 +726,7 @@ namespace BepuFrustumCulling
 			{
 				//we met leaf very early. we might as well test it since this is very rare
 				if (IntersectsOrInside(ref node.B, FrustumCuller.frustumData).IsBitSetAt(6))
+					//TODO: possible bug with assuming 0 index
 					FrustumCuller.leavesToTest[0].AddUnsafely(Tree.Encode(node.B.Index));
 				FrustumCuller.globalRemainingLeavesToVisit--;
 			}

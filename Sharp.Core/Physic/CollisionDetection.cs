@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using BepuFrustumCulling;
+using System.Threading;
 
 namespace Sharp.Physic
 {
@@ -23,7 +24,7 @@ namespace Sharp.Physic
 		{
 			if (index is 0)
 				return ref FrustumCuller.FrozenTree;
-			else if (index is 2)
+			else if (index is 1)
 				return ref CollisionDetection.simulation.BroadPhase.ActiveTree;
 			else
 				return ref Unsafe.NullRef<Tree>();
@@ -33,18 +34,29 @@ namespace Sharp.Physic
 		{
 			if (index is 0)
 				return ref FrustumCuller.FrozenLeaves;
-			else if (index is 2)
+			else if (index is 1)
 				return ref CollisionDetection.simulation.BroadPhase.ActiveLeaves;
 			else
 				return ref Unsafe.NullRef<Buffer<CollidableReference>>();
 		}
+
+		public ref int GetInsertionIndex(int index)
+		{
+			if (index is 0)
+				return ref FrustumCuller.FrozenInsertIndex;
+			else if (index is 1) return ref CollisionDetection.ActiveInsertIndex;
+
+			return ref Unsafe.NullRef<int>();
+		}
+
 		public int TotalLeafCount => FrustumCuller.FrozenTree.LeafCount + CollisionDetection.simulation.BroadPhase.ActiveTree.LeafCount;
 	}
 	public static class CollisionDetection
 	{
+		internal static int ActiveInsertIndex;
 		public static BufferPool bufferPool;
 		public static Simulation simulation;
-		public static FrustumCuller<testSweepDataGetter> frustumCuller;
+		public static FrustumCuller<DefaultSweepDataGetter> frustumCuller;
 		internal static Dictionary<Guid, (int index, int handle)> activeMapping = new();
 		internal static Dictionary<Guid, (int index, int handle)> staticMapping = new();
 		internal static Dictionary<Guid, (int index, int handle, Matrix4x4 mat)> frozenMapping = new();
@@ -56,7 +68,7 @@ namespace Sharp.Physic
 		{
 			bufferPool = new BufferPool();
 			simulation = Simulation.Create(bufferPool, new NarrowPhaseCallbacks(), new PoseIntegratorCallbacks(new Vector3(0, -10, 0)), new SolveDescription(8, 1));
-			frustumCuller = FrustumCuller.Create<testSweepDataGetter>(bufferPool);
+			frustumCuller = FrustumCuller.Create<DefaultSweepDataGetter>(bufferPool);
 			//TODO: reverse the situation by defining ref returning func in broadPhase which will pull in custom struct-implemented interfaces ?
 		}
 
