@@ -20,7 +20,7 @@ namespace Sharp.Physic
 {
 	public struct testSweepDataGetter : ISweepDataGetter
 	{
-		public int TotalLeafCount => FrustumCuller.FrozenTree.LeafCount + CollisionDetection.simulation.BroadPhase.ActiveTree.LeafCount;
+		public long TotalLeafCount => FrustumCuller.FrozenTree.LeafCount + CollisionDetection.simulation.BroadPhase.ActiveTree.LeafCount;
 
 		public ref Tree GetTree(int index)
 		{
