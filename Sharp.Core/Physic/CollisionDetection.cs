@@ -20,6 +20,8 @@ namespace Sharp.Physic
 {
 	public struct testSweepDataGetter : ISweepDataGetter
 	{
+		public int TotalLeafCount => FrustumCuller.FrozenTree.LeafCount + CollisionDetection.simulation.BroadPhase.ActiveTree.LeafCount;
+
 		public ref Tree GetTree(int index)
 		{
 			if (index is 0)
@@ -39,24 +41,13 @@ namespace Sharp.Physic
 			else
 				return ref Unsafe.NullRef<Buffer<CollidableReference>>();
 		}
-
-		public ref int GetInsertionIndex(int index)
-		{
-			if (index is 0)
-				return ref FrustumCuller.FrozenInsertIndex;
-			else if (index is 1) return ref CollisionDetection.ActiveInsertIndex;
-
-			return ref Unsafe.NullRef<int>();
-		}
-
-		public int TotalLeafCount => FrustumCuller.FrozenTree.LeafCount + CollisionDetection.simulation.BroadPhase.ActiveTree.LeafCount;
 	}
 	public static class CollisionDetection
 	{
 		internal static int ActiveInsertIndex;
 		public static BufferPool bufferPool;
 		public static Simulation simulation;
-		public static FrustumCuller<DefaultSweepDataGetter> frustumCuller;
+		public static FrustumCuller<testSweepDataGetter> frustumCuller;
 		internal static Dictionary<Guid, (int index, int handle)> activeMapping = new();
 		internal static Dictionary<Guid, (int index, int handle)> staticMapping = new();
 		internal static Dictionary<Guid, (int index, int handle, Matrix4x4 mat)> frozenMapping = new();
@@ -68,7 +59,7 @@ namespace Sharp.Physic
 		{
 			bufferPool = new BufferPool();
 			simulation = Simulation.Create(bufferPool, new NarrowPhaseCallbacks(), new PoseIntegratorCallbacks(new Vector3(0, -10, 0)), new SolveDescription(8, 1));
-			frustumCuller = FrustumCuller.Create<DefaultSweepDataGetter>(bufferPool);
+			frustumCuller = FrustumCuller.Create<testSweepDataGetter>(bufferPool);
 			//TODO: reverse the situation by defining ref returning func in broadPhase which will pull in custom struct-implemented interfaces ?
 		}
 
