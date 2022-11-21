@@ -206,6 +206,7 @@ namespace BepuFrustumCulling
 	{
 		internal static int treeCount;
 		static Buffer<int>[] leavesToTest;
+		static int[] leavesCounter;
 		private static T dataGetter;
 		private static T DataGetter
 		{
@@ -215,6 +216,7 @@ namespace BepuFrustumCulling
 				while (Unsafe.IsNullRef(ref tree) is false)
 					tree = ref value.GetTree(++treeCount);
 				leavesToTest = new Buffer<int>[treeCount];
+				leavesCounter = new int[treeCount];
 			}
 		}
 		static FrustumCuller()
@@ -449,9 +451,11 @@ namespace BepuFrustumCulling
 			FrustumCuller.currentIndex = -1;
 			FrustumCuller.startingIndexesLength = 0;
 			FrustumCuller.interThreadExchange = 0;
+			Array.Clear(leavesCounter);
 #if DEBUG
 			debug.Clear();
-			FrustumCuller.startingIndexes.AsSpan().Fill(0);
+			Array.Clear(FrustumCuller.startingIndexes);
+
 #endif
 			//Debug.Assert((nodeIndex >= 0 && nodeIndex < tree.NodeCount) || (Tree.Encode(nodeIndex) >= 0 && Tree.Encode(nodeIndex) < tree.LeafCount));
 			//Debug.Assert(tree.LeafCount >= 2, "This implementation assumes all nodes are filled.");
@@ -463,7 +467,7 @@ namespace BepuFrustumCulling
 
 				if (tree.LeafCount is 0) continue;
 				tmp = ref leavesToTest[i];
-				pool.Take(tree.LeafCount + 1, out tmp);
+				pool.Take(tree.LeafCount, out tmp);
 #if DEBUG
 				tmp.Clear(0, tmp.Length);
 #endif
@@ -479,7 +483,7 @@ namespace BepuFrustumCulling
 				{
 					leafTester.Leaves = dataGetter.GetLeaves(i);
 					tmp = ref leavesToTest[i];
-					for (var j = 0; j < tmp.Length - 1; j++)
+					for (var j = 0; j < tmp.Length; j++)
 						leafTester.TestLeaf(tmp[j], FrustumCuller.frustumData);
 					pool.Return(ref tmp);
 				}
@@ -552,9 +556,9 @@ namespace BepuFrustumCulling
 					ref var tmp = ref leavesToTest[treeId];
 #if DEBUG
 					if (leafIndex is not 0)
-						Debug.Assert(new ReadOnlySpan<int>(tmp.Memory, tmp[^1]).Contains(leafIndex) is false, "Duplicates are unacceptable");
+						Debug.Assert(new ReadOnlySpan<int>(tmp.Memory, leavesCounter[treeId]).Contains(leafIndex) is false, "Duplicates are unacceptable");
 #endif
-					var i = Interlocked.Increment(ref tmp[^1]);
+					var i = Interlocked.Increment(ref leavesCounter[treeId]);
 					tmp[i - 1] = leafIndex;
 					leafIndex = -1;
 					remainingLeavesToVisit--;
@@ -675,7 +679,7 @@ namespace BepuFrustumCulling
 			{
 				//we met leaf very early. we might as well test it since this is very rare
 				if (IntersectsOrInside(ref node.A, treeId, FrustumCuller.frustumData).IsBitSetAt(6))
-					leavesToTest[treeId][leavesToTest[treeId][^1]++] = Tree.Encode(node.A.Index);
+					leavesToTest[treeId][leavesCounter[treeId]++] = Tree.Encode(node.A.Index);
 				FrustumCuller.globalRemainingLeavesToVisit--;
 			}
 			if (node.B.Index > 0)
@@ -698,7 +702,7 @@ namespace BepuFrustumCulling
 			{
 				//we met leaf very early. we might as well test it since this is very rare
 				if (IntersectsOrInside(ref node.B, treeId, FrustumCuller.frustumData).IsBitSetAt(6))
-					leavesToTest[treeId][leavesToTest[treeId][^1]++] = Tree.Encode(node.B.Index);
+					leavesToTest[treeId][leavesCounter[treeId]++] = Tree.Encode(node.B.Index);
 				FrustumCuller.globalRemainingLeavesToVisit--;
 			}
 		}

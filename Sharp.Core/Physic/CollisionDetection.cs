@@ -60,7 +60,6 @@ namespace Sharp.Physic
 			bufferPool = new BufferPool();
 			simulation = Simulation.Create(bufferPool, new NarrowPhaseCallbacks(), new PoseIntegratorCallbacks(new Vector3(0, -10, 0)), new SolveDescription(8, 1));
 			frustumCuller = FrustumCuller.Create<testSweepDataGetter>(bufferPool);
-			//TODO: reverse the situation by defining ref returning func in broadPhase which will pull in custom struct-implemented interfaces ?
 		}
 
 		public static int AddFrozenBody(in Guid id, Vector3 pos, Vector3 min, Vector3 max, int existingId = -1)
