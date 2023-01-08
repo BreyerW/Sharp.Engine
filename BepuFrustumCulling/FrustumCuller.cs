@@ -57,6 +57,7 @@ namespace BepuFrustumCulling
 		internal static int largestTreeIndex;
 		//TODO: replace with QuickDictionary?
 		internal static Dictionary<long, int> failedPlane = new();
+		//internal static QuickDictionary<long, int, PrimitiveComparer<long>> failedPlane = new();
 		internal static long[] startingIndexes = new long[4];
 		internal static int startingIndexesLength;
 		internal static int currentIndex;
@@ -209,8 +210,7 @@ namespace BepuFrustumCulling
 	{
 		internal static int treeCount;
 		//TODO: change to quicklist like newfailedplanes? then possibly could delete leavesCounter
-		static Buffer<int>[] leavesToTest;
-		static int[] leavesCounter;
+		static QuickList<int>[] leavesToTest;
 		private static T dataGetter;
 		private static T DataGetter
 		{
@@ -219,8 +219,7 @@ namespace BepuFrustumCulling
 				ref Tree tree = ref value.GetTree(treeCount);
 				while (Unsafe.IsNullRef(ref tree) is false)
 					tree = ref value.GetTree(++treeCount);
-				leavesToTest = new Buffer<int>[treeCount];
-				leavesCounter = new int[treeCount];
+				leavesToTest = new QuickList<int>[treeCount];
 			}
 		}
 		static FrustumCuller()
@@ -315,7 +314,7 @@ namespace BepuFrustumCulling
 			//The sweep tester probably relies on mutation to function; copy any mutations back to the original reference.
 			//frustumTester = tester.LeafTester;
 		}
-		private static unsafe void TestAABBs(int dataIndex, int failedPlanesIndex, ref long counter, ref int nodeIndex, ref int leafIndex, ref int fullyContainedStack, ref uint planeBitmask, ref int stackEnd, int* stack)
+		private static unsafe void TestAABBs(int treeId, int failedPlanesIndex, ref long counter, ref int nodeIndex, ref int leafIndex, ref int fullyContainedStack, ref uint planeBitmask, ref int stackEnd, int* stack)
 		{
 			if (nodeIndex < 0)
 			{
@@ -336,7 +335,7 @@ namespace BepuFrustumCulling
 			}
 			else
 			{
-				ref var tree = ref dataGetter.GetTree(dataIndex);
+				ref var tree = ref dataGetter.GetTree(treeId);
 				ref var node = ref tree.Nodes[nodeIndex];
 				//skip tests if frustum fully contains childs,
 				//unset bit means fully inside single plane,
@@ -359,8 +358,8 @@ namespace BepuFrustumCulling
 				}
 				else
 				{
-					var aBitmask = IntersectsOrInside(ref node.A, dataIndex, failedPlanesIndex, FrustumCuller.frustumData, planeBitmask);
-					var bBitmask = IntersectsOrInside(ref node.B, dataIndex, failedPlanesIndex, FrustumCuller.frustumData, planeBitmask);
+					var aBitmask = IntersectsOrInside(ref node.A, treeId, failedPlanesIndex, FrustumCuller.frustumData, planeBitmask);
+					var bBitmask = IntersectsOrInside(ref node.B, treeId, failedPlanesIndex, FrustumCuller.frustumData, planeBitmask);
 
 					var aIntersected = aBitmask.IsBitSetAt(6);
 					var bIntersected = bBitmask.IsBitSetAt(6);
@@ -463,10 +462,7 @@ namespace BepuFrustumCulling
 			FrustumCuller.currentIndex = -1;
 			FrustumCuller.startingIndexesLength = 0;
 			FrustumCuller.interThreadExchange = 0;
-
-			Array.Clear(leavesCounter);
 #if DEBUG
-			debug.Clear();
 			Array.Clear(FrustumCuller.startingIndexes);
 
 #endif
@@ -480,9 +476,11 @@ namespace BepuFrustumCulling
 
 				if (tree.LeafCount is 0) continue;
 				tmp = ref leavesToTest[i];
-				pool.Take(tree.LeafCount, out tmp);
+				pool.Take(tree.LeafCount, out tmp.Span);
 #if DEBUG
-				tmp.Clear(0, tmp.Length);
+				tmp.Clear();
+#else
+				tmp.Count = 0;
 #endif
 				multithreadingLeafCountThreshold = tree.LeafCount - FrustumCuller.subtractionToLeafCountThreshold;
 				multithreadingLeafCountThreshold = multithreadingLeafCountThreshold < 3 ? tree.LeafCount + 1 : multithreadingLeafCountThreshold;
@@ -491,16 +489,14 @@ namespace BepuFrustumCulling
 			}
 			if (FrustumCuller.globalRemainingLeavesToVisit > 0)
 			{
-				//TODO: consider moving this before node collection, it should be very rare that collection will yield no nodes wasting thread creation
-				//requires updating node collection to be multithreaded-aware
 				FrustumCuller.threadDispatcher.DispatchWorkers(FrustumSweepThreaded);
 				for (var i = 0; i < treeCount; i++)
 				{
 					leafTester.Leaves = dataGetter.GetLeaves(i);
 					tmp = ref leavesToTest[i];
-					for (var j = 0; j < tmp.Length; j++)
+					for (var j = 0; j < tmp.Count; j++)
 						leafTester.TestLeaf(tmp[j], FrustumCuller.frustumData);
-					pool.Return(ref tmp);
+					pool.Return(ref tmp.Span);
 				}
 				FrustumCuller.failedPlane.Clear();
 				for (var i = 0; i < FrustumCuller.threadDispatcher.ThreadCount; i++)
@@ -521,7 +517,7 @@ namespace BepuFrustumCulling
 			if (tree.LeafCount == 1)
 			{
 				//If the first node isn't filled, we have to use a special case.
-				if (IntersectsOrInside(ref tree.Nodes[0].A, 0, FrustumCuller.currentTreeId, FrustumCuller.frustumData).IsBitSetAt(6))
+				if (IntersectsOrInside(ref tree.Nodes[0].A, FrustumCuller.currentTreeId, 0, FrustumCuller.frustumData).IsBitSetAt(6))
 				{
 					leafTester.TestLeaf(0, FrustumCuller.frustumData);
 				}
@@ -533,19 +529,12 @@ namespace BepuFrustumCulling
 			ref int leafIndex = ref Unsafe.AsRef(-1);
 			ref int stackEnd = ref Unsafe.AsRef(0);
 			ref int fullyContainedStack = ref Unsafe.AsRef(-1);
-#if DEBUG
-			debug.Clear();
-#endif
+
 			while (true)
 			{
 				TestAABBs(FrustumCuller.currentTreeId, 0, ref FrustumCuller.globalRemainingLeavesToVisit, ref nodeIndex, ref leafIndex, ref fullyContainedStack, ref planeBitmask, ref stackEnd, stack);
 				if (leafIndex > -1)
 				{
-#if DEBUG
-					if (leafIndex is not 0)
-						Debug.Assert(debug.Contains((leafIndex, 0)) is false, "Duplicates are unacceptable");
-					debug.Add((leafIndex, 0));
-#endif
 					leafTester.TestLeaf(leafIndex, FrustumCuller.frustumData);
 					leafIndex = -1;
 					FrustumCuller.globalRemainingLeavesToVisit--;
@@ -554,9 +543,6 @@ namespace BepuFrustumCulling
 					return;
 			}
 		}
-#if DEBUG
-		static ConcurrentBag<(int, int)> debug = new();
-#endif
 		private static unsafe void FrustumSweepThreaded(int workerIndex)
 		{
 			FrustumCuller.threadDispatcher.GetThreadMemoryPool(workerIndex).Take(256, out FrustumCuller.newFailedPlanes[workerIndex].Span);
@@ -581,9 +567,9 @@ namespace BepuFrustumCulling
 					ref var tmp = ref leavesToTest[treeId];
 #if DEBUG
 					if (leafIndex is not 0)
-						Debug.Assert(new ReadOnlySpan<int>(tmp.Memory, leavesCounter[treeId]).Contains(leafIndex) is false, "Duplicates are unacceptable");
+						Debug.Assert(tmp.Contains(leafIndex) is false, "Duplicates are unacceptable");
 #endif
-					var i = Interlocked.Increment(ref leavesCounter[treeId]);
+					var i = Interlocked.Increment(ref tmp.Count);
 					tmp[i - 1] = leafIndex;
 					leafIndex = -1;
 					remainingLeavesToVisit--;
@@ -592,7 +578,6 @@ namespace BepuFrustumCulling
 				{
 					nodeIndex = 0;
 					Interlocked.Add(ref FrustumCuller.globalRemainingLeavesToVisit, -takenLeavesCount);
-					//TODO: watch this out, possible culprit for duplicates? very rare bug
 					if (FrustumCuller.currentIndex < FrustumCuller.startingIndexesLength)
 					{
 						var nextStartingIndex = Interlocked.Increment(ref FrustumCuller.currentIndex);
@@ -604,10 +589,7 @@ namespace BepuFrustumCulling
 							ref var tmp = ref Unsafe.As<long, TwoInts>(ref FrustumCuller.startingIndexes[nextStartingIndex]);
 							treeId = tmp.lower;
 							nodeIndex = tmp.upper;
-#if DEBUG
-							Debug.Assert(debug.Contains((nodeIndex, workerIndex)) is false, "Duplicates are unacceptable");
-							debug.Add((nodeIndex, workerIndex));
-#endif
+
 						}
 					}
 					if (nodeIndex is 0)
@@ -703,8 +685,8 @@ namespace BepuFrustumCulling
 			else
 			{
 				//we met leaf very early. we might as well test it since this is very rare
-				if (IntersectsOrInside(ref node.A, 0, treeId, FrustumCuller.frustumData).IsBitSetAt(6))
-					leavesToTest[treeId][leavesCounter[treeId]++] = Tree.Encode(node.A.Index);
+				if (IntersectsOrInside(ref node.A, treeId, 0, FrustumCuller.frustumData).IsBitSetAt(6))
+					leavesToTest[treeId].AddUnsafely(Tree.Encode(node.A.Index));
 				FrustumCuller.globalRemainingLeavesToVisit--;
 			}
 			if (node.B.Index > 0)
@@ -726,15 +708,15 @@ namespace BepuFrustumCulling
 			else
 			{
 				//we met leaf very early. we might as well test it since this is very rare
-				if (IntersectsOrInside(ref node.B, 0, treeId, FrustumCuller.frustumData).IsBitSetAt(6))
-					leavesToTest[treeId][leavesCounter[treeId]++] = Tree.Encode(node.B.Index);
+				if (IntersectsOrInside(ref node.B, treeId, 0, FrustumCuller.frustumData).IsBitSetAt(6))
+					leavesToTest[treeId].AddUnsafely(Tree.Encode(node.B.Index));
 				FrustumCuller.globalRemainingLeavesToVisit--;
 			}
 		}
 		//TODO: drop far plane, that gives us 15 floats meaning only 16th float is dead
 		//or keep far plane and simply flip near plane after computation
 		//TODO: make version with A and B nodes as parameters to fuse their testing instead of min/max vectors and index 
-		private unsafe static uint IntersectsOrInside(ref NodeChild node, int failedPlanesIndex, int treeId, FrustumData* frustumData, uint planeBitmask = uint.MaxValue)
+		private unsafe static uint IntersectsOrInside(ref NodeChild node, int treeId, int failedPlanesIndex, FrustumData* frustumData, uint planeBitmask = uint.MaxValue)
 		{
 			var packedIndex = (long)node.Index << 32 | (uint)treeId;
 			var shouldRenumberPlanes = FrustumCuller.failedPlane.TryGetValue(packedIndex, out var planeId);
