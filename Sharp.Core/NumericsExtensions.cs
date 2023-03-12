@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Sharp
 {
@@ -23,10 +24,10 @@ namespace Sharp
           return m;
          }*/
 		// Degrees-to-radians conversion constant (RO).
-		public const float Deg2Rad = MathF.PI * 2f / 360f;
+		public const float Deg2Rad = MathF.PI / 180f;
 
 		// Radians-to-degrees conversion constant (RO).
-		public const float Rad2Deg = 1f / Deg2Rad;
+		public const float Rad2Deg = 180.0f / MathF.PI;
 
 		/// <summary>
 		/// Clamps a number between a minimum and a maximum.
@@ -63,33 +64,112 @@ namespace Sharp
 		{
 			return Math.Max(Math.Min(n, max), min);
 		}
-		public static Vector3 ToEulerAngles(this Quaternion q)
+		public static Vector3 NormalizeAngles(Vector3 angles)
 		{
-			// Extract the quaternion components
-			float qx = q.X;
-			float qy = q.Y;
-			float qz = q.Z;
-			float qw = q.W;
+			float halfPi = (MathF.PI / 2f);
+			return new Vector3((angles.X + halfPi) % (2 * halfPi) - halfPi, (angles.Y + MathF.PI) % (2 * MathF.PI) - MathF.PI, (angles.Z + MathF.PI) % (2 * MathF.PI) - MathF.PI);
+		}
+		public static Vector3 NormalizeEulerAngles(Vector3 euler)
+		{
+			float twopi = 2f * MathF.PI;
 
-			// Calculate the Euler angles
-			float roll, pitch, yaw;
+			// Normalize yaw to [-π, π]
+			float yaw = (euler.Y % twopi + twopi) % twopi;
+			if (yaw > MathF.PI) yaw -= twopi;
 
-			float sinr_cosp = 2.0f * (qw * qx + qy * qz);
-			float cosr_cosp = 1.0f - 2.0f * (qx * qx + qy * qy);
-			roll = MathF.Atan2(sinr_cosp, cosr_cosp);
+			// Normalize pitch to [-π/2, π/2]
+			float pitch = (euler.X % twopi + twopi) % twopi;
+			if (pitch > MathF.PI) pitch -= twopi;
+			//if (pitch > MathF.PI / 2) pitch = MathF.PI - pitch;
+			//if (pitch < -MathF.PI / 2) pitch = -MathF.PI - pitch;
 
-			float sinp = 2.0f * (qw * qy - qz * qx);
-			if (MathF.Abs(sinp) >= 1.0f)
-				pitch = MathF.PI / 2.0f * MathF.Sign(sinp);
-			else
-				pitch = MathF.Asin(sinp);
+			// Normalize roll to [-π, π]
+			float roll = (euler.Z % twopi + twopi) % twopi;
+			if (roll > MathF.PI) roll -= twopi;
 
-			float siny_cosp = 2.0f * (qw * qz + qx * qy);
-			float cosy_cosp = 1.0f - 2.0f * (qy * qy + qz * qz);
-			yaw = MathF.Atan2(siny_cosp, cosy_cosp);
-
-			// Return the Euler angles as a Vector3
 			return new Vector3(pitch, yaw, roll);
+		}
+		public static Vector3 FindClosestEuler(Vector3 eul, Vector3 hint)
+		{
+			/* we could use M_PI as pi_thresh: which is correct but 5.1 gives better results.
+			 * Checked with baking actions to fcurves - campbell */
+			const float pi_thresh = (5.1f);
+			const float pi_x2 = (2.0f * MathF.PI);
+			var copy = Vector3.Zero;
+			var dif = MemoryMarshal.CreateSpan(ref copy.X, 3);
+			var seul = MemoryMarshal.CreateSpan(ref eul.X, 3);
+			var shint = MemoryMarshal.CreateSpan(ref hint.X, 3);
+			/* correct differences of about 360 degrees first */
+			for (int i = 0; i < 3; i++)
+			{
+				dif[i] = seul[i] - shint[i];
+				if (dif[i] > pi_thresh)
+				{
+					seul[i] -= MathF.Floor((dif[i] / pi_x2) + 0.5f) * pi_x2;
+					dif[i] = seul[i] - shint[i];
+				}
+				else if (dif[i] < -pi_thresh)
+				{
+					seul[i] += MathF.Floor((-dif[i] / pi_x2) + 0.5f) * pi_x2;
+					dif[i] = seul[i] - shint[i];
+				}
+			}
+
+			/* is 1 of the axis rotations larger than 180 degrees and the other small? NO ELSE IF!! */
+			if (MathF.Abs(dif[0]) > 3.2f && MathF.Abs(dif[1]) < 1.6f && MathF.Abs(dif[2]) < 1.6f)
+			{
+				if (dif[0] > 0.0f)
+				{
+					seul[0] -= pi_x2;
+				}
+				else
+				{
+					seul[0] += pi_x2;
+				}
+			}
+			if (MathF.Abs(dif[1]) > 3.2f && MathF.Abs(dif[2]) < 1.6f && MathF.Abs(dif[0]) < 1.6f)
+			{
+				if (dif[1] > 0.0f)
+				{
+					seul[1] -= pi_x2;
+				}
+				else
+				{
+					seul[1] += pi_x2;
+				}
+			}
+			if (MathF.Abs(dif[2]) > 3.2f && MathF.Abs(dif[0]) < 1.6f && MathF.Abs(dif[1]) < 1.6f)
+			{
+				if (dif[2] > 0.0f)
+				{
+					seul[2] -= pi_x2;
+				}
+				else
+				{
+					seul[2] += pi_x2;
+				}
+			}
+			return eul;
+		}
+
+		public static Vector3 ToEuler(this in Quaternion quaternion)
+		{
+			float pitch, yaw, roll;
+			float sinr_cosp = 2 * (quaternion.W * quaternion.X + quaternion.Y * quaternion.Z);
+			float cosr_cosp = 1 - 2 * (quaternion.X * quaternion.X + quaternion.Y * quaternion.Y);
+			roll = (float)MathF.Atan2(sinr_cosp, cosr_cosp);
+
+			float sinp = 2 * (quaternion.W * quaternion.Y - quaternion.Z * quaternion.X);
+			if (MathF.Abs(sinp) >= 1)
+				pitch = (float)MathF.CopySign(MathF.PI / 2f, sinp);
+			else
+				pitch = (float)MathF.Asin(sinp);
+
+			float siny_cosp = 2 * (quaternion.W * quaternion.Z + quaternion.X * quaternion.Y);
+			float cosy_cosp = 1 - 2 * (quaternion.Y * quaternion.Y + quaternion.Z * quaternion.Z);
+			yaw = (float)MathF.Atan2(siny_cosp, cosy_cosp);
+
+			return new Vector3(pitch, roll, yaw);
 		}
 
 		public static Matrix4x4 Inverted(in this Matrix4x4 m)

@@ -220,7 +220,6 @@ namespace Sharp.Editor
 			transformationPlane = default;
 			useUniformScale = false;
 		}
-
 		public static void HandleTranslation(Entity entity, ref Ray ray)
 		{
 			if (SceneView.globalMode is false)
@@ -241,7 +240,7 @@ namespace Sharp.Editor
 				// compute delta
 				Vector3 newOrigin = newPos - relativeOrigin.Value * Camera.main.AspectRatio;//TODO: when moving XZ plane to infinity relativeorigin or something seems to become 0 and object pos become camera pos
 				Vector3 delta = newOrigin - entity.transform.Position;
-				Matrix4x4.Decompose(entity.transform.ModelMatrix, out var scale, out var rot, out var trans);
+
 				// 1 axis constraint
 				if (selectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateY or Gizmo.TranslateZ)
 				{
@@ -265,11 +264,9 @@ namespace Sharp.Editor
 					ComputeSnap(ref delta.Z, SceneView.translateSnap.Z);
 				}
 				// compute matrix & delta
-				entity.transform.Position = trans + delta;
-				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scaleSource.Value);
-				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans + delta);
-				Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
-				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin; //Matrix4x4.CreateScale(entity.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(entity.transform.Position);
+				entity.transform.Position = entity.transform.ModelMatrix.Translation + delta;
+				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(delta);
+				entity.transform.ModelMatrix = entity.transform.ModelMatrix * translateOrigin; //Matrix4x4.CreateScale(entity.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(entity.transform.Position);
 				entity.transform.onTransformChanged?.Invoke();
 			}
 			else
@@ -382,17 +379,8 @@ namespace Sharp.Editor
 				var deltaRot = Quaternion.Normalize(Quaternion.CreateFromAxisAngle(rotationAxisLocalSpace, deltaInRad));
 
 				rotAngleOrigin = angle;
-				Matrix4x4.Decompose(entity.transform.ModelMatrix, out _, out var rot, out var trans);
-				entity.transform.Rotation += deltaRot.ToEulerAngles() * NumericsExtensions.Rad2Deg;
-				var ce = entity.transform.Rotation;
-				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scaleSource.Value);
-				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
-				Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot * deltaRot);
-
-				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
-				//entity.transform.Rotation = (rot * deltaRot).ToEulerAngles() * NumericsExtensions.Rad2Deg;
-
-
+				entity.transform.Rotation += deltaRot.ToEuler();
+				entity.transform.ModelMatrix = Matrix4x4.CreateFromQuaternion(deltaRot) * entity.transform.ModelMatrix;
 				entity.transform.onTransformChanged?.Invoke();
 			}
 			else
@@ -423,37 +411,40 @@ namespace Sharp.Editor
 		}
 		public static void HandleViewCube(Entity entity)//null means orbit camera around camera focus point rather than selected object
 		{
+			var halfPi = MathF.PI / 2f;
+			var quartPi = MathF.PI / 4f;
+			var threeQuartPi = MathF.PI * 3f / 4f;
 			var rotateVector = selectedGizmoId switch
 			{
-				Gizmo.ViewCubeX => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, 90, 0),
-				Gizmo.ViewCubeMinusX => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, -90, 0),
-				Gizmo.ViewCubeY => new Vector3(90, preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.Y : 180, 0),
-				Gizmo.ViewCubeMinusY => new Vector3(-90, preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.Y : 180, 0),
+				Gizmo.ViewCubeX => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, halfPi, 0),
+				Gizmo.ViewCubeMinusX => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, -halfPi, 0),
+				Gizmo.ViewCubeY => new Vector3(halfPi, preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.Y : MathF.PI, 0),
+				Gizmo.ViewCubeMinusY => new Vector3(-halfPi, preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.Y : MathF.PI, 0),
 				Gizmo.ViewCubeZ => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, 0, 0),
-				Gizmo.ViewCubeMinusZ => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, 180, 0),
+				Gizmo.ViewCubeMinusZ => new Vector3(preserveInsignificantCameraAngleWithViewCube ? Camera.main.Parent.transform.Rotation.X : 0, MathF.PI, 0),
 
-				Gizmo.ViewCubeBottomEdgeZ => new Vector3(-45, 180, 0),
-				Gizmo.ViewCubeLeftEdgeMinusZ => new Vector3(0, 45, 0),
-				Gizmo.ViewCubeTopEdgeZ => new Vector3(45, 180, 0),
-				Gizmo.ViewCubeTopEdgeMinusZ => new Vector3(45, 0, 0),
-				Gizmo.ViewCubeTopEdgeMinusX => new Vector3(45, -90, 0),
-				Gizmo.ViewCubeBottomEdgeMinusZ => new Vector3(-45, 0, 0),
-				Gizmo.ViewCubeBottomEdgeMinusX => new Vector3(-45, -90, 0),
-				Gizmo.ViewCubeRightEdgeMinusZ => new Vector3(0, -45, 0),
-				Gizmo.ViewCubeRightEdgeZ => new Vector3(0, 135, 0),
-				Gizmo.ViewCubeTopEdgeX => new Vector3(45, 90, 0),
-				Gizmo.ViewCubeLeftEdgeZ => new Vector3(0, -135, 0),
-				Gizmo.ViewCubeBottomEdgeX => new Vector3(-45, 90, 0),
+				Gizmo.ViewCubeBottomEdgeZ => new Vector3(-quartPi, MathF.PI, 0),
+				Gizmo.ViewCubeLeftEdgeMinusZ => new Vector3(0, quartPi, 0),
+				Gizmo.ViewCubeTopEdgeZ => new Vector3(quartPi, MathF.PI, 0),
+				Gizmo.ViewCubeTopEdgeMinusZ => new Vector3(quartPi, 0, 0),
+				Gizmo.ViewCubeTopEdgeMinusX => new Vector3(quartPi, -halfPi, 0),
+				Gizmo.ViewCubeBottomEdgeMinusZ => new Vector3(-quartPi, 0, 0),
+				Gizmo.ViewCubeBottomEdgeMinusX => new Vector3(-quartPi, -halfPi, 0),
+				Gizmo.ViewCubeRightEdgeMinusZ => new Vector3(0, -quartPi, 0),
+				Gizmo.ViewCubeRightEdgeZ => new Vector3(0, threeQuartPi, 0),
+				Gizmo.ViewCubeTopEdgeX => new Vector3(quartPi, halfPi, 0),
+				Gizmo.ViewCubeLeftEdgeZ => new Vector3(0, -threeQuartPi, 0),
+				Gizmo.ViewCubeBottomEdgeX => new Vector3(-quartPi, halfPi, 0),
 
 
-				Gizmo.ViewCubeLowerLeftCornerX => new Vector3(-45, 135, 0),
-				Gizmo.ViewCubeLowerRightCornerX => new Vector3(-45, 45, 0),
-				Gizmo.ViewCubeUpperRightCornerX => new Vector3(45, 45, 0),
-				Gizmo.ViewCubeUpperLeftCornerX => new Vector3(45, 135, 0),
-				Gizmo.ViewCubeLowerLeftCornerMinusX => new Vector3(-45, -45, 0),
-				Gizmo.ViewCubeLowerRightCornerMinusX => new Vector3(-45, -135, 0),
-				Gizmo.ViewCubeUpperRightCornerMinusX => new Vector3(45, -135, 0),
-				Gizmo.ViewCubeUpperLeftCornerMinusX => new Vector3(45, -45, 0),
+				Gizmo.ViewCubeLowerLeftCornerX => new Vector3(-quartPi, threeQuartPi, 0),
+				Gizmo.ViewCubeLowerRightCornerX => new Vector3(-quartPi, quartPi, 0),
+				Gizmo.ViewCubeUpperRightCornerX => new Vector3(quartPi, quartPi, 0),
+				Gizmo.ViewCubeUpperLeftCornerX => new Vector3(quartPi, threeQuartPi, 0),
+				Gizmo.ViewCubeLowerLeftCornerMinusX => new Vector3(-quartPi, -quartPi, 0),
+				Gizmo.ViewCubeLowerRightCornerMinusX => new Vector3(-quartPi, -threeQuartPi, 0),
+				Gizmo.ViewCubeUpperRightCornerMinusX => new Vector3(quartPi, -threeQuartPi, 0),
+				Gizmo.ViewCubeUpperLeftCornerMinusX => new Vector3(quartPi, -quartPi, 0),
 				_ => new Vector3(0)
 			};
 
@@ -463,7 +454,7 @@ namespace Sharp.Editor
 
 				var camPos = entity.transform.Position + Vector3.UnitZ * 100f; //entity.transform.Position - Vector3.Normalize(objTocamDir) * 300;
 				var localPos = Vector3.Transform(entity.transform.Position - camPos, rotationMatrix);
-				var newAngles = rotateVector * NumericsExtensions.Deg2Rad;
+				var newAngles = rotateVector;
 				Camera.main.Parent.transform.Rotation = rotateVector;
 				var newRotationMatrix = Matrix4x4.CreateRotationY(newAngles.Y) * Matrix4x4.CreateRotationX(newAngles.X);
 
@@ -476,7 +467,7 @@ namespace Sharp.Editor
 			{
 				Camera.main.Parent.transform.Rotation = rotateVector;
 				var translationMatrix = Matrix4x4.CreateTranslation(-Camera.main.Parent.transform.Position);
-				var angles = Camera.main.Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
+				var angles = Camera.main.Parent.transform.Rotation;
 				var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X);
 				Camera.main.ViewMatrix = translationMatrix * rotationMatrix; //pan
 			}
@@ -496,8 +487,6 @@ namespace Sharp.Editor
 				Vector3 delta = newOrigin - entity.transform.Position;
 
 				// 1 axis constraint
-				Matrix4x4.Decompose(entity.transform.ModelMatrix, out var scale, out var rot, out var trans);
-
 				var (direction, snapLimit) = selectedGizmoId switch
 				{
 					Gizmo.ScaleX => (entity.transform.ModelMatrix.Right(), SceneView.scaleSnap.X),
@@ -532,11 +521,8 @@ namespace Sharp.Editor
 				vScale *= scaleSource.Value;
 				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(vScale);
 
-				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
-				Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
-
 				entity.transform.Scale = vScale;//new Vector3(float.IsNaN(newScale.X) || float.IsInfinity(newScale.X) ? 1 : newScale.X, float.IsNaN(newScale.Y) || float.IsInfinity(newScale.Y) ? 1 : newScale.Y, float.IsNaN(newScale.Z) || float.IsInfinity(newScale.Z) ? 1 : newScale.Z);
-				entity.transform.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
+				entity.transform.ModelMatrix = scaleOrigin * entity.transform.ModelMatrix;
 				entity.transform.onTransformChanged?.Invoke();
 			}
 			else
@@ -552,8 +538,8 @@ namespace Sharp.Editor
 					_ => throw new NotSupportedException($"Scale doesnt support {selectedGizmoId}")
 				};
 				startMat = entity.transform.ModelMatrix;
-				startMat.DecomposeDirections(out var right, out var up, out var forward);
-				scaleSource = new Vector3(right.Length(), up.Length(), forward.Length());
+				//startMat.Inverted().DecomposeDirections(out var right, out var up, out var forward);
+				scaleSource = entity.transform.Scale;// new Vector3(right.Length(), up.Length(), forward.Length());
 				transformationPlane = BuildPlane(entity.transform.Position, movePlanNormal[index]);//TODO: bugged look up imguizmo again
 				float len = ray.IntersectPlane(transformationPlane); // near plan
 				var newPos = ray.origin + ray.direction * len;

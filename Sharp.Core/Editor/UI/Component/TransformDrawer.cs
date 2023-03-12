@@ -33,44 +33,35 @@ namespace Sharp.Core.Editor.UI.Component
 					var delta = pos - t.Position;
 					if (delta != Vector3.Zero)
 					{
-						Matrix4x4.Decompose(t.ModelMatrix, out var scale, out var rot, out var trans);
-						Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scale);
-						Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
-						Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
-						t.ModelMatrix = scaleOrigin * rotateOrigin * Matrix4x4.CreateTranslation(delta) * translateOrigin;
+						t.ModelMatrix = t.ModelMatrix * Matrix4x4.CreateTranslation(delta);
 					}
 					t.Position = pos;
 				});
 			position.AutoSize = AutoSize.Horizontal;
-			eulerAngles = new Vector3Field(() => (Target as Transform).Rotation,
+			eulerAngles = new Vector3Field(() => (Target as Transform).Rotation * NumericsExtensions.Rad2Deg,
 				(pos) =>
 				{
 					var t = Target as Transform;
-					var delta = pos - t.Rotation;
+					var posInRad = pos * NumericsExtensions.Deg2Rad;
+					var delta = posInRad - t.Rotation;
 					if (delta != Vector3.Zero)
 					{
-						Matrix4x4.Decompose(t.ModelMatrix, out var scale, out var rot, out _);
-						var deltaInRad = delta * NumericsExtensions.Deg2Rad;
-						var deltaRot = Quaternion.Normalize(Quaternion.CreateFromYawPitchRoll(deltaInRad.Y, deltaInRad.X, deltaInRad.Z));
-						Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(t.Scale.X, t.Scale.Y, t.Scale.Z);
-						Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(t.ModelMatrix.Translation);
-						Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot * deltaRot);
-						t.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
+						var deltaRot = Quaternion.Normalize(Quaternion.CreateFromYawPitchRoll(delta.Y, delta.X, delta.Z));
+						t.ModelMatrix = Matrix4x4.CreateFromQuaternion(deltaRot) * t.ModelMatrix;
 					}
-					t.Rotation = pos;
+					t.Rotation = posInRad;
 				});
 			eulerAngles.AutoSize = AutoSize.Horizontal;
 			scale = new Vector3Field(() => (Target as Transform).Scale, (pos) =>
 			{
 				var t = Target as Transform;
 				var delta = pos - t.Scale;
+				if (pos.X is 0) pos.X = 0.00001f;
+				if (pos.Y is 0) pos.Y = 0.00001f;
+				if (pos.Z is 0) pos.Z = 0.00001f;
 				if (delta != Vector3.Zero)
 				{
-					Matrix4x4.Decompose(t.ModelMatrix, out var scale, out var rot, out var trans);
-					Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scale);
-					Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
-					Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot);
-					t.ModelMatrix = Matrix4x4.CreateScale(pos) * rotateOrigin * translateOrigin;
+					t.ModelMatrix = Matrix4x4.CreateScale(pos / t.Scale) * t.ModelMatrix;
 				}
 				t.Scale = pos;
 			});

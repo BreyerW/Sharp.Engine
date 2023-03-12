@@ -163,7 +163,7 @@ namespace Sharp
 		public void SetModelviewMatrix()
 		{
 			var translationMatrix = Matrix4x4.CreateTranslation(-Parent.transform.Position);
-			var angles = Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
+			var angles = Parent.transform.Rotation;
 
 			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X);
 			//ViewMatrix = rotationMatrix * translationMatrix * Matrix4x4.CreateTranslation(0, 0, -20); //orbit
@@ -295,16 +295,16 @@ namespace Sharp
 		public void Rotate(float x, float y, float time = 1)
 		{
 			var newRot = Parent.transform.Rotation;
-			newRot.X += (y * MouseXSensitivity * time);
-			newRot.Y += (x * MouseYSensitivity * time);
+			newRot.X += (y * NumericsExtensions.Deg2Rad * MouseXSensitivity * time);
+			newRot.Y += (x * NumericsExtensions.Deg2Rad * MouseYSensitivity * time);
 
 
 			if (pivot is not null)
 			{
-				var angles = Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
+				var angles = Parent.transform.Rotation;
 				var origRotateMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X);
 				var localPos = Vector3.Transform(pivot.transform.Position - Parent.transform.Position, origRotateMatrix);
-				var newAngles = newRot * NumericsExtensions.Deg2Rad;
+				var newAngles = newRot;
 
 				var rotationMatrix = Matrix4x4.CreateRotationY(newAngles.Y) * Matrix4x4.CreateRotationX(newAngles.X);
 				ViewMatrix = rotationMatrix;
