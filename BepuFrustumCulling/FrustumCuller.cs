@@ -49,6 +49,7 @@ namespace BepuFrustumCulling
 	}
 	public static class FrustumCuller
 	{
+		//TODO: change this to be treeCount based?
 		internal static QuickList<(long, int)>[] newFailedPlanes = new QuickList<(long, int)>[1];
 		internal static BufferPool Pool;
 		//representation of 0b1111_1111_1111_1111_1111_1111_1100_0000 on little endian that also works on big endian
@@ -131,6 +132,10 @@ namespace BepuFrustumCulling
 			leaves[leafIndex] = collidable;
 			return leafIndex;
 		}
+		public static void CompactMemoryOfFailedPlanes()
+		{
+			//newFailedPlanesa
+		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int AddFrozen(CollidableReference collidable, ref BoundingBox bounds)
 		{
@@ -209,7 +214,6 @@ namespace BepuFrustumCulling
 	public class FrustumCuller<T> where T : struct, ISweepDataGetter
 	{
 		internal static int treeCount;
-		//TODO: change to quicklist like newfailedplanes? then possibly could delete leavesCounter
 		static QuickList<int>[] leavesToTest;
 		private static T dataGetter;
 		private static T DataGetter
@@ -453,7 +457,7 @@ namespace BepuFrustumCulling
 				}
 				FrustumCuller.failedPlane.Clear();
 				foreach (var (index, planeId) in FrustumCuller.newFailedPlanes[0])
-					FrustumCuller.failedPlane.Add(index, planeId);
+					FrustumCuller.failedPlane[index] = planeId;
 				pool.Return(ref FrustumCuller.newFailedPlanes[0].Span);
 				return;
 			}
@@ -569,6 +573,7 @@ namespace BepuFrustumCulling
 					if (leafIndex is not 0)
 						Debug.Assert(tmp.Contains(leafIndex) is false, "Duplicates are unacceptable");
 #endif
+					//Count check not needed here since backing buffer always has enough space to store whole tree if needed
 					var i = Interlocked.Increment(ref tmp.Count);
 					tmp[i - 1] = leafIndex;
 					leafIndex = -1;

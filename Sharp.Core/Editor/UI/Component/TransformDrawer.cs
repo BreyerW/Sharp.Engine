@@ -49,10 +49,11 @@ namespace Sharp.Core.Editor.UI.Component
 					var delta = pos - t.Rotation;
 					if (delta != Vector3.Zero)
 					{
-						Matrix4x4.Decompose(t.ModelMatrix, out var scale, out var rot, out var trans);
-						var deltaRot = Quaternion.Normalize(Quaternion.CreateFromYawPitchRoll((delta.Y) * NumericsExtensions.Deg2Rad, (delta.X) * NumericsExtensions.Deg2Rad, (delta.Z) * NumericsExtensions.Deg2Rad));
-						Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(scale);
-						Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(trans);
+						Matrix4x4.Decompose(t.ModelMatrix, out var scale, out var rot, out _);
+						var deltaInRad = delta * NumericsExtensions.Deg2Rad;
+						var deltaRot = Quaternion.Normalize(Quaternion.CreateFromYawPitchRoll(deltaInRad.Y, deltaInRad.X, deltaInRad.Z));
+						Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(t.Scale.X, t.Scale.Y, t.Scale.Z);
+						Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(t.ModelMatrix.Translation);
 						Matrix4x4 rotateOrigin = Matrix4x4.CreateFromQuaternion(rot * deltaRot);
 						t.ModelMatrix = scaleOrigin * rotateOrigin * translateOrigin;
 					}

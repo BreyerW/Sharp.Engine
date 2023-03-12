@@ -187,7 +187,7 @@ namespace SharpAsset.AssetPipeline
 
 				eObject.transform.Position = worldPos;
 				var angles = eObject.transform.Rotation * NumericsExtensions.Deg2Rad;
-				eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
+				eObject.transform.ModelMatrix = Matrix4x4.CreateScale(eObject.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.X, angles.Y, angles.Z) * Matrix4x4.CreateTranslation(eObject.transform.Position);
 				var renderer = eObject.AddComponent<MeshRenderer>();
 				ref var shader = ref ShaderPipeline.Import(Application.projectPath + (count % 2 is 0 ? @"\Content\TextureOnlyShader.shader" : @"\Content\TextureOnlyShaderTransparent.shader"));
 				var mat = new Material();

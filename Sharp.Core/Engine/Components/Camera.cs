@@ -64,7 +64,7 @@ namespace Sharp
 		{
 			get
 			{
-				return Parent.transform.ModelMatrix.Inverted();
+				return Parent.transform.ModelMatrix;
 			}
 			internal set
 			{
@@ -76,7 +76,10 @@ namespace Sharp
 				}
 			}
 		}
-
+		public Vector3 Forawrd
+		{
+			get => Vector3.Normalize(new Vector3(ViewMatrix.M13, ViewMatrix.M23, ViewMatrix.M33));
+		}
 		public bool moved = false;
 
 		#region Constructors
@@ -162,9 +165,10 @@ namespace Sharp
 			var translationMatrix = Matrix4x4.CreateTranslation(-Parent.transform.Position);
 			var angles = Parent.transform.Rotation * NumericsExtensions.Deg2Rad;
 
-			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X) * Matrix4x4.CreateRotationZ(angles.Z);
+			var rotationMatrix = Matrix4x4.CreateRotationY(angles.Y) * Matrix4x4.CreateRotationX(angles.X);
 			//ViewMatrix = rotationMatrix * translationMatrix * Matrix4x4.CreateTranslation(0, 0, -20); //orbit
 			ViewMatrix = translationMatrix * rotationMatrix; //pan
+															 //ViewMatrix = rotationMatrix * translationMatrix;
 		}
 
 		private static bool WithinEpsilon(float a, float b)
@@ -182,7 +186,7 @@ namespace Sharp
 			vec.Z = time;
 			vec.W = 1.0f;
 
-			var viewInv = ViewMatrix;//.Inverted();
+			var viewInv = ViewMatrix.Inverted();//.Inverted();
 			var projInv = main.projectionMatrix.Inverted();
 			vec.Transform(projInv).Transform(viewInv);
 
@@ -304,7 +308,7 @@ namespace Sharp
 
 				var rotationMatrix = Matrix4x4.CreateRotationY(newAngles.Y) * Matrix4x4.CreateRotationX(newAngles.X);
 				ViewMatrix = rotationMatrix;
-				var pos = Vector3.Transform(localPos, ViewMatrix);
+				var pos = Vector3.Transform(localPos, ViewMatrix.Inverted());
 				var newCameraPos = pivot.transform.Position - pos;
 				ViewMatrix = Matrix4x4.CreateTranslation(-newCameraPos) * rotationMatrix;
 				Parent.transform.Position = newCameraPos;
