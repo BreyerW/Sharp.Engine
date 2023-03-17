@@ -151,27 +151,37 @@ namespace Sharp
 			}
 			return eul;
 		}
-
-		public static Vector3 ToEuler(this in Quaternion quaternion)
+		public static Vector3 ToEulerAngles(this in Quaternion q)
 		{
-			float pitch, yaw, roll;
-			float sinr_cosp = 2 * (quaternion.W * quaternion.X + quaternion.Y * quaternion.Z);
-			float cosr_cosp = 1 - 2 * (quaternion.X * quaternion.X + quaternion.Y * quaternion.Y);
-			roll = (float)MathF.Atan2(sinr_cosp, cosr_cosp);
+			float sqw = q.W * q.W;
+			float sqx = q.X * q.X;
+			float sqy = q.Y * q.Y;
+			float sqz = q.Z * q.Z;
 
-			float sinp = 2 * (quaternion.W * quaternion.Y - quaternion.Z * quaternion.X);
-			if (MathF.Abs(sinp) >= 1)
-				pitch = (float)MathF.CopySign(MathF.PI / 2f, sinp);
+			float yaw, pitch, roll;
+			float test = q.X * q.Y + q.Z * q.W;
+			if (test > 0.49999f)
+			{
+				// singularity at north pole
+				yaw = 2.0f * MathF.Atan2(q.X, q.W);
+				pitch = MathF.PI / 2.0f;
+				roll = 0.0f;
+			}
+			else if (test < -0.49999f)
+			{
+				// singularity at south pole
+				yaw = -2.0f * MathF.Atan2(q.X, q.W);
+				pitch = -MathF.PI / 2.0f;
+				roll = 0.0f;
+			}
 			else
-				pitch = (float)MathF.Asin(sinp);
-
-			float siny_cosp = 2 * (quaternion.W * quaternion.Z + quaternion.X * quaternion.Y);
-			float cosy_cosp = 1 - 2 * (quaternion.Y * quaternion.Y + quaternion.Z * quaternion.Z);
-			yaw = (float)MathF.Atan2(siny_cosp, cosy_cosp);
-
+			{
+				yaw = MathF.Atan2(2.0f * q.Y * q.W - 2.0f * q.X * q.Z, sqx - sqy - sqz + sqw);
+				pitch = MathF.Asin(2.0f * test);
+				roll = MathF.Atan2(2.0f * q.X * q.W - 2.0f * q.Y * q.Z, -sqx + sqy - sqz + sqw);
+			}
 			return new Vector3(pitch, roll, yaw);
 		}
-
 		public static Matrix4x4 Inverted(in this Matrix4x4 m)
 		{
 			if (m.GetDeterminant() != 0)

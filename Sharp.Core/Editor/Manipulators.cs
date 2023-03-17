@@ -375,11 +375,13 @@ namespace Sharp.Editor
 				var rotationAxisLocalSpace = Vector3.TransformNormal(transformationPlane.Normal, mModel.Inverted());
 				rotationAxisLocalSpace.Normalize();
 				var deltaInRad = angle - rotAngleOrigin.Value;
-
-				var deltaRot = Quaternion.Normalize(Quaternion.CreateFromAxisAngle(rotationAxisLocalSpace, deltaInRad));
-
+				var nonnormalized = Quaternion.CreateFromAxisAngle(rotationAxisLocalSpace, deltaInRad);
+				var deltaRot = Quaternion.Normalize(nonnormalized);
+				var oldRot = entity.transform.Rotation;
 				rotAngleOrigin = angle;
-				entity.transform.Rotation += deltaRot.ToEuler();
+				entity.transform.Rotation += deltaRot.ToEulerAngles();
+				if (float.IsNaN(angle) || float.IsNaN(rotAngleOrigin.Value) || float.IsNaN(entity.transform.Rotation.X) || float.IsNaN(entity.transform.Rotation.Y) || float.IsNaN(entity.transform.Rotation.Z))
+					Console.WriteLine();
 				entity.transform.ModelMatrix = Matrix4x4.CreateFromQuaternion(deltaRot) * entity.transform.ModelMatrix;
 				entity.transform.onTransformChanged?.Invoke();
 			}
@@ -550,16 +552,26 @@ namespace Sharp.Editor
 
 		private static Plane BuildPlane(Vector3 pos, Vector3 normal)
 		{
-			return new Plane(normal.Normalize(), Vector3.Dot(pos, normal));
+			return Plane.Normalize(new Plane(normal.Normalize(), Vector3.Dot(pos, normal)));
 		}
 		private static float ComputeAngleOnPlane(Entity entity, ref Ray ray, ref Plane plane)
 		{
 			var len = ray.IntersectPlane(plane);
 			var secondDirToRotateCenter = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
 			var perpendicularVect = Vector3.Cross(firstDirToRotateCenter.Value, plane.Normal).Normalize();
-			var angle = MathF.Acos(Vector3.Dot(secondDirToRotateCenter, firstDirToRotateCenter.Value));
-			angle *= (Vector3.Dot(secondDirToRotateCenter, perpendicularVect) < 0) ? 1f : -1f;
+			var angle = MathF.Acos(Math.Clamp(Vector3.Dot(secondDirToRotateCenter, firstDirToRotateCenter.Value), -1f, 1f));
+
+			angle *= -MathF.CopySign(1, Vector3.Dot(secondDirToRotateCenter, perpendicularVect));
+
 			return angle;
 		}
+		/*var teststdir = new Vector3(0.61535656f, -0.016523017f, 0.78807575f);
+			var testnddir = new Vector3(-0.6153626f, 0.016605942f, -0.78806925f);
+			var testperp = new Vector3(-0.48558995f, 0.7795986f, 0.39551055f);
+			var step1 = Vector3.Dot(testnddir, teststdir);
+			var step2 = MathF.Acos(step1);
+			var step3 = Vector3.Dot(testnddir, testperp);*/
+		/*if (float.IsNaN(angle) || float.IsNaN(step3) || float.IsNaN(step2) || float.IsNaN(step1))
+				Console.WriteLine();*/
 	}
 }

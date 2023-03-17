@@ -456,8 +456,12 @@ namespace BepuFrustumCulling
 					FrustumCuller.currentTreeId++;
 				}
 				FrustumCuller.failedPlane.Clear();
+				int i = 0;
 				foreach (var (index, planeId) in FrustumCuller.newFailedPlanes[0])
-					FrustumCuller.failedPlane[index] = planeId;
+				{
+					i++;
+					FrustumCuller.failedPlane.Add(index, planeId);
+				}
 				pool.Return(ref FrustumCuller.newFailedPlanes[0].Span);
 				return;
 			}
@@ -525,6 +529,7 @@ namespace BepuFrustumCulling
 				{
 					leafTester.TestLeaf(0, FrustumCuller.frustumData);
 				}
+				return;
 			}
 
 			Debug.Assert((nodeIndex >= 0 && nodeIndex < tree.NodeCount) || (Tree.Encode(nodeIndex) >= 0 && Tree.Encode(nodeIndex) < tree.LeafCount));
