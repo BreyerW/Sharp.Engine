@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BepuFrustumCulling;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace Sharp.Physic
 {
@@ -137,8 +138,7 @@ namespace Sharp.Physic
 			var physicId = frozenMapping[id];
 			FrustumCuller.FrozenTree.UpdateBounds(physicId.handle, midpoint + min, midpoint + max);
 			physicId.mat = Matrix4x4.CreateScale(Vector3.Abs(max - min)) * Matrix4x4.CreateTranslation(midpoint + min);
-			//TODO: change to CollectionsMarshal.GetValueRef on .NET 6
-			frozenMapping[id] = physicId;
+			CollectionsMarshal.GetValueRefOrAddDefault<Guid, (int, int, Matrix4x4)>(frozenMapping, id, out _) = physicId;
 		}
 		public static void RemoveFrozenBody(in Guid id)
 		{

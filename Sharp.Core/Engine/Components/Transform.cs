@@ -9,6 +9,8 @@ namespace Sharp.Engine.Components
 {
 	public class Transform : Component
 	{
+		//TODO source generator that generates these register boilerplate
+		//maybe with code to calculate byte offsets of all fields
 		[ModuleInitializer]
 		internal static void Register()
 		{
@@ -29,7 +31,7 @@ namespace Sharp.Engine.Components
 
 		//idea: ref returning getter that returns ref struct with access to transform position, rot, scale and matrix if ref setter in them will be supported to fire events while all these properties in transform will be private 
 		[NonSerializable, JsonIgnore]
-		public ref Matrix4x4 ModelMatrix
+		public ref readonly Matrix4x4 ModelMatrix
 		{
 			get
 			{ /*unsafe { return ref Unsafe.AsRef<Matrix4x4>(modelMatrix.ToPointer()); }*/
@@ -54,7 +56,10 @@ namespace Sharp.Engine.Components
 		public Vector3 Rotation
 		{
 			get => eulerAngles;
-			internal set => eulerAngles = value;
+			internal set
+			{
+				eulerAngles = value;
+			}
 
 		}
 
@@ -80,13 +85,21 @@ namespace Sharp.Engine.Components
 		{
 			get
 			{
-				//Matrix4x4.Decompose(modelMatrix, out var s, out _, out _);
 				return scale;
 			}
 			internal set
 			{
 				scale = value;
 			}
+		}
+		public void SetModelMatrix(in Matrix4x4 matrix)
+		{
+			modelMatrix = matrix;
+			onTransformChanged?.Invoke();
+		}
+		public void CommitChanges()
+		{
+
 		}
 		//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
 	}

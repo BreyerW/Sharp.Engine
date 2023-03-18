@@ -53,7 +53,7 @@ namespace Sharp.Editor.Views
 			var e = new Entity();
 			e.transform.Position = new Vector3(0f, 10f, 0f);
 			var angles = e.transform.Rotation;
-			e.transform.ModelMatrix = Matrix4x4.CreateScale(e.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.X, angles.Y, angles.Z) * Matrix4x4.CreateTranslation(e.transform.Position);
+			e.transform.SetModelMatrix(Matrix4x4.CreateScale(e.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.X, angles.Y, angles.Z) * Matrix4x4.CreateTranslation(e.transform.Position));
 			var cam = e.AddComponent<Camera>();
 			Camera.main = cam;
 			e.AddComponent<DepthPrePassComponent>();

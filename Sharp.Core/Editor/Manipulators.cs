@@ -264,10 +264,10 @@ namespace Sharp.Editor
 					ComputeSnap(ref delta.Z, SceneView.translateSnap.Z);
 				}
 				// compute matrix & delta
-				entity.transform.Position = entity.transform.ModelMatrix.Translation + delta;
+
 				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(delta);
-				entity.transform.ModelMatrix = entity.transform.ModelMatrix * translateOrigin; //Matrix4x4.CreateScale(entity.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(entity.transform.Position);
-				entity.transform.onTransformChanged?.Invoke();
+				entity.transform.SetModelMatrix(entity.transform.ModelMatrix * translateOrigin); //Matrix4x4.CreateScale(entity.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(entity.transform.Position);
+				entity.transform.Position = entity.transform.ModelMatrix.Translation + delta;
 			}
 			else
 			{
@@ -377,13 +377,12 @@ namespace Sharp.Editor
 				var deltaInRad = angle - rotAngleOrigin.Value;
 				var nonnormalized = Quaternion.CreateFromAxisAngle(rotationAxisLocalSpace, deltaInRad);
 				var deltaRot = Quaternion.Normalize(nonnormalized);
-				var oldRot = entity.transform.Rotation;
 				rotAngleOrigin = angle;
-				entity.transform.Rotation += deltaRot.ToEulerAngles();
+
 				if (float.IsNaN(angle) || float.IsNaN(rotAngleOrigin.Value) || float.IsNaN(entity.transform.Rotation.X) || float.IsNaN(entity.transform.Rotation.Y) || float.IsNaN(entity.transform.Rotation.Z))
 					Console.WriteLine();
-				entity.transform.ModelMatrix = Matrix4x4.CreateFromQuaternion(deltaRot) * entity.transform.ModelMatrix;
-				entity.transform.onTransformChanged?.Invoke();
+				entity.transform.SetModelMatrix(Matrix4x4.CreateFromQuaternion(deltaRot) * entity.transform.ModelMatrix);
+				entity.transform.Rotation += deltaRot.ToEulerAngles();
 			}
 			else
 			{
@@ -523,9 +522,8 @@ namespace Sharp.Editor
 				vScale *= scaleSource.Value;
 				Matrix4x4 scaleOrigin = Matrix4x4.CreateScale(vScale);
 
+				entity.transform.SetModelMatrix(scaleOrigin * entity.transform.ModelMatrix);
 				entity.transform.Scale = vScale;//new Vector3(float.IsNaN(newScale.X) || float.IsInfinity(newScale.X) ? 1 : newScale.X, float.IsNaN(newScale.Y) || float.IsInfinity(newScale.Y) ? 1 : newScale.Y, float.IsNaN(newScale.Z) || float.IsInfinity(newScale.Z) ? 1 : newScale.Z);
-				entity.transform.ModelMatrix = scaleOrigin * entity.transform.ModelMatrix;
-				entity.transform.onTransformChanged?.Invoke();
 			}
 			else
 			{
@@ -565,6 +563,7 @@ namespace Sharp.Editor
 
 			return angle;
 		}
+		//todo: when changing transform via ui recalculate bounding box too
 		/*var teststdir = new Vector3(0.61535656f, -0.016523017f, 0.78807575f);
 			var testnddir = new Vector3(-0.6153626f, 0.016605942f, -0.78806925f);
 			var testperp = new Vector3(-0.48558995f, 0.7795986f, 0.39551055f);

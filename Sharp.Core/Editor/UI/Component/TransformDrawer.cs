@@ -33,7 +33,7 @@ namespace Sharp.Core.Editor.UI.Component
 					var delta = pos - t.Position;
 					if (delta != Vector3.Zero)
 					{
-						t.ModelMatrix = t.ModelMatrix * Matrix4x4.CreateTranslation(delta);
+						t.SetModelMatrix(t.ModelMatrix * Matrix4x4.CreateTranslation(delta));
 					}
 					t.Position = pos;
 				});
@@ -47,7 +47,7 @@ namespace Sharp.Core.Editor.UI.Component
 					if (delta != Vector3.Zero)
 					{
 						var deltaRot = Quaternion.Normalize(Quaternion.CreateFromYawPitchRoll(delta.Y, delta.X, delta.Z));
-						t.ModelMatrix = Matrix4x4.CreateFromQuaternion(deltaRot) * t.ModelMatrix;
+						t.SetModelMatrix(Matrix4x4.CreateFromQuaternion(deltaRot) * t.ModelMatrix);
 					}
 					t.Rotation = posInRad;
 				});
@@ -61,7 +61,7 @@ namespace Sharp.Core.Editor.UI.Component
 				if (pos.Z is 0) pos.Z = 0.00001f;
 				if (delta != Vector3.Zero)
 				{
-					t.ModelMatrix = Matrix4x4.CreateScale(pos / t.Scale) * t.ModelMatrix;
+					t.SetModelMatrix(Matrix4x4.CreateScale(pos / t.Scale) * t.ModelMatrix);
 				}
 				t.Scale = pos;
 			});

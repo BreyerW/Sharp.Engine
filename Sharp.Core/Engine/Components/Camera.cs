@@ -68,7 +68,7 @@ namespace Sharp
 			}
 			internal set
 			{
-				Parent.transform.ModelMatrix = value;
+				Parent.transform.SetModelMatrix(value);
 				if (main is not null)
 				{
 					Material.BindGlobalProperty("camView", main.Parent.transform.ModelMatrix);
