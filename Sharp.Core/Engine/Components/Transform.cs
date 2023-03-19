@@ -45,7 +45,6 @@ namespace Sharp.Engine.Components
 		{
 			get
 			{
-				//Matrix4x4.Decompose(modelMatrix, out _, out _, out var pos);
 				return position;
 			}
 			internal set
@@ -97,9 +96,10 @@ namespace Sharp.Engine.Components
 			modelMatrix = matrix;
 			onTransformChanged?.Invoke();
 		}
-		public void CommitChanges()
+		public void SetModelMatrix()
 		{
-
+			modelMatrix = Matrix4x4.CreateScale(scale.X, scale.Y, scale.Z) * Matrix4x4.CreateFromYawPitchRoll(eulerAngles.Y, eulerAngles.X, eulerAngles.Z) * Matrix4x4.CreateTranslation(position.X, position.Y, position.Z);
+			onTransformChanged?.Invoke();
 		}
 		//modelMatrix = Marshal.AllocHGlobal(mat4x4Stride);
 	}
