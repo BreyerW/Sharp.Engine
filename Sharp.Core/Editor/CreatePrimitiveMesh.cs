@@ -36,19 +36,62 @@ public static class CreatePrimitiveMesh
 		newMesh.LoadIndices(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan());
 		return newMesh;
 	}
-	public static Mesh GenerateSquare(in Matrix4x4 transform, string name = "square", Color? vertexColor = null)
+	public static Mesh GenerateSquareOnXZ(in Matrix4x4 transform, string name = "square", Color? vertexColor = null, bool negativeUV = false)
 	{
 		var Mesh = new Mesh
 		{
 			FullPath = name,
 			UsageHint = UsageHint.StaticDraw
 		};
-		var vertices = new UIVertexFormat[4] {
+		var vertices = negativeUV ? new UIVertexFormat[4] {
+						new (){position=Vector3.Transform(new (0,0,0),transform),texcoords=new (-1,-1) },
+						new (){position=Vector3.Transform(new (0,0,1),transform),texcoords=new (-1,1) },
+						new (){position=Vector3.Transform(new (1,0,1),transform),texcoords=new (1,1) },
+						new (){position=Vector3.Transform(new (1,0,0),transform),texcoords=new (1,-1) }
+					}
+		: new UIVertexFormat[4] {
+						new (){position=Vector3.Transform(new (0,0,0),transform),texcoords=new (0,0) },
+						new (){position=Vector3.Transform(new (0,0,1),transform),texcoords=new (0,1) },
+						new (){position=Vector3.Transform(new (1,0,1),transform),texcoords=new (1,1) },
+						new (){position=Vector3.Transform(new (1,0,0),transform),texcoords=new (1,0) }
+		};
+		List<byte> bytes = new();
+		if (vertexColor.HasValue)
+
+			foreach (var i in ..vertices.Length)
+			{
+				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref vertices[i], 1)).ToArray());
+				var color = vertexColor.GetValueOrDefault();
+				bytes.AddRange(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref color, 1)).ToArray());
+
+			}
+		else
+			bytes.AddRange(MemoryMarshal.AsBytes(vertices.AsSpan()).ToArray());
+
+		Mesh.VertType = vertexColor.HasValue ? typeof(VertexColorFormat) : typeof(UIVertexFormat);
+		Mesh.LoadVertices(bytes.ToArray());
+		Mesh.LoadIndices(new ushort[] { 0, 1, 2, 0, 2, 3 }.AsSpan());
+		return Mesh;
+	}
+	public static Mesh GenerateSquareOnXY(in Matrix4x4 transform, string name = "square", Color? vertexColor = null, bool negativeUV = false)
+	{
+		var Mesh = new Mesh
+		{
+			FullPath = name,
+			UsageHint = UsageHint.StaticDraw
+		};
+		var vertices = negativeUV ? new UIVertexFormat[4] {
+						new (){position=Vector3.Transform(new (0,0,0),transform),texcoords=new (-1,-1) },
+						new (){position=Vector3.Transform(new (0,1,0),transform),texcoords=new (-1,1) },
+						new (){position=Vector3.Transform(new (1,1,0),transform),texcoords=new (1,1) },
+						new (){position=Vector3.Transform(new (1,0,0),transform),texcoords=new (1,-1) }
+					}
+		: new UIVertexFormat[4] {
 						new (){position=Vector3.Transform(new (0,0,0),transform),texcoords=new (0,0) },
 						new (){position=Vector3.Transform(new (0,1,0),transform),texcoords=new (0,1) },
 						new (){position=Vector3.Transform(new (1,1,0),transform),texcoords=new (1,1) },
 						new (){position=Vector3.Transform(new (1,0,0),transform),texcoords=new (1,0) }
-					};
+		};
 		List<byte> bytes = new();
 		if (vertexColor.HasValue)
 

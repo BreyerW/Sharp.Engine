@@ -212,18 +212,20 @@ namespace Sharp.Editor.Views
 			}
 			if (args.Key == Keys.LEFTCONTROL)
 				leftCtrlPressed = true;
+
+			Camera.main.ViewMatrix.Inverted().DecomposeDirections(out var right, out var up, out var forward);
 			if (args.Key == Keys.Q)
-				Camera.main.Move(Vector3.UnitY, 1f, 0f);
+				Camera.main.Move(up, 1f, 0f);
 			if (args.Key == Keys.E)
-				Camera.main.Move(Vector3.UnitY, -1f, 0f);
+				Camera.main.Move(up, -1f, 0f);
 			if (args.Key == Keys.A)
-				Camera.main.Move(Vector3.UnitX, -1f, 0f);
+				Camera.main.Move(right, -1f, 0f);
 			if (args.Key == Keys.D)
-				Camera.main.Move(Vector3.UnitX, 1f, 0f);
+				Camera.main.Move(right, 1f, 0f);
 			if (args.Key == Keys.W)
-				Camera.main.Move(Vector3.UnitZ, -1f, 0f);
+				Camera.main.Move(forward, -1f, 0f);
 			if (args.Key == Keys.S)
-				Camera.main.Move(Vector3.UnitZ, 1f, 0f);
+				Camera.main.Move(forward, 1f, 0f);
 			if (args.Key == Keys.B)
 				enableBoundingBoxes = !enableBoundingBoxes;
 		}

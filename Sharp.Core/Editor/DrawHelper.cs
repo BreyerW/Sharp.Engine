@@ -31,7 +31,7 @@ namespace Sharp.Editor
 
 			var gridShader = ShaderPipeline.Import(Application.projectPath + @"\Content\GridEditorShader.shader");
 
-			ref var gridMesh = ref MeshPipeline.GetAsset("negative_square");
+			ref var gridMesh = ref MeshPipeline.GetAsset("negativeUV_square");
 			FillMaterial(out gridLineMaterial, gridShader, gridMesh, Color.White);
 			gridLineMaterial.BindProperty("width", 2f);
 
@@ -46,10 +46,9 @@ namespace Sharp.Editor
 		public static void DrawGrid(Vector3 pos)
 		{
 			var scale = MathF.Abs(Camera.main.Parent.transform.Position.Y);
-			gridSize = Camera.main.ZFar * (scale / 100f + 1);
-			var gridMat = Matrix4x4.CreateTranslation(0, /*isTooFar ? Camera.main.Parent.transform.Position.Y - Camera.main.ZFar * 0.95f - 10 :*/ 0, 0);
+			gridSize = Camera.main.ZFar;
 			gridLineMaterial.BindProperty("len", gridSize);
-			gridLineMaterial.BindProperty("model", gridMat);
+			gridLineMaterial.BindProperty("model", Matrix4x4.CreateTranslation(-gridSize / 2f, 0, -gridSize / 2f));
 			gridLineMaterial.Draw();
 		}
 

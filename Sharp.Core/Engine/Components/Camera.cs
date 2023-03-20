@@ -327,10 +327,12 @@ namespace Sharp
 		/// <param name="time">
 		/// A <see cref="System.Double"/> containing the time since the last update
 		/// </param>
-		public void Move(Vector3 axis, float distance, float time = 0.2f)
+		public void Move(Vector3 direction, float distance, float time = 0.2f)
 		{
-			Parent.transform.Position += distance * axis.Transform(Quaternion.Inverse(Parent.ToQuaterion(Parent.transform.Rotation)));
-
+			//Parent.transform.Position += distance * axis.Transform(Quaternion.Inverse(Parent.ToQuaterion(Parent.transform.Rotation)));
+			var dir = direction * distance;
+			Parent.transform.Position += dir;
+			//Parent.transform.SetModelMatrix(Matrix4x4.CreateTranslation(dir) * Parent.transform.ModelMatrix);
 			SetModelviewMatrix();
 			SetProjectionMatrix();
 

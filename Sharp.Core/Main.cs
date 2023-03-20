@@ -38,11 +38,12 @@ namespace Sharp
 			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateCylinder(Matrix4x4.Identity));
 			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateCone(Matrix4x4.Identity));
 			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateTorus(Matrix4x4.Identity));
-			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateSquare(Matrix4x4.Identity));
-			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(2) * Matrix4x4.CreateTranslation(-1, -1, 0), "screen_space_square"));
-			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateTranslation(-0.5f, -0.5f, 0), "negative_square"));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateSquareOnXY(Matrix4x4.Identity));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateSquareOnXY(Matrix4x4.CreateScale(2) * Matrix4x4.CreateTranslation(-1, -1, 0), "screen_space_square"));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateSquareOnXY(Matrix4x4.CreateTranslation(-0.5f, -0.5f, 0f), "negative_square"));
+			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateSquareOnXZ(Matrix4x4.Identity, "negativeUV_square", negativeUV: true));
 			MeshPipeline.instance.Register(CreatePrimitiveMesh.GenerateLine());
-			var dSquare = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.Identity, "dynamic_square");
+			var dSquare = CreatePrimitiveMesh.GenerateSquareOnXY(Matrix4x4.Identity, "dynamic_square");
 			dSquare.UsageHint = UsageHint.DynamicDraw;
 			MeshPipeline.instance.Register(dSquare);
 			FontPipeline.Import(@"C:\Windows\Fonts\Arial.ttf");
@@ -109,11 +110,11 @@ namespace Sharp
 		private static void GeneratePlanes(ref Mesh gizmo, in Matrix4x4 rotationX, in Matrix4x4 rotationY, in Matrix4x4 rotationZ)
 		{
 			var fixRotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, NumericsExtensions.Deg2Rad * 180);
-			var gizmo_square = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationZ, vertexColor: Manipulators.xColor);
+			var gizmo_square = CreatePrimitiveMesh.GenerateSquareOnXY(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationZ, vertexColor: Manipulators.xColor);
 
-			var gizmo_squareY = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationX, vertexColor: Manipulators.yColor);
+			var gizmo_squareY = CreatePrimitiveMesh.GenerateSquareOnXY(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationX, vertexColor: Manipulators.yColor);
 
-			var gizmo_squareZ = CreatePrimitiveMesh.GenerateSquare(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationY * fixRotation, vertexColor: Manipulators.zColor);
+			var gizmo_squareZ = CreatePrimitiveMesh.GenerateSquareOnXY(Matrix4x4.CreateScale(7) * Matrix4x4.CreateTranslation(2.5f, 2.5f, 0) * rotationY * fixRotation, vertexColor: Manipulators.zColor);
 
 			gizmo.AddSubMesh(ref gizmo_squareZ);
 			gizmo.AddSubMesh(ref gizmo_square);

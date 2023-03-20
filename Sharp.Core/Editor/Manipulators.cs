@@ -109,13 +109,7 @@ namespace Sharp.Editor
 			discMaterial.BindProperty(Material.MESHSLOT, disc);
 			discMaterial.BindProperty("len", new Vector2(17.5f));
 		}
-
 		public static void DrawCombinedGizmos(Entity entity)
-		{
-			DrawCombinedGizmos(entity, 3f);
-		}
-
-		public static void DrawCombinedGizmos(Entity entity, float thickness = 5f)
 		{
 			float scale = (Camera.main.Parent.transform.Position - entity.transform.Position).Length() / 100.0f;
 			if (SceneView.globalMode is false)
@@ -359,7 +353,7 @@ namespace Sharp.Editor
 			{
 				var len = ray.IntersectPlane(transformationPlane);
 				currentAngle = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
-				angle = ComputeAngleOnPlane(entity, ref ray, ref transformationPlane);
+				angle = ComputeAngleOnPlane(entity, ref ray);
 				if (SceneView.snapMode)
 				{
 					var snapInRadian = selectedGizmoId switch
@@ -538,9 +532,8 @@ namespace Sharp.Editor
 					_ => throw new NotSupportedException($"Scale doesnt support {selectedGizmoId}")
 				};
 				startMat = entity.transform.ModelMatrix;
-				//startMat.Inverted().DecomposeDirections(out var right, out var up, out var forward);
-				scaleSource = entity.transform.Scale;// new Vector3(right.Length(), up.Length(), forward.Length());
-				transformationPlane = BuildPlane(entity.transform.Position, movePlanNormal[index]);//TODO: bugged look up imguizmo again
+				scaleSource = entity.transform.Scale;
+				transformationPlane = BuildPlane(entity.transform.Position, movePlanNormal[index]);
 				float len = ray.IntersectPlane(transformationPlane); // near plan
 				var newPos = ray.origin + ray.direction * len;
 				translationPlaneOrigin = newPos;
@@ -552,18 +545,17 @@ namespace Sharp.Editor
 		{
 			return Plane.Normalize(new Plane(normal.Normalize(), Vector3.Dot(pos, normal)));
 		}
-		private static float ComputeAngleOnPlane(Entity entity, ref Ray ray, ref Plane plane)
+		private static float ComputeAngleOnPlane(Entity entity, ref Ray ray)
 		{
-			var len = ray.IntersectPlane(plane);
+			var len = ray.IntersectPlane(transformationPlane);
 			var secondDirToRotateCenter = (ray.origin + ray.direction * len - entity.transform.Position).Normalize();
-			var perpendicularVect = Vector3.Cross(firstDirToRotateCenter.Value, plane.Normal).Normalize();
+			var perpendicularVect = Vector3.Cross(firstDirToRotateCenter.Value, transformationPlane.Normal).Normalize();
 			var angle = MathF.Acos(Math.Clamp(Vector3.Dot(secondDirToRotateCenter, firstDirToRotateCenter.Value), -1f, 1f));
 
 			angle *= -MathF.CopySign(1, Vector3.Dot(secondDirToRotateCenter, perpendicularVect));
 
 			return angle;
 		}
-		//todo: when changing transform via ui recalculate bounding box too
 		/*var teststdir = new Vector3(0.61535656f, -0.016523017f, 0.78807575f);
 			var testnddir = new Vector3(-0.6153626f, 0.016605942f, -0.78806925f);
 			var testperp = new Vector3(-0.48558995f, 0.7795986f, 0.39551055f);
