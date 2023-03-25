@@ -43,13 +43,14 @@ in vec2 v_texcoord;
 
 	return depth;
 }
-vec3 getCameraPos() {
-	return vec3(camWorldView[3][0], camWorldView[3][1], camWorldView[3][2]);
-}
+
 vec3 getCameraDir() {
 	mat4 m = camWorldView;
 	return vec3(m[2][0], m[2][1], m[2][2]);
 }*/
+vec3 getCameraPos() {
+	return vec3(camWorldView[3][0], camWorldView[3][1], camWorldView[3][2]);
+}
 float log10(float x) { return  (1f / log(10f)) * log(x); }
 float saturate(float x) {
 	return clamp(x, 0.0, 1.0);
@@ -100,19 +101,26 @@ void main(void)
 	// Load sRGB colors from tm_visual_grid_t (converted into 0-1 range) 
 	vec4 thin_color = color * 0.5f;
 	vec4 thick_color = color * 0.9f;
+	vec4 thick_color2 = mix(thick_color, vec4(1, 0.25f, 0.25f, 1), float(abs(uv.x / dudv.x) < 1f && abs(uv.y / dudv.y) > 1f && abs(uv.y / dudv.y) < len / abs(dudv.y)));
+	thick_color2 = mix(thick_color2, vec4(0.26f, 0.6f, 1, 1), float(abs(uv.y / dudv.y) < 1f && abs(uv.x / dudv.x) > 1f && abs(uv.x / dudv.x) < len / abs(dudv.x)));
 
 	// Blend between falloff colors to handle LOD transition [4]
-	vec4 c = lod2_a > 0 ? thick_color : lod1_a > 0 ? mix(thick_color, thin_color, lod_fade) : thin_color;
-	//vec3 cam_pos = getCameraPos();
+	//equivalent to lod2_a > 0 ? thick_color : lod1_a > 0 ? mix(thick_color, thin_color, lod_fade) : thin_color; but 0 branches
+	vec4 c = mix(mix(thin_color, mix(thick_color, thin_color, lod_fade), float(lod1_a > 0)), thick_color2, float(lod2_a > 0));
+
+
+
+	vec3 cam_pos = getCameraPos();
 	// Calculate opacity falloff based on distance to grid extents and gracing angle. [5]
 	//vec3 view_dir = normalize(getCameraDir().xyz);
 	//float op_gracing = 1.f - pow(1.f - abs(dot(view_dir, vec3(camView[1][0], camView[1][1], camView[1][2]))), 16);
-	//float op_distance = 1.f - saturate(distance(cam_pos.xz, v_pos.xz) / (abs(cam_pos.y) * 1000f * 0.005f + 1000f * 0.25f)); //1000f zfar of camera
-	float op_distance = (1.f - saturate(length(uv) / len));
+	float op_distance = 1.f - saturate(distance(cam_pos.xz, uv) / (abs(cam_pos.y) * camNearFar.y * 0.005f + camNearFar.y * 0.25f)); //1000f zfar of camera
+	//float op_distance = (1.f - saturate(length(uv) / len));
 	float op = op_distance;
 
 	// Blend between LOD level alphas and scale with opacity falloff. [6]
-	c.a *= (lod2_a > 0 ? lod2_a : lod1_a > 0 ? lod1_a : (lod0_a * (1f - lod_fade))) * op;
+	//(lod2_a > 0 ? lod2_a : lod1_a > 0 ? lod1_a : (lod0_a * (1f - lod_fade))) * op
+	c.a *= mix(mix((lod0_a * (1f - lod_fade)), lod1_a, float(lod1_a > 0)), lod2_a, float(lod2_a > 0));// *op;
 
 	frag_color = c;
 

@@ -123,7 +123,7 @@ namespace Sharp.Editor
 			}
 			var scaleMat = Matrix4x4.CreateScale(scale, scale, scale);
 			var finalMat = scaleMat * mModel;
-			var alignToScreen = scaleMat * Matrix4x4.CreateBillboard(entity.transform.Position, Camera.main.Parent.transform.Position, Camera.main.ViewMatrix.Inverted().Up(), Camera.main.ViewMatrix.Inverted().Forward());
+			var alignToScreen = scaleMat * Matrix4x4.CreateBillboard(entity.transform.ModelMatrix.Translation, Camera.main.Parent.transform.Position, Camera.main.ViewMatrix.Up(), Camera.main.ViewMatrix.Forward());
 			DrawHelper.DrawGizmo(finalMat, alignToScreen);
 
 			if (firstDirToRotateCenter.HasValue)
@@ -233,7 +233,7 @@ namespace Sharp.Editor
 
 				// compute delta
 				Vector3 newOrigin = newPos - relativeOrigin.Value * Camera.main.AspectRatio;//TODO: when moving XZ plane to infinity relativeorigin or something seems to become 0 and object pos become camera pos
-				Vector3 delta = newOrigin - entity.transform.Position;
+				Vector3 delta = newOrigin - startMat.Translation;
 
 				// 1 axis constraint
 				if (selectedGizmoId is Gizmo.TranslateX or Gizmo.TranslateY or Gizmo.TranslateZ)
@@ -260,8 +260,8 @@ namespace Sharp.Editor
 				// compute matrix & delta
 
 				Matrix4x4 translateOrigin = Matrix4x4.CreateTranslation(delta);
-				entity.transform.SetModelMatrix(entity.transform.ModelMatrix * translateOrigin); //Matrix4x4.CreateScale(entity.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(entity.transform.Position);
-				entity.transform.Position = entity.transform.ModelMatrix.Translation + delta;
+				entity.transform.SetModelMatrix(startMat * translateOrigin); //Matrix4x4.CreateScale(entity.transform.Scale) * Matrix4x4.CreateFromYawPitchRoll(angles.Y, angles.X, angles.Z) * Matrix4x4.CreateTranslation(entity.transform.Position);
+				entity.transform.Position = entity.transform.ModelMatrix.Translation;
 			}
 			else
 			{
@@ -270,12 +270,12 @@ namespace Sharp.Editor
 				 right, up, forward,
 			   -Camera.main.ViewMatrix.Forward()/*free movement*/ };
 
-				Vector3 cameraToModelNormalized = Vector3.Normalize(entity.transform.Position - Camera.main.Parent.transform.Position);
+				/*Vector3 cameraToModelNormalized = Vector3.Normalize(entity.transform.Position - Camera.main.Parent.transform.Position);
 				for (int i = 0; i < 3; i++)
 				{
 					Vector3 orthoVector = Vector3.Cross(movePlaneNormal[i], cameraToModelNormalized);
 					movePlaneNormal[i] = Vector3.Cross(movePlaneNormal[i], orthoVector).Normalize();
-				}
+				}*/
 				var index = selectedGizmoId switch
 				{
 					Gizmo.TranslateX => 1,
@@ -293,7 +293,7 @@ namespace Sharp.Editor
 				var newPos = ray.origin + ray.direction * len;
 				entity.transform.ModelMatrix.DecomposeDirections(out var eRight, out var eUp, out var eForward);
 				scaleSource = new Vector3(eRight.Length(), eUp.Length(), eForward.Length());
-				relativeOrigin = (newPos - entity.transform.Position) * (1.0f / Camera.main.AspectRatio);
+				relativeOrigin = (newPos - entity.transform.ModelMatrix.Translation) * (1.0f / Camera.main.AspectRatio);
 
 			}
 		}
