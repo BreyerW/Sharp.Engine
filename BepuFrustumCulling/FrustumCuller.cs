@@ -1,11 +1,8 @@
 ﻿using BepuPhysics.Collidables;
-using BepuPhysics.CollisionDetection;
 using BepuPhysics.Trees;
 using BepuUtilities;
 using BepuUtilities.Collections;
 using BepuUtilities.Memory;
-using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -92,15 +89,14 @@ namespace BepuFrustumCulling
 		public static Buffer<CollidableReference> FrozenLeaves;
 		//TODO: add [UnscopedAttribute] Once Bepu moves to net 7+ so that this struct can be directly treated as fixed array of items
 		[StructLayout(LayoutKind.Sequential)]
-		internal record struct FixedArrayOfItems<T> where T : struct
+		internal readonly record struct FixedArrayOfItems<T> where T : struct
 		{
-			public T Item0;
-			public T Item1;
-			public T Item2;
-			public T Item3;
-			public T Item4;
-			public T Item5;
-			public T Item6;
+			public readonly T Item1;
+			public readonly T Item2;
+			public readonly T Item3;
+			public readonly T Item4;
+			public readonly T Item5;
+			public readonly T Item6;
 
 			public FixedArrayOfItems(T item1, T item2, T item3, T item4, T item5, T item6)
 			{
@@ -110,7 +106,6 @@ namespace BepuFrustumCulling
 				Item4 = item4;
 				Item5 = item5;
 				Item6 = item6;
-				Item0 = default;
 			}
 		}
 		internal static FixedArrayOfItems<FixedArrayOfItems<int>> lookUpTable = new(
@@ -740,10 +735,9 @@ namespace BepuFrustumCulling
 			//far plane test can be eliminated by modyfying lookuptable
 			//from 6x6 to 5x5 and deleting every occurance of 5 in table
 			//This results in frustum with "infinite" length
-			//Note that lookuptable is actually 6x7 but Item0 serves only as padding for pointer shenanigans
-			ref var indexesToVisit = ref Unsafe.Add(ref FrustumCuller.lookUpTable.Item1, planeId);
-			ref var end = ref indexesToVisit.Item6;
-			ref var id = ref indexesToVisit.Item0;
+			ref var indexesToVisit = ref Unsafe.Add(ref Unsafe.AsRef(FrustumCuller.lookUpTable.Item1), planeId);
+			ref var end = ref Unsafe.AsRef(indexesToVisit.Item6);
+			ref var id = ref Unsafe.Subtract(ref Unsafe.AsRef(indexesToVisit.Item1),1);
 			while (Unsafe.IsAddressLessThan(ref id, ref end))
 			{
 				id = ref Unsafe.Add(ref id, 1);
