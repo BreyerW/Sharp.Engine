@@ -594,7 +594,6 @@ namespace BepuFrustumCulling
 							ref var tmp = ref Unsafe.As<long, TwoInts>(ref FrustumCuller.startingIndexes[nextStartingIndex]);
 							treeId = tmp.lower;
 							nodeIndex = tmp.upper;
-
 						}
 					}
 					if (nodeIndex is 0)
@@ -737,12 +736,15 @@ namespace BepuFrustumCulling
 			//This results in frustum with "infinite" length
 			ref var indexesToVisit = ref Unsafe.Add(ref Unsafe.AsRef(FrustumCuller.lookUpTable.Item1), planeId);
 			ref var end = ref Unsafe.AsRef(indexesToVisit.Item6);
-			ref var id = ref Unsafe.Subtract(ref Unsafe.AsRef(indexesToVisit.Item1),1);
-			while (Unsafe.IsAddressLessThan(ref id, ref end))
+			ref var id = ref Unsafe.AsRef(indexesToVisit.Item1);
+			//TODO: change to Unsafe.IsAddressLessThanOrEqual(ref id, ref end) on NET 8
+			while (!Unsafe.IsAddressLessThan(ref end, ref id))
 			{
-				id = ref Unsafe.Add(ref id, 1);
 				if (!planeBitmask.IsBitSetAt(id))
+				{
+					id = ref Unsafe.Add(ref id, 1);
 					continue;
+				}
 				plane = ref Unsafe.Add(ref planeAddr, id);
 				var condition = Unsafe.Add(ref conditionAddr, id);
 				var reverseCondition = Vector3.One - condition;
@@ -790,6 +792,7 @@ namespace BepuFrustumCulling
 				{
 					planeBitmask = planeBitmask.UnsetBitAt(id);
 				}
+				id = ref Unsafe.Add(ref id, 1);
 			}
 			return planeBitmask;
 		}
