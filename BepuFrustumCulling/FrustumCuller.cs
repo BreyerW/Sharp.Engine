@@ -4,6 +4,7 @@ using BepuUtilities;
 using BepuUtilities.Collections;
 using BepuUtilities.Memory;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -87,16 +88,26 @@ namespace BepuFrustumCulling
 		/// Collection of leafs for <see cref="FrozenTree"/>
 		/// </summary>
 		public static Buffer<CollidableReference> FrozenLeaves;
-		//TODO: add [UnscopedAttribute] Once Bepu moves to net 7+ so that this struct can be directly treated as fixed array of items
+		
 		[StructLayout(LayoutKind.Sequential)]
-		internal readonly record struct FixedArrayOfItems<T> where T : struct
+		internal record struct FixedArrayOfItems<T> where T : unmanaged
 		{
-			public readonly T Item1;
-			public readonly T Item2;
-			public readonly T Item3;
-			public readonly T Item4;
-			public readonly T Item5;
-			public readonly T Item6;
+
+			private T Item1;
+			private T Item2;
+			private T Item3;
+			private T Item4;
+			private T Item5;
+			private T Item6;
+
+			[UnscopedRef]
+			public ref T this[int index]
+			{
+				get
+				{
+					return ref Unsafe.Add(ref Item1, index);
+				}
+			}
 
 			public FixedArrayOfItems(T item1, T item2, T item3, T item4, T item5, T item6)
 			{
@@ -733,18 +744,17 @@ namespace BepuFrustumCulling
 			ref var conditionAddr = ref frustumData->conditionNearPlane;
 			//far plane test can be eliminated by modyfying lookuptable
 			//from 6x6 to 5x5 and deleting every occurance of 5 in table
+			//plus changing foreach range from ..6 to ..5 
 			//This results in frustum with "infinite" length
-			ref var indexesToVisit = ref Unsafe.Add(ref Unsafe.AsRef(FrustumCuller.lookUpTable.Item1), planeId);
-			ref var end = ref Unsafe.AsRef(indexesToVisit.Item6);
-			ref var id = ref Unsafe.AsRef(indexesToVisit.Item1);
-			//TODO: change to Unsafe.IsAddressLessThanOrEqual(ref id, ref end) on NET 8
-			while (!Unsafe.IsAddressLessThan(ref end, ref id))
+			ref readonly var indexesToVisit =  ref FrustumCuller.lookUpTable[planeId];
+			ref readonly var id = ref indexesToVisit[0];
+
+			foreach(var i in ..6)
 			{
+				id = ref indexesToVisit[i];
 				if (!planeBitmask.IsBitSetAt(id))
-				{
-					id = ref Unsafe.Add(ref id, 1);
 					continue;
-				}
+				
 				plane = ref Unsafe.Add(ref planeAddr, id);
 				var condition = Unsafe.Add(ref conditionAddr, id);
 				var reverseCondition = Vector3.One - condition;
@@ -792,7 +802,6 @@ namespace BepuFrustumCulling
 				{
 					planeBitmask = planeBitmask.UnsetBitAt(id);
 				}
-				id = ref Unsafe.Add(ref id, 1);
 			}
 			return planeBitmask;
 		}
