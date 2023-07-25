@@ -29,7 +29,7 @@ namespace Sharp.Serializer
 
 				foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
 							.Where(x =>
-							x is PropertyInfo pi && ((pi.GetCustomAttribute<JsonIgnoreAttribute>(true) is null && pi.GetSetMethod(true) is { } mi && mi.IsPublic)
+							x is PropertyInfo pi && pi.GetIndexParameters().Length is 0 && ((pi.GetCustomAttribute<JsonIgnoreAttribute>(true) is null && pi.GetSetMethod(true) is { } mi && mi.IsPublic)
 							|| (pi.GetSetMethod(true) is { } pmi && pmi.IsPrivate && x.GetCustomAttribute<JsonIncludeAttribute>(true) is not null))))
 
 					members.TryAdd(p.Name, p);
