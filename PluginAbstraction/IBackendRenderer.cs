@@ -79,24 +79,31 @@ namespace PluginAbstraction
         CullBack = 1 << 6,
         ScissorTest = 1 << 7
     }
-    public enum AttributeType
-    {
-        Byte = 5120,
-        UnsignedByte,
-        Short,
-        UnsignedShort,
-        Int,
-        UnsignedInt,
-        Float,
-        Double = 5130,
-        HalfFloat,
-        Fixed,
-        UnsignedInt2101010Rev = 33640,
-        Int2101010Rev = 36255
-    }
-    public interface IBackendRenderer
-    {
-		public const byte FLOAT = 0;
+
+	public enum ParameterType
+	{
+		FLOAT,
+		INT,
+		VECTOR2,
+		VECTOR3,
+		VECTOR4,
+		COLOR3,
+		COLOR4,
+		MATRIX16,
+		FLOAT_ARRAY,
+		INT_ARRAY,
+		VECTOR2_ARRAY,
+		VECTOR3_ARRAY,
+		VECTOR4_ARRAY,
+		COLOR3_ARRAY,
+		COLOR4_ARRAY,
+		MATRIX16_ARRAY,
+		TEXTURE,
+		MESH,
+	}
+	public interface IBackendRenderer
+	{
+		/*public const byte FLOAT = 0;
 		public const byte VECTOR2 = 1;
 		public const byte VECTOR3 = 2;
 		public const byte MATRIX4X4 = 3;
@@ -105,20 +112,23 @@ namespace PluginAbstraction
 		public const byte COLOR4 = 6;
 		public const byte UVECTOR2 = 7;
 		public const byte MATRIX4X4PTR = byte.MaxValue;
-		public const byte COLOR4PTR = byte.MaxValue - 1;
+		public const byte COLOR4PTR = byte.MaxValue - 1;*/
+
 		uint currentWindow { get; set; }
         IntPtr CreateContext(Func<string, IntPtr> GetProcAddress, Func<IntPtr> GetCurrentContext);
 
         Func<IntPtr, IntPtr, int> MakeCurrent { get; set; }
         Action<IntPtr> SwapBuffers { get; set; }
 
-        void Start();
+		T ConvertParameterToAttributeType<T>(ParameterType type) where T : struct, Enum;
+		ParameterType ConvertAttributeToParameterType<T>(T type) where T : struct, Enum;
+		void Start();
 
         //void Do(Work whatToDo, ref Shader shader);
         //void Do<IndexType> (Work whatToDo,ref Mesh<IndexType> mesh) where IndexType: struct, IConvertible;
         void Allocate(Target target, UsageHint usageHint, ref byte addr, int length, bool reuse = false);
 
-        void Allocate(int Program, int VertexID, int FragmentID, string VertexSource, string FragmentSource, Dictionary<string, int> uniformArray, Dictionary<string, (int location, int size)> attribArray);
+        void Allocate(int Program, int VertexID, int FragmentID, string VertexSource, string FragmentSource, Dictionary<string, int> uniformArray, Dictionary<int, (ParameterType location, int size)> attribArray);
 
         void Allocate(ref byte bitmap, int width, int height, TextureFormat pixelFormat);
 
@@ -148,7 +158,7 @@ namespace PluginAbstraction
         void BindBuffers(Target target, int TBO);
 
 
-        void BindVertexAttrib(AttributeType type, int shaderLoc, int dim, int stride, int offset);//vertextype and IndicesType move to SL
+        void BindVertexAttrib(ParameterType type, int shaderLoc, int dim, int stride, int offset);//vertextype and IndicesType move to SL
 
         void ClearBuffer();
 
@@ -172,8 +182,14 @@ namespace PluginAbstraction
         void DisableState(RenderState state);
         QueryScope StartQuery(Target target, int id);
         void EndQuery(Target target);
-    }
-    public readonly ref struct QueryScope
+	}
+	//public interface IBackendRenderer<T> where T : struct, Enum {
+	//T ConvertParameterToAttributeType(ParameterType type);
+	//ParameterType ConvertAttributeToParameterType(T type);
+	//}
+
+
+	public readonly ref struct QueryScope
     {
         private readonly IBackendRenderer renderer;
         private readonly Target target;

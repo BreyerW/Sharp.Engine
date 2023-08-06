@@ -22,9 +22,9 @@ namespace SharpAsset
 		public int offset;
 		public int stride;
 		public int size;
-		public AttributeType type;
+		public ParameterType type;
 
-		public RegisterAsAttribute(AttributeType Type, string customAttributeLocation = "")
+		public RegisterAsAttribute(ParameterType Type, string customAttributeLocation = "")
 		{
 			shaderLocation = customAttributeLocation;
 			type = Type;
@@ -47,7 +47,7 @@ namespace SharpAsset
 
 				attrib.size = attrib.type switch
 				{
-					AttributeType.Float => attrib.stride / Marshal.SizeOf<float>(),
+					ParameterType.FLOAT => attrib.stride / Marshal.SizeOf<float>(),
 					_ => 1,
 				};
 				vertFormat.Add(attrib);

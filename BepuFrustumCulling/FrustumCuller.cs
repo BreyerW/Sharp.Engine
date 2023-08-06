@@ -4,7 +4,6 @@ using BepuUtilities;
 using BepuUtilities.Collections;
 using BepuUtilities.Memory;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -88,45 +87,26 @@ namespace BepuFrustumCulling
 		/// Collection of leafs for <see cref="FrozenTree"/>
 		/// </summary>
 		public static Buffer<CollidableReference> FrozenLeaves;
-		
-		[StructLayout(LayoutKind.Sequential)]
-		internal record struct FixedArrayOfItems<T> where T : unmanaged
+
+		internal static ReadOnlySpan<int> lookUpTable => new int[]
 		{
+			0, 1, 2, 3, 4, 5,
+			1, 2, 3, 4, 5, 0,
+			2, 3, 4, 5, 0, 1,
+			3, 4, 5, 0, 1, 2,
+			4, 5, 0, 1, 2, 3,
+			5, 0, 1, 2, 3, 4
+		};
+		internal static ReadOnlySpan<int> indexesIntoLookUpTable => new int[]
+		{
+			0,
+			6,
+			12,
+			18,
+			24,
+			30
+		};
 
-			private T Item1;
-			private T Item2;
-			private T Item3;
-			private T Item4;
-			private T Item5;
-			private T Item6;
-
-			[UnscopedRef]
-			public ref T this[int index]
-			{
-				get
-				{
-					return ref Unsafe.Add(ref Item1, index);
-				}
-			}
-
-			public FixedArrayOfItems(T item1, T item2, T item3, T item4, T item5, T item6)
-			{
-				Item1 = item1;
-				Item2 = item2;
-				Item3 = item3;
-				Item4 = item4;
-				Item5 = item5;
-				Item6 = item6;
-			}
-		}
-		internal static FixedArrayOfItems<FixedArrayOfItems<int>> lookUpTable = new(
-			new(0, 1, 2, 3, 4, 5),
-			new(1, 2, 3, 4, 5, 0),
-			new(2, 3, 4, 5, 0, 1),
-			new(3, 4, 5, 0, 1, 2),
-			new(4, 5, 0, 1, 2, 3),
-			new(5, 0, 1, 2, 3, 4)
-		);
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static int Add(CollidableReference collidable, ref BoundingBox bounds, ref Tree tree, BufferPool pool, ref Buffer<CollidableReference> leaves)
 		{
@@ -746,17 +726,15 @@ namespace BepuFrustumCulling
 			//from 6x6 to 5x5 and deleting every occurance of 5 in table
 			//plus changing foreach range from ..6 to ..5 
 			//This results in frustum with "infinite" length
-			ref readonly var indexesToVisit =  ref FrustumCuller.lookUpTable[planeId];
-			ref readonly var id = ref indexesToVisit[0];
+			var indexesToVisit = FrustumCuller.lookUpTable.Slice(FrustumCuller.indexesIntoLookUpTable[planeId]);
 
-			foreach(var i in ..6)
+			foreach(ref readonly var id in indexesToVisit)
 			{
-				id = ref indexesToVisit[i];
 				if (!planeBitmask.IsBitSetAt(id))
 					continue;
 				
 				plane = ref Unsafe.Add(ref planeAddr, id);
-				var condition = Unsafe.Add(ref conditionAddr, id);
+				ref var condition = ref Unsafe.Add(ref conditionAddr, id);
 				var reverseCondition = Vector3.One - condition;
 				var d = plane.D;
 				float m, r;

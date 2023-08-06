@@ -10,11 +10,11 @@ namespace Sharp.Editor
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Line2dVertexFormat : IVertex
     {
-        [RegisterAs(AttributeType.Float)]
+        [RegisterAs(ParameterType.FLOAT)]
         public Vector2 vertex_position;
-        [RegisterAs(AttributeType.Float)]
+        [RegisterAs(ParameterType.FLOAT)]
         public Vector2 dir;
-        [RegisterAs(AttributeType.Float)]
+        [RegisterAs(ParameterType.FLOAT)]
         public float miter;
     }
 }

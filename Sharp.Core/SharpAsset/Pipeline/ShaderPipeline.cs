@@ -108,7 +108,7 @@ namespace SharpAsset.AssetPipeline
 			var shader = new Shader()
 			{
 				uniformArray = new Dictionary<string, int>(),
-				attribArray = new Dictionary<string, (int, int)>(),
+				attribArray = new Dictionary<int, (ParameterType, int)>(),
 				FullPath = name,
 				VertexSource = vertexShader,
 				FragmentSource = fragmentShader,

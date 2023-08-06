@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using AttributeType = PluginAbstraction.AttributeType;
+using ParameterType = PluginAbstraction.ParameterType;
 
 namespace SharpSL.BackendRenderers.OpenGL
 {
@@ -202,7 +202,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 			Console.WriteLine("cast: " + watch.ElapsedTicks);*/
 		}
 
-		public void Allocate(int Program, int VertexID, int FragmentID, string VertexSource, string FragmentSource, Dictionary<string, int> uniformArray, Dictionary<string, (int location, int size)> attribArray)
+		public void Allocate(int Program, int VertexID, int FragmentID, string VertexSource, string FragmentSource, Dictionary<string, int> uniformArray, Dictionary<int, (ParameterType location, int size)> attribArray)
 		{
 			//if (shader.uniformArray.Count > 0)
 			//  return;
@@ -246,9 +246,11 @@ namespace SharpSL.BackendRenderers.OpenGL
 			{
 				GL.GetActiveAttrib(Program, i, stringBuilder.Capacity, out _, out var size, out attribType, out var name);
 				Console.WriteLine(name + " " + attribType + " : " + size);
-
-				if (!attribArray.ContainsKey(name))
-					attribArray.Add(name, (GL.GetAttribLocation(Program, name), size)); //TODO: change to bindAttrib via parsing all vertex formats and binding all fields?
+				var loc = GL.GetAttribLocation(Program, name);
+				if (!uniformArray.ContainsKey(name))
+					uniformArray.Add(name, loc);
+				if (!attribArray.ContainsKey(loc))
+					attribArray.Add(loc, (ConvertAttributeToParameterType((ActiveUniformType)attribType), size)); //TODO: change to bindAttrib via parsing all vertex formats and binding all fields?
 			}
 
 			GL.GetProgram(Program, GetProgramParameterName.ActiveUniforms, out var numOfUniforms);
@@ -260,8 +262,11 @@ namespace SharpSL.BackendRenderers.OpenGL
 			{
 				GL.GetActiveUniform(Program, i, stringBuilder.Capacity, out _, out var size, out uniType, out var name);
 				Console.WriteLine(name + " " + uniType + " : " + size);
+				var loc = GL.GetUniformLocation(Program, name);
 				if (!uniformArray.ContainsKey(name))
-					uniformArray.Add(name, i);
+					uniformArray.Add(name, loc);
+				if (!attribArray.ContainsKey(loc))
+					attribArray.Add(loc, (ConvertAttributeToParameterType(uniType), size));
 			}
 		}
 
@@ -309,10 +314,18 @@ namespace SharpSL.BackendRenderers.OpenGL
 			GL.ClearDepth(1.0);
 		}
 
-		public void BindVertexAttrib(AttributeType type, int shaderLoc, int dim, int stride, int offset)
+		public void BindVertexAttrib(ParameterType type, int shaderLoc, int dim, int stride, int offset)
 		{
-
-			GL.VertexAttribPointer(shaderLoc, dim, (VertexAttribPointerType)type, false, stride, offset);
+			var vertAttribPtrType = type switch { 
+				ParameterType.FLOAT => VertexAttribPointerType.Float,
+				ParameterType.INT => VertexAttribPointerType.Int,
+				ParameterType.VECTOR2 => VertexAttribPointerType.Float,
+				ParameterType.VECTOR3 => VertexAttribPointerType.Float,
+				ParameterType.VECTOR4 => VertexAttribPointerType.Float,
+				ParameterType.COLOR3 => VertexAttribPointerType.Float,
+				ParameterType.COLOR4 => VertexAttribPointerType.Float,
+			};
+			GL.VertexAttribPointer(shaderLoc, dim, vertAttribPtrType, false, stride, offset);
 			GL.EnableVertexAttribArray(shaderLoc);
 		}
 
@@ -491,6 +504,156 @@ namespace SharpSL.BackendRenderers.OpenGL
 		public void ImportPlugins(Dictionary<string, object> plugins)
 		{
 			throw new NotImplementedException();
+		} 
+		 private ActiveUniformType ConvertParameterToAttributeType(ParameterType type)
+		{
+			return type switch
+			{
+				ParameterType.FLOAT => ActiveUniformType.Float,
+				ParameterType.INT => ActiveUniformType.Int,
+				ParameterType.VECTOR2 => ActiveUniformType.FloatVec2,
+				ParameterType.VECTOR3 => ActiveUniformType.FloatVec3,
+				ParameterType.VECTOR4 => ActiveUniformType.FloatVec4,
+				ParameterType.COLOR3 => ActiveUniformType.FloatVec3,
+				ParameterType.COLOR4 => ActiveUniformType.FloatVec4,
+				ParameterType.MATRIX16 => ActiveUniformType.FloatMat4,
+				ParameterType.FLOAT_ARRAY => ActiveUniformType.Float,
+				ParameterType.INT_ARRAY => ActiveUniformType.Int,
+				ParameterType.VECTOR2_ARRAY => ActiveUniformType.FloatVec2,
+				ParameterType.VECTOR3_ARRAY => ActiveUniformType.FloatVec3,
+				ParameterType.VECTOR4_ARRAY => ActiveUniformType.FloatVec4,
+				ParameterType.COLOR3_ARRAY => ActiveUniformType.FloatVec3,
+				ParameterType.COLOR4_ARRAY => ActiveUniformType.FloatVec4,
+				ParameterType.MATRIX16_ARRAY => ActiveUniformType.FloatMat4,
+				ParameterType.TEXTURE => ActiveUniformType.Sampler2D,
+				ParameterType.MESH => 0,
+				_ => 0
+			};
+		}
+
+		private ParameterType ConvertAttributeToParameterType(ActiveUniformType type)
+		{
+			return type switch
+			{
+				ActiveUniformType.Int => ParameterType.INT,
+				ActiveUniformType.UnsignedInt => throw new NotImplementedException(),
+				ActiveUniformType.Float => ParameterType.FLOAT,
+				ActiveUniformType.Double => throw new NotImplementedException(),
+				ActiveUniformType.FloatVec2 => ParameterType.VECTOR2,
+				ActiveUniformType.FloatVec3 => ParameterType.VECTOR3,
+				ActiveUniformType.FloatVec4 => ParameterType.VECTOR4,
+				ActiveUniformType.IntVec2 => throw new NotImplementedException(),
+				ActiveUniformType.IntVec3 => throw new NotImplementedException(),
+				ActiveUniformType.IntVec4 => throw new NotImplementedException(),
+				ActiveUniformType.Bool => throw new NotImplementedException(),
+				ActiveUniformType.BoolVec2 => throw new NotImplementedException(),
+				ActiveUniformType.BoolVec3 => throw new NotImplementedException(),
+				ActiveUniformType.BoolVec4 => throw new NotImplementedException(),
+				ActiveUniformType.FloatMat2 => throw new NotImplementedException(),
+				ActiveUniformType.FloatMat3 => throw new NotImplementedException(),
+				ActiveUniformType.FloatMat4 => ParameterType.MATRIX16,
+				ActiveUniformType.Sampler1D => throw new NotImplementedException(),
+				ActiveUniformType.Sampler2D => ParameterType.TEXTURE,
+				ActiveUniformType.Sampler3D => throw new NotImplementedException(),
+				ActiveUniformType.SamplerCube => throw new NotImplementedException(),
+				ActiveUniformType.Sampler1DShadow => throw new NotImplementedException(),
+				ActiveUniformType.Sampler2DShadow => throw new NotImplementedException(),
+				ActiveUniformType.Sampler2DRect => throw new NotImplementedException(),
+				ActiveUniformType.Sampler2DRectShadow => throw new NotImplementedException(),
+				ActiveUniformType.FloatMat2x3 => throw new NotImplementedException(),
+				ActiveUniformType.FloatMat2x4 => throw new NotImplementedException(),
+				ActiveUniformType.FloatMat3x2 => throw new NotImplementedException(),
+				ActiveUniformType.FloatMat3x4 => throw new NotImplementedException(),
+				ActiveUniformType.FloatMat4x2 => throw new NotImplementedException(),
+				ActiveUniformType.FloatMat4x3 => throw new NotImplementedException(),
+				ActiveUniformType.Sampler1DArray => throw new NotImplementedException(),
+				ActiveUniformType.Sampler2DArray => throw new NotImplementedException(),
+				ActiveUniformType.SamplerBuffer => throw new NotImplementedException(),
+				ActiveUniformType.Sampler1DArrayShadow => throw new NotImplementedException(),
+				ActiveUniformType.Sampler2DArrayShadow => throw new NotImplementedException(),
+				ActiveUniformType.SamplerCubeShadow => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntVec2 => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntVec3 => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntVec4 => throw new NotImplementedException(),
+				ActiveUniformType.IntSampler1D => throw new NotImplementedException(),
+				ActiveUniformType.IntSampler2D => throw new NotImplementedException(),
+				ActiveUniformType.IntSampler3D => throw new NotImplementedException(),
+				ActiveUniformType.IntSamplerCube => throw new NotImplementedException(),
+				ActiveUniformType.IntSampler2DRect => throw new NotImplementedException(),
+				ActiveUniformType.IntSampler1DArray => throw new NotImplementedException(),
+				ActiveUniformType.IntSampler2DArray => throw new NotImplementedException(),
+				ActiveUniformType.IntSamplerBuffer => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSampler1D => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSampler2D => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSampler3D => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSamplerCube => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSampler2DRect => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSampler1DArray => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSampler2DArray => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSamplerBuffer => throw new NotImplementedException(),
+				ActiveUniformType.DoubleVec2 => throw new NotImplementedException(),
+				ActiveUniformType.DoubleVec3 => throw new NotImplementedException(),
+				ActiveUniformType.DoubleVec4 => throw new NotImplementedException(),
+				ActiveUniformType.SamplerCubeMapArray => throw new NotImplementedException(),
+				ActiveUniformType.SamplerCubeMapArrayShadow => throw new NotImplementedException(),
+				ActiveUniformType.IntSamplerCubeMapArray => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSamplerCubeMapArray => throw new NotImplementedException(),
+				ActiveUniformType.Image1D => throw new NotImplementedException(),
+				ActiveUniformType.Image2D => throw new NotImplementedException(),
+				ActiveUniformType.Image3D => throw new NotImplementedException(),
+				ActiveUniformType.Image2DRect => throw new NotImplementedException(),
+				ActiveUniformType.ImageCube => throw new NotImplementedException(),
+				ActiveUniformType.ImageBuffer => throw new NotImplementedException(),
+				ActiveUniformType.Image1DArray => throw new NotImplementedException(),
+				ActiveUniformType.Image2DArray => throw new NotImplementedException(),
+				ActiveUniformType.ImageCubeMapArray => throw new NotImplementedException(),
+				ActiveUniformType.Image2DMultisample => throw new NotImplementedException(),
+				ActiveUniformType.Image2DMultisampleArray => throw new NotImplementedException(),
+				ActiveUniformType.IntImage1D => throw new NotImplementedException(),
+				ActiveUniformType.IntImage2D => throw new NotImplementedException(),
+				ActiveUniformType.IntImage3D => throw new NotImplementedException(),
+				ActiveUniformType.IntImage2DRect => throw new NotImplementedException(),
+				ActiveUniformType.IntImageCube => throw new NotImplementedException(),
+				ActiveUniformType.IntImageBuffer => throw new NotImplementedException(),
+				ActiveUniformType.IntImage1DArray => throw new NotImplementedException(),
+				ActiveUniformType.IntImage2DArray => throw new NotImplementedException(),
+				ActiveUniformType.IntImageCubeMapArray => throw new NotImplementedException(),
+				ActiveUniformType.IntImage2DMultisample => throw new NotImplementedException(),
+				ActiveUniformType.IntImage2DMultisampleArray => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImage1D => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImage2D => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImage3D => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImage2DRect => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImageCube => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImageBuffer => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImage1DArray => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImage2DArray => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImageCubeMapArray => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImage2DMultisample => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntImage2DMultisampleArray => throw new NotImplementedException(),
+				ActiveUniformType.Sampler2DMultisample => throw new NotImplementedException(),
+				ActiveUniformType.IntSampler2DMultisample => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSampler2DMultisample => throw new NotImplementedException(),
+				ActiveUniformType.Sampler2DMultisampleArray => throw new NotImplementedException(),
+				ActiveUniformType.IntSampler2DMultisampleArray => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntSampler2DMultisampleArray => throw new NotImplementedException(),
+				ActiveUniformType.UnsignedIntAtomicCounter => throw new NotImplementedException(),
+				_ => 0
+			};
+		}
+
+		T IBackendRenderer.ConvertParameterToAttributeType<T>(ParameterType type)
+		{
+			if (typeof(T) == typeof(ActiveUniformType))
+				return (T)(object)ConvertParameterToAttributeType(type);
+			return (T)(object)type;
+		}
+
+		ParameterType IBackendRenderer.ConvertAttributeToParameterType<T>(T type)
+		{
+			if (typeof(T) == typeof(ActiveUniformType))
+				return ConvertAttributeToParameterType((ActiveUniformType)(object)type);
+			return (ParameterType)(object)type;
 		}
 		#endregion IBackendRenderer implementation
 	}

@@ -9,7 +9,7 @@ namespace Sharp
     [Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Basic2dVertexFormat : IVertex
     {
-        [RegisterAs(AttributeType.Float)]
+        [RegisterAs(ParameterType.FLOAT)]
         public Vector2 vertex_position;
     }
 }

@@ -57,6 +57,7 @@ namespace SharpAsset
 
 		private static int lastShaderUsed = -1;
 		//TODO maybe change this to StaticDictionary and  turn BindProperty to generic otherwise change to const/readonly declarations
+		//if everything fails use typeof().TypeHandle.value trick
 		private static Dictionary<Type, int> sizeTable = new()
 		{
 			[typeof(Vector2)] = Unsafe.SizeOf<Vector2>(),
@@ -371,8 +372,8 @@ namespace SharpAsset
 			}
 			foreach (var vertAttrib in RegisterAsAttribute.registeredVertexFormats[mesh.VertType].attribs)
 			{
-				if (shader.attribArray.TryGetValue(vertAttrib.shaderLocation, out var attrib))
-					PluginManager.backendRenderer.BindVertexAttrib(vertAttrib.type, attrib.location, vertAttrib.size, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
+				if (shader.uniformArray.TryGetValue(vertAttrib.shaderLocation, out var loc))
+					PluginManager.backendRenderer.BindVertexAttrib(vertAttrib.type, loc, vertAttrib.size, Marshal.SizeOf(mesh.VertType), vertAttrib.offset);
 			}
 			var startIndex = rangeOfSubMeshes.Start.Value;
 			var endIndex = rangeOfSubMeshes.End.Value;
@@ -398,22 +399,22 @@ namespace SharpAsset
 		private void SendToGPU(in Shader shader, string prop, byte[] data)
 		{
 			//TODO inline shader locations into data so that dict lookup is no longer needed on hot path
-			if (shader.uniformArray.ContainsKey(prop))
+			if (shader.uniformArray.TryGetValue(prop,out var loc))
 				switch (data[0])
 				{
-					case FLOAT: PluginManager.backendRenderer.SendUniform1(shader.uniformArray[prop], ref data[1]); break;
-					case VECTOR2: PluginManager.backendRenderer.SendUniformFloat2(shader.uniformArray[prop], ref data[1]); break;
-					case UVECTOR2: PluginManager.backendRenderer.SendUniformUInt2(shader.uniformArray[prop], ref data[1]); break;
+					case FLOAT: PluginManager.backendRenderer.SendUniform1(loc, ref data[1]); break;
+					case VECTOR2: PluginManager.backendRenderer.SendUniformFloat2(loc, ref data[1]); break;
+					case UVECTOR2: PluginManager.backendRenderer.SendUniformUInt2(loc, ref data[1]); break;
 
-					case VECTOR3: PluginManager.backendRenderer.SendUniform3(shader.uniformArray[prop], ref data[1]); break;
-					case COLOR4: PluginManager.backendRenderer.SendUniform4(shader.uniformArray[prop], ref data[1]); break;
-					case MATRIX4X4: PluginManager.backendRenderer.SendMatrix4(shader.uniformArray[prop], ref data[1]); break;
+					case VECTOR3: PluginManager.backendRenderer.SendUniform3(loc, ref data[1]); break;
+					case COLOR4: PluginManager.backendRenderer.SendUniform4(loc, ref data[1]); break;
+					case MATRIX4X4: PluginManager.backendRenderer.SendMatrix4(loc, ref data[1]); break;
 					case TEXTURE:
 						//Console.WriteLine("TBO: "+Unsafe.As<byte,int>(ref data[1]));
 						//TryGetProperty(prop, out Texture tex);
 						unsafe
 						{
-							PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop], ref Unsafe.AsRef<byte>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer())/*, Slot*/);
+							PluginManager.backendRenderer.SendTexture2D(loc, ref Unsafe.AsRef<byte>(Unsafe.As<byte, IntPtr>(ref data[1]).ToPointer())/*, Slot*/);
 						}
 						//PluginManager.backendRenderer.SendTexture2D(shader.uniformArray[prop],ref data[1]/*, Slot*/);
 						break;
@@ -464,7 +465,35 @@ namespace SharpAsset
 			// TODO: uncomment the following line if the finalizer is overridden above.
 			// GC.SuppressFinalize(this);
 		}
+		
+		 //keep it max 64 bit + 8 bit for tag sized
+	[StructLayout(LayoutKind.Explicit)]
+	struct Union
+	{
+		[FieldOffset(0)]
+		public int intOrIdField;
+		[FieldOffset(0)]
+		public float floatField;
+		[FieldOffset(0)]
+		public Vector2 vec2Field;
+		/*[FieldOffset(0)]
+		public int[] intArrayField;
+		[FieldOffset(0)]
+		public float[] floatArrayField;
+		[FieldOffset(0)]
+		public Vector2[] vec2ArrayField;
+		[FieldOffset(0)]
+		public Vector3[] vec3ArrayField;
+		[FieldOffset(0)]
+		public Vector4[] vec4ArrayField;
+		[FieldOffset(0)]
+		public unsafe void* ptr;*/
 
+		//[FieldOffset(8)]
+		//public ParameterInfo Tag;
+
+	}
+		 
 		#endregion IDisposable Support
 	}
 }

@@ -11,13 +11,13 @@ namespace Sharp
     [Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct BasicVertexFormat : IVertex
     {
-        [RegisterAs(AttributeType.Float)]
+        [RegisterAs(ParameterType.FLOAT)]
         public Vector3 vertex_position;
 
-        [RegisterAs(AttributeType.Float, "vertex_normal")]
+        [RegisterAs(ParameterType.FLOAT, "vertex_normal")]
         public Vector3 normal;
 
-        [RegisterAs(AttributeType.Float, "vertex_texcoord")]
+        [RegisterAs(ParameterType.FLOAT, "vertex_texcoord")]
         public Vector2 texcoords;
     }
 }

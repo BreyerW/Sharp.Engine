@@ -8,11 +8,11 @@ namespace Sharp.Editor
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct BarycentricVertexFormat : IVertex
     {
-        [RegisterAs(AttributeType.Float, "vertex_position")]
+        [RegisterAs(ParameterType.FLOAT, "vertex_position")]
         public Vector3 position;
-        [RegisterAs(AttributeType.Float, "vertex_texcoord")]
+        [RegisterAs(ParameterType.FLOAT, "vertex_texcoord")]
         public Vector2 texcoords;
-        [RegisterAs(AttributeType.Float, "vertex_barycentric")]
+        [RegisterAs(ParameterType.FLOAT, "vertex_barycentric")]
         public Vector3 barycentric;
     }
 }
