@@ -1,4 +1,4 @@
-﻿#version 130
+#version 130
 //#pragma include B:\Sharp.Engine\Sharp\Content\LightProcess.inc
 #pragma enable blend
 #pragma vertex
@@ -27,6 +27,6 @@ void main()
 	vec3 deltas = fwidth(v_barycentric);
 	vec3 barys = smoothstep(vec3(0), 1.5f*deltas,  v_barycentric);
 	float tmp = min(barys.y, barys.z);
-	float minBary =removeDiagonalEdges*tmp + min(barys.x,tmp)*(1f- removeDiagonalEdges);
-	frag_color = vec4(vec3(1.0f),1f-minBary);
+	float minBary =removeDiagonalEdges*tmp + min(barys.x,tmp)*(1.0f- removeDiagonalEdges);
+	frag_color = vec4(vec3(1.0f),1.0f-minBary);
 }

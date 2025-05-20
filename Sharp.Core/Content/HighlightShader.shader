@@ -1,4 +1,4 @@
-﻿//based on https://ourmachinery.com/post/borderland-part-3-selection-highlighting/
+//based on https://ourmachinery.com/post/borderland-part-3-selection-highlighting/
 
 #version 130
 
@@ -67,7 +67,7 @@ const float avg_scalar = 1.f / 8.f;
 float a=clamp(float(id_center!=id3)+float(id_center!=id2),0,1);*/
 
 int w = 3;
-float a=0f;
+float a=0.0f;
 float smallest_distance=3.402823466e+38f;
 vec2 depth_offset=vec2(0);
 vec2 size = 1.0f / textureSize(MyTexture, 0);
@@ -92,7 +92,7 @@ vec4 currColor=texture(MyTexture, uv);
                 // and if one of the pixel-neighbor is white (we are on the border)
                 if (texture(MyTexture, uv+ offset).r!=0/*texture(MyTexture, uv + offset).a> 0.00001f*/)
                 {
-                    a = 1f;
+                    a = 1.0f;
 					
 					float l=length(vec2(i, j));
 					if(l<smallest_distance){
@@ -117,9 +117,9 @@ vec4 currColor=texture(MyTexture, uv);
                 vec2 offset = vec2(i, j) * size;
 
                 // and if one of the pixel-neighbor is white (we are on the border)
-                if (all(notEqual(texture(MyTexture, uv+ offset).rr,vec2(0,1f)))/*texture(MyTexture, uv + offset).a> 0.00001f*/)
+                if (all(notEqual(texture(MyTexture, uv+ offset).rr,vec2(0,1.0f)))/*texture(MyTexture, uv + offset).a> 0.00001f*/)
                 {
-                    a = 1f;
+                    a = 1.0f;
 					
 					float l=length(vec2(i, j));
 					if(l<smallest_distance){
@@ -182,7 +182,7 @@ float scnd = texture(SceneDepthTex, uv).r;
 bool visible = d <=scnd;
 
 // If outline is hidden, reduce its alpha value to 30%.
-a *= visible ? 1.f : 0.33f;
+a *= visible ? 1.0f : 0.33f;
 }
 //frag_color =vec4(linearize_depth(texture(SceneDepthTex,res).r, camNearFar.x, camNearFar.y));
 frag_color=(outline_color*a);//vec4(texture(MyTexture,uv).rgb,1);//
