@@ -1,4 +1,4 @@
-﻿using SDL2;
+using SDL3;
 using Sharp.Editor;
 using Squid;
 using System;
@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using static SDL3.SDL;
 
 //using TupleExtensions;
 
@@ -14,29 +15,29 @@ namespace Sharp
 {
     public static class InputHandler
     {
-        private static readonly int numKeys = (int)SDL.SDL_Scancode.SDL_NUM_SCANCODES;
+        private static readonly int numKeys = (int)SDL.SDL_Scancode.SDL_SCANCODE_COUNT;
         private static IntPtr memAddrToKeyboard;
 
         internal static byte[] prevKeyState = new byte[numKeys];
         internal static byte[] curKeyState = new byte[numKeys];
         internal static List<KeyData> keyState = new List<KeyData>();
 
-        public static (int x, int y) globalMousePosition;
-        public static int wheelState;
+        public static (float x, float y) globalMousePosition;
+        public static float wheelState;
         public static bool isMouseDragging = false;
         public static bool isKeyboardPressed = false;
 
         internal static bool[] prevMouseState;
         internal static bool[] curMouseState = new bool[5];
 
-        private static readonly uint[] mouseCodes = new uint[] { SDL.SDL_BUTTON_LMASK, SDL.SDL_BUTTON_RMASK, SDL.SDL_BUTTON_MMASK, SDL.SDL_BUTTON_X1MASK, SDL.SDL_BUTTON_X2MASK };
+        private static readonly SDL_MouseButtonFlags[] mouseCodes = new [] { SDL.SDL_MouseButtonFlags.SDL_BUTTON_LMASK, SDL.SDL_MouseButtonFlags.SDL_BUTTON_RMASK, SDL.SDL_MouseButtonFlags.SDL_BUTTON_MMASK, SDL.SDL_MouseButtonFlags.SDL_BUTTON_X1MASK, SDL.SDL_MouseButtonFlags.SDL_BUTTON_X2MASK };
         private static readonly SDL.SDL_Scancode[] keyboardCodes = (SDL.SDL_Scancode[])Enum.GetValues(typeof(SDL.SDL_Scancode));
         internal static List<IMenuCommand> menuCommands = new List<IMenuCommand>();//keycombinations as key
         private static SDL.SDL_Keymod modState;
 
         static InputHandler()
         {
-            Desktop.OnFocusChanged += (sender) => { if (sender is TextArea || sender is TextField) SDL.SDL_StartTextInput(); else SDL.SDL_StopTextInput(); };
+            //Desktop.OnFocusChanged += (sender) => { if (sender is TextArea || sender is TextField) SDL.SDL_StartTextInput(); else SDL.SDL_StopTextInput(); };
             memAddrToKeyboard = SDL.SDL_GetKeyboardState(out int _);
             var types = Assembly.GetExecutingAssembly().GetTypes();
 
@@ -78,7 +79,7 @@ namespace Sharp
             //Gui.SetButtons(curMouseState);
         }
 
-        public static void ProcessMouseWheel(int delta)
+        public static void ProcessMouseWheel(float delta)
         {
             wheelState = -delta;
         }
@@ -103,7 +104,7 @@ namespace Sharp
             isKeyboardPressed = false;
             foreach (var keyCode in keyboardCodes)
             {
-                if (keyCode == SDL.SDL_Scancode.SDL_NUM_SCANCODES) continue;
+                if (keyCode == SDL.SDL_Scancode.SDL_SCANCODE_COUNT) continue;
                 int key = (int)keyCode;
                 var keyPressed = curKeyState[key] is 1;
                 isKeyboardPressed |= keyPressed;
@@ -117,7 +118,7 @@ namespace Sharp
             if (!Window.windows.ContainsKey(Window.UnderMouseWindowId)) return;
 
             var winPos = Window.windows[Window.UnderMouseWindowId].Position;
-            UI.SetMouse(globalMousePosition.x, globalMousePosition.y, winPos.x, winPos.y);
+            UI.SetMouse((int)globalMousePosition.x, (int)globalMousePosition.y, winPos.x, winPos.y);
 
             UI.SetButtons(curMouseState);
             List<KeyData> data = new List<KeyData>();
@@ -126,7 +127,7 @@ namespace Sharp
                 data.Add(key);
             UI.SetKeyboard(data.ToArray());
             keyState.Clear();
-            UI.SetMouseWheel(wheelState);
+            UI.SetMouseWheel((int)wheelState);
         }
 
         private static Keys ScancodeToKeyData(SDL.SDL_Scancode scancode)
@@ -775,25 +776,21 @@ namespace Sharp
                 case SDL.SDL_Scancode.SDL_SCANCODE_MODE:
                     break;
 
-                case SDL.SDL_Scancode.SDL_SCANCODE_AUDIONEXT:
+                case SDL.SDL_Scancode.SDL_SCANCODE_MEDIA_NEXT_TRACK:
                     return Keys.NEXTTRACK;
 
-                case SDL.SDL_Scancode.SDL_SCANCODE_AUDIOPREV:
+                case SDL.SDL_Scancode.SDL_SCANCODE_MEDIA_PREVIOUS_TRACK:
                     return Keys.PREVTRACK;
 
-                case SDL.SDL_Scancode.SDL_SCANCODE_AUDIOSTOP:
+                case SDL.SDL_Scancode.SDL_SCANCODE_MEDIA_STOP:
                     return Keys.MEDIASTOP;
 
-                case SDL.SDL_Scancode.SDL_SCANCODE_AUDIOPLAY:
+                case SDL.SDL_Scancode.SDL_SCANCODE_MEDIA_PLAY:
                     break;
-
-                case SDL.SDL_Scancode.SDL_SCANCODE_AUDIOMUTE:
-                    break;
-
-                case SDL.SDL_Scancode.SDL_SCANCODE_MEDIASELECT:
+                case SDL.SDL_Scancode.SDL_SCANCODE_MEDIA_SELECT:
                     return Keys.MEDIASELECT;
-
-                case SDL.SDL_Scancode.SDL_SCANCODE_WWW:
+//old from sdl2
+                /*case SDL.SDL_Scancode.SDL_SCANCODE_WWW:
                     break;
 
                 case SDL.SDL_Scancode.SDL_SCANCODE_MAIL:
@@ -803,7 +800,7 @@ namespace Sharp
                     return Keys.CALCULATOR;
 
                 case SDL.SDL_Scancode.SDL_SCANCODE_COMPUTER:
-                    return Keys.MYCOMPUTER;
+                    return Keys.MYCOMPUTER;*/
 
                 case SDL.SDL_Scancode.SDL_SCANCODE_AC_SEARCH:
                     break;
@@ -825,8 +822,8 @@ namespace Sharp
 
                 case SDL.SDL_Scancode.SDL_SCANCODE_AC_BOOKMARKS:
                     break;
-
-                case SDL.SDL_Scancode.SDL_SCANCODE_BRIGHTNESSDOWN:
+					//old from sdl2
+               /* case SDL.SDL_Scancode.SDL_SCANCODE_BRIGHTNESSDOWN:
                     break;
 
                 case SDL.SDL_Scancode.SDL_SCANCODE_BRIGHTNESSUP:
@@ -844,17 +841,17 @@ namespace Sharp
                 case SDL.SDL_Scancode.SDL_SCANCODE_KBDILLUMUP:
                     break;
 
-                case SDL.SDL_Scancode.SDL_SCANCODE_EJECT:
-                    break;
-
-                case SDL.SDL_Scancode.SDL_SCANCODE_SLEEP:
-                    return Keys.SLEEP;
-
-                case SDL.SDL_Scancode.SDL_SCANCODE_APP1:
+                
+				case SDL.SDL_Scancode.SDL_SCANCODE_APP1:
                     return Keys.APPS;
 
                 case SDL.SDL_Scancode.SDL_SCANCODE_APP2:
-                    return Keys.APPS;
+                    return Keys.APPS;*/
+                case SDL.SDL_Scancode.SDL_SCANCODE_SLEEP:
+                    return Keys.SLEEP;
+
+                case SDL.SDL_Scancode.SDL_SCANCODE_MEDIA_EJECT:
+                    break;
             }
             return 0;
         }

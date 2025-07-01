@@ -1,4 +1,4 @@
-﻿using SDL2;
+using SDL3;
 using Squid;
 using System;
 
@@ -13,17 +13,17 @@ namespace Sharp.Editor
             switch (cursorName)
             {
                 case CursorNames.SizeWE:
-                case CursorNames.VSplit: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEWE; break;
+                case CursorNames.VSplit: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_EW_RESIZE; break;
                 case CursorNames.SizeNS:
-                case CursorNames.HSplit: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZENS; break;
-                case CursorNames.SizeNESW: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZENESW; break;
-                case CursorNames.SizeNWSE: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZENWSE; break;
-                case CursorNames.Move: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_SIZEALL; break;
-                case CursorNames.Link: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_HAND; break;
-                case CursorNames.Select: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_IBEAM; break;
-                case CursorNames.Reject: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_NO; break;
+                case CursorNames.HSplit: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_NS_RESIZE; break;
+                case CursorNames.SizeNESW: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_NESW_RESIZE; break;
+                case CursorNames.SizeNWSE: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_NWSE_RESIZE; break;
+                case CursorNames.Move: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_MOVE; break;
+                case CursorNames.Link: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_POINTER; break;
+                case CursorNames.Select: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_TEXT; break;
+                case CursorNames.Reject: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_NOT_ALLOWED; break;
                 case CursorNames.Wait: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_WAIT; break;
-                default: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_ARROW; break;
+                default: type = SDL.SDL_SystemCursor.SDL_SYSTEM_CURSOR_DEFAULT; break;
             }
         }
 

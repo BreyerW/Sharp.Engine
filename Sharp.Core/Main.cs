@@ -1,5 +1,5 @@
 using PluginAbstraction;
-using SDL2;
+using SDL3;
 using Sharp.Core;
 using Sharp.Editor;
 using Sharp.Editor.Views;
@@ -50,13 +50,13 @@ namespace Sharp
 
 			// OpenTK.Graphics.GraphicsContext.ShareContexts = false;
 			SDL.SDL_SetHint(SDL.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
-			SDL.SDL_Init(SDL.SDL_INIT_VIDEO);
+			SDL.SDL_InitSubSystem(SDL.SDL_InitFlags.SDL_INIT_VIDEO);
 			//SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 2);
 			//SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, (int)SDL.SDL_GLcontext.);
 
 			PluginManager.backendRenderer.Start();
 
-			var dummy = SDL.SDL_CreateWindow("", 0, 0, 1, 1, SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN | SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL); //convert dummy to splash screen?
+			var dummy = SDL.SDL_CreateWindow("", 1, 1, SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN | SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL); //convert dummy to splash screen?
 																																			 //context creation need to be at the start to avoid accidental crash when rendering related object is created before context																														 //
 			SDL.SDL_GL_CreateContext(dummy);
 			var id = PluginManager.backendRenderer.CreateContext(SDL.SDL_GL_GetProcAddress, SDL.SDL_GL_GetCurrentContext);
@@ -64,8 +64,8 @@ namespace Sharp
 
 			MainWindow.contexts.Add(id);
 
-			PluginManager.backendRenderer.MakeCurrent += SDL.SDL_GL_MakeCurrent;
-			PluginManager.backendRenderer.SwapBuffers += SDL.SDL_GL_SwapWindow;
+			PluginManager.backendRenderer.MakeCurrent += (win, context) => SDL.SDL_GL_MakeCurrent(win,context) == true ? 1 : 0;
+			PluginManager.backendRenderer.SwapBuffers += (win) => SDL.SDL_GL_SwapWindow(win);
 
 			var mWin = new MainWindow("test"); //Console.WriteLine("alpha: " + graphic.GraphicsMode.ColorFormat.Alpha);
 

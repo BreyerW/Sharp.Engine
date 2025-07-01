@@ -1,4 +1,4 @@
-﻿using OpenTK;
+using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using PluginAbstraction;
@@ -503,7 +503,7 @@ namespace SharpSL.BackendRenderers.OpenGL
 
 		public void ImportPlugins(Dictionary<string, object> plugins)
 		{
-			throw new NotImplementedException();
+			//throw new NotImplementedException();
 		} 
 		 private ActiveUniformType ConvertParameterToAttributeType(ParameterType type)
 		{
