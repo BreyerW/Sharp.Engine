@@ -1,4 +1,4 @@
-﻿
+
 using PluginAbstraction;
 using Sharp.Core;
 using Sharp.Physic;

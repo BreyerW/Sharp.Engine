@@ -1,4 +1,4 @@
-﻿using Sharp.Core;
+using Sharp.Core;
 using Sharp.Editor.Views;
 using SharpAsset;
 using System;

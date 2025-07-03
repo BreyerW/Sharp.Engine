@@ -1,4 +1,4 @@
-﻿using PluginAbstraction;
+using PluginAbstraction;
 using Sharp.Core;
 using Sharp.Editor;
 using SharpAsset;

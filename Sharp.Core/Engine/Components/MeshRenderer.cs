@@ -1,4 +1,4 @@
-﻿using Sharp.Core;
+using Sharp.Core;
 using Sharp.Engine.Components;
 using Sharp.Physic;
 using SharpAsset;

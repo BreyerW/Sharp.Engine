@@ -1,5 +1,8 @@
-﻿using System;
+using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text.Json.Serialization;
 using System.Threading;
 
@@ -11,17 +14,30 @@ namespace Sharp.Core
 	/// </summary>
 	public struct BitMask
 	{
+		public const int Length = 16;// * sizeof(uint);
 		private static int BitSize = (sizeof(uint) * 8) - 1;
 		private static int ByteSize = 5;  // log_2(BitSize + 1)
 
 		[JsonInclude]
 		//[JsonProperty(IsReference = false)]
-		private uint[] bits;
+		private Buffer<uint> bits;
+		
 		//TODO: remove this after UnscopedRefAttribute introduction and turn bitmask into unmanaged struct with SIMD acceleration
-		public bool IsDefault => bits is null;
+		public bool IsDefault
+		{
+			get
+			{
+				foreach (var b in bits)
+				{
+					if (BitOperations.PopCount(b) > 0)
+						return false;
+				}
+				return true;
+			}
+		}
 		public BitMask(int startValue)
 		{
-			bits = new uint[1];
+			bits = new Buffer<uint>();
 			if (startValue is 1)
 				SetAll();
 		}
@@ -32,8 +48,8 @@ namespace Sharp.Core
 		public void SetFlag(int index)
 		{
 			int b = index >> ByteSize;
-			if (b >= bits.Length)
-				Array.Resize(ref bits, b + 1);
+			if (b >= Length)
+				throw new ArgumentException("Bitmask is too small to handle this operation. Increase bitmask size to fix this.");
 
 			Interlocked.Or(ref bits[b], 1u << (index & BitSize));
 		}
@@ -44,8 +60,8 @@ namespace Sharp.Core
 		public void ClearFlag(int index)
 		{
 			int b = index >> ByteSize;
-			if (b >= bits.Length)
-				return;
+			if (b >= Length)
+				throw new ArgumentException("Bitmask is too small to handle this operation. Increase bitmask size to fix this.");
 
 			Interlocked.And(ref bits[b], ~(1u << (index & BitSize)));
 		}
@@ -54,10 +70,7 @@ namespace Sharp.Core
 		/// </summary>
 		public void SetAll()
 		{
-			bits = Array.Empty<uint>();
-			//int count = bits.Length;
-			//for (int i = 0; i < count; i++)
-			//bits[i] = 0xffffffff;
+			MemoryMarshal.CreateSpan(ref bits[0], Length).Fill(uint.MaxValue);
 		}
 
 		/// <summary>
@@ -65,7 +78,7 @@ namespace Sharp.Core
 		/// </summary>
 		public void ClearAll()
 		{
-			Array.Clear(bits, 0, bits.Length);
+			MemoryMarshal.CreateSpan(ref bits[0], Length).Clear();
 		}
 
 		/// <summary>
@@ -76,48 +89,24 @@ namespace Sharp.Core
 		public readonly bool IsSet(int index)
 		{
 			int b = index >> ByteSize;
-			if (b >= bits.Length)
-				return false;
-
+			if (b >= Length)
+				throw new ArgumentException("Bitmask is too small to handle this operation. Increase bitmask size to fix this.");
 			return (bits[b] & (1 << (index & BitSize))) != 0;
 		}
 
 		public readonly bool HasNoFlags(in BitMask flags)
 		{
-			if (flags.bits.Length is 0)//means Everything
-				return false;
-			//var isNothing = true;
-			//foreach (var bit in flags.bits.AsSpan())
-			//if (BitOperations.PopCount(bit) is not 0)//or (bit&0) is not 0
-			//	isNothing = false;
-			//if (isNothing) return true;
-			int count = bits.Length;
-			int flagsCount = flags.bits.Length;
-			if (flagsCount < count)
-				count = flagsCount;
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < Length; i++)
 			{
 				uint bit = flags.bits[i];
-				if ((bits[i] & bit) is not 0)
+				if ((bits[i] & bit) != 0)
 					return false;
 			}
 			return true;
 		}
 		public readonly bool HasAllFlags(in BitMask flags)
 		{
-			if (flags.bits.Length is 0)
-				return true;
-			int count = bits.Length;
-			int flagsCount = flags.bits.Length;
-			if (flagsCount > count)
-			{
-				foreach (var bit in flags.bits.AsSpan()[count..])
-					if (BitOperations.PopCount(bit) is not 0)//or (bit&0) is not 0
-						return false; //early out in case testing mask has flags set in last bits that are outside of range of this mask
-			}
-			else
-				count = flagsCount;
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < Length; i++)
 			{
 				uint bit = flags.bits[i];
 				if ((bits[i] & bit) != bit)
@@ -127,19 +116,20 @@ namespace Sharp.Core
 		}
 		public readonly bool HasAnyFlags(in BitMask flags)
 		{
-			if (flags.bits is null)
-				throw new ArgumentNullException(nameof(flags.bits));
-			int count = bits.Length;
-			int flagsCount = flags.bits.Length;
-			if (flagsCount < count)
-				count = flagsCount;
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < Length; i++)
 			{
 				uint bit = flags.bits[i];
-				if ((bits[i] & bit) == 0)
-					return false;
+				if ((bits[i] & bit) != 0)
+					return true;
 			}
-			return true;
+			return false;
 		}
+	}
+
+	//use InlineArray to make customizing bitmask easier
+	[InlineArray(BitMask.Length)]
+	struct Buffer<T> where T : unmanaged
+	{
+		private T _element0;
 	}
 }
