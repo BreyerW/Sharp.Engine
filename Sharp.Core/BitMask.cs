@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -15,21 +16,23 @@ namespace Sharp.Core
 	public struct BitMask
 	{
 		public const int Length = 16;// * sizeof(uint);
+		
+		// Vector512<uint>.Count == 16
+		private const int VectorLength = Length / 16; 
 		private static int BitSize = (sizeof(uint) * 8) - 1;
 		private static int ByteSize = 5;  // log_2(BitSize + 1)
 
 		[JsonInclude]
 		//[JsonProperty(IsReference = false)]
 		private Buffer<uint> bits;
-		
-		//TODO: remove this after UnscopedRefAttribute introduction and turn bitmask into unmanaged struct with SIMD acceleration
+
 		public bool IsDefault
 		{
 			get
 			{
-				foreach (var b in bits)
+				for (int i = 0; i < Length; i++)
 				{
-					if (BitOperations.PopCount(b) > 0)
+					if (BitOperations.PopCount(bits[i]) > 0)
 						return false;
 				}
 				return true;
@@ -37,9 +40,10 @@ namespace Sharp.Core
 		}
 		public BitMask(int startValue)
 		{
-			bits = new Buffer<uint>();
 			if (startValue is 1)
 				SetAll();
+			else
+				ClearAll();
 		}
 		/// <summary>
 		/// Sets the bit at the given index.
@@ -70,6 +74,7 @@ namespace Sharp.Core
 		/// </summary>
 		public void SetAll()
 		{
+			//Vector512<uint>.AllBitsSet.StoreUnsafe(ref bits[0]);
 			MemoryMarshal.CreateSpan(ref bits[0], Length).Fill(uint.MaxValue);
 		}
 
@@ -78,7 +83,7 @@ namespace Sharp.Core
 		/// </summary>
 		public void ClearAll()
 		{
-			MemoryMarshal.CreateSpan(ref bits[0], Length).Clear();
+			bits = default;
 		}
 
 		/// <summary>
@@ -96,30 +101,33 @@ namespace Sharp.Core
 
 		public readonly bool HasNoFlags(in BitMask flags)
 		{
-			for (int i = 0; i < Length; i++)
+			for (int i = 0; i < VectorLength; i++)
 			{
-				uint bit = flags.bits[i];
-				if ((bits[i] & bit) != 0)
+				var vectorId = i * Length;
+				var bit = Vector512.LoadUnsafe(ref flags.bits.GetElement(vectorId));
+				if (Vector512.BitwiseAnd(Vector512.LoadUnsafe(ref bits.GetElement(vectorId)), bit) != Vector512<uint>.Zero)
 					return false;
 			}
 			return true;
 		}
 		public readonly bool HasAllFlags(in BitMask flags)
 		{
-			for (int i = 0; i < Length; i++)
+			for (int i = 0; i < VectorLength; i++)
 			{
-				uint bit = flags.bits[i];
-				if ((bits[i] & bit) != bit)
+				var vectorId = i * Length;
+				var bit = Vector512.LoadUnsafe(ref flags.bits.GetElement(vectorId));
+				if (Vector512.BitwiseAnd(Vector512.LoadUnsafe(ref bits.GetElement(vectorId)), bit) != bit)
 					return false;
 			}
 			return true;
 		}
 		public readonly bool HasAnyFlags(in BitMask flags)
 		{
-			for (int i = 0; i < Length; i++)
+			for (int i = 0; i < VectorLength; i++)
 			{
-				uint bit = flags.bits[i];
-				if ((bits[i] & bit) != 0)
+				var vectorId = i * Length;
+				var bit = Vector512.LoadUnsafe(ref flags.bits.GetElement(vectorId));
+				if (Vector512.BitwiseAnd(Vector512.LoadUnsafe(ref bits.GetElement(vectorId)), bit) != Vector512<uint>.Zero)
 					return true;
 			}
 			return false;
@@ -130,6 +138,9 @@ namespace Sharp.Core
 	[InlineArray(BitMask.Length)]
 	struct Buffer<T> where T : unmanaged
 	{
+		[UnscopedRef]
+		public ref T GetElement(int index) => ref Unsafe.Add(ref Unsafe.As<Buffer<T>, T>(ref this), index);
+
 		private T _element0;
 	}
 }
