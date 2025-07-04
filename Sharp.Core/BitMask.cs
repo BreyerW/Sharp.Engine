@@ -9,7 +9,6 @@ using System.Threading;
 
 namespace Sharp.Core
 {
-	//TODO: use vectorized Vector128/256 when supported and when bits longer than vectors? 
 	/// <summary>
 	/// A resizable collection of bits.
 	/// </summary>
