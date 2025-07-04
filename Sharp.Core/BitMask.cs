@@ -32,7 +32,7 @@ namespace Sharp.Core
 			{
 				for (int i = 0; i < Length; i++)
 				{
-					if (BitOperations.PopCount(bits[i]) > 0)
+					if (bits[i] != default)
 						return false;
 				}
 				return true;
