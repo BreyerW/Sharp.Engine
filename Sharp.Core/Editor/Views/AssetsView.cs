@@ -1,4 +1,5 @@
-﻿using SharpAsset;
+using Sharp.Core.Editor;
+using SharpAsset;
 using SharpAsset.AssetPipeline;
 using Squid;
 using System;
@@ -15,7 +16,7 @@ namespace Sharp.Editor.Views
     public class AssetsView : View//TODO: nested entity, complete gizmo
     {
         private static Dictionary<string, ConcurrentDictionary<string, FileInfo>> directories = new Dictionary<string, ConcurrentDictionary<string, FileInfo>>();//IAsset ordered by name
-        private static readonly FileSystemWatcher dirWatcher = new FileSystemWatcher(Application.projectPath);
+        private static readonly BufferedFileSystemWatcher dirWatcher = new BufferedFileSystemWatcher(Application.projectPath);
         private static HashSet<string> eventsOnceFired = new HashSet<string>();
 
         public static Dictionary<uint, TreeView> tree = new Dictionary<uint, TreeView>();
@@ -23,16 +24,10 @@ namespace Sharp.Editor.Views
 
         static AssetsView()
         {
-            dirWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
-            dirWatcher.IncludeSubdirectories = true;
-            dirWatcher.EnableRaisingEvents = true;
         }
 
         public AssetsView(uint attachToWindow) : base(attachToWindow)
         {
-            //dirWatcher.Created += OnFileOrDirChanged;
-            //dirWatcher.Changed += OnFileOrDirChanged;
-            //dirWatcher.Deleted += OnFileOrDirDeleted;
             tree.Add(attachedToWindow, new TreeView());
             tree[attachedToWindow].Dock = DockStyle.Fill;
             tree[attachedToWindow].Parent = this;

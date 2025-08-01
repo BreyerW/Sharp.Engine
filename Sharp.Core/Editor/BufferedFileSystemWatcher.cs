@@ -28,7 +28,7 @@ namespace Sharp.Core.Editor
 			fileSystemWatcher.Deleted += FileSystemWatcherOnDeleted;
 			fileSystemWatcher.Renamed += FileSystemWatcherOnRenamed;
 			fileSystemWatcher.Error += FileSystemWatcherOnError;
-
+			fileSystemWatcher.Changed += FileSystemWatcherOnChange;
 			fileSystemWatcher.EnableRaisingEvents = true;
 			/*ThreadPool.QueueUserWorkItem
 			(
@@ -61,6 +61,16 @@ namespace Sharp.Core.Editor
 					}
 				}
 			);*/
+		}
+
+		private void FileSystemWatcherOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
+		{
+			ChangesQueue.Enqueue(new Change
+			{
+				ChangeType = WatcherChangeTypes.Changed,
+				FullPath = fileSystemEventArgs.FullPath,
+				Name = fileSystemEventArgs.Name
+			});
 		}
 
 		/// <summary>
