@@ -1,4 +1,4 @@
-﻿
+
 using Newtonsoft.Json;
 using Sharp.Core;
 using Sharp.Editor.Attribs;
@@ -12,7 +12,7 @@ namespace Sharp
 	[Serializable]
 	public abstract class Component : IEngineObject/*, IEquatable<Component>*/
 	{
-		//[JsonInclude]
+		[JsonInclude]
 		private bool enabled;
 		//[JsonIgnore]
 		public bool active
