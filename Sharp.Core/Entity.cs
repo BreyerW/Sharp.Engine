@@ -8,6 +8,53 @@ using System.Text.Json.Serialization;
 
 namespace Sharp
 {
+	//we are making this struct because we expect most entities to have only one component of each type and we want to avoid allocating lists for them,
+	//but we also want to support multiple components of the same type without allocating a list until necessary
+	struct OneOrMany<T, TArray> where TArray : IList<T>, new()
+	{
+		[JsonInclude]
+		private object oneOrMany;
+
+		public Type UnderlyingType => (IsSingle ? oneOrMany : ((TArray)oneOrMany)[0]).GetType();
+		public bool IsSingle => oneOrMany is not TArray;
+
+		public int Count => IsSingle ? 1 : ((TArray)oneOrMany).Count;
+
+		public OneOrMany(object obj)
+		{
+			oneOrMany = obj;
+		}
+		public void Add(T obj)
+		{
+			if (oneOrMany is null)
+			{
+				oneOrMany = obj;
+			}
+			else if (oneOrMany is TArray list)
+			{
+				list.Add(obj);
+			}
+			else
+			{
+				var newList = new TArray { (T)oneOrMany, obj };
+				oneOrMany = newList;
+			}
+		}
+		public T Get(int index = 0)
+		{
+			if (IsSingle)
+			{
+				return (T)oneOrMany;
+			}
+			else
+			{
+				var list = (TArray)oneOrMany;
+				if (index < 0 || index >= list.Count)
+					return default;
+				return list[index];
+			}
+		}
+	}
 	delegate bool MaskCheck(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags);
 	public enum TestMode
 	{
@@ -35,6 +82,8 @@ namespace Sharp
 		private BitMask tagsMask = new(0);
 
 		private BitMask componentsMask = new(0);
+		//allow swappoing to frozen dictionary when not adding new component types to save memory and improve lookup performance, but we need to make sure to swap back to normal dictionary when adding new component types?
+		private IDictionary<Type, int> typeToIndexMapping = new Dictionary<Type, int>();
 
 		[JsonInclude]
 		public BitMask ComponentsMask
@@ -71,7 +120,7 @@ namespace Sharp
 			}
 		}
 		[JsonInclude]
-		internal List<Component> components = new();
+		internal List<OneOrMany<Component, List<Component>>> components = new();
 
 		public Entity()
 		{
@@ -128,31 +177,31 @@ namespace Sharp
 		{
 			MaskCheck condition = (componentsTestMode, tagsTestMode) switch
 			{
-				(TestMode.All, TestMode.All) => compsAndTags,
-				(TestMode.Cull, TestMode.Cull) => nCompsAndnTags,
-				(TestMode.All, TestMode.Cull) => compsAndnTags,
-				(TestMode.Cull, TestMode.All) => nCompsAndTags,
+				(TestMode.All, TestMode.All) => allCompsAndTags,
+				(TestMode.Cull, TestMode.Cull) => noCompsAndNoTags,
+				(TestMode.All, TestMode.Cull) => allCompsAndNoTags,
+				(TestMode.Cull, TestMode.All) => noCompsAndAllTags,
 
 				(TestMode.Any, TestMode.Any) => anyCompsAndAnyTags,
-				(TestMode.Any, TestMode.All) => anyCompsAndTags,
-				(TestMode.Any, TestMode.Cull) => anyCompsAndnTags,
-				(TestMode.Cull, TestMode.Any) => nCompsAndAnyTags,
-				(TestMode.All, TestMode.Any) => compsAndAnyTags,
+				(TestMode.Any, TestMode.All) => anyCompsAndAllTags,
+				(TestMode.Any, TestMode.Cull) => anyCompsAndNoTags,
+				(TestMode.Cull, TestMode.Any) => noCompsAndAnyTags,
+				(TestMode.All, TestMode.Any) => allCompsAndAnyTags,
 			};
 			foreach (var (key, value) in tagsMapping)
 				if (condition(key.components, key.tags, componentsMask, tagsMask))
 					yield return value;
 		}
-		private static bool compsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAllFlags(components) && tagsMask.HasAllFlags(tags);
-		private static bool nCompsAndnTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasNoFlags(tags);
-		private static bool nCompsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasAllFlags(tags);
-		private static bool compsAndnTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAllFlags(components) && tagsMask.HasNoFlags(tags);
+		private static bool allCompsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAllFlags(components) && tagsMask.HasAllFlags(tags);
+		private static bool noCompsAndNoTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasNoFlags(tags);
+		private static bool noCompsAndAllTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasAllFlags(tags);
+		private static bool allCompsAndNoTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAllFlags(components) && tagsMask.HasNoFlags(tags);
 
 		private static bool anyCompsAndAnyTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAnyFlags(components) && tagsMask.HasAnyFlags(tags);
-		private static bool anyCompsAndTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAnyFlags(components) && tagsMask.HasAllFlags(tags);
-		private static bool anyCompsAndnTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAnyFlags(components) && tagsMask.HasNoFlags(tags);
-		private static bool nCompsAndAnyTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasAnyFlags(tags);
-		private static bool compsAndAnyTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAllFlags(components) && tagsMask.HasAnyFlags(tags);
+		private static bool anyCompsAndAllTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAnyFlags(components) && tagsMask.HasAllFlags(tags);
+		private static bool anyCompsAndNoTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAnyFlags(components) && tagsMask.HasNoFlags(tags);
+		private static bool noCompsAndAnyTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasNoFlags(components) && tagsMask.HasAnyFlags(tags);
+		private static bool allCompsAndAnyTags(in BitMask componentsMask, in BitMask tagsMask, in BitMask components, in BitMask tags) => componentsMask.HasAllFlags(components) && tagsMask.HasAnyFlags(tags);
 
 		public static Vector3 rotationMatrixToEulerAngles(Matrix4x4 mat)
 		{
@@ -184,26 +233,65 @@ namespace Sharp
 			return new Vector3(x, y, z);
 		}
 
-		public T GetComponent<T>() where T : Component
+		public T GetComponentExact<T>(int index = 0) where T : Component
 		{
-			return components.Find((obj) => obj is T) as T;
+			return (T)GetComponentExact(typeof(T), index);
 		}
 
-		public Component GetComponent(Type type)
+		public Component GetComponentExact(Type type, int index = 0)
 		{
 			foreach (var component in components)
-				if (component.GetType().IsGenericType && component.GetType().GetGenericTypeDefinition() == type || component.GetType() == type)
-					return component;
+			{
+				if (component.UnderlyingType == type )
+					return component.Get(index);
+			}
 			return null;
 		}
-
-		public List<Component> GetAllComponents()
+		public T GetComponent<T>(int index = 0) where T : Component
 		{
-			return components;
+			return (T)GetComponent(typeof(T), index);
 		}
-		public List<T> GetAllComponents<T>() where T : Component
+
+		public Component GetComponent(Type type, int index = 0)
 		{
-			return components.FindAll((obj) => obj is T).ConvertAll(comp => comp as T); //as List<T>;
+			foreach (var component in components)
+			{
+				if (component.UnderlyingType.IsAssignableTo(type))
+					return component.Get(index);
+			}
+			return null;
+		}
+		public IEnumerable<Component> GetAllComponents()
+		{
+			foreach (var component in components)
+			{
+				for (int i = 0; i < component.Count; i++)
+					yield return component.Get(i);
+			}
+		}
+		public IEnumerable<T> GetAllComponents<T>() where T : Component
+		{
+			var type = typeof(T);
+			foreach (var component in components)
+			{
+				if (component.UnderlyingType.IsAssignableTo(type))
+				{
+					for (int i = 0; i < component.Count; i++)
+						yield return (T)component.Get(i);
+				}
+			}
+		}
+		public IEnumerable<T> GetAllComponentsExact<T>() where T : Component
+		{
+			var type = typeof(T);
+			foreach (var component in components)
+			{
+				if (component.UnderlyingType.IsAssignableTo(type))
+				{
+					for (int i = 0; i < component.Count; i++)
+						yield return (T)component.Get(i);
+				}
+			}
 		}
 		public T AddComponent<T>() where T : Component
 		{
@@ -211,13 +299,52 @@ namespace Sharp
 			comp.Parent = this;
 			comp.active = true;
 			comp.InternalInitialize();
+			var type = comp.GetType();
 			ComponentsMask = ComponentsMask.SetTag<T>();
+			if (typeToIndexMapping.TryGetValue(type, out var index))
+			{
+				components[index].Add(comp);
+
+			}
+			else
+			{
+				typeToIndexMapping.Add(type, components.Count);
+				components.Add(new OneOrMany<Component, List<Component>>(comp));
+			}
 			//if (comp is Transform t)
 			//transform = t;
 
 			return comp;
 		}
-
+		public void AddComponent(Component component)
+		{
+			component.Parent = this;
+			component.active = true;
+			component.InternalInitialize();
+			var type = component.GetType();
+			ComponentsMask = ComponentsMask.SetTag(type.Name);
+			foreach (var comp in components)
+			{
+				if (comp.UnderlyingType == type)
+				{
+					comp.Add(component);
+					return;
+				}
+			}
+		}
+		internal void AddComponentInternal(Component component)
+		{
+			var type = component.GetType();
+			ComponentsMask = ComponentsMask.SetTag(type.Name);
+			foreach (var comp in components)
+			{
+				if (comp.UnderlyingType == type)
+				{
+					comp.Add(component);
+					return;
+				}
+			}
+		}
 		public void Dispose()
 		{
 			//foreach (var component in components)
