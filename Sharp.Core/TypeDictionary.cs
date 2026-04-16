@@ -17,14 +17,22 @@ namespace Sharp.Core
 		}
 
 		private static volatile int TypeIndex = -1;
-
 		private TValue[] storage;
 
-		public TypeDictionary()
+		public TypeDictionary(TValue defaultValue)
 		{
 			storage = new TValue[Math.Max(1, TypeIndex + 1)];
 		}
-
+		public bool TryGet<T>(out TValue value)
+		{
+			if (TypeSlot<T>.Index < storage.Length)
+			{
+				value = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(storage), TypeSlot<T>.Index);
+				return true;
+			}
+			value = default!;
+			return false;
+		}
 		private TValue[] EnsureStorageCapacity<T>()
 		{
 			if (TypeSlot<T>.Index >= storage.Length)

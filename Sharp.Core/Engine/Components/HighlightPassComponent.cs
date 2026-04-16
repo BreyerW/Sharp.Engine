@@ -11,14 +11,7 @@ namespace Sharp.Engine.Components
 {
 	public class HighlightPassComponent : CommandBufferComponent
 	{
-		[ModuleInitializer]
-		internal static void Register()
-		{
-			ref var mask = ref StaticDictionary<CommandBufferComponent>.Get<BitMask>();
-			if (mask.IsDefault)
-				mask = new BitMask(0);
-			mask.SetFlag(Extension.RegisterComponent<HighlightPassComponent>());
-		}
+
 		internal static Material viewCubeMat;
 		private static Material selectedMaterial;
 		private static Material hoveredMaterial;

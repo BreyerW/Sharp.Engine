@@ -9,14 +9,7 @@ namespace Sharp.Engine.Components
 {
 	class DepthPrePassComponent : CommandBufferComponent
 	{
-		[ModuleInitializer]
-		public static void Register()
-		{
-			ref var mask = ref StaticDictionary<CommandBufferComponent>.Get<BitMask>();
-			if (mask.IsDefault)
-				mask = new BitMask(0);
-			mask.SetFlag(Extension.RegisterComponent<DepthPrePassComponent>());
-		}
+
 		protected override void Initialize()
 		{
 			base.Initialize();

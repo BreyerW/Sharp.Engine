@@ -11,11 +11,7 @@ namespace Sharp.Engine.Components
 	{
 		//TODO source generator that generates these register boilerplate
 		//maybe with code to calculate byte offsets of all fields
-		[ModuleInitializer]
-		internal static void Register()
-		{
-			Extension.RegisterComponent<Transform>();
-		}
+
 		private readonly static int mat4x4Stride = Marshal.SizeOf<Matrix4x4>();
 
 		[JsonInclude]

@@ -6,11 +6,7 @@ namespace Sharp
 {
 	public class Light : Component//TODO: renderer?
 	{
-		[ModuleInitializer]
-		public static void Register()
-		{
-			Extension.RegisterComponent<Light>();
-		}
+
 		internal Color color = Color.White;
 		internal float intensity = 1f;
 		public float angle = 90f;

@@ -9,11 +9,7 @@ namespace Sharp
 {
 	public class Camera : Component
 	{
-		/*[ModuleInitializer]
-		public static void Register()
-		{
-			Extension.RegisterComponent<Camera>();
-		}*/
+
 		public static Camera main;//rename to or add current camera and generate camera for each window and sceneview
 		/* public static Camera main
          {

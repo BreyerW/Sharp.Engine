@@ -134,6 +134,7 @@
     <PackageReference Include="SharpAvi" Version="2.1.2" />
     <PackageReference Include="SharpCompress" Version="0.26.0" />
     <PackageReference Include="SmallBlockMemoryStream" Version="1.0.0" />
+    <PackageReference Include="System.Numerics.Tensors" Version="10.0.6" />
     <PackageReference Include="System.Text.Json" Version="4.7.0" />
   </ItemGroup>
 

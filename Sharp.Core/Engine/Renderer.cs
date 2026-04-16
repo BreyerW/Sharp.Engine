@@ -9,13 +9,7 @@ namespace Sharp
 {
 	public abstract class Renderer : Component
 	{
-		[ModuleInitializer]
-		internal static void Register()
-		{
-			ref var mask = ref StaticDictionary<Renderer>.Get<BitMask>();
-			if (mask.IsDefault)
-				mask = new BitMask(0);
-		}
+
 		[JsonInclude]
 		public Material material;
 

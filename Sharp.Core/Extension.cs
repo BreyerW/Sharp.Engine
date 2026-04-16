@@ -17,8 +17,10 @@ namespace Sharp
 	//TODO: ArrayComponent<T> as workaround for lack of support for multiple components of same type?
 	public static class Extension
 	{
+		//TODO: consider changing string to intptrt from Type.GettypeHandle.value and have string to int mapping for tags?
+		//or actually tags should have separate dictionary cause its hard to guarantee unique intptr that doesnt conflict with typehandle
+		private static Dictionary<string, BitMask> flagToBitPositionMapping = new()//TODO: replace with generated enum?
 
-		private static Dictionary<string, int> flagToBitPositionMapping = new()//TODO: replace with generated enum?
 		{
 		};
 		/*private static Dictionary<Type, int> compFlagToBitPositionMapping = new()
@@ -26,27 +28,50 @@ namespace Sharp
 		};*/
 		internal static int typeCount = 0;
 
-		public static int RegisterComponent<T>() where T : Component
+		/*public static int RegisterComponent<T>() where T : Component
 		{
 
 			var index = Interlocked.Increment(ref typeCount) - 1;
 			StaticDictionary<T>.Get<int>() = index;
 
 			return index;
+		}*/
+		public static BitMask RegisterComponent(Type type)
+		{
+			var index = CollectionsMarshal.GetValueRefOrAddDefault(flagToBitPositionMapping, type.Name, out var exist);
+			if (exist)
+				return index;
+			RegisterRecursively(type.BaseType, ref index);
+			index.SetFlag(Interlocked.Increment(ref typeCount) - 1);
+			//we have to reassign the bitmask to the dictionary after the recursive call because the recursive call may have added new entries to the dictionary which would invalidate our reference if we had gotten it before the recursive call
+			CollectionsMarshal.GetValueRefOrAddDefault(flagToBitPositionMapping, type.Name, out _) = index;
+			return index;
 		}
-
+		private static void RegisterRecursively(Type type, ref BitMask bitmask)
+		{
+			if (type == typeof(Component))
+				return;
+			var baseType = type.BaseType;
+			RegisterRecursively(baseType, ref bitmask);
+			ref var mask = ref CollectionsMarshal.GetValueRefOrAddDefault(flagToBitPositionMapping, type.Name, out var exist);
+			if (!exist)
+				mask.SetFlag(Interlocked.Increment(ref typeCount) - 1);
+			bitmask.SetFlag(mask);
+		}
 		public static void DisposeAttachedObject(in this Guid id)
 		{
 
 		}
 		public static void RemoveAllBefore<T>(this LinkedListNode<T> node)
 		{
-			while (node.Previous != null) node.List.Remove(node.Previous);
+			while (node.Previous != null)
+				node.List.Remove(node.Previous);
 		}
 
 		public static void RemoveAllAfter<T>(this LinkedListNode<T> node)
 		{
-			while (node.Next != null) node.List.Remove(node.Next);
+			while (node.Next != null)
+				node.List.Remove(node.Next);
 		}
 		public static BitMask GetBitMaskFor<T>() where T : Component
 		{
@@ -65,7 +90,8 @@ namespace Sharp
 			}
 			else if (flagToBitPositionMapping.TryGetValue(tag, out var index))
 				bitmask.SetFlag(index);
-			else throw new ArgumentException($"{tag} does not exist.");
+			else
+				throw new ArgumentException($"{tag} does not exist.");
 
 			return ref bitmask;
 		}
@@ -82,7 +108,8 @@ namespace Sharp
 			}
 			else if (flagToBitPositionMapping.TryGetValue(tag, out var index))
 				bitmask.ClearFlag(index);
-			else throw new ArgumentException($"{tag} does not exist.");
+			else
+				throw new ArgumentException($"{tag} does not exist.");
 
 			return ref bitmask;
 		}
@@ -92,7 +119,7 @@ namespace Sharp
 			bitmask.SetFlag(StaticDictionary<T>.Get<int>());
 			return ref bitmask;
 		}
-		public static ref readonly BitMask ClearTagg<T>(this in BitMask mask) where T : Component
+		public static ref readonly BitMask ClearTag<T>(this in BitMask mask) where T : Component
 		{
 			ref var bitmask = ref Unsafe.AsRef(mask);
 			bitmask.ClearFlag(StaticDictionary<T>.Get<int>());
@@ -207,7 +234,8 @@ namespace Sharp
 			int index = 0;
 			foreach (var item in items)
 			{
-				if (predicate(item)) return index;
+				if (predicate(item))
+					return index;
 				index++;
 			}
 			return -1;

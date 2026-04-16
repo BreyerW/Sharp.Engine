@@ -11,14 +11,7 @@ namespace Sharp
 {
 	public partial class MeshRenderer : Renderer, IStartableComponent //where VertexFormat : struct, IVertex
 	{
-		[ModuleInitializer]
-		public static void Register()
-		{
-			ref var mask = ref StaticDictionary<Renderer>.Get<BitMask>();
-			if (mask.IsDefault)
-				mask = new BitMask(0);
-			mask.SetFlag(Extension.RegisterComponent<MeshRenderer>());
-		}
+
 		[JsonInclude]
 		private int physicIndex = -1;
 

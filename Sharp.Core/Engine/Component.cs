@@ -58,6 +58,10 @@ namespace Sharp
 				parent = value;
 			}
 		}
+		public Component()
+		{
+			Extension.RegisterComponent(GetType());
+		}
 		internal virtual void OnActiveChanged()
 		{
 

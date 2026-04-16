@@ -17,13 +17,7 @@ namespace Sharp.Engine.Components
 	//TODO: requires CameraComponent
 	public abstract class CommandBufferComponent : Component//Renderer?
 	{
-		[ModuleInitializer]
-		public static void Register()
-		{
-			ref var mask = ref StaticDictionary<CommandBufferComponent>.Get<BitMask>();
-			if (mask.IsDefault)
-				mask = new BitMask(0);
-		}
+
 		public static Queue<CommandBufferComponent> recentlyLoadedCommandBuffers = new();
 		protected Camera cam;
 
