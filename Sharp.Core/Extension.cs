@@ -19,7 +19,7 @@ namespace Sharp
 	{
 		//TODO: consider changing string to intptrt from Type.GettypeHandle.value and have string to int mapping for tags?
 		//or actually tags should have separate dictionary cause its hard to guarantee unique intptr that doesnt conflict with typehandle
-		private static Dictionary<string, BitMask> flagToBitPositionMapping = new()//TODO: replace with generated enum?
+		private static Dictionary<string, BitMask> componentToBitmaskMapping = new()//TODO: replace with generated enum?
 
 		{
 		};
@@ -38,13 +38,13 @@ namespace Sharp
 		}*/
 		public static BitMask RegisterComponent(Type type)
 		{
-			var index = CollectionsMarshal.GetValueRefOrAddDefault(flagToBitPositionMapping, type.Name, out var exist);
+			var index = CollectionsMarshal.GetValueRefOrAddDefault(componentToBitmaskMapping, type.Name, out var exist);
 			if (exist)
 				return index;
 			RegisterRecursively(type.BaseType, ref index);
 			index.SetFlag(Interlocked.Increment(ref typeCount) - 1);
-			//we have to reassign the bitmask to the dictionary after the recursive call because the recursive call may have added new entries to the dictionary which would invalidate our reference if we had gotten it before the recursive call
-			CollectionsMarshal.GetValueRefOrAddDefault(flagToBitPositionMapping, type.Name, out _) = index;
+			//we have to reassign the bitmask to the dictionary after the recursive call because index is a copy of the value in the dictionary and the recursive call modifies the copy instead of the value in the dictionary
+			CollectionsMarshal.GetValueRefOrAddDefault(componentToBitmaskMapping, type.Name, out _) = index;
 			return index;
 		}
 		private static void RegisterRecursively(Type type, ref BitMask bitmask)
@@ -53,7 +53,7 @@ namespace Sharp
 				return;
 			var baseType = type.BaseType;
 			RegisterRecursively(baseType, ref bitmask);
-			ref var mask = ref CollectionsMarshal.GetValueRefOrAddDefault(flagToBitPositionMapping, type.Name, out var exist);
+			ref var mask = ref CollectionsMarshal.GetValueRefOrAddDefault(componentToBitmaskMapping, type.Name, out var exist);
 			if (!exist)
 				mask.SetFlag(Interlocked.Increment(ref typeCount) - 1);
 			bitmask.SetFlag(mask);
@@ -75,7 +75,10 @@ namespace Sharp
 		}
 		public static BitMask GetBitMaskFor<T>() where T : Component
 		{
-			return StaticDictionary<T>.Get<BitMask>();//abstractCompToBitMaskMapping[typeof(T)];
+			var mask = CollectionsMarshal.GetValueRefOrAddDefault(componentToBitmaskMapping, typeof(T).Name, out var exist);
+			if (!exist)
+				return RegisterComponent(typeof(T));
+			return mask;//abstractCompToBitMaskMapping[typeof(T)];
 		}
 		public static ref readonly BitMask SetTag(this in BitMask mask, string tag)
 		{
@@ -88,7 +91,7 @@ namespace Sharp
 			{
 				bitmask.SetAll();
 			}
-			else if (flagToBitPositionMapping.TryGetValue(tag, out var index))
+			else if (componentToBitmaskMapping.TryGetValue(tag, out var index))
 				bitmask.SetFlag(index);
 			else
 				throw new ArgumentException($"{tag} does not exist.");
@@ -106,7 +109,7 @@ namespace Sharp
 			{
 				bitmask.ClearAll();
 			}
-			else if (flagToBitPositionMapping.TryGetValue(tag, out var index))
+			else if (componentToBitmaskMapping.TryGetValue(tag, out var index))
 				bitmask.ClearFlag(index);
 			else
 				throw new ArgumentException($"{tag} does not exist.");
